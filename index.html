@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>JZT</title>
+	</head>
+	<body>
+		
+		<header>
+			<h1>Mark's Test Thing</h1>
+		</header>
+		
+		<canvas id="jzt" style="border: 1px solid blue;" width="500" height="200"></canvas>
+		
+		<script type="text/javascript" src="script/jzt.js"></script>
+		<script type="text/javascript" src="script/board.js"></script>
+		<script type="text/javascript" src="script/player.js"></script>
+		<script type="text/javascript" src="script/input.js"></script>
+		<script type="text/javascript">
+			var data = {
+				
+				title: 'First',
+				author: 'Mark McIntyre',
+				boards : [
+					{
+						name: 'Board 1',
+						width: 10,
+						height: 10,
+						tiles: [
+							[1,1,1,1,1,1,1,1,1,1],
+							[1,0,0,0,0,0,0,0,0,1],
+							[1,0,0,0,0,0,0,0,0,1],
+							[1,0,0,1,0,0,1,0,0,1],
+							[1,0,0,0,0,0,0,0,0,1],
+							[1,0,0,0,0,0,0,0,0,1],
+							[1,0,1,0,0,0,0,1,0,1],
+							[1,0,0,1,1,1,1,0,0,1],
+							[1,0,0,0,0,0,0,0,0,1],
+							[1,1,1,1,1,1,1,1,1,1]
+						],
+						
+						
+					}
+				],
+				
+				
+			}
+		
+			var canvas = document.getElementById('jzt');
+			var game = new jzt.Game(canvas, data);
+			game.run();
+		</script>
+		
+	</body>
+</html>
