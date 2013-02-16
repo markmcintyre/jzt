@@ -10,8 +10,10 @@ jzt.Board = function(boardData, player) {
 	var boardWidth = boardData.width;
 	var boardHeight = boardData.height;
 	var tiles = boardData.tiles;
+	var messages = [];
+	var jztObjects = [];
 	
-	this.isPassable = function(x, y) {
+	self.isPassable = function(x, y) {
 		
 		if(y < 0 || y >= boardHeight) {
 			return false;
@@ -22,9 +24,32 @@ jzt.Board = function(boardData, player) {
 		
 		return !tiles[y][x];
 		
-	}
+	};
 	
-	this.render = function(c) {
+	self.addMessage = function(message) {
+		messageQueue.push(message);
+	};
+	
+	self.update = function() {
+		
+		for(var index = 0; index < objects.length; ++index) {
+			
+			var jztObject = jztObjects[index];
+			
+			for(var messageIndex = 0; messageIndex < messages.length; ++messageIndex) {
+				
+				var message = messages[messageIndex];
+				if(jztObject.name == message.to) {
+					jztObject.addMessage(message);
+				}
+				
+			}
+			
+		}
+		
+	};
+	
+	self.render = function(c) {
 		
 		c.fillStyle = '#000000';
 		c.fillRect(0, 0, boardWidth * TILE_WIDTH, boardHeight * TILE_HEIGHT);
@@ -46,6 +71,6 @@ jzt.Board = function(boardData, player) {
 		c.fillStyle = '#00ffff';
 		c.fillRect(player.x * TILE_WIDTH, player.y * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
 		
-	}
+	};
 	
 }

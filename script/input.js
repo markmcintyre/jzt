@@ -1,36 +1,42 @@
+window.jzt = window.jzt || {};
+
 jzt.KeyboardInput = function() {
-  
-	var pressed = {};
-	var self = this;
+ 
+  	this.LEFT = 37;
+  	this.UP = 38;
+  	this.RIGHT = 39;
+  	this.DOWN = 40;
 
-  	self.LEFT = 37;
-  	self.UP = 38;
-  	self.RIGHT = 39;
-  	self.DOWN = 40;
-
-	var capturableKeys = [self.LEFT, self.UP, self.RIGHT, self.DOWN];
+	this._pressed = {};
+	this._capturableKeys = [this.LEFT, this.UP, this.RIGHT, this.DOWN];
 	
-	self.initialize = function() {
-		window.addEventListener('keydown', function(event) { self.onKeydown(event); }, false);
-		window.addEventListener('keyup', function(event) {self.onKeyup(event); }, false);
-	}
+};
+
+jzt.KeyboardInput.prototype.initialize = function() {
 	
-  	self.isPressed = function(keyCode) {
-		return pressed[keyCode];	
-	}
+	// Remember our bound functions in case we need to remove them from a listener
+	this._boundOnKeyUp = this.onKeyUp.bind(this);
+	this._boundOnKeyDown = this.onKeyDown.bind(this);
+	
+	window.addEventListener('keydown', this._boundOnKeyDown, false);
+	window.addEventListener('keyup', this._boundOnKeyUp, false);
+	
+}
+	
+jzt.KeyboardInput.prototype.isPressed = function(keyCode) {
+	return this._pressed[keyCode];	
+};
   
-  	self.onKeydown = function(event) {
-		if( capturableKeys.indexOf(event.keyCode) >= 0) {
-			pressed[event.keyCode] = true;
-			event.preventDefault();
-		}
-  	};
+jzt.KeyboardInput.prototype.onKeyDown = function(event) {
+	if( this._capturableKeys.indexOf(event.keyCode) >= 0) {
+		this._pressed[event.keyCode] = true;
+		event.preventDefault();
+	}
+};
 
-	self.onKeyup = function(event) {
-		if( capturableKeys.indexOf(event.keyCode) >= 0) {
-			delete pressed[event.keyCode];
-			event.preventDefault();
-		}
-	};
-
+jzt.KeyboardInput.prototype.onKeyUp = function(event) {
+	if( this._capturableKeys.indexOf(event.keyCode) >= 0) {
+		delete this._pressed[event.keyCode];
+		event.preventDefault();
+	}
 };

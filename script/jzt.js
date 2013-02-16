@@ -2,60 +2,58 @@ window.jzt = window.jzt || {};
 
 jzt.Game = function(canvasElement, data) {
 	
-	var self = this;
+	this.FPS = 60;
+	this.CPS = 60;
+	this.TILE_WIDTH = 10;
+	this.TILE_HEIGHT = 10;
+	this.MAX_TICKS_SKIPPED = 10;
+	this.SKIP_TICKS = 1000 / this.CPS;
 	
-	var FPS = 60;
-	var CPS = 60;
-	var TILE_WIDTH = 10;
-	var TILE_HEIGHT = 10;
-	var MAX_TICKS_SKIPPED = 10;
-	var SKIP_TICKS = 1000 / CPS;
+	this._intervalId = undefined;
+	this._ticks = 0;
+	this._nextTick = Date.now();
 	
-	var intervalId = undefined;
-	var ticks = 0;
-	var nextTick = Date.now();
+	this.data = data;
+	this.player = new jzt.Player(this);
+	this.keyboard = new jzt.KeyboardInput();
+	this.canvasElement = canvasElement;
+	this.context = canvasElement.getContext('2d');
 	
-	self.data = data;
-	self.player = new jzt.Player(self);
-	self.keyboard = new jzt.KeyboardInput();
-	self.canvasElement = canvasElement;
-	self.context = canvasElement.getContext('2d');
-	
-	self.currentBoard = new jzt.Board(this.data.boards[0], self.player);
-	
-	self.run = function() {
+	this.currentBoard = new jzt.Board(this.data.boards[0], this.player);
+};
 
-		self.keyboard.initialize();
-		
-		// Start the game loop
-		intervalId = setInterval(self.loop, 1000 / FPS);
-		
-	}
-	
-	self.loop = function() {
-		ticks = 0;
+jzt.Game.prototype.run = function() {
 
-		while(Date.now() > nextTick && ticks < MAX_TICKS_SKIPPED) {
-			self.update();
-			nextTick += SKIP_TICKS;
-			ticks++;
-		}
-
-		if(ticks) {
-			self.draw();
-		}
-	}
-	
-	self.update = function() {
-		self.player.update();
-	}
-	
-	self.draw = function() {
+	this.keyboard.initialize();
 		
-		//self.context.clearRect(0, 0, self.canvasElement.width, self.canvasElement.height);
-		self.currentBoard.render(self.context);
-			
+	// Start the game loop
+	this._intervalId = setInterval(this.loop.bind(this), 1000 / this.FPS);
+		
+};
+	
+jzt.Game.prototype.loop = function() {
+
+	this._ticks = 0;
+
+	while(Date.now() > this._nextTick && this._ticks < this.MAX_TICKS_SKIPPED) {
+		this.update();
+		this._nextTick += this.SKIP_TICKS;
+		this._ticks++;
+	}
+
+	if(this._ticks) {
+		this.draw();
 	}
 	
 };
-
+	
+jzt.Game.prototype.update = function() {
+	this.player.update();
+};
+	
+jzt.Game.prototype.draw = function() {
+		
+	//self.context.clearRect(0, 0, self.canvasElement.width, self.canvasElement.height);
+	this.currentBoard.render(this.context);
+			
+};

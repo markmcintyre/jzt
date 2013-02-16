@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>script/board.js</string>
+	<string>script/jzt.js</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -40,14 +40,14 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>2</integer>
+				<integer>35</integer>
 				<key>line</key>
-				<integer>30</integer>
+				<integer>42</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>9</integer>
+			<integer>26</integer>
 		</dict>
 		<key>script/input.js</key>
 		<dict>
@@ -63,19 +63,33 @@
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
 		</dict>
+		<key>script/jzt-object.js</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>18</integer>
+				<key>line</key>
+				<integer>11</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>2</integer>
+		</dict>
 		<key>script/jzt.js</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>2</integer>
+				<integer>27</integer>
 				<key>line</key>
-				<integer>43</integer>
+				<integer>15</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>28</integer>
+			<integer>7</integer>
 		</dict>
 		<key>script/player.js</key>
 		<dict>
@@ -98,11 +112,12 @@
 		<string>script/input.js</string>
 		<string>script/player.js</string>
 		<string>script/board.js</string>
+		<string>script/jzt-object.js</string>
 		<string>index.html</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
 	<true/>
 	<key>windowFrame</key>
-	<string>{{203, 142}, {771, 576}}</string>
+	<string>{{225, 103}, {771, 576}}</string>
 </dict>
 </plist>
