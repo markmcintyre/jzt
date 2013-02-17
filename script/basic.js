@@ -13,25 +13,27 @@ jzt.Point.prototype.directionTo = function(other) {
     
     var xDistance = this.x - other.x;
     var yDistance = this.y - other.y;
+    var axis = 'x';
     
     // There is no direction to the same point
     if(xDistance == 0 && yDistance == 0) {
         return undefined;
     }
-    
-    // If we aren't aligned on y and y is closer than x, or we're aligned on x
-    else if((yDistance != 0 && yDistance < xDistance) || (xDistance == 0)) {
-        return yDistance < 0 ? jzt.Direction.South : jzt.Direction.North;
+    else if(xDistance == 0) {
+        axis = 'y';
+    }
+    else if(yDistance == 0) {
+        axis = 'x'
+    }
+    else {
+        axis = (Math.floor(Math.random()*2)) ? 'x' : 'y';
     }
     
-    // If we aren't aligned on x and x is closer than y, or we're aligned on y
-    else if((xDistance != 0 && xDistance < yDistance) || (yDistance == 0)) {
+    if(axis == 'x') {
         return xDistance < 0 ? jzt.Direction.East : jzt.Direction.West;
     }
-    
     else {
-        jzt.debug.log('Didn\'t think of this!');
-        return undefined;
+        return yDistance < 0 ? jzt.Direction.South : jzt.Direction.North;
     }
     
 }
@@ -83,7 +85,7 @@ jzt.Direction.parse = function(direction) {
             return jzt.Direction.South;
         case 'W':
         case 'WEST':
-            return jzt.Direction.West; 
+            return jzt.Direction.West;
     }
     
     return undefined;
@@ -106,6 +108,27 @@ jzt.Direction.clockwise = function(direction) {
     return undefined;
 
 };
+
+jzt.Direction.randomY = function() {
+    return Math.floor(Math.random()*2) ? jzt.Direction.North : jzt.Direction.South;
+}
+
+jzt.Direction.randomX = function() {
+    return Math.floor(Math.random()*2) ? jzt.Direction.East : jzt.Direction.West;
+}
+
+jzt.Direction.random = function() {
+    switch(Math.floor(Math.random()*4)) {
+        case 0:
+            return jzt.Direction.North;
+        case 1:
+            return jzt.Direction.East;
+        case 2:
+            return jzt.Direction.South;
+        default:
+            return jzt.Direction.West;
+    }
+}
 
 jzt.Direction.counterClockwise = function(direction) {
     

@@ -18,6 +18,12 @@ jzt.JztObject.prototype.setOwnerBoard = function(board) {
     this.board = board;
 };
     
+jzt.JztObject.prototype.playerDirection = function() {
+    if(this.board) {
+        return this.point.directionTo(this.board.player.point);
+    }
+}
+    
 jzt.JztObject.prototype.hasScript = function() {
     return this.script != undefined;
 };
@@ -28,8 +34,15 @@ jzt.JztObject.prototype.stopScript = function() {
     }
 };
     
+jzt.JztObject.prototype.isWillingToMove = function(direction) {
+    if(this.pushable) {
+        return true;
+    }
+};
+    
 jzt.JztObject.prototype.move = function(direction) {
     if(this.board) {
+        this.orientation = direction;
         return this.board.moveTile(this.point, this.point.add(direction));
     }
 };

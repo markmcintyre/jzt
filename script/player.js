@@ -9,24 +9,11 @@ jzt.Player = function(game) {
     this.game = game;
     this.point = new jzt.Point(1,1);
     this.foregroundColor = '#00ffff';
-    this.pushable = true;
     
 };
     
-jzt.Player.prototype.moveNorth = function() {
-    this.move(jzt.Direction.North);
-};
-    
-jzt.Player.prototype.moveSouth = function() {
-    this.move(jzt.Direction.South);
-}
-    
-jzt.Player.prototype.moveEast = function() {
-    this.move(jzt.Direction.East);
-};
-    
-jzt.Player.prototype.moveWest = function() {
-    this.move(jzt.Direction.West);
+jzt.Player.prototype.isWillingToMove = function(direction) {
+    return true;
 };
     
 jzt.Player.prototype.move = function(direction) {
@@ -35,6 +22,8 @@ jzt.Player.prototype.move = function(direction) {
     var success = this.game.currentBoard.moveTile(this.point, newLocation);
 
     this._nextMove = Date.now() + 1000 / this.PLAYER_SPEED;
+    
+    return success;
 
 };
     
@@ -45,10 +34,10 @@ jzt.Player.prototype.update = function() {
         
         var k = this.game.keyboard;
 
-        if (k.isPressed(k.UP)) this.moveNorth();
-        else if (k.isPressed(k.LEFT)) this.moveWest();
-        else if (k.isPressed(k.DOWN)) this.moveSouth();
-        else if (k.isPressed(k.RIGHT)) this.moveEast();
+        if (k.isPressed(k.UP)) this.move(jzt.Direction.North);
+        else if (k.isPressed(k.LEFT)) this.move(jzt.Direction.West);
+        else if (k.isPressed(k.DOWN)) this.move(jzt.Direction.South);
+        else if (k.isPressed(k.RIGHT)) this.move(jzt.Direction.East);
         
     }
         

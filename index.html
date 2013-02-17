@@ -32,10 +32,10 @@
 						height: 10,
 						tiles: [
 							'####################',
-							'#                  #',
+							'#        ##        #',
 							'#        ##        #',
 							'# #    # ## #    # #',
-							'#        ##        #',
+							'#        @@        #',
 							'#        ##        #',
 							'# #    # ##  ####  #',
 							'#  ####  ## #    # #',
@@ -47,7 +47,8 @@
 								name: 'firstScript',
 								lines: [
 									'say "Hello, world!"',
-									'move n 4',
+									'move randx 100',
+									'move ccw cw opp opp n 4',
 									'say "\\"Hmmm...\\", he thinks."',
 									'wait 5',
 									'move West',

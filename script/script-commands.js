@@ -63,40 +63,148 @@ jzt.commands.SayCommand.prototype.execute = function(owner) {
  * MOVE command
  */
 jzt.commands.MoveCommand = function(arguments) {
+     
+    // We will be forming our expression here
+    this._movementExpression = [];
+    this.times = 1;
     
+    // Initialize validation flags
+    var concreteDirection = false;
+    var done = false;
+    
+    // If no arguments were provided
     if(arguments.length <= 0) {
-        throw 'Move command expects a direction';
+        throw 'Move command expects a movement expression';
     }
+    
+    // For each of our arguments...
+    for(var index = 0; index < arguments.length; ++index) {
+        
+        // If we are not expecting more tokens...
+        if(done) {
+            throw 'Unexpected token after movement times modifier: ' + arguments[index];
+        }
+        
+        var token = arguments[index].toUpperCase();
+        
+        switch(token) {
+            case 'CW':
+                concreteDirection = false;
+                this._movementExpression.push(token);
+                break;
+            case 'CCW':
+                concreteDirection = false;
+                this._movementExpression.push(token);
+                break;
+            case 'OPP':
+                concreteDirection = false;
+                this._movementExpression.push(token);
+                break;
+            case 'SEEK':
+                concreteDirection = true;
+                this._movementExpression.push(token);
+                break;
+            case 'FLOW':
+                concreteDirection = true;
+                this._movementExpression.push(token);
+                break;
+            case 'RAND':
+                concreteDirection = true;
+                this._movementExpression.push(token);
+                break;
+            case 'RANDX':
+                concreteDirection = true;
+                this._movementExpression.push(token);
+                break;
+            case 'RANDY':
+                concreteDirection = true;
+                this._movementExpression.push(token);
+                break;
+            default:
+                var direction = jzt.Direction.parse(token);
+                if(direction) {
+                    concreteDirection = true;
+                    this._movementExpression.push(direction);
+                }
+                else {
+                    
+                    // Try to parse the token as a number
+                    var times = parseInt(token);
+                    
+                    // If that failed, there was an error
+                    if(times == NaN) {
+                        throw 'Move command could not understand expression element: ' + token;
+                    }
+                    
+                    // If no concrete direction was encountered, that's an error
+                    if(!concreteDirection) {
+                        throw 'Invalid movement expression at ' + token + '. No direction specified.';
+                    }
+                    
+                    // Store our repeat times
+                    this.times = times;
 
-    this.direction = jzt.Direction.parse(arguments[0]);
+                    // We do not expect tokens after a number
+                    done = true;
+                    
+                }
+        }
+    }      
+};
+
+jzt.commands.MoveCommand.prototype.processExpression = function(owner, index) {
     
-    if(!this.direction) {
-        throw 'Move command couldn\'t understand the direction ' + arguments[0];
+    var token = this._movementExpression[index];
+
+    switch(token) {
+        case 'OPP':
+            return jzt.Direction.opposite( this.processExpression(owner,index+1) );
+        case 'CW':
+            return jzt.Direction.clockwise( this.processExpression(owner,index+1) );
+        case 'CCW':
+            return jzt.Direction.counterClockwise( this.processExpression(owner,index+1) );
+        case 'RAND':
+            return jzt.Direction.random();
+        case 'RANDX':
+            return jzt.Direction.randomX();
+        case 'RANDY':
+            return jzt.Direction.randomY();
+        case 'SEEK':
+            return owner.playerDirection();
+        case 'FLOW':
+            return owner.orientation;
+        default:
+            return token;
     }
     
-    if(arguments.length > 1) {
-        var times = parseInt(arguments[1], 10);
-        if(times == NaN) {
-            throw 'Could not understand number parameter';
-        }
-        else {
-            // We subtract one because the last time counts
-            this.times = times;
-        }
-        
-    }
-        
 };
 
 jzt.commands.MoveCommand.prototype.execute = function(owner) {
 
-    jzt.debug.log('%s wishes to move %s.', owner.name, jzt.Direction.getName(this.direction));
-    owner.move(this.direction);
-    
-    if(--this.times > 0) {
-        return jzt.commands.CommandResult.REPEAT;
+    // Process our expression from the first element
+    var direction = this.processExpression(owner, 0);
+
+    // If a movement was available...
+    if(direction) {
+        
+        // Interpret our dynamic directions
+        if(direction == this.SEEK) {
+            direction = owner.playerDirection();
+        }
+        else if(direction == this.FLOW) {
+            direction = owner.orientation;
+        }
+        
+        jzt.debug.log('%s wishes to move %s.', owner.name, jzt.Direction.getName(direction));
+        owner.move(direction);
+        
+        // If still have more moves to perform...
+        if(--this.times > 0) {
+            return jzt.commands.CommandResult.REPEAT;
+        }
+        
     }
-    
+
     return jzt.commands.CommandResult.NORMAL;
     
 };

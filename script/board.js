@@ -41,6 +41,9 @@ jzt.Board.prototype._initializeTiles = function(tileDataCollection) {
                 case '#':
                     tile = jzt.BuiltInFactory.create('jztWall');
                     break;
+                case '@':
+                    tile = jzt.BuiltInFactory.create('jztBounder');
+                    break;
                 case ' ':
                     tile = undefined;
                     break;
@@ -111,23 +114,24 @@ jzt.Board.prototype.moveTile = function(oldPoint, newPoint) {
     
     // If we couldn't move, see if we can push
     else {
+        
         var tile = this.getTile(newPoint);
-        if(tile && tile.pushable) {
+        if(tile) {
             
             var moveDirection = oldPoint.directionTo(newPoint);
-            jzt.debug.log('Move direction is: ' + jzt.Direction.getName(moveDirection));
             
-            // Try to move the pushable tile
-            var success = tile.move(moveDirection);
+            if(tile.isWillingToMove(moveDirection)) {
+                
+                // Try to move the pushable tile
+                var success = tile.move(moveDirection);
             
-            // If the tile pushed, try moving again
-            if(success) {
-                return this.moveTile(oldPoint, newPoint);
+                // If the tile pushed, try moving again
+                if(success) {
+                    return this.moveTile(oldPoint, newPoint);
+                }
+                
             }
             
-        }
-        else {
-            jzt.debug.log('Not pushable.');
         }
     }
     
