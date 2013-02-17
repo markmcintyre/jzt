@@ -116,10 +116,10 @@ jzt.Board.prototype.getTile = function(point) {
 	
 jzt.Board.prototype.isPassable = function(point) {
 		
-	if(point.y < 0 || point.y >= this.width) {
+	if(point.y < 0 || point.y >= this.height) {
 		return false;
 	}
-	else if(point.x < 0 || point.x >= this.height) {
+	else if(point.x < 0 || point.x >= this.width) {
 		return false;
 	}
 		
