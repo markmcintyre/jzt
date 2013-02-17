@@ -8,6 +8,8 @@ jzt.Player = function(game) {
     
     this.game = game;
     this.point = new jzt.Point(1,1);
+    this.foregroundColor = '#00ffff';
+    this.pushable = true;
     
 };
     
@@ -30,11 +32,9 @@ jzt.Player.prototype.moveWest = function() {
 jzt.Player.prototype.move = function(direction) {
     
     var newLocation = this.point.add(direction);
-    
-    if( this.game.currentBoard.isPassable(newLocation) ) {
-        this.point = newLocation;
-        this._nextMove = Date.now() + 1000 / this.PLAYER_SPEED;
-    }
+    var success = this.game.currentBoard.moveTile(this.point, newLocation);
+
+    this._nextMove = Date.now() + 1000 / this.PLAYER_SPEED;
 
 };
     

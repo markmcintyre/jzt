@@ -13,12 +13,16 @@ jzt.Board = function(boardData, player) {
     this.scripts = boardData.scripts;
     this.jztObjects = [];
     
-    this.player = player;
-
     this._initializeTiles(boardData.tiles);
     this._initializeObjects(boardData.jztObjects);
+    this._initializePlayer(player);
     
 };
+
+jzt.Board.prototype._initializePlayer = function(player) {
+    this.player = player;
+    this.setTile(player.point, player);
+}
 
 /*
  * Intializes tile data given a collection of serialized tiles.
@@ -43,6 +47,7 @@ jzt.Board.prototype._initializeTiles = function(tileDataCollection) {
             }
             
             if(tile) {
+                tile.setOwnerBoard(this);
                 this.setTile(new jzt.Point(column, row), tile);
             }
             
@@ -96,8 +101,37 @@ jzt.Board.prototype.each = function(callback) {
 }
     
 jzt.Board.prototype.moveTile = function(oldPoint, newPoint) {
-    this.setTile(newPoint, this.getTile(oldPoint));
-    this.setTile(oldPoint, undefined);
+    
+    
+    if(this.isPassable(newPoint)) {
+        this.setTile(newPoint, this.getTile(oldPoint));
+        this.setTile(oldPoint, undefined);
+        return true;
+    }
+    
+    // If we couldn't move, see if we can push
+    else {
+        var tile = this.getTile(newPoint);
+        if(tile && tile.pushable) {
+            
+            var moveDirection = oldPoint.directionTo(newPoint);
+            jzt.debug.log('Move direction is: ' + jzt.Direction.getName(moveDirection));
+            
+            // Try to move the pushable tile
+            var success = tile.move(moveDirection);
+            
+            // If the tile pushed, try moving again
+            if(success) {
+                return this.moveTile(oldPoint, newPoint);
+            }
+            
+        }
+        else {
+            jzt.debug.log('Not pushable.');
+        }
+    }
+    
+    return false;
 }
     
 jzt.Board.prototype.setTile = function(point, tile) {
@@ -111,7 +145,13 @@ jzt.Board.prototype.setTile = function(point, tile) {
 }
     
 jzt.Board.prototype.getTile = function(point) {
+    
+    if(point.x >= this.width || point.x < 0 || point.y >= this.height || point.y < 0) {
+        return undefined;
+    }
+    
     return this.tiles[point.x + point.y * this.width];
+    
 }
     
 jzt.Board.prototype.isPassable = function(point) {
@@ -168,10 +208,5 @@ jzt.Board.prototype.render = function(c) {
                 instance.TILE_WIDTH, instance.TILE_HEIGHT);
         }
     });
-    
-    // Draw the player
-    c.fillStyle = '#00ffff';
-    c.fillRect(this.player.point.x * this.TILE_WIDTH, this.player.point.y * this.TILE_HEIGHT,
-        this.TILE_WIDTH, this.TILE_HEIGHT);
     
 };

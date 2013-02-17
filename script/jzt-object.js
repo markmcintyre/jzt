@@ -5,6 +5,7 @@ jzt.JztObject = function(objectData) {
     this.name = objectData.name || undefined;
     this.scriptName = objectData.script;
     this.setSpeed(objectData.speed);
+    this.pushable = objectData.pushable || undefined;
     
     this.point = new jzt.Point(objectData.x || -1, objectData.y || -1);
     
@@ -29,7 +30,7 @@ jzt.JztObject.prototype.stopScript = function() {
     
 jzt.JztObject.prototype.move = function(direction) {
     if(this.board) {
-        this.board.moveTile(this.point, this.point.add(direction));
+        return this.board.moveTile(this.point, this.point.add(direction));
     }
 };
     

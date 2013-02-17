@@ -9,9 +9,40 @@ jzt.Point.prototype.add = function(other) {
     return new jzt.Point(this.x + other.x, this.y + other.y);
 };
 
+jzt.Point.prototype.directionTo = function(other) {
+    
+    var xDistance = this.x - other.x;
+    var yDistance = this.y - other.y;
+    
+    // There is no direction to the same point
+    if(xDistance == 0 && yDistance == 0) {
+        return undefined;
+    }
+    
+    // If we aren't aligned on y and y is closer than x, or we're aligned on x
+    else if((yDistance != 0 && yDistance < xDistance) || (xDistance == 0)) {
+        return yDistance < 0 ? jzt.Direction.South : jzt.Direction.North;
+    }
+    
+    // If we aren't aligned on x and x is closer than y, or we're aligned on y
+    else if((xDistance != 0 && xDistance < yDistance) || (yDistance == 0)) {
+        return xDistance < 0 ? jzt.Direction.East : jzt.Direction.West;
+    }
+    
+    else {
+        jzt.debug.log('Didn\'t think of this!');
+        return undefined;
+    }
+    
+}
+
 jzt.Point.prototype.equals = function(other) {
     return this.x == other.x && this.y == other.y;
 };
+
+jzt.Point.prototype.toString = function() {
+    return '(' + this.x + ', ' + this.y + ')';
+}
 
 jzt.Direction = {
     North: new jzt.Point(0,-1),
