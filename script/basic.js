@@ -17,82 +17,98 @@ jzt.Direction = {
     North: new jzt.Point(0,-1),
     East: new jzt.Point(1,0),
     South: new jzt.Point(0,1),
-    West: new jzt.Point(-1,0),
-    None: new jzt.Point(0,0)
+    West: new jzt.Point(-1,0)
+};
+
+jzt.Direction.getName = function(direction) {
+    switch(direction) {
+        case jzt.Direction.North:
+            return 'North';
+        case jzt.Direction.East:
+            return 'East';
+        case jzt.Direction.South:
+            return 'South';
+        case jzt.Direction.West:
+            return 'West';
+    }
+    
+    return '[Not a direction]';
+    
 };
 
 jzt.Direction.parse = function(direction) {
 
     var candidate = direction.toUpperCase();
 
-    if(candidate == 'N' || candidate == 'NORTH') {
-        return jzt.Direction.North;
+    switch(candidate) {
+        case 'N':
+        case 'NORTH':
+            return jzt.Direction.North;
+        case 'E':
+        case 'EAST':
+            return jzt.Direction.East;
+        case 'S':
+        case 'SOUTH':
+            return jzt.Direction.South;
+        case 'W':
+        case 'WEST':
+            return jzt.Direction.West; 
     }
-    else if(candidate == 'E' || candidate == 'EAST') {
-        return jzt.Direction.East;
-    }
-    else if(candidate == 'S' || candidate == 'SOUTH') {
-        return jzt.Direction.South;
-    }
-    else if(candidate == 'W' || candidate == 'WEST') {
-        return jzt.Direction.West;
-    }
+    
+    return undefined;
     
 };
 
 jzt.Direction.clockwise = function(direction) {
-    if(jzt.Direction.North.equals(direction)) {
-        return jzt.Direction.East;
+    
+    switch(direction) {
+        case jzt.Direction.North:
+            return jzt.Direction.East;
+        case jzt.Direction.East:
+            return jzt.Direction.South;
+        case jzt.Direction.South:
+            return jzt.Direction.West;
+        case jzt.Direction.West:
+            return jzt.Direction.North;
     }
-    else if(jzt.Direction.East.equals(direction)) {
-        return jzt.Direction.South;
-    }
-    else if(jzt.Direction.South.equals(direction)) {
-        return jzt.Direction.West;
-    }
-    else if(jzt.Direction.West.equals(direction)) {
-        return jzt.Direction.North;
-    }
-    else {
-        return jzt.Direction.None;
-    }
-}
+    
+    return undefined;
+
+};
 
 jzt.Direction.counterClockwise = function(direction) {
-    if(jzt.Direction.North.equals(direction)) {
-        return jzt.Direction.West;
+    
+    switch(direction) {
+        case jzt.Direction.North:
+            return jzt.Direction.West;
+        case jzt.Direction.West:
+            return jzt.Direction.South;
+        case jzt.Direction.South:
+            return jzt.Direction.East;
+        case jzt.Direction.East:
+            return jzt.Direction.North;
     }
-    else if(jzt.Direction.West.equals(direction)) {
-        return jzt.Direction.South;
-    }
-    else if(jzt.Direction.South.equals(direction)) {
-        return jzt.Direction.East;
-    }
-    else if(jzt.Direction.East.equals(direction)) {
-        return jzt.Direction.North;
-    }
-    else {
-        return jzt.Direction.None;
-    }
-}
+    
+    return undefined;
+
+};
 
 jzt.Direction.opposite = function(direction) {
-    if(jzt.Direction.North.equals(direction)) {
-        return jzt.Direction.South;
+    
+    switch(direction) {
+        case jzt.Direction.North:
+            return jzt.Direction.South;
+        case jzt.Direction.East:
+            return jzt.Direction.West;
+        case jzt.Direction.South:
+            return jzt.Direction.North;
+        case jzt.Direction.West:
+            return jzt.Direction.East;
     }
-    else if(jzt.Direction.East.equals(direction)) {
-        return jzt.Direction.West;
-    }
-    else if(jzt.Direction.South.equals(direction)) {
-        return jzt.Direction.North;
-    }
-    else if(jzt.Direction.West.equals(direction)) {
-        return jzt.Direction.East;
-    }
-    else {
-        return jzt.Direction.None;
-    }
- }
+    
+    return undefined;
+
+ };
  
  jzt.debug = jzt.debug || {};
  
@@ -100,4 +116,4 @@ jzt.Direction.opposite = function(direction) {
      if(jzt.debug.on) {
          console.log.apply(console, arguments);
      }
- }
+ };

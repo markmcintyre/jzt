@@ -19,6 +19,9 @@ jzt.ScriptCommandFactory.create = function(line) {
             case 'END':
                 return new jzt.commands.EndCommand(tokens);
                 break;
+            case 'WAIT':
+                return new jzt.commands.WaitCommand(tokens);
+                break;
         }
         
     }
@@ -65,7 +68,11 @@ jzt.commands.MoveCommand = function(arguments) {
         throw 'Move command expects a direction';
     }
 
-    this.direction = arguments[0];
+    this.direction = jzt.Direction.parse(arguments[0]);
+    
+    if(!this.direction) {
+        throw 'Move command couldn\'t understand the direction ' + arguments[0];
+    }
     
     if(arguments.length > 1) {
         var times = parseInt(arguments[1], 10);
@@ -83,15 +90,14 @@ jzt.commands.MoveCommand = function(arguments) {
 
 jzt.commands.MoveCommand.prototype.execute = function(owner) {
 
-    jzt.debug.log('%s wishes to move %s.', owner.name, this.direction);
-    owner.board.moveTile(owner.point, owner.point.add(jzt.Direction.parse(this.direction)));
+    jzt.debug.log('%s wishes to move %s.', owner.name, jzt.Direction.getName(this.direction));
+    owner.move(this.direction);
     
     if(--this.times > 0) {
         return jzt.commands.CommandResult.REPEAT;
     }
-    else {
-        return jzt.commands.CommandResult.NORMAL;
-    }
+    
+    return jzt.commands.CommandResult.NORMAL;
     
 };
 
@@ -119,14 +125,23 @@ jzt.commands.WaitCommand = function(arguments) {
         throw 'Wait command expects a number of cycles to wait.';
     }
     
-    var cycles = parseInt(arguments[1], 10);
+    var cycles = parseInt(arguments[0], 10);
     if(cycles == NaN) {
         throw 'Wait command expects a number as its cycle argument.';
     }
+    
     this.cycles = cycles;
     
 }
 
 jzt.commands.WaitCommand.prototype.execute = function(owner) {
-    jzt.debug.log(owner.name + ' ')
+    
+    jzt.debug.log('%s is waiting patiently for %d cycles', owner.name, this.cycles);
+    
+    if(--this.cycles > 0) {
+        return jzt.commands.CommandResult.REPEAT;
+    }
+
+    return jzt.commands.CommandResult.NORMAL;
+    
 }

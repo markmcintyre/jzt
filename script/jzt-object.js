@@ -25,7 +25,13 @@ jzt.JztObject.prototype.stopScript = function() {
     if(this.hasScript()) {
         this.script.stop();
     }
-}
+};
+    
+jzt.JztObject.prototype.move = function(direction) {
+    if(this.board) {
+        this.board.moveTile(this.point, this.point.add(direction));
+    }
+};
     
 jzt.JztObject.prototype.addMessage = function(message) {
     this._messageQueue.push(message);
@@ -44,7 +50,7 @@ jzt.JztObject.prototype.setScriptData = function(scriptData) {
 jzt.JztObject.prototype.setSpeed = function(speed) {
     speed = speed ? speed : 10;
     this._ticksPerCycle = 1000 / speed;
-}
+};
     
 jzt.JztObject.prototype.update = function() {
         

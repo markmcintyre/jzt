@@ -49,11 +49,13 @@
 									'say "Hello, world!"',
 									'move n 4',
 									'say "\\"Hmmm...\\", he thinks."',
+									'wait 5',
 									'move West',
 									'move w',
 									'move south 2',
 									'move w',
 									'move w',
+									'wait 20',
 									'move e',
 									'end',
 									'say "This won\'t \\"happen."'
@@ -77,7 +79,7 @@
 				
 			}
 		
-			//jzt.debug.on = true;
+			jzt.debug.on = true;
 			var canvas = document.getElementById('jzt');
 			var game = new jzt.Game(canvas, data);
 			game.run();
