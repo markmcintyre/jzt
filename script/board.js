@@ -10,6 +10,7 @@ jzt.Board = function(boardData, player) {
 	this.height = boardData.height;
 	this.messages = [];
 	this.tiles = new Array(this.width * this.height);
+	this.scripts = boardData.scripts;
 	this.jztObjects = [];
 	
 	this.player = player;
@@ -60,6 +61,7 @@ jzt.Board.prototype._initializeObjects = function(objectDataCollection) {
 		var objectData = objectDataCollection[index];
 		var jztObject = new jzt.JztObject(objectData);
 		jztObject.setOwnerBoard(this);
+		jztObject.setScriptData(this.getScriptData(jztObject.scriptName));
 		this.setTile(jztObject.point, jztObject);
 		this.jztObjects.push(jztObject);
 		
@@ -67,6 +69,22 @@ jzt.Board.prototype._initializeObjects = function(objectDataCollection) {
 	
 };
 
+jzt.Board.prototype.getScriptData = function(scriptName) {
+	
+	if(scriptName && this.scripts) {
+		
+		for(var index = 0; index < this.scripts.length; ++index) {
+			var script = this.scripts[index];
+			if(scriptName == script.name) {
+				return script;
+			}
+		}
+		
+	}
+	
+	return undefined;
+	
+};
 	
 jzt.Board.prototype.each = function(callback) {
 	for(var y = 0; y < this.height; ++y) {

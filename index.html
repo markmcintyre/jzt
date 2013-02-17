@@ -18,6 +18,8 @@
 		<script type="text/javascript" src="script/jzt-object.js"></script>
 		<script type="text/javascript" src="script/built-ins.js"></script>
 		<script type="text/javascript" src="script/basic.js"></script>
+		<script type="text/javascript" src="script/script.js"></script>
+		<script type="text/javascript" src="script/script-commands.js"></script>
 		<script type="text/javascript">
 			var data = {
 				
@@ -40,7 +42,24 @@
 							'#        #',
 							'##########'
 						],
-						
+						scripts: [
+							{
+								name: 'firstScript',
+								lines: [
+									'say "Hello, world!"',
+									'move n 4',
+									'say "\\"Hmmm...\\", he thinks."',
+									'move West',
+									'move w',
+									'move south 2',
+									'move w',
+									'move w',
+									'move e',
+									'end',
+									'say "This won\'t \\"happen."'
+								]
+							}
+						],
 						jztObjects: [
 							{
 								name: 'First Object',
@@ -48,15 +67,7 @@
 								y: 8,
 								speed: 3,
 								foregroundColor: '#ff00ff',
-								script: [
-									'#wait 5',
-									'#move n',
-									'#move n',
-									'#move n',
-									'#move n',
-									'#end',
-									'#move n'
-								]
+								script: 'firstScript'
 							}
 						]
 						

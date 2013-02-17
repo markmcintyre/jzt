@@ -21,6 +21,25 @@ jzt.Direction = {
 	None: new jzt.Point(0,0)
 };
 
+jzt.Direction.parse = function(direction) {
+
+	var candidate = direction.toUpperCase();
+
+	if(candidate == 'N' || candidate == 'NORTH') {
+		return jzt.Direction.North;
+	}
+	else if(candidate == 'E' || candidate == 'EAST') {
+		return jzt.Direction.East;
+	}
+	else if(candidate == 'S' || candidate == 'SOUTH') {
+		return jzt.Direction.South;
+	}
+	else if(candidate == 'W' || candidate == 'WEST') {
+		return jzt.Direction.West;
+	}
+	
+};
+
 jzt.Direction.clockwise = function(direction) {
 	if(jzt.Direction.North.equals(direction)) {
 		return jzt.Direction.East;
