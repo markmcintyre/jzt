@@ -46,8 +46,10 @@
 							{
 								name: 'firstScript',
 								lines: [
+									'wait 10',
 									'say "Hello, world!"',
-									'move randx 100',
+									'move n 4',
+									'move e 5',
 									'move ccw cw opp opp n 4',
 									'say "\\"Hmmm...\\", he thinks."',
 									'wait 5',
@@ -70,6 +72,14 @@
 								y: 8,
 								speed: 3,
 								foregroundColor: '#ff00ff',
+								script: 'firstScript'
+							},
+							{
+								name: 'Second Object',
+								x: 8,
+								y: 7,
+								speed: 3,
+								foregroundColor: '#00ff00',
 								script: 'firstScript'
 							}
 						]

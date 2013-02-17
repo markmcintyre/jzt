@@ -89,43 +89,30 @@ jzt.commands.MoveCommand = function(arguments) {
         
         switch(token) {
             case 'CW':
-                concreteDirection = false;
-                this._movementExpression.push(token);
-                break;
             case 'CCW':
-                concreteDirection = false;
-                this._movementExpression.push(token);
-                break;
             case 'OPP':
                 concreteDirection = false;
                 this._movementExpression.push(token);
                 break;
             case 'SEEK':
-                concreteDirection = true;
-                this._movementExpression.push(token);
-                break;
             case 'FLOW':
-                concreteDirection = true;
-                this._movementExpression.push(token);
-                break;
             case 'RAND':
-                concreteDirection = true;
-                this._movementExpression.push(token);
-                break;
-            case 'RANDX':
-                concreteDirection = true;
-                this._movementExpression.push(token);
-                break;
-            case 'RANDY':
+            case 'RANDEW':
+            case 'RANDNS':
                 concreteDirection = true;
                 this._movementExpression.push(token);
                 break;
             default:
+            
                 var direction = jzt.Direction.parse(token);
+                
+                // If we successfully parsed a direction...
                 if(direction) {
                     concreteDirection = true;
                     this._movementExpression.push(direction);
                 }
+                
+                // If we could not parse a direction...
                 else {
                     
                     // Try to parse the token as a number
@@ -136,7 +123,7 @@ jzt.commands.MoveCommand = function(arguments) {
                         throw 'Move command could not understand expression element: ' + token;
                     }
                     
-                    // If no concrete direction was encountered, that's an error
+                    // If no concrete direction was encountered by now, that's an error
                     if(!concreteDirection) {
                         throw 'Invalid movement expression at ' + token + '. No direction specified.';
                     }
@@ -165,9 +152,9 @@ jzt.commands.MoveCommand.prototype.processExpression = function(owner, index) {
             return jzt.Direction.counterClockwise( this.processExpression(owner,index+1) );
         case 'RAND':
             return jzt.Direction.random();
-        case 'RANDX':
+        case 'RANDEW':
             return jzt.Direction.randomX();
-        case 'RANDY':
+        case 'RANDNS':
             return jzt.Direction.randomY();
         case 'SEEK':
             return owner.playerDirection();
@@ -181,11 +168,13 @@ jzt.commands.MoveCommand.prototype.processExpression = function(owner, index) {
 
 jzt.commands.MoveCommand.prototype.execute = function(owner) {
 
-    // Process our expression from the first element
-    var direction = this.processExpression(owner, 0);
+    var direction;
 
-    // If a movement was available...
-    if(direction) {
+    // If we aren't stuck, calculate our next direction
+    if(!this.stuck) {
+        
+        // Process our expression from the first element
+        direction = this.processExpression(owner, 0);
         
         // Interpret our dynamic directions
         if(direction == this.SEEK) {
@@ -195,11 +184,26 @@ jzt.commands.MoveCommand.prototype.execute = function(owner) {
             direction = owner.orientation;
         }
         
-        jzt.debug.log('%s wishes to move %s.', owner.name, jzt.Direction.getName(direction));
-        owner.move(direction);
+    }
+    else {
+        direction = this.stuck;
+    }
+    
+    // If a direction is available
+    if(direction) {
         
-        // If still have more moves to perform...
-        if(--this.times > 0) {
+        jzt.debug.log('%s wishes to move %s.', owner.name, jzt.Direction.getName(direction));
+        var success = owner.move(direction);
+        
+        // If we were not successful...
+        if(!success) {
+            this.stuck = direction;
+            jzt.debug.log('But %s is stuck!', owner.name);
+            return jzt.commands.CommandResult.REPEAT;
+        }
+        // or still have more moves to perform...
+        else if(--this.times > 0) {
+            this.stuck = undefined;
             return jzt.commands.CommandResult.REPEAT;
         }
         
