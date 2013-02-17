@@ -6,8 +6,7 @@ jzt.JztObject = function(objectData) {
 	this.setScript(objectData.script);
 	this.setSpeed(objectData.speed);
 	
-	this.x = objectData.x || -1;
-	this.y = objectData.y || -1;
+	this.point = new jzt.Point(objectData.x || -1, objectData.y || -1);
 	
 	this.foregroundColor = objectData.foregroundColor || '#ffff00';
 	this.backgroundColor = objectData.backgroundColor || '#000000';
@@ -59,7 +58,7 @@ jzt.JztObject.prototype.update = function() {
 			var command = this.script[this.scriptLine];
 			if(command == '#move n') {
 				console.log(this.name + ' is moving north.');
-				this.board.moveTile(this.x, this.y, this.x, this.y-1);
+				this.board.moveTile(this.point, this.point.add(jzt.Direction.North));
 			}
 			else if(command == '#end' ) {
 				console.log(this.name + ' has ended its program.');

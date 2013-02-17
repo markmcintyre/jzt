@@ -7,36 +7,33 @@ jzt.Player = function(game) {
 	this._nextMove = Date.now();
 	
 	this.game = game;
-	this.x = 1;
-	this.y = 1;
+	this.point = new jzt.Point(1,1);
 	
 };
 	
 jzt.Player.prototype.moveNorth = function() {
-	this.move(0,-1);
+	this.move(jzt.Direction.North);
 };
 	
 jzt.Player.prototype.moveSouth = function() {
-	this.move(0,1);
+	this.move(jzt.Direction.South);
 }
 	
 jzt.Player.prototype.moveEast = function() {
-	this.move(1,0);
+	this.move(jzt.Direction.East);
 };
 	
 jzt.Player.prototype.moveWest = function() {
-	this.move(-1, 0);
+	this.move(jzt.Direction.West);
 };
 	
-jzt.Player.prototype.move = function(xOffset, yOffset) {
+jzt.Player.prototype.move = function(direction) {
 	
-	if( this.game.currentBoard.isPassable(this.x + xOffset, this.y + yOffset) ) {
-			
-		this.x += xOffset;
-		this.y += yOffset;
-		
+	var newLocation = this.point.add(direction);
+	
+	if( this.game.currentBoard.isPassable(newLocation) ) {
+		this.point = newLocation;
 		this._nextMove = Date.now() + 1000 / this.PLAYER_SPEED;
-		
 	}
 
 };

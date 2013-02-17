@@ -42,7 +42,7 @@ jzt.Board.prototype._initializeTiles = function(tileDataCollection) {
 			}
 			
 			if(tile) {
-				this.setTile(column, row, tile);
+				this.setTile(new jzt.Point(column, row), tile);
 			}
 			
 		}
@@ -60,7 +60,7 @@ jzt.Board.prototype._initializeObjects = function(objectDataCollection) {
 		var objectData = objectDataCollection[index];
 		var jztObject = new jzt.JztObject(objectData);
 		jztObject.setOwnerBoard(this);
-		this.setTile(jztObject.x, jztObject.y, jztObject);
+		this.setTile(jztObject.point, jztObject);
 		this.jztObjects.push(jztObject);
 		
 	}
@@ -71,42 +71,41 @@ jzt.Board.prototype._initializeObjects = function(objectDataCollection) {
 jzt.Board.prototype.each = function(callback) {
 	for(var y = 0; y < this.height; ++y) {
 		for(var x = 0; x < this.width; ++x) {
-			var tile = this.getTile(x,y);
+			var tile = this.getTile(new jzt.Point(x,y));
 			callback(tile);
 		}
 	}
 }
 	
-jzt.Board.prototype.moveTile = function(x, y, newX, newY) {
-	this.setTile(newX, newY, this.getTile(x,y));
-	this.setTile(x, y, undefined);
+jzt.Board.prototype.moveTile = function(oldPoint, newPoint) {
+	this.setTile(newPoint, this.getTile(oldPoint));
+	this.setTile(oldPoint, undefined);
 }
 	
-jzt.Board.prototype.setTile = function(x, y, tile) {
+jzt.Board.prototype.setTile = function(point, tile) {
 	
 	if(tile) {
-		tile.x = x;
-		tile.y = y;
+		tile.point = point;
 	}
 	
-	this.tiles[x + y * this.width] = tile;
+	this.tiles[point.x + point.y * this.width] = tile;
 	
 }
 	
-jzt.Board.prototype.getTile = function(x, y) {
-	return this.tiles[x + y * this.width];
+jzt.Board.prototype.getTile = function(point) {
+	return this.tiles[point.x + point.y * this.width];
 }
 	
-jzt.Board.prototype.isPassable = function(x, y) {
+jzt.Board.prototype.isPassable = function(point) {
 		
-	if(y < 0 || y >= this.width) {
+	if(point.y < 0 || point.y >= this.width) {
 		return false;
 	}
-	else if(x < 0 || x >= this.height) {
+	else if(point.x < 0 || point.x >= this.height) {
 		return false;
 	}
 		
-	return !this.getTile(x,y);
+	return !this.getTile(point);
 		
 };
 	
@@ -147,14 +146,14 @@ jzt.Board.prototype.render = function(c) {
 	this.each( function(tile) {
 		if(tile) {
 			c.fillStyle = tile.foregroundColor;
-			c.fillRect(tile.x * instance.TILE_WIDTH, tile.y * instance.TILE_HEIGHT,
+			c.fillRect(tile.point.x * instance.TILE_WIDTH, tile.point.y * instance.TILE_HEIGHT,
 				instance.TILE_WIDTH, instance.TILE_HEIGHT);
 		}
 	});
 	
 	// Draw the player
 	c.fillStyle = '#00ffff';
-	c.fillRect(this.player.x * this.TILE_WIDTH, this.player.y * this.TILE_HEIGHT,
+	c.fillRect(this.player.point.x * this.TILE_WIDTH, this.player.point.y * this.TILE_HEIGHT,
 		this.TILE_WIDTH, this.TILE_HEIGHT);
 	
 };
