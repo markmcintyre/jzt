@@ -16,16 +16,14 @@ jzt.ScriptCommandFactory.create = function(line) {
         switch(commandName) {
             case 'SAY':
                 return new jzt.commands.SayCommand(tokens);
-                break;
             case 'MOVE':
                 return new jzt.commands.MoveCommand(tokens);
-                break;
+            case 'GO':
+                return new jzt.commands.GoCommand(tokens);
             case 'END':
                 return new jzt.commands.EndCommand(tokens);
-                break;
             case 'WAIT':
                 return new jzt.commands.WaitCommand(tokens);
-                break;
         }
         
     }
@@ -85,14 +83,15 @@ jzt.commands.MovementExpression.prototype._validate = function() {
             case 'CW':
             case 'CCW':
             case 'OPP':
+            case 'RNDP':
                 concreteDirection = false;
                 this.validatedTokens.push(token);
                 break;
             case 'SEEK':
             case 'FLOW':
             case 'RAND':
-            case 'RANDEW':
-            case 'RANDNS':
+            case 'RNDEW':
+            case 'RNDNS':
                 concreteDirection = true;
                 this.validatedTokens.push(token);
                 break;
@@ -155,11 +154,13 @@ jzt.commands.MovementExpression.prototype._evaluate = function(owner, tokenIndex
             return jzt.Direction.clockwise( this._evaluate(owner,tokenIndex+1) );
         case 'CCW':
             return jzt.Direction.counterClockwise( this._evaluate(owner,tokenIndex+1) );
+        case 'RNDP':
+            return jzt.Direction.randomPerpendicular( this._evaluate(owner,tokenIndex+1));
         case 'RAND':
             return jzt.Direction.random();
-        case 'RANDEW':
+        case 'RNDEW':
             return jzt.Direction.randomX();
-        case 'RANDNS':
+        case 'RNDNS':
             return jzt.Direction.randomY();
         case 'SEEK':
             return owner.playerDirection();
@@ -242,6 +243,38 @@ jzt.commands.MoveCommand.prototype.execute = function(owner) {
         // If we are to move a number of times...
         else if(--this.times > 0) {
             this.stuck = undefined;
+            return jzt.commands.CommandResult.REPEAT;
+        }
+        
+    }
+
+    return jzt.commands.CommandResult.NORMAL;
+    
+};
+
+/**
+ * {@code GoCommand} is like the {@code MoveCommand} except it will
+ * simply ignore commands that make an owner object walk into a wall
+ * as opposed to waiting until its free.
+ */
+jzt.commands.GoCommand = function(tokens) {
+    this.movementExpression = new jzt.commands.MovementExpression(tokens);
+    this.times = this.movementExpression.times;
+};
+
+jzt.commands.GoCommand.prototype.execute = function(owner) {
+    
+    // Get our direction from our expression
+    var direction = this.movementExpression.evaluate(owner);
+    
+    // If a direction is available
+    if(direction) {
+        
+        jzt.debug.log('%s wishes to go %s.', owner.name, jzt.Direction.getName(direction));
+        owner.move(direction);
+
+        // If we are to go a number of times...
+        if(--this.times > 0) {
             return jzt.commands.CommandResult.REPEAT;
         }
         

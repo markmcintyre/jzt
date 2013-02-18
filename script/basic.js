@@ -109,6 +109,18 @@ jzt.Direction.clockwise = function(direction) {
 
 };
 
+jzt.Direction.randomPerpendicular = function(direction) {
+    
+    switch(direction) {
+        case jzt.Direction.North:
+        case jzt.Direction.South:
+            return jzt.Direction.randomX();
+        default:
+            return jzt.Direction.randomY();
+    }
+    
+};
+
 jzt.Direction.randomY = function() {
     return Math.floor(Math.random()*2) ? jzt.Direction.North : jzt.Direction.South;
 }
