@@ -53,6 +53,13 @@ jzt.Direction = {
     West: new jzt.Point(-1,0)
 };
 
+jzt.Direction.each = function(callback) {
+    callback(jzt.Direction.North);
+    callback(jzt.Direction.East);
+    callback(jzt.Direction.South);
+    callback(jzt.Direction.West);
+};
+
 jzt.Direction.getName = function(direction) {
     switch(direction) {
         case jzt.Direction.North:
@@ -66,29 +73,6 @@ jzt.Direction.getName = function(direction) {
     }
     
     return '[Not a direction]';
-    
-};
-
-jzt.Direction.parse = function(direction) {
-
-    var candidate = direction.toUpperCase();
-
-    switch(candidate) {
-        case 'N':
-        case 'NORTH':
-            return jzt.Direction.North;
-        case 'E':
-        case 'EAST':
-            return jzt.Direction.East;
-        case 'S':
-        case 'SOUTH':
-            return jzt.Direction.South;
-        case 'W':
-        case 'WEST':
-            return jzt.Direction.West;
-    }
-    
-    return undefined;
     
 };
 
@@ -114,33 +98,36 @@ jzt.Direction.randomPerpendicular = function(direction) {
     switch(direction) {
         case jzt.Direction.North:
         case jzt.Direction.South:
-            return jzt.Direction.randomX();
+            return jzt.Direction.randomEastWest();
         default:
-            return jzt.Direction.randomY();
+            return jzt.Direction.randomNorthSouth();
     }
     
 };
 
-jzt.Direction.randomY = function() {
-    return Math.floor(Math.random()*2) ? jzt.Direction.North : jzt.Direction.South;
-}
+jzt.Direction.randomNorthSouth = function() {
+    return jzt.Direction.random([jzt.Direction.North, jzt.Direction.South]);
+};
 
-jzt.Direction.randomX = function() {
-    return Math.floor(Math.random()*2) ? jzt.Direction.East : jzt.Direction.West;
-}
+jzt.Direction.randomEastWest = function() {
+    return jzt.Direction.random([jzt.Direction.East, jzt.Direction.West]);
+};
 
-jzt.Direction.random = function() {
-    switch(Math.floor(Math.random()*4)) {
-        case 0:
-            return jzt.Direction.North;
-        case 1:
-            return jzt.Direction.East;
-        case 2:
-            return jzt.Direction.South;
-        default:
-            return jzt.Direction.West;
+jzt.Direction.randomNorthEast = function() {
+    return jzt.Direction.random([jzt.Direction.North, jzt.Direction.East]);
+};
+
+jzt.Direction.random = function(directions) {
+    
+    // If an array of directions to pick from wasn't specified...
+    if(!directions) {
+        directions = [jzt.Direction.North, jzt.Direction.East, jzt.Direction.South, jzt.Direction.West];
     }
-}
+    
+    // Return a random direction from our array
+    return directions[Math.floor(Math.random() * directions.length)];
+    
+};
 
 jzt.Direction.counterClockwise = function(direction) {
     

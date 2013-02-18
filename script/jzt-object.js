@@ -23,7 +23,37 @@ jzt.JztObject.prototype.playerDirection = function() {
     if(this.board) {
         return this.point.directionTo(this.board.player.point);
     }
-}
+};
+
+jzt.JztObject.prototype.getFreeDirections = function() {
+    
+    var result = [];
+    var instance = this;
+    
+    jzt.Direction.each(function(direction) {
+        if(!instance.isBlocked(direction)) {
+            result.push(direction);
+        }
+    });
+    
+    return result;
+
+};
+
+jzt.JztObject.prototype.getBlockedDirections = function() {
+  
+    var result = [];
+    var instance = this;
+    
+    jzt.Direction.each(function(direction) {
+       if(instance.isBlocked(direction)) {
+           result.push(direction);
+       }
+    });
+    
+    return result;
+ 
+};
     
 jzt.JztObject.prototype.hasScript = function() {
     return this.script != undefined;
@@ -39,6 +69,14 @@ jzt.JztObject.prototype.isWillingToMove = function(direction) {
     if(this.pushable) {
         return true;
     }
+};
+
+jzt.JztObject.prototype.isBlocked = function(direction) {
+    
+    if(this.board) {
+        return !this.board.isPassable(this.point.add(direction));
+    }
+    
 };
     
 jzt.JztObject.prototype.move = function(direction) {

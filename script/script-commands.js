@@ -2,55 +2,6 @@ window.jzt = window.jzt || {};
 jzt.commands = jzt.commands || {};
 
 /**
- * {@code ScriptCommandFactory} is a factory object capable of creating
- * new Command instances from a given line of script text.
- */
-jzt.ScriptCommandFactory = jzt.ScriptCommandFactory || {};
-jzt.ScriptCommandFactory.create = function(line) {
-    
-    var tokens = line.match(/^[#:'!]?|\w+|"(?:\\"|[^"])+"/g);
-    jzt.debug.log(tokens);
-    
-    // If we successfully found some tokens...
-    if(tokens.length > 0) {
-        
-        // Grab our line indicator token
-        var lineType = tokens.shift();
-        
-        // Parse the command depending on the indicator
-        switch(lineType) {
-            case '#':
-                return jzt.ScriptCommandFactory._parseCommand(tokens);
-        }
-        
-    }
-    
-    return undefined;
-    
-};
-
-jzt.ScriptCommandFactory._parseCommand = function(tokens) {
-  
-    var commandName = tokens.shift().toUpperCase();
-
-    switch(commandName) {
-        case 'SAY':
-            return new jzt.commands.SayCommand(tokens);
-        case 'MOVE':
-            return new jzt.commands.MoveCommand(tokens);
-        case 'GO':
-            return new jzt.commands.GoCommand(tokens);
-        case 'END':
-            return new jzt.commands.EndCommand(tokens);
-        case 'WAIT':
-            return new jzt.commands.WaitCommand(tokens);
-    }
-    
-    return undefined;
-  
-};
-
-/**
  * {@code CommandResult} is an object containing definitions of
  * command results. The values are NORMAL, CONTINUE, and REPEAT.
  * NORMAL: Returned when a Command executes normally.
@@ -68,9 +19,55 @@ jzt.commands.CommandResult = {
  * calculates direction for movement.
  */
 jzt.commands.MovementExpression = function(tokens) {
+    
+    // Establiash convenience accessors
+    this._directions = jzt.commands.MovementExpression.Directions;
+    this._modifiers = jzt.commands.MovementExpression.DirectionModifiers;
+    
     this.tokens = tokens;
     this.times = 1;
     this._validate();
+    
+};
+
+/**
+ * Direction Modifier Enumerated Types
+ * 
+ * Each direction modifier has an associated token value, a display name, and a process function.
+ * The process function takes a direction and returns a final, calculated direction value.
+ */
+jzt.commands.MovementExpression.DirectionModifiers = {
+    CW:   {tokenValue: 'CW',   name: 'Clockwise',              process: function(d) {return jzt.Direction.clockwise(d);}},
+    CCW:  {tokenValue: 'CCW',  name: 'Counter-clockwise',      process: function(d) {return jzt.Direction.counterClockwise(d)}},
+    OPP:  {tokenValue: 'OPP',  name: 'Opposite',               process: function(d) {return jzt.Direction.opposite(d);}},
+    RNDP: {tokenValue: 'RNDP', name: 'Perpendicularly Random', process: function(d) {return jzt.Direction.randomPerpendicular(d);}}
+};
+
+/**
+ * Direction Enumerated Types
+ *
+ * Each direction has an associated token value, a display name, and a process function.
+ * The process function takes a JztObject and returns a final, calculated direction value.
+ */
+jzt.commands.MovementExpression.Directions = {
+    
+    SEEK:  {tokenValue: 'SEEK',  name: 'Toward player',            process: function(o) {return o.playerDirection();}},
+    FLOW:  {tokenValue: 'FLOW',  name: 'Current orientation',      process: function(o) {return o.orientation;}},
+    RAND:  {tokenValue: 'RAND',  name: 'Random direction',         process: function()  {return jzt.Direction.random();}},
+    RANDF: {tokenValue: 'RANDF', name: 'Random free direction',    process: function(o) {return jzt.Direction.random(o.getFreeDirections());}},
+    RANDB: {tokenValue: 'RANDB', name: 'Random blocked direction', process: function(o) {return jzt.Direction.random(o.getBlockedDirections());}},
+    RNDEW: {tokenValue: 'RNDEW', name: 'Randomly East or West',    process: function()  {return jzt.Direction.randomEastWest();}},
+    RNDNS: {tokenValue: 'RNDNS', name: 'Randomly North or South',  process: function()  {return jzt.Direction.randomNorthSouth();}},
+    RNDNE: {tokenValue: 'RNDNE', name: 'Randomly North or East',   process: function()  {return jzt.Direction.randomNorthEast();}},
+    NORTH: {tokenValue: 'NORTH', name: 'North',                    process: function()  {return jzt.Direction.North;}},
+    EAST:  {tokenValue: 'EAST',  name: 'East',                     process: function()  {return jzt.Direction.East;}},
+    SOUTH: {tokenValue: 'SOUTH', name: 'South',                    process: function()  {return jzt.Direction.South;}},
+    WEST:  {tokenValue: 'WEST',  name: 'West',                     process: function()  {return jzt.Direction.West;}},
+    N:     {tokenValue: 'N',     name: 'North shorthand',          process: function()  {return jzt.Direction.North;}},
+    E:     {tokenValue: 'E',     name: 'East shorthand',           process: function()  {return jzt.Direction.East;}},
+    S:     {tokenValue: 'S',     name: 'South shorthand',          process: function()  {return jzt.Direction.South;}},
+    W:     {tokenValue: 'W',     name: 'West shorthand',           process: function()  {return jzt.Direction.West;}}
+
 };
 
 jzt.commands.MovementExpression.prototype._validate = function() {
@@ -97,56 +94,54 @@ jzt.commands.MovementExpression.prototype._validate = function() {
         
         var token = this.tokens[index].toUpperCase();
         
-        switch(token) {
-            case 'CW':
-            case 'CCW':
-            case 'OPP':
-            case 'RNDP':
-                concreteDirection = false;
-                this.validatedTokens.push(token);
-                break;
-            case 'SEEK':
-            case 'FLOW':
-            case 'RAND':
-            case 'RNDEW':
-            case 'RNDNS':
-                concreteDirection = true;
-                this.validatedTokens.push(token);
-                break;
-            default:
+        // If we have found a direction modifier...
+        if(this._modifiers.hasOwnProperty(token)) {
             
-                var direction = jzt.Direction.parse(token);
-                
-                // If we successfully parsed a direction...
-                if(direction) {
-                    concreteDirection = true;
-                    this.validatedTokens.push(direction);
-                }
-                
-                // If we could not parse a direction...
-                else {
-                    
-                    // Try to parse the token as a number
-                    var times = parseInt(token);
-                    
-                    // If that failed, there was an error
-                    if(times == NaN) {
-                        throw 'Movement expression contains unexpected token: ' + token;
-                    }
-                    
-                    // If no concrete direction was encountered by now, that's an error
-                    if(!concreteDirection) {
-                        throw 'Movement expression does not contain a direction.';
-                    }
-                    
-                    // Store our repeat times
-                    this.times = times;
-
-                    // We do not expect tokens after a number
-                    done = true;
-                    
-                }
+            if(concreteDirection) {
+                throw 'Movement expression contains unexpected modifier token after direction: ' + token;
+            }
+            
+            concreteDirection = false;
+            this.validatedTokens.push(token);
+            
         }
+        
+        // If we have found a direction
+        else if(this._directions.hasOwnProperty(token)) {
+            
+            if(concreteDirection) {
+                throw 'Movement expression contains unexpected additional direction: ' + token;
+            }
+            
+            concreteDirection = true;
+            this.validatedTokens.push(token);
+            
+        }
+        
+        // If we have found any other token
+        else {
+            
+            // Try to parse the token as a number
+            var times = parseInt(token);
+            
+            // If that failed, there was an error
+            if(times == NaN) {
+                throw 'Movement expression contains unexpected token: ' + token;
+            }
+            
+            // If no concrete direction was encountered by now, that's an error
+            if(!concreteDirection) {
+                throw 'Movement expression does not contain a direction.';
+            }
+            
+            // Store our repeat times
+            this.times = times;
+
+            // We do not expect tokens after a number
+            done = true;
+                
+        }
+            
     }
 };
 
@@ -163,30 +158,20 @@ jzt.commands.MovementExpression.prototype.evaluate = function(owner) {
 
 jzt.commands.MovementExpression.prototype._evaluate = function(owner, tokenIndex) {
     
+    // Get our current validated token
     var token = this.validatedTokens[tokenIndex];
 
-    switch(token) {
-        case 'OPP':
-            return jzt.Direction.opposite( this._evaluate(owner,tokenIndex+1) );
-        case 'CW':
-            return jzt.Direction.clockwise( this._evaluate(owner,tokenIndex+1) );
-        case 'CCW':
-            return jzt.Direction.counterClockwise( this._evaluate(owner,tokenIndex+1) );
-        case 'RNDP':
-            return jzt.Direction.randomPerpendicular( this._evaluate(owner,tokenIndex+1));
-        case 'RAND':
-            return jzt.Direction.random();
-        case 'RNDEW':
-            return jzt.Direction.randomX();
-        case 'RNDNS':
-            return jzt.Direction.randomY();
-        case 'SEEK':
-            return owner.playerDirection();
-        case 'FLOW':
-            return owner.orientation;
-        default:
-            return token;
+    // If we've received a direction modifier, apply it now
+    if(this._modifiers.hasOwnProperty(token)) {
+        return this._modifiers[token].process( this._evaluate(owner, tokenIndex+1) );
     }
+    
+    // If we've received a calculable direction, process it now
+    else if(this._directions.hasOwnProperty(token)) {
+        return this._directions[token].process(owner);
+    }
+    
+    return undefined;
     
 };
 
@@ -306,13 +291,13 @@ jzt.commands.EndCommand = function(arguments) {
     if(arguments.length > 0) {
         throw 'End command does not take arguments.';
     }
-}
+};
 
 jzt.commands.EndCommand.prototype.execute = function(owner) {
     jzt.debug.log('%s has stopped its script.', owner.name);
     owner.stopScript();
     return jzt.commands.CommandResult.NORMAL;
-}
+};
 
 /* 
  * WAIT command
@@ -330,7 +315,7 @@ jzt.commands.WaitCommand = function(arguments) {
     
     this.cycles = cycles;
     
-}
+};
 
 jzt.commands.WaitCommand.prototype.execute = function(owner) {
     
@@ -342,4 +327,67 @@ jzt.commands.WaitCommand.prototype.execute = function(owner) {
 
     return jzt.commands.CommandResult.NORMAL;
     
-}
+};
+
+/**
+ * {@code ScriptCommandFactory} is a factory object capable of creating
+ * new Command instances from a given line of script text.
+ */
+jzt.ScriptCommandFactory = jzt.ScriptCommandFactory || {};
+
+jzt.ScriptCommandFactory._commandMap = {
+    SAY: jzt.commands.SayCommand,
+    MOVE: jzt.commands.MoveCommand,
+    GO: jzt.commands.GoCommand,
+    END: jzt.commands.EndCommand,
+    WAIT: jzt.commands.WaitCommand
+};
+
+jzt.ScriptCommandFactory.create = function(line) {
+    
+    var tokens = line.match(/^[#:'!]?|\w+|"(?:\\"|[^"])+"/g);
+    jzt.debug.log(tokens);
+    
+    // If we successfully found some tokens...
+    if(tokens.length > 0) {
+        
+        // Grab our line indicator token
+        var lineType = tokens.shift();
+        
+        // Parse the command depending on the indicator
+        switch(lineType) {
+            case '#':
+                return jzt.ScriptCommandFactory._parseCommand(tokens);
+        }
+        
+    }
+    
+    return undefined;
+    
+};
+
+jzt.ScriptCommandFactory._getCommandByName = function(name) {
+    
+    var candidate = name.toUpperCase();
+    
+    if(jzt.ScriptCommandFactory._commandMap.hasOwnProperty(candidate)) {
+        return jzt.ScriptCommandFactory._commandMap[candidate];
+    }
+    
+    return undefined;
+    
+};
+
+jzt.ScriptCommandFactory._parseCommand = function(tokens) {
+  
+    var commandToken = tokens.shift();
+    var command = jzt.ScriptCommandFactory._getCommandByName(commandToken);
+    
+    if(command) {
+        return new command(tokens);
+    }
+    
+    return undefined;
+
+  
+};

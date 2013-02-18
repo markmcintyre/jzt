@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>script/board.js</string>
+	<string>script/built-ins.js</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -26,65 +26,65 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>19</integer>
+				<integer>16</integer>
 				<key>line</key>
-				<integer>34</integer>
+				<integer>35</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>27</integer>
+			<integer>24</integer>
 		</dict>
 		<key>script/basic.js</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>47</integer>
+				<integer>12</integer>
 				<key>line</key>
-				<integer>36</integer>
+				<integer>115</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>17</integer>
+			<integer>106</integer>
 		</dict>
 		<key>script/board.js</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>45</integer>
+				<integer>26</integer>
 				<key>line</key>
-				<integer>121</integer>
+				<integer>46</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>104</integer>
+			<integer>28</integer>
 		</dict>
 		<key>script/built-ins.js</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>30</integer>
+				<integer>59</integer>
 				<key>line</key>
-				<integer>5</integer>
+				<integer>14</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
 		</dict>
-		<key>script/input.js</key>
+		<key>script/graphics.js</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>57</integer>
+				<integer>65</integer>
 				<key>line</key>
-				<integer>29</integer>
+				<integer>86</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -96,79 +96,79 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>21</integer>
+				<integer>52</integer>
 				<key>line</key>
-				<integer>25</integer>
+				<integer>5</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>10</integer>
+			<integer>0</integer>
 		</dict>
 		<key>script/jzt.js</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>18</integer>
+				<integer>42</integer>
 				<key>line</key>
-				<integer>50</integer>
+				<integer>4</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>31</integer>
+			<integer>0</integer>
 		</dict>
 		<key>script/player.js</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>57</integer>
+				<integer>24</integer>
 				<key>line</key>
-				<integer>35</integer>
+				<integer>8</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>14</integer>
+			<integer>0</integer>
 		</dict>
 		<key>script/script-commands.js</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>22</integer>
+				<integer>49</integer>
 				<key>line</key>
-				<integer>70</integer>
+				<integer>31</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>61</integer>
+			<integer>17</integer>
 		</dict>
 		<key>script/script.js</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>2</integer>
+				<integer>22</integer>
 				<key>line</key>
-				<integer>62</integer>
+				<integer>86</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>56</integer>
+			<integer>61</integer>
 		</dict>
 	</dict>
 	<key>openDocuments</key>
 	<array>
 		<string>script/jzt.js</string>
-		<string>script/input.js</string>
+		<string>script/graphics.js</string>
+		<string>script/basic.js</string>
 		<string>script/player.js</string>
 		<string>script/board.js</string>
-		<string>script/basic.js</string>
 		<string>script/built-ins.js</string>
 		<string>script/jzt-object.js</string>
 		<string>script/script.js</string>
@@ -176,8 +176,8 @@
 		<string>index.html</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
-	<true/>
+	<false/>
 	<key>windowFrame</key>
-	<string>{{121, 159}, {856, 578}}</string>
+	<string>{{120, 115}, {861, 587}}</string>
 </dict>
 </plist>
