@@ -3,6 +3,7 @@ window.jzt = window.jzt || {};
 jzt.JztObject = function(objectData) {
 
     this.name = objectData.name || undefined;
+    this.spriteIndex = objectData.spriteIndex || 63;
     this.scriptName = objectData.script;
     this.setSpeed(objectData.speed);
     this.pushable = objectData.pushable || undefined;

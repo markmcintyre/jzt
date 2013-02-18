@@ -1,11 +1,9 @@
 window.jzt = window.jzt || {};
 
-jzt.Board = function(boardData, player) {
+jzt.Board = function(boardData, game) {
 
-    this.TILE_HEIGHT = 20;
-    this.TILE_WIDTH = 20;
-    
     this.boardData = boardData;
+    this.game = game;
     this.width = boardData.width;
     this.height = boardData.height;
     this.messages = [];
@@ -15,7 +13,7 @@ jzt.Board = function(boardData, player) {
     
     this._initializeTiles(boardData.tiles);
     this._initializeObjects(boardData.jztObjects);
-    this._initializePlayer(player);
+    this._initializePlayer(game.player);
     
 };
 
@@ -203,13 +201,12 @@ jzt.Board.prototype.render = function(c) {
     var instance = this;
     
     c.fillStyle = '#000000';
-    c.fillRect(0, 0, this.width * this.TILE_WIDTH, this.height * this.TILE_HEIGHT);
+    c.fillRect(0, 0, this.width * this.game.TILE_SIZE.x, this.height * this.game.TILE_SIZE.y);
     
     this.each( function(tile) {
         if(tile) {
-            c.fillStyle = tile.foregroundColor;
-            c.fillRect(tile.point.x * instance.TILE_WIDTH, tile.point.y * instance.TILE_HEIGHT,
-                instance.TILE_WIDTH, instance.TILE_HEIGHT);
+            var sprite = instance.game.resources.graphics.getSprite(tile.spriteIndex);
+            sprite.draw(c, tile.point, tile.backgroundColor, tile.foregroundColor);
         }
     });
     

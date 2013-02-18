@@ -6,9 +6,11 @@ jzt.Player = function(game) {
     
     this._nextMove = Date.now();
     
+    this.spriteIndex = 2;
     this.game = game;
     this.point = new jzt.Point(1,1);
-    this.foregroundColor = '#00ffff';
+    this.foregroundColor = 'brightWhite';
+    this.backgroundColor = 'blue';
     
 };
     

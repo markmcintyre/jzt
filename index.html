@@ -9,7 +9,7 @@
 			<!--<h1>Mark's Test Thing</h1>-->
 		</header>
 		
-		<canvas id="jzt" style="border: 1px solid blue;" width="500" height="200"></canvas>
+		<canvas id="jzt" style="border: 1px solid blue;" width="360" height="320"></canvas>
 		
 		<script type="text/javascript" src="script/jzt.js"></script>
 		<script type="text/javascript" src="script/board.js"></script>
@@ -20,6 +20,7 @@
 		<script type="text/javascript" src="script/basic.js"></script>
 		<script type="text/javascript" src="script/script.js"></script>
 		<script type="text/javascript" src="script/script-commands.js"></script>
+		<script type="text/javascript" src="script/graphics.js"></script>
 		<script type="text/javascript">
 			var data = {
 				
@@ -71,7 +72,8 @@
 								x: 8,
 								y: 8,
 								speed: 3,
-								foregroundColor: '#ff00ff',
+								spriteIndex: 1,
+								foregroundColor: 'brightMagenta',
 								script: 'firstScript'
 							},
 							{
@@ -79,7 +81,9 @@
 								x: 8,
 								y: 7,
 								speed: 3,
-								foregroundColor: '#00ff00',
+								spriteIndex: 1,
+								backgroundColor: 'brown',
+								foregroundColor: 'brightGreen',
 								script: 'firstScript'
 							}
 						]
