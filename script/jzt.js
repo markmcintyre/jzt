@@ -2,8 +2,8 @@ window.jzt = window.jzt || {};
 
 jzt.Game = function(canvasElement, data) {
     
-    this.TILE_SIZE = new jzt.Point(18, 32);
-    this.SPRITE_SIZE = new jzt.Point(9, 16);
+    this.TILE_SIZE = new jzt.Point(16, 32);
+    this.SPRITE_SIZE = new jzt.Point(8, 16);
     
     this.FPS = 60;
     this.CPS = 60;

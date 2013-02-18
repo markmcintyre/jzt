@@ -12,7 +12,7 @@ jzt.BuiltInFactory.create = function(name) {
 };
 
 jzt.BuiltInFactory.builtIns = {
-    'jztWall': {spriteIndex: 219, foregroundColor: 'yellow'},
+    'jztWall': {spriteIndex: 178, foregroundColor: 'yellow'},
     'jztBounder': {pushable: true, spriteIndex: 254, foregroundColor: 'yellow'},
     'jztPlayer': {}
 };
