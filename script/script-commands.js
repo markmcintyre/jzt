@@ -8,28 +8,46 @@ jzt.commands = jzt.commands || {};
 jzt.ScriptCommandFactory = jzt.ScriptCommandFactory || {};
 jzt.ScriptCommandFactory.create = function(line) {
     
-    var tokens = line.match(/\w+|"(?:\\"|[^"])+"/g);
+    var tokens = line.match(/^[#:'!]?|\w+|"(?:\\"|[^"])+"/g);
+    jzt.debug.log(tokens);
+    
+    // If we successfully found some tokens...
     if(tokens.length > 0) {
         
-        var commandName = tokens.shift().toUpperCase();
+        // Grab our line indicator token
+        var lineType = tokens.shift();
         
-        switch(commandName) {
-            case 'SAY':
-                return new jzt.commands.SayCommand(tokens);
-            case 'MOVE':
-                return new jzt.commands.MoveCommand(tokens);
-            case 'GO':
-                return new jzt.commands.GoCommand(tokens);
-            case 'END':
-                return new jzt.commands.EndCommand(tokens);
-            case 'WAIT':
-                return new jzt.commands.WaitCommand(tokens);
+        // Parse the command depending on the indicator
+        switch(lineType) {
+            case '#':
+                return jzt.ScriptCommandFactory._parseCommand(tokens);
         }
         
     }
     
     return undefined;
     
+};
+
+jzt.ScriptCommandFactory._parseCommand = function(tokens) {
+  
+    var commandName = tokens.shift().toUpperCase();
+
+    switch(commandName) {
+        case 'SAY':
+            return new jzt.commands.SayCommand(tokens);
+        case 'MOVE':
+            return new jzt.commands.MoveCommand(tokens);
+        case 'GO':
+            return new jzt.commands.GoCommand(tokens);
+        case 'END':
+            return new jzt.commands.EndCommand(tokens);
+        case 'WAIT':
+            return new jzt.commands.WaitCommand(tokens);
+    }
+    
+    return undefined;
+  
 };
 
 /**
@@ -226,14 +244,12 @@ jzt.commands.MoveCommand.prototype.execute = function(owner) {
     // If a direction is available
     if(direction) {
         
-        jzt.debug.log('%s wishes to move %s.', owner.name, jzt.Direction.getName(direction));
         var success = owner.move(direction);
         
         // If we were not successful, we're stuck
         if(!success) {
             
             this.stuck = direction;
-            jzt.debug.log('But %s is stuck!', owner.name);
             
             // We will try again until we're free
             return jzt.commands.CommandResult.REPEAT;
@@ -270,7 +286,6 @@ jzt.commands.GoCommand.prototype.execute = function(owner) {
     // If a direction is available
     if(direction) {
         
-        jzt.debug.log('%s wishes to go %s.', owner.name, jzt.Direction.getName(direction));
         owner.move(direction);
 
         // If we are to go a number of times...

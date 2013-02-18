@@ -21,6 +21,8 @@ jzt.Script.prototype.executeTick = function() {
     
     if(this.isRunning()) {
         
+        var command;
+        
         // If we have a stored command, use it
         if(this._storedCommand) {
             command = this._storedCommand;
@@ -29,7 +31,7 @@ jzt.Script.prototype.executeTick = function() {
         // Otherwise fetch a new command
         else {
             var line = this.script[this.currentLine];
-            var command = this.parseLine(line, this.currentLine);   
+            command = this.parseLine(line, this.currentLine);   
         }
         
         if(command) {
@@ -78,9 +80,13 @@ jzt.Script.prototype.advanceLine = function() {
 
 jzt.Script.prototype.parseLine = function(line, lineNumber) {
     try {
-        return jzt.ScriptCommandFactory.create(line);
+        var result = jzt.ScriptCommandFactory.create(line);
+        if(!result) {
+            throw 'Unrecognized command.';
+        }
+        return result;
     }
     catch(error) {
-        alert('Syntax error in script "' + this.name + '"\nLine ' + lineNumber + '\n' + line + '\n' + error);
+        console.error('Syntax error in script \'%s\'\n> Line %d: \'%s\'\n> %s"', this.name, lineNumber, line, error);
     }
 }

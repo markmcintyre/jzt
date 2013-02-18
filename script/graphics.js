@@ -85,14 +85,12 @@ jzt.Graphics = function(game) {
         // Create sprites
         var tilesPerRow = this.width / instance.spriteSize.x;
         var tilesPerColumn = this.height / instance.spriteSize.y;
-        console.log('Tiles per row: %d, per col: %d', tilesPerRow, tilesPerColumn);
     
         for(var row = 0; row < tilesPerColumn; ++row) {
             for(var column = 0; column < tilesPerRow; ++column) {
             
                 var spritePoint = new jzt.Point(column * instance.spriteSize.x, row * instance.spriteSize.y);
                 var sprite = new jzt.Sprite(spritePoint, instance);
-                console.log('Sprite %d: %dx%d', instance.sprites.length, sprite.point.x, sprite.point.y);
                 instance.sprites.push(sprite);
             
             }
