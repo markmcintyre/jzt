@@ -14,21 +14,20 @@ jzt.commands.CommandResult = {
     REPEAT: 2
 };
 
-/**
- * {@code MovementExpression} is a representation of an expression that
- * calculates direction for movement.
+/*==================================================================
+ * START OF EXPRESSIONS
+ *=================================================================*/
+
+/*
+ * {@code DirectionExpression} is an expression that calculates a direction.
+ *
+ * @param tokens Tokens to be interpreted as this expression.
  */
-jzt.commands.MovementExpression = function(tokens) {
-    
-    // Establiash convenience accessors
-    this._directions = jzt.commands.MovementExpression.Directions;
-    this._modifiers = jzt.commands.MovementExpression.DirectionModifiers;
-    
-    this.tokens = tokens;
-    this.times = 1;
-    this._validate();
-    
-};
+jzt.commands.DirectionExpression = function(tokens) {
+    this._directions = jzt.commands.DirectionExpression.Directions;
+    this._modifiers = jzt.commands.DirectionExpression.Modifiers;
+    this._validate(tokens);
+}
 
 /**
  * Direction Modifier Enumerated Types
@@ -36,7 +35,7 @@ jzt.commands.MovementExpression = function(tokens) {
  * Each direction modifier has an associated token value, a display name, and a process function.
  * The process function takes a direction and returns a final, calculated direction value.
  */
-jzt.commands.MovementExpression.DirectionModifiers = {
+jzt.commands.DirectionExpression.Modifiers = {
     CW:   {tokenValue: 'CW',   name: 'Clockwise',              process: function(d) {return jzt.Direction.clockwise(d);}},
     CCW:  {tokenValue: 'CCW',  name: 'Counter-clockwise',      process: function(d) {return jzt.Direction.counterClockwise(d)}},
     OPP:  {tokenValue: 'OPP',  name: 'Opposite',               process: function(d) {return jzt.Direction.opposite(d);}},
@@ -49,7 +48,7 @@ jzt.commands.MovementExpression.DirectionModifiers = {
  * Each direction has an associated token value, a display name, and a process function.
  * The process function takes a JztObject and returns a final, calculated direction value.
  */
-jzt.commands.MovementExpression.Directions = {
+jzt.commands.DirectionExpression.Directions = {
     
     SEEK:  {tokenValue: 'SEEK',  name: 'Toward player',            process: function(o) {return o.playerDirection();}},
     FLOW:  {tokenValue: 'FLOW',  name: 'Current orientation',      process: function(o) {return o.orientation;}},
@@ -70,93 +69,55 @@ jzt.commands.MovementExpression.Directions = {
 
 };
 
-jzt.commands.MovementExpression.prototype._validate = function() {
+jzt.commands.DirectionExpression.prototype._validate = function(tokens) {
     
     // We will be forming our expression here
     this.validatedTokens = [];
-    
-    // Initialize validation flags
-    var concreteDirection = false;
-    var done = false;
-    
+
     // If no arguments were provided
-    if(this.tokens.length <= 0) {
+    if(tokens.length <= 0) {
         throw 'Movement expression is empty.';
     }
     
-    // For each of our arguments...
-    for(var index = 0; index < this.tokens.length; ++index) {
+    // While there are still tokens to process...
+    while(tokens.length > 0) {
         
-        // If we are not expecting more tokens...
-        if(done) {
-            throw 'Movement expression contains unexpected token: ' + this.tokens[index];
-        }
-        
-        var token = this.tokens[index].toUpperCase();
+        // Peek at our token
+        var token = tokens[0].toUpperCase();
         
         // If we have found a direction modifier...
         if(this._modifiers.hasOwnProperty(token)) {
-            
-            if(concreteDirection) {
-                throw 'Movement expression contains unexpected modifier token after direction: ' + token;
-            }
-            
-            concreteDirection = false;
             this.validatedTokens.push(token);
-            
+            tokens.shift();
         }
         
         // If we have found a direction
         else if(this._directions.hasOwnProperty(token)) {
-            
-            if(concreteDirection) {
-                throw 'Movement expression contains unexpected additional direction: ' + token;
-            }
-            
-            concreteDirection = true;
             this.validatedTokens.push(token);
-            
+            tokens.shift();
+            break;
         }
         
-        // If we have found any other token
         else {
-            
-            // Try to parse the token as a number
-            var times = parseInt(token);
-            
-            // If that failed, there was an error
-            if(times == NaN) {
-                throw 'Movement expression contains unexpected token: ' + token;
-            }
-            
-            // If no concrete direction was encountered by now, that's an error
-            if(!concreteDirection) {
-                throw 'Movement expression does not contain a direction.';
-            }
-            
-            // Store our repeat times
-            this.times = times;
-
-            // We do not expect tokens after a number
-            done = true;
-                
+            throw 'Unexpected token in movement expression: ' + token;
         }
             
     }
+    
 };
 
 /**
- * Evaluates this {@code MovementExpression}'s tokens and returns
+ * Evaluates this {@code DirectionExpression}'s validated tokens and returns
  * a Direction instance indicating the result of the expression.
  *
  * @param owner A JztObject on which this command is acting
  * @return a Direction
  */
-jzt.commands.MovementExpression.prototype.evaluate = function(owner) {
+jzt.commands.DirectionExpression.prototype.evaluate = function(owner) {
     return this._evaluate(owner, 0);
 };
 
-jzt.commands.MovementExpression.prototype._evaluate = function(owner, tokenIndex) {
+jzt.commands.DirectionExpression.prototype._evaluate = function(owner, tokenIndex) {
     
     // Get our current validated token
     var token = this.validatedTokens[tokenIndex];
@@ -175,38 +136,97 @@ jzt.commands.MovementExpression.prototype._evaluate = function(owner, tokenIndex
     
 };
 
-/**
- *{@code SayCommand} is a Command instance that outputs text to the
- * screen.
+/*
+ * OptionalNumberExpression
  */
-jzt.commands.SayCommand = function(arguments) {
+jzt.commands.OptionalNumberExpression = function(tokens, defaultValue) {
     
-    if(arguments.length != 1) {
-        throw 'Say command expects a single argument.';
+    this.value = defaultValue;
+    
+    if(tokens.length > 0) {
+    
+        var value = parseInt(tokens[0]);
+        
+        if(value != NaN) {
+            this.value = value;
+            tokens.shift();
+        }
+        
     }
-    
-    var text = arguments[0];
-    if(text.charAt(0) != '"' || text.charAt(text.length-1) != '"') {
-        throw 'Text for the say command must be in quotes.';
-    }
-    
-    this.text = arguments[0].substring(1, text.length-1);
-    this.text = this.text.replace(/\\/g, '');
     
 };
 
-jzt.commands.SayCommand.prototype.execute = function(owner) {
-    jzt.debug.log('%s says: %s', owner.name, this.text);
-    return jzt.commands.CommandResult.CONTINUE;
+jzt.commands.OptionalNumberExpression.prototype.evaluate = function() {
+    return this.value;
 };
+
+jzt.commands.remainingTokens = function(tokens) {
+    if(tokens.length > 0) {
+        throw 'Unexpected token: ' + tokens[0];
+    }
+}
+
+/*==================================================================
+ * START OF COMMANDS
+ *=================================================================*/
+
+ /*
+  * END command
+  */
+ jzt.commands.EndCommand = function(tokens) {
+     if(tokens.length > 0) {
+         throw 'End command does not take arguments.';
+     }
+ };
+
+ jzt.commands.EndCommand.prototype.execute = function(owner) {
+     jzt.debug.log('%s has stopped its script.', owner.name);
+     owner.stopScript();
+     return jzt.commands.CommandResult.NORMAL;
+ };
+
+ /**
+  * {@code GoCommand} is like the {@code MoveCommand} except it will
+  * simply ignore commands that make an owner object walk into a wall
+  * as opposed to waiting until its free.
+  */
+ jzt.commands.GoCommand = function(tokens) {
+     
+     this.expression = new jzt.commands.DirectionExpression(tokens);
+     this.times = new jzt.commands.OptionalNumberExpression(tokens, 1).evaluate();
+     jzt.commands.remainingTokens(tokens);
+     
+ };
+
+ jzt.commands.GoCommand.prototype.execute = function(owner) {
+
+     // Get our direction from our expression
+     var direction = this.expression.evaluate(owner);
+
+     // If a direction is available
+     if(direction) {
+
+         owner.move(direction);
+
+         // If we are to go a number of times...
+         if(--this.times > 0) {
+             return jzt.commands.CommandResult.REPEAT;
+         }
+
+     }
+
+     return jzt.commands.CommandResult.NORMAL;
+
+ };
 
 /**
  * {@code MoveCommand} is a Command capable of moving an owner object
  * on a game board.
  */
 jzt.commands.MoveCommand = function(tokens) {
-    this.movementExpression = new jzt.commands.MovementExpression(tokens);
-    this.times = this.movementExpression.times;
+    this.expression = new jzt.commands.DirectionExpression(tokens);
+    this.times = new jzt.commands.OptionalNumberExpression(tokens, 1);
+    jzt.commands.remainingTokens(tokens);
 };
 
 jzt.commands.MoveCommand.prototype.execute = function(owner) {
@@ -217,7 +237,7 @@ jzt.commands.MoveCommand.prototype.execute = function(owner) {
     if(!this.stuck) {
         
         // Evaluate our expression into a direction
-        direction = this.movementExpression.evaluate(owner);
+        direction = this.expression.evaluate(owner);
         
     }
     
@@ -254,61 +274,51 @@ jzt.commands.MoveCommand.prototype.execute = function(owner) {
 };
 
 /**
- * {@code GoCommand} is like the {@code MoveCommand} except it will
- * simply ignore commands that make an owner object walk into a wall
- * as opposed to waiting until its free.
+ *{@code SayCommand} is a Command instance that outputs text to the
+ * screen.
  */
-jzt.commands.GoCommand = function(tokens) {
-    this.movementExpression = new jzt.commands.MovementExpression(tokens);
-    this.times = this.movementExpression.times;
+jzt.commands.SayCommand = function(tokens) {
+    
+    if(tokens.length != 1) {
+        throw 'Say command expects a single argument.';
+    }
+    
+    var text = tokens[0];
+    if(text.charAt(0) != '"' || text.charAt(text.length-1) != '"') {
+        throw 'Text for the say command must be in quotes.';
+    }
+    
+    this.text = tokens[0].substring(1, text.length-1);
+    this.text = this.text.replace(/\\/g, '');
+    
 };
 
-jzt.commands.GoCommand.prototype.execute = function(owner) {
-    
-    // Get our direction from our expression
-    var direction = this.movementExpression.evaluate(owner);
-    
-    // If a direction is available
-    if(direction) {
-        
-        owner.move(direction);
-
-        // If we are to go a number of times...
-        if(--this.times > 0) {
-            return jzt.commands.CommandResult.REPEAT;
-        }
-        
-    }
-
-    return jzt.commands.CommandResult.NORMAL;
-    
+jzt.commands.SayCommand.prototype.execute = function(owner) {
+    jzt.debug.log('%s says: %s', owner.name, this.text);
+    return jzt.commands.CommandResult.CONTINUE;
 };
 
 /*
- * END command
+ * STAND command
  */
-jzt.commands.EndCommand = function(arguments) {
-    if(arguments.length > 0) {
-        throw 'End command does not take arguments.';
-    }
+jzt.commands.StandCommand = function(tokens) {
+    jzt.commands.remainingTokens(tokens);
 };
 
-jzt.commands.EndCommand.prototype.execute = function(owner) {
-    jzt.debug.log('%s has stopped its script.', owner.name);
-    owner.stopScript();
-    return jzt.commands.CommandResult.NORMAL;
+jzt.commands.StandCommand.prototype.execute = function(owner) {
+    owner.walkDirection = undefined;
 };
 
 /* 
  * WAIT command
  */
-jzt.commands.WaitCommand = function(arguments) {
+jzt.commands.WaitCommand = function(tokens) {
     
-    if(arguments.length != 1) {
+    if(tokens.length != 1) {
         throw 'Wait command expects a number of cycles to wait.';
     }
     
-    var cycles = parseInt(arguments[0], 10);
+    var cycles = parseInt(tokens[0], 10);
     if(cycles == NaN) {
         throw 'Wait command expects a number as its cycle argument.';
     }
@@ -329,19 +339,33 @@ jzt.commands.WaitCommand.prototype.execute = function(owner) {
     
 };
 
+/*
+ * WALK COMMAND
+ */
+jzt.commands.WalkCommand = function(tokens) {
+    this.expression = new jzt.commands.DirectionExpression(tokens);
+    jzt.commands.remainingTokens(tokens);
+};
+
+jzt.commands.WalkCommand.prototype.execute = function(owner) {
+    
+    // Evaluate our expression into a direction
+    var direction = this.expression.evaluate(owner);
+    
+    // Assign our walking direction
+    owner.walkDirection = direction;
+    
+};
+
+/*==================================================================
+ * SCRIPT COMMAND FACTORY
+ *=================================================================*/
+
 /**
  * {@code ScriptCommandFactory} is a factory object capable of creating
  * new Command instances from a given line of script text.
  */
 jzt.ScriptCommandFactory = jzt.ScriptCommandFactory || {};
-
-jzt.ScriptCommandFactory._commandMap = {
-    SAY: jzt.commands.SayCommand,
-    MOVE: jzt.commands.MoveCommand,
-    GO: jzt.commands.GoCommand,
-    END: jzt.commands.EndCommand,
-    WAIT: jzt.commands.WaitCommand
-};
 
 jzt.ScriptCommandFactory.create = function(line) {
     
@@ -390,4 +414,14 @@ jzt.ScriptCommandFactory._parseCommand = function(tokens) {
     return undefined;
 
   
+};
+
+jzt.ScriptCommandFactory._commandMap = {
+    END: jzt.commands.EndCommand,
+    GO: jzt.commands.GoCommand,
+    MOVE: jzt.commands.MoveCommand,
+    SAY: jzt.commands.SayCommand,
+    STAND: jzt.commands.StandCommand,
+    WAIT: jzt.commands.WaitCommand,
+    WALK: jzt.commands.WalkCommand
 };

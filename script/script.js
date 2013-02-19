@@ -41,6 +41,7 @@ jzt.Script.prototype.executeTick = function() {
             switch(result) {
         
                 // Normal execution, advance line
+                case undefined:
                 case jzt.commands.CommandResult.NORMAL:
                     this.advanceLine();
                     break;

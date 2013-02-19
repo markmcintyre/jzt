@@ -48,8 +48,9 @@
 								name: 'firstScript',
 								lines: [
 									'#wait 10',
+									'#walk w',
 									'#say "Hello, world!"',
-									'#go randf 1000',
+									/*'#go randf 1000',
 									'#move e 5',
 									'#move ccw cw opp opp n 4',
 									'#say "\\"Hmmm...\\", he thinks."',
@@ -58,8 +59,9 @@
 									'#move w',
 									'#move south 2',
 									'#move w',
-									'#move w',
-									'#wait 20',
+									'#move w',*/
+									'#wait 3',
+									'#stand',
 									'#move e',
 									'#end',
 									'#say "This won\'t \\"happen."'
@@ -71,11 +73,11 @@
 								name: 'First Object',
 								x: 8,
 								y: 8,
-								speed: 60,
+								speed: 3,
 								spriteIndex: 1,
 								foregroundColor: 'brightMagenta',
 								script: 'firstScript'
-							},
+							}/*,
 							{
 								name: 'Second Object',
 								x: 8,
@@ -85,7 +87,7 @@
 								backgroundColor: 'brown',
 								foregroundColor: 'brightGreen',
 								script: 'firstScript'
-							}
+							}*/
 						]
 						
 					}

@@ -7,6 +7,7 @@ jzt.JztObject = function(objectData) {
     this.scriptName = objectData.script;
     this.setSpeed(objectData.speed);
     this.pushable = objectData.pushable || undefined;
+    this.walkDirection = undefined;
     
     this.point = new jzt.Point(objectData.x || -1, objectData.y || -1);
     
@@ -105,11 +106,19 @@ jzt.JztObject.prototype.setSpeed = function(speed) {
     this._ticksPerCycle = 1000 / speed;
 };
     
+jzt.JztObject.prototype.walk = function() {
+    if(this.walkDirection && !this.isBlocked(this.walkDirection)) {
+        jzt.debug.log('%s is walking %s', this.name, jzt.Direction.getName(this.walkDirection));
+        this.move(this.walkDirection);
+    }
+};
+    
 jzt.JztObject.prototype.update = function() {
         
     if(this.hasScript() && this._ticksPerCycle && Date.now() > this._nextTick) {
             
         this.script.executeTick();
+        this.walk();
         this._nextTick = Date.now() + this._ticksPerCycle;
             
     }
