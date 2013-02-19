@@ -8,6 +8,7 @@ jzt.JztObject = function(objectData) {
     this.setSpeed(objectData.speed);
     this.pushable = objectData.pushable || undefined;
     this.walkDirection = undefined;
+    this.locked = false;
     
     this.point = new jzt.Point(objectData.x || -1, objectData.y || -1);
     
@@ -79,6 +80,10 @@ jzt.JztObject.prototype.isBlocked = function(direction) {
     }
     
 };
+
+jzt.JztObject.prototype.setLocked = function(locked) {
+    this.locked = locked;
+};
     
 jzt.JztObject.prototype.move = function(direction) {
     if(this.board) {
@@ -88,8 +93,24 @@ jzt.JztObject.prototype.move = function(direction) {
 };
     
 jzt.JztObject.prototype.addMessage = function(message) {
-    this._messageQueue.push(message);
+    if(this.hasScript() && !this.locked) {
+
+        // We disallow duplicate messages in a row
+        if(this._messageQueue[this._messageQueue.length-1] != message) {
+            this._messageQueue.push(message);
+            this._nextTick = Date.now();
+        }
+
+    }
 };
+
+jzt.JztObject.prototype.hasMessage = function() {
+    return this._messageQueue.length > 0;
+}
+
+jzt.JztObject.prototype.getMessage = function() {
+    return this._messageQueue.shift();
+}
     
 jzt.JztObject.prototype.setScriptData = function(scriptData) {
     
@@ -107,9 +128,15 @@ jzt.JztObject.prototype.setSpeed = function(speed) {
 };
     
 jzt.JztObject.prototype.walk = function() {
-    if(this.walkDirection && !this.isBlocked(this.walkDirection)) {
-        jzt.debug.log('%s is walking %s', this.name, jzt.Direction.getName(this.walkDirection));
-        this.move(this.walkDirection);
+    if(this.walkDirection) {
+        
+        if(this.isBlocked(this.walkDirection)) {
+            this.addMessage('THUD');
+        }
+        else {
+            jzt.debug.log('%s is walking %s', this.name, jzt.Direction.getName(this.walkDirection));
+            this.move(this.walkDirection);
+        }
     }
 };
     

@@ -2,7 +2,7 @@ window.jzt = window.jzt || {};
 
 jzt.Player = function(game) {
     
-    this.PLAYER_SPEED = 10;
+    this.PLAYER_SPEED = 9;
     
     this._nextMove = Date.now();
     
@@ -21,6 +21,12 @@ jzt.Player.prototype.isWillingToMove = function(direction) {
 jzt.Player.prototype.move = function(direction) {
     
     var newLocation = this.point.add(direction);
+    
+    var tile = this.game.currentBoard.getTile(newLocation);
+    if(tile) {
+        tile.addMessage('TOUCH');
+    }
+    
     var success = this.game.currentBoard.moveTile(this.point, newLocation);
 
     this._nextMove = Date.now() + 1000 / this.PLAYER_SPEED;

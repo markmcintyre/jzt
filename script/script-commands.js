@@ -160,6 +160,26 @@ jzt.commands.OptionalNumberExpression.prototype.evaluate = function() {
     return this.value;
 };
 
+/*
+ * RequiredLabelExpression
+ */
+jzt.commands.RequiredLabelExpression = function(tokens) {
+  
+    if(tokens.length <= 0) {
+        throw 'A label was expected.';
+    }
+    
+    this.label = tokens.shift();
+    
+};
+
+jzt.commands.RequiredLabelExpression.prototype.evaluate = function() {
+    return this.label;
+};
+
+/*
+ * Remaining Tokens
+ */
 jzt.commands.remainingTokens = function(tokens) {
     if(tokens.length > 0) {
         throw 'Unexpected token: ' + tokens[0];
@@ -180,7 +200,6 @@ jzt.commands.remainingTokens = function(tokens) {
  };
 
  jzt.commands.EndCommand.prototype.execute = function(owner) {
-     jzt.debug.log('%s has stopped its script.', owner.name);
      owner.stopScript();
      return jzt.commands.CommandResult.NORMAL;
  };
@@ -218,6 +237,18 @@ jzt.commands.remainingTokens = function(tokens) {
      return jzt.commands.CommandResult.NORMAL;
 
  };
+
+/*
+ * Lock Command
+ */
+jzt.commands.LockCommand = function(tokens) {
+    jzt.commands.remainingTokens(tokens);
+};
+
+jzt.commands.LockCommand.prototype.execute = function(owner) {
+    owner.setLocked(true);
+    return jzt.commands.CommandResult.CONTINUE;
+};
 
 /**
  * {@code MoveCommand} is a Command capable of moving an owner object
@@ -273,6 +304,27 @@ jzt.commands.MoveCommand.prototype.execute = function(owner) {
     
 };
 
+/* 
+ * Nothing Command
+ */
+jzt.commands.NothingCommand = function() {};
+jzt.commands.NothingCommand.prototype.execute = function() {
+    return jzt.commands.CommandResult.CONTINUE;
+};
+
+/*
+ * Restore Command
+ */
+jzt.commands.RestoreCommand = function(tokens) {
+    this.label = new jzt.commands.RequiredLabelExpression(tokens).evaluate();
+    jzt.commands.remainingTokens(tokens);
+};
+
+jzt.commands.RestoreCommand.prototype.execute = function(owner) {
+    owner.script.restoreLabel(this.label);
+    return jzt.commands.CommandResult.CONTINUE;
+};
+
 /**
  *{@code SayCommand} is a Command instance that outputs text to the
  * screen.
@@ -309,6 +361,18 @@ jzt.commands.StandCommand.prototype.execute = function(owner) {
     owner.walkDirection = undefined;
 };
 
+/*
+ * Unlock Command
+ */
+jzt.commands.UnlockCommand = function(tokens) {
+    jzt.commands.remainingTokens(tokens);
+};
+
+jzt.commands.UnlockCommand.prototype.execute = function(owner) {
+    owner.setLocked(false);
+    return jzt.commands.CommandResult.CONTINUE;
+};
+
 /* 
  * WAIT command
  */
@@ -328,8 +392,6 @@ jzt.commands.WaitCommand = function(tokens) {
 };
 
 jzt.commands.WaitCommand.prototype.execute = function(owner) {
-    
-    jzt.debug.log('%s is waiting patiently for %d cycles', owner.name, this.cycles);
     
     if(--this.cycles > 0) {
         return jzt.commands.CommandResult.REPEAT;
@@ -357,6 +419,19 @@ jzt.commands.WalkCommand.prototype.execute = function(owner) {
     
 };
 
+/*
+ * Zap Command
+ */
+jzt.commands.ZapCommand = function(tokens) {
+    this.label = new jzt.commands.RequiredLabelExpression(tokens).evaluate();
+    jzt.commands.remainingTokens(tokens);
+};
+
+jzt.commands.ZapCommand.prototype.execute = function(owner) {
+    owner.script.zapLabel(this.label);
+    return jzt.commands.CommandResult.CONTINUE;
+};
+
 /*==================================================================
  * SCRIPT COMMAND FACTORY
  *=================================================================*/
@@ -370,7 +445,6 @@ jzt.ScriptCommandFactory = jzt.ScriptCommandFactory || {};
 jzt.ScriptCommandFactory.create = function(line) {
     
     var tokens = line.match(/^[#:'!]?|\w+|"(?:\\"|[^"])+"/g);
-    jzt.debug.log(tokens);
     
     // If we successfully found some tokens...
     if(tokens.length > 0) {
@@ -382,6 +456,8 @@ jzt.ScriptCommandFactory.create = function(line) {
         switch(lineType) {
             case '#':
                 return jzt.ScriptCommandFactory._parseCommand(tokens);
+            case ':':
+                return new jzt.commands.NothingCommand();
         }
         
     }
@@ -419,9 +495,13 @@ jzt.ScriptCommandFactory._parseCommand = function(tokens) {
 jzt.ScriptCommandFactory._commandMap = {
     END: jzt.commands.EndCommand,
     GO: jzt.commands.GoCommand,
+    LOCK: jzt.commands.LockCommand,
     MOVE: jzt.commands.MoveCommand,
+    RESTORE: jzt.commands.RestoreCommand,
     SAY: jzt.commands.SayCommand,
     STAND: jzt.commands.StandCommand,
+    UNLOCK: jzt.commands.UnlockCommand,
     WAIT: jzt.commands.WaitCommand,
-    WALK: jzt.commands.WalkCommand
+    WALK: jzt.commands.WalkCommand,
+    ZAP: jzt.commands.ZapCommand
 };
