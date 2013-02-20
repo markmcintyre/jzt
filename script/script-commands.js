@@ -201,7 +201,7 @@ jzt.commands.RequiredStringExpression.prototype.evaluate = function() {
 /*
  * RequiredNumberExpression
  */
-jzt.commands.RequiredNumberExpression = function(tokens) {
+jzt.commands.RequiredNumberExpression = function(tokens, max) {
     
     var token = tokens.shift();
 
@@ -213,6 +213,10 @@ jzt.commands.RequiredNumberExpression = function(tokens) {
     
     if(value == NaN) {
         throw 'A number was expected.';
+    }
+    
+    if(max && value > max) {
+        throw 'A number equal to or less than ' + max + ' was expected';
     }
     
     this.number = value;
@@ -235,6 +239,18 @@ jzt.commands.remainingTokens = function(tokens) {
 /*==================================================================
  * START OF COMMANDS
  *=================================================================*/
+
+/*
+ * CHAR command
+ */
+jzt.commands.CharCommand = function(tokens) {
+    this.char = new jzt.commands.RequiredNumberExpression(tokens, 255).evaluate();
+    jzt.commands.remainingTokens(tokens);
+};
+
+jzt.commands.CharCommand.prototype.execute = function(owner) {
+    owner.spriteIndex = this.char;
+};
 
 /*
  * DIE command
@@ -527,6 +543,7 @@ jzt.ScriptCommandFactory._parseCommand = function(tokens) {
 };
 
 jzt.ScriptCommandFactory._commandMap = {
+    CHAR: jzt.commands.CharCommand,
     DIE: jzt.commands.DieCommand,
     END: jzt.commands.EndCommand,
     GO: jzt.commands.GoCommand,
