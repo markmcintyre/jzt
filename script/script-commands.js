@@ -178,6 +178,52 @@ jzt.commands.RequiredLabelExpression.prototype.evaluate = function() {
 };
 
 /*
+ * RequiredStringExpression
+ */
+jzt.commands.RequiredStringExpression = function(tokens) {
+
+    var token = tokens.shift();
+    if(!token || token.charAt(0) != '"' || token.charAt(token.length-1) != '"') {
+        throw 'A string was expected';
+    }
+    
+    token = token.substring(1, token.length-1);
+    token = token.replace(/\\/g, '');
+    
+    this.string = token;
+    
+};
+
+jzt.commands.RequiredStringExpression.prototype.evaluate = function() {
+    return this.string;
+};
+
+/*
+ * RequiredNumberExpression
+ */
+jzt.commands.RequiredNumberExpression = function(tokens) {
+    
+    var token = tokens.shift();
+
+    if(!token) {
+        throw 'A number was expected.';
+    }
+    
+    var value = parseInt(token, 10);
+    
+    if(value == NaN) {
+        throw 'A number was expected.';
+    }
+    
+    this.number = value;
+    
+};
+
+jzt.commands.RequiredNumberExpression.prototype.evaluate = function() {
+    return this.number;
+};
+
+/*
  * Remaining Tokens
  */
 jzt.commands.remainingTokens = function(tokens) {
@@ -190,13 +236,22 @@ jzt.commands.remainingTokens = function(tokens) {
  * START OF COMMANDS
  *=================================================================*/
 
+/*
+ * DIE command
+ */
+jzt.commands.DieCommand = function(tokens) {
+    jzt.commands.remainingTokens(tokens);
+};
+
+jzt.commands.DieCommand.prototype.execute = function(owner) {
+    owner.die();
+};
+
  /*
   * END command
   */
- jzt.commands.EndCommand = function(tokens) {
-     if(tokens.length > 0) {
-         throw 'End command does not take arguments.';
-     }
+jzt.commands.EndCommand = function(tokens) {
+    jzt.commands.remainingTokens(tokens);
  };
 
  jzt.commands.EndCommand.prototype.execute = function(owner) {
@@ -330,19 +385,8 @@ jzt.commands.RestoreCommand.prototype.execute = function(owner) {
  * screen.
  */
 jzt.commands.SayCommand = function(tokens) {
-    
-    if(tokens.length != 1) {
-        throw 'Say command expects a single argument.';
-    }
-    
-    var text = tokens[0];
-    if(text.charAt(0) != '"' || text.charAt(text.length-1) != '"') {
-        throw 'Text for the say command must be in quotes.';
-    }
-    
-    this.text = tokens[0].substring(1, text.length-1);
-    this.text = this.text.replace(/\\/g, '');
-    
+    this.text = new jzt.commands.RequiredStringExpression(tokens).evaluate();
+    jzt.commands.remainingTokens(tokens);
 };
 
 jzt.commands.SayCommand.prototype.execute = function(owner) {
@@ -377,18 +421,8 @@ jzt.commands.UnlockCommand.prototype.execute = function(owner) {
  * WAIT command
  */
 jzt.commands.WaitCommand = function(tokens) {
-    
-    if(tokens.length != 1) {
-        throw 'Wait command expects a number of cycles to wait.';
-    }
-    
-    var cycles = parseInt(tokens[0], 10);
-    if(cycles == NaN) {
-        throw 'Wait command expects a number as its cycle argument.';
-    }
-    
-    this.cycles = cycles;
-    
+    this.cycles = new jzt.commands.RequiredNumberExpression(tokens).evaluate();
+    jzt.commands.remainingTokens(tokens);
 };
 
 jzt.commands.WaitCommand.prototype.execute = function(owner) {
@@ -444,7 +478,7 @@ jzt.ScriptCommandFactory = jzt.ScriptCommandFactory || {};
 
 jzt.ScriptCommandFactory.create = function(line) {
     
-    var tokens = line.match(/^[#:'!]?|\w+|"(?:\\"|[^"])+"/g);
+    var tokens = line.match(/\w+|"(?:\\"|[^"])+"|[^\s]/g);
     
     // If we successfully found some tokens...
     if(tokens.length > 0) {
@@ -493,6 +527,7 @@ jzt.ScriptCommandFactory._parseCommand = function(tokens) {
 };
 
 jzt.ScriptCommandFactory._commandMap = {
+    DIE: jzt.commands.DieCommand,
     END: jzt.commands.EndCommand,
     GO: jzt.commands.GoCommand,
     LOCK: jzt.commands.LockCommand,

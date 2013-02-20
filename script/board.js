@@ -175,7 +175,8 @@ jzt.Board.prototype.addMessage = function(message) {
     
 jzt.Board.prototype.update = function() {
         
-    for(var index = 0; index < this.jztObjects.length; ++index) {
+    // Iterate backwards in case an object needs to be removed
+    for(var index = this.jztObjects.length-1; index >= 0; --index) {
         
         var jztObject = this.jztObjects[index];
         
@@ -192,8 +193,29 @@ jzt.Board.prototype.update = function() {
         // Update the jztObject
         jztObject.update();
         
+        // If our object died, remove it now
+        if(jztObject.isDead) {
+            this.removeJztObject(index);
+        }
+        
     }
         
+};
+
+jzt.Board.prototype.removeJztObject = function(index) {
+    
+    var jztObject = this.jztObjects[index];
+    
+    if(jztObject) {
+        
+        // Update our tile to contain nothing
+        this.setTile(jztObject.point, undefined);
+    
+        // Remove our object from our array
+        this.jztObjects.splice(index,1);
+        
+    }
+    
 };
     
 jzt.Board.prototype.render = function(c) {

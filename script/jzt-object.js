@@ -121,6 +121,10 @@ jzt.JztObject.prototype.setScriptData = function(scriptData) {
     }
     
 };
+
+jzt.JztObject.prototype.die = function() {
+    this.isDead = true;
+};
     
 jzt.JztObject.prototype.setSpeed = function(speed) {
     speed = speed ? speed : 10;
@@ -144,8 +148,8 @@ jzt.JztObject.prototype.update = function() {
         
     if(this.hasScript() && this._ticksPerCycle && Date.now() > this._nextTick) {
             
-        this.script.executeTick();
         this.walk();
+        this.script.executeTick();
         this._nextTick = Date.now() + this._ticksPerCycle;
             
     }
