@@ -8,6 +8,7 @@
 	
 	<script type="text/javascript">
 		
+		// Sequence
 		var s = new jzt.parser.Sequence();
 		s.add(new jzt.parser.NumberTerminal());
 		s.add(new jzt.parser.WordTerminal())
@@ -31,6 +32,23 @@
 		console.assert(result.stack[0] == '100');
 		console.assert(result.stack[1] == 'hello');
 		console.assert(result.index == 2);
+		
+		// Repetition
+		var r = new jzt.parser.Repetition(new jzt.parser.WordTerminal());
+		
+		a = new jzt.parser.Assembly('hello world this is Mark');
+		result = r.bestMatch(a);
+		console.assert(result.tokens.length == 5);
+		console.assert(result.stack.length == 5);
+		
+		a = new jzt.parser.Assembly('Hello world this is 100 Marks');
+		result = r.bestMatch(a);
+		console.assert(result.tokens.length == 6);
+		console.assert(result.stack.length == 4);
+		console.assert(result.stack[0] == 'Hello');
+		console.assert(result.stack[1] == 'world');
+		console.assert(result.stack[2] == 'this');
+		console.assert(result.stack[3] == 'is');
 		
 		console.info("All done!");
 	

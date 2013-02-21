@@ -35,8 +35,8 @@ jzt.parser.Assembly.prototype.next = function() {
 /*
  * Parser
  */
-jzt.parser.Parser = function(assembler) {
-    this.assembler = assembler;
+jzt.parser.Parser = function() {
+    this.assembler = undefined;
 };
 
 jzt.parser.Parser.prototype.match = function(assemblies) {
@@ -76,7 +76,7 @@ jzt.parser.Parser.prototype.findBestAssembly = function(assemblies) {
             bestAssembly = assembly;
         }
         else if(assembly.index > bestAssembly.index) {
-            bestAssebly = assembly;
+            bestAssembly = assembly;
         }
     }
     
@@ -84,11 +84,58 @@ jzt.parser.Parser.prototype.findBestAssembly = function(assemblies) {
     
 };
 
+jzt.parser.Parser.prototype._cloneAssemblies = function(assemblies) {
+  
+  var result = [];
+  
+  for(var index = 0; index < assemblies.length; ++index) {
+      var assembly = assemblies[index];
+      result.push(assembly.clone());
+  }
+  
+  return result;
+    
+};
+
+/*
+ * Repetition
+ */
+jzt.parser.Repetition = function(subParser) {
+    if(!subParser) {
+        throw 'Subparser is required.';
+    }
+    this.subParser = subParser;
+    this.assembler = undefined;
+    this.preAssembler = undefined;
+};
+jzt.parser.Repetition.prototype = new jzt.parser.Parser();
+jzt.parser.Repetition.prototype.constructor = jzt.parser.Reptition;
+
+jzt.parser.Repetition.prototype.match = function(assemblies) {
+    
+    // If we have a preassember, assemble now
+    if(this.preAssembler != undefined) {
+        for(var index = 0; index < assemblies.length; ++index) {
+            var assembly = assemblies[index];
+            this.preAssembler.assemble(assembly);
+        }
+    }
+    
+    var result = this._cloneAssemblies(assemblies);
+    while(assemblies.length > 0) {
+        assemblies = this.subParser.matchAndAssemble(assemblies);
+        result = result.concat(assemblies);
+    }
+    
+    return result;
+    
+};
+
 /*
  * CollectionParser
  */
-jzt.parser.CollectionParser = function(assembler) {
-    this.assembler = assembler;
+jzt.parser.CollectionParser = function() {
+    this.assembler = undefined;
     this.subParsers = [];
 }
 jzt.parser.CollectionParser.prototype = new jzt.parser.Parser();
@@ -101,11 +148,11 @@ jzt.parser.CollectionParser.prototype.add = function(subParser) {
 /*
  * Sequence
  */
-jzt.parser.Sequence = function(assembler) {
-    this.assembler = assembler;
+jzt.parser.Sequence = function() {
+    this.assembler = undefined;
 };
 jzt.parser.Sequence.prototype = new jzt.parser.CollectionParser();
-jzt.parser.Sequence.constructor = jzt.parser.Sequence;
+jzt.parser.Sequence.prototype.constructor = jzt.parser.Sequence;
 
 jzt.parser.Sequence.prototype.match = function(assemblies) {
     
