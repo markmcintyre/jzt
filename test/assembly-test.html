@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<head>
+	<title>Assembly Test</title>
+</head>
+<body>
+	
+	<script type="text/javascript" src="../script/parser.js"></script>
+	
+	<script type="text/javascript">
+	
+		var a1 = new jzt.parser.Assembly("the man at the beach");
+		console.assert(a1.tokens.length == 5);
+		
+		var a2 = new jzt.parser.Assembly("\"Hello, world!\", said the man at the beach.");
+		console.assert(a2.tokens.length == 9);
+		console.assert(a2.tokens[1] == ',');
+		console.assert(a2.tokens[8] == '.');
+		
+		var a3 = new jzt.parser.Assembly("one two three\n\nfour \rfive\r\n six");
+		console.assert(a3.tokens.length == 9);
+		
+		console.info("All done!");
+	
+	</script>
+	
+</body>

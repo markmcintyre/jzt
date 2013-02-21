@@ -6,7 +6,7 @@ jzt.parser = jzt.parser || {};
  */
 jzt.parser.Assembly = function(text) {
     
-    this.tokens = text != undefined ? text.match(/\w+|"(?:\\"|[^"])+"|[^\s]|[\n\r]/g) : [];
+    this.tokens = text != undefined ? text.match(/\w+|"(?:\\"|[^"])+"|[^\s]|\n/g) : [];
     this.index = 0;
     this.stack = [];
     
@@ -79,6 +79,11 @@ jzt.parser.Parser.prototype.findBestAssembly = function(assemblies) {
     return bestAssembly;
     
 };
+
+/*
+ * Sequence
+ */
+
 
 /*
  * Terminal
@@ -169,4 +174,14 @@ jzt.parser.WordTerminal.prototype.qualifies = function(token) {
         return token.match(/^[^\d\s][\w]*$/) != null;
     }
     return false;
+};
+
+/*
+ * NewLineTerminal
+ */
+jzt.parser.NewLineTerminal = function(){};
+jzt.parser.NewLineTerminal.prototype = new jzt.parser.Terminal();
+jzt.parser.NewLineTerminal.prototype.constructor = jzt.parser.NewLineTerminal;
+jzt.parser.NewLineTerminal.prototype.qualifies = function(token) {
+    return token === '\n';
 };

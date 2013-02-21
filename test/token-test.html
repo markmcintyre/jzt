@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<head>
+	<title>Parser Test</title>
+</head>
+<body>
+	
+	<script type="text/javascript" src="../script/parser.js"></script>
+	
+	<script type="text/javascript">
+	
+		var number = new jzt.parser.NumberTerminal();
+		console.assert(number.qualifies("100") == true);
+		console.assert(number.qualifies("abs") == false);
+		console.assert(number.qualifies(undefined) == false);
+		
+		var literal = new jzt.parser.LiteralTerminal("hello");
+		console.assert(literal.qualifies("hello") == true);
+		console.assert(literal.qualifies("Hello") == true);
+		console.assert(literal.qualifies("HeLlO") == true);
+		console.assert(literal.qualifies(undefined) == false);
+		
+		var caseLiteral = new jzt.parser.LiteralTerminal("hello", true);
+		console.assert(caseLiteral.qualifies("hello") == true);
+		console.assert(caseLiteral.qualifies("Hello") == false);
+		console.assert(caseLiteral.qualifies(undefined) == false);
+
+		var word = new jzt.parser.WordTerminal();
+		console.assert(word.qualifies("hello") == true);
+		console.assert(word.qualifies("hello world") == false);
+		console.assert(word.qualifies("hello!") == false);
+		console.assert(word.qualifies("\"hello\"") == false);
+		console.assert(word.qualifies("hello1") == true);
+		console.assert(word.qualifies("1hello") == false);
+		console.assert(word.qualifies("_hello") == true);
+		console.assert(word.qualifies(" hello") == false);
+		console.assert(word.qualifies("a") == true);
+		console.assert(word.qualifies("") == false);
+		console.assert(word.qualifies(" ") == false);
+		console.assert(word.qualifies("1") == false);
+		console.assert(word.qualifies(undefined) == false);
+		
+		var nl = new jzt.parser.NewLineTerminal();
+		console.assert(nl.qualifies("\r") == false);
+		console.assert(nl.qualifies("\n") == true);
+		console.assert(nl.qualifies(" ") == false);
+		console.assert(nl.qualifies(undefined) == false);
+	
+		console.log("All done!");
+	
+	</script>
+	
+</body>
