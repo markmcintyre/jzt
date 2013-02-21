@@ -17,7 +17,7 @@ jzt.parser.Assembly.prototype.clone = function() {
     result.tokens = this.tokens.slice(0);
     result.index = 0;
     result.stack = this.stack.slice(0);
-    
+    return result;
 };
 
 jzt.parser.Assembly.prototype.peek = function() {
@@ -28,11 +28,15 @@ jzt.parser.Assembly.prototype.isDone = function() {
     return this.index >= this.tokens.length;
 };
 
+jzt.parser.Assembly.prototype.next = function() {
+    return this.tokens[this.index++];
+};
+
 /*
  * Parser
  */
-jzt.parser.Parser = function() {
-    this.assembler = undefined;
+jzt.parser.Parser = function(assembler) {
+    this.assembler = assembler;
 };
 
 jzt.parser.Parser.prototype.match = function(assemblies) {
@@ -40,7 +44,7 @@ jzt.parser.Parser.prototype.match = function(assemblies) {
 };
 
 jzt.parser.Parser.prototype.bestMatch = function(assembly) {
-    var result = this.matchAndAssemble([assembly]);
+    var result = this.matchAndAssemble(assembly);
     return this.findBestAssembly(result);
 };
 
@@ -83,7 +87,15 @@ jzt.parser.Parser.prototype.findBestAssembly = function(assemblies) {
 /*
  * Sequence
  */
+jzt.parser.Sequence = function(assembler) {
+    this.assembler = assembler;
+};
+jzt.parser.Sequence.prototype = new jzt.parser.Parser();
+jzt.parser.Sequence.constructor = jzt.parser.Sequence;
 
+jzt.parser.Sequence.prototype.match = function(assemblies) {
+    
+};
 
 /*
  * Terminal
@@ -106,7 +118,9 @@ jzt.parser.Terminal.prototype.match = function(assemblies) {
     for(var index = 0; index < assemblies.length; ++index) {
         var assembly = assemblies[index];
         var assemblyResult = this._matchAssembly(assembly);
-        result.push(assemblyResult);
+        if(assemblyResult != undefined) {
+            result.push(assemblyResult);
+        }
     }
     
     return result;
@@ -115,7 +129,7 @@ jzt.parser.Terminal.prototype.match = function(assemblies) {
 
 jzt.parser.Terminal.prototype._matchAssembly = function(assembly) {
     
-    if(assembly.isDone) {
+    if(assembly.isDone()) {
         return undefined;
     }
     
