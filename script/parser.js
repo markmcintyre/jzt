@@ -15,13 +15,13 @@ jzt.parser.Assembly = function(text) {
 jzt.parser.Assembly.prototype.clone = function() {
     var result = new jzt.parser.Assembly();
     result.tokens = this.tokens.slice(0);
-    result.index = 0;
+    result.index = this.index;
     result.stack = this.stack.slice(0);
     return result;
 };
 
 jzt.parser.Assembly.prototype.peek = function() {
-    return this.tokens[this.tokens.length-1];
+    return this.tokens[this.index];
 };
 
 jzt.parser.Assembly.prototype.isDone = function() {
@@ -44,7 +44,7 @@ jzt.parser.Parser.prototype.match = function(assemblies) {
 };
 
 jzt.parser.Parser.prototype.bestMatch = function(assembly) {
-    var result = this.matchAndAssemble(assembly);
+    var result = this.matchAndAssemble([assembly]);
     return this.findBestAssembly(result);
 };
 
@@ -85,15 +85,41 @@ jzt.parser.Parser.prototype.findBestAssembly = function(assemblies) {
 };
 
 /*
+ * CollectionParser
+ */
+jzt.parser.CollectionParser = function(assembler) {
+    this.assembler = assembler;
+    this.subParsers = [];
+}
+jzt.parser.CollectionParser.prototype = new jzt.parser.Parser();
+jzt.parser.CollectionParser.constructor = jzt.parser.CollectionParser;
+
+jzt.parser.CollectionParser.prototype.add = function(subParser) {
+  this.subParsers.push(subParser);
+};
+ 
+/*
  * Sequence
  */
 jzt.parser.Sequence = function(assembler) {
     this.assembler = assembler;
 };
-jzt.parser.Sequence.prototype = new jzt.parser.Parser();
+jzt.parser.Sequence.prototype = new jzt.parser.CollectionParser();
 jzt.parser.Sequence.constructor = jzt.parser.Sequence;
 
 jzt.parser.Sequence.prototype.match = function(assemblies) {
+    
+    var result = assemblies;
+    
+    for(var index = 0; index < this.subParsers.length; ++index) {
+        var subParser = this.subParsers[index];
+        result = subParser.matchAndAssemble(result);
+        if(result.length <= 0) {
+            return result;
+        }
+    }
+    
+    return result;
     
 };
 

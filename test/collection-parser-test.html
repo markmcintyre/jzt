@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<head>
+	<title>Collection Parser Test</title>
+</head>
+<body>
+	
+	<script type="text/javascript" src="../script/parser.js"></script>
+	
+	<script type="text/javascript">
+		
+		var s = new jzt.parser.Sequence();
+		s.add(new jzt.parser.NumberTerminal());
+		s.add(new jzt.parser.WordTerminal())
+		
+		var a = new jzt.parser.Assembly('100 hello');
+		var result = s.bestMatch(a);
+		console.assert(result.tokens.length == 2);
+		console.assert(result.tokens[0] == '100');
+		console.assert(result.tokens[1] == 'hello');
+		console.assert(result.stack[0] == '100');
+		console.assert(result.stack[1] == 'hello');
+		
+		a = new jzt.parser.Assembly('hello 100');
+		result = s.bestMatch(a);
+		console.assert(result == undefined);
+		
+		a = new jzt.parser.Assembly('100 hello world');
+		result = s.bestMatch(a);
+		console.assert(result.tokens.length == 3);
+		console.assert(result.stack.length == 2);
+		console.assert(result.stack[0] == '100');
+		console.assert(result.stack[1] == 'hello');
+		console.assert(result.index == 2);
+		
+		console.info("All done!");
+	
+	</script>
+	
+</body>
