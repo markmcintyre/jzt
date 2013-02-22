@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<head>
+	<title>JZTScript Test</title>
+</head>
+<body>
+	
+	<script type="text/javascript" src="../script/parser.js"></script>
+	<script type="text/javascript" src="../script/jztscript.js"></script>
+	
+	<script type="text/javascript">
+	
+		var moveParser = jzt.ParserFactory.createMoveCommandParser();
+		
+		var a = new jzt.parser.Assembly('#move cw opp flow');
+		var result = moveParser.bestMatch(a);
+		console.assert(result.tokens.length == 5);
+		console.assert(result.stack.length == 5);
+		console.assert(result.stack[0] == '#');
+		console.assert(result.stack[1] == 'move');
+		console.assert(result.stack[2] == 'cw');
+		console.assert(result.stack[3] == 'opp');
+		console.assert(result.stack[4] == 'flow');
+	
+		console.log("All done!");
+	
+	</script>
+	
+</body>

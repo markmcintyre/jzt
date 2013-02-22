@@ -22,12 +22,14 @@
 			return result;
 		};
 	
+		// Word Terminal
 		var t = new jzt.parser.WordTerminal();
 		t.assembler = capitalAssembler;
 		var a = new jzt.parser.Assembly('hello');
 		var result = t.bestMatch(a);
 		console.assert(capitalAssembler.value == 'HELLO');
 		
+		// Repetition of WordTerminal
 		capitalAssembler.value = undefined;
 		t.assembler = undefined;
 		var r = new jzt.parser.Repetition(t);
@@ -35,6 +37,18 @@
 		a = new jzt.parser.Assembly('hello world this is a test');
 		result = r.bestMatch(a);
 		console.assert(capitalAssembler.value == 'HELLO WORLD THIS IS A TEST');
+		
+		// Alternation
+		capitalAssembler.value = undefined;
+		var alt = new jzt.parser.Alternation();
+		alt.add(new jzt.parser.LiteralTerminal("hello"));
+		alt.add(new jzt.parser.LiteralTerminal("world"));
+		alt.add(new jzt.parser.LiteralTerminal("!"));
+		alt.assembler = capitalAssembler;
+		
+		a = new jzt.parser.Assembly('mark');
+		result = alt.bestMatch(a);
+		console.assert(capitalAssembler.value == undefined);
 		
 		console.info("All done!");
 	
