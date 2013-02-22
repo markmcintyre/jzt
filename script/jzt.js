@@ -25,9 +25,9 @@ jzt.Game = function(canvasElement, data) {
     this.context.imageSmoothingEnabled = false;
     this.context.webkitImageSmoothingEnabled = false;
     this.context.mozImageSmoothingEnabled = false;
-    
+
     this.currentBoard = new jzt.Board(this.data.boards[0], this);
-    
+
 };
 
 jzt.Game.prototype.run = function() {

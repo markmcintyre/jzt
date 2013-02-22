@@ -48,6 +48,14 @@ jzt.parser.Parser.prototype.bestMatch = function(assembly) {
     return this.findBestAssembly(result);
 };
 
+jzt.parser.Parser.prototype.completeMatch = function(assembly) {
+    var result = this.bestMatch(assembly);
+    if(result != undefined && result.isDone()) {
+        return result;
+    }
+    return undefined;
+};
+
 jzt.parser.Parser.prototype.matchAndAssemble = function(assemblies) {
     
     var result = this.match(assemblies);
@@ -156,14 +164,53 @@ jzt.parser.Sequence.prototype.constructor = jzt.parser.Sequence;
 
 jzt.parser.Sequence.prototype.match = function(assemblies) {
     
+    var started = false;
+    var previousResult = assemblies;
     var result = assemblies;
     
     for(var index = 0; index < this.subParsers.length; ++index) {
+        
         var subParser = this.subParsers[index];
+        
         result = subParser.matchAndAssemble(result);
         if(result.length <= 0) {
+            if(started) {
+                this._throwSequenceException(previousResult, subParser);
+            }
             return result;
         }
+        
+        started = true;
+        previousResult = result;
+        
+    }
+    
+    return result;
+    
+};
+
+jzt.parser.Sequence.prototype._throwSequenceException = function(previousResult, subParser) {
+    var best = this.best(previousResult);
+    var expected = best.peek();
+    throw 'Unexpected token \'' + expected + '\'';
+};
+
+/*
+ * Alternation
+ */
+jzt.parser.Alternation = function() {
+    this.assembler = undefined;
+}
+jzt.parser.Alternation.prototype = new jzt.parser.CollectionParser();
+jzt.parser.Alternation.prototype.constructor = jzt.parser.Alternation;
+
+jzt.parser.Alternation.prototype.match = function(assemblies) {
+    var result = [];
+    
+    for(var index = 0; index < this.subParsers.length; ++index) {
+        var subParser = this.subParsers[index];
+        var alternationResult = subParser.matchAndAssemble(assemblies);
+        result = result.concat(alternationResult);
     }
     
     return result;

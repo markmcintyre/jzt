@@ -11,7 +11,7 @@
 		// Sequence
 		var s = new jzt.parser.Sequence();
 		s.add(new jzt.parser.NumberTerminal());
-		s.add(new jzt.parser.WordTerminal())
+		s.add(new jzt.parser.WordTerminal());
 		
 		var a = new jzt.parser.Assembly('100 hello');
 		var result = s.bestMatch(a);
@@ -49,6 +49,77 @@
 		console.assert(result.stack[1] == 'world');
 		console.assert(result.stack[2] == 'this');
 		console.assert(result.stack[3] == 'is');
+		
+		// Alternation
+		var alt = new jzt.parser.Alternation();
+		alt.add(new jzt.parser.LiteralTerminal("hello"));
+		alt.add(new jzt.parser.LiteralTerminal("world"));
+		alt.add(new jzt.parser.LiteralTerminal("!"));
+		
+		a = new jzt.parser.Assembly('hello');
+		result = alt.bestMatch(a);
+		console.assert(result.tokens.length == 1);
+		console.assert(result.stack.length == 1);
+		console.assert(result.stack[0] == 'hello');
+		
+		a = new jzt.parser.Assembly('world');
+		result = alt.bestMatch(a);
+		console.assert(result.tokens.length == 1);
+		console.assert(result.stack.length == 1);
+		console.assert(result.stack[0] == 'world');
+		
+		a = new jzt.parser.Assembly('!');
+		result = alt.bestMatch(a);
+		console.assert(result.tokens.length == 1);
+		console.assert(result.stack.length == 1);
+		console.assert(result.stack[0] == '!');
+		
+		a = new jzt.parser.Assembly('mark');
+		result = alt.bestMatch(a);
+		console.assert(result == undefined);
+		
+		// Repetition of Alternation
+		r = new jzt.parser.Repetition(alt);
+		
+		a = new jzt.parser.Assembly('hello world!');
+		result = r.bestMatch(a);
+		console.assert(result.tokens.length == 3);
+		console.assert(result.stack.length = 3);
+		console.assert(result.stack[0] == 'hello');
+		console.assert(result.stack[1] == 'world');
+		console.assert(result.stack[2] == '!');
+		
+		a = new jzt.parser.Assembly('world! !! hello !world hello!');
+		result = r.bestMatch(a);
+		console.assert(result.tokens.length == 9);
+		console.assert(result.stack.length == 9);
+		console.assert(result.stack[0] == 'world');
+		console.assert(result.stack[1] == '!');
+		console.assert(result.stack[2] == '!');
+		console.assert(result.stack[3] == '!');
+		console.assert(result.stack[4] == 'hello');
+		console.assert(result.stack[5] == '!');
+		console.assert(result.stack[6] == 'world');
+		console.assert(result.stack[7] == 'hello');
+		console.assert(result.stack[8] == '!');
+		
+		a = new jzt.parser.Assembly('hello world mark!');
+		result = r.bestMatch(a);
+		console.assert(result.tokens.length == 4);
+		console.assert(result.stack.length = 2);
+		console.assert(result.stack[0] == 'hello');
+		console.assert(result.stack[1] == 'world');
+		
+		a = new jzt.parser.Assembly('I said hello world!');
+		result = r.bestMatch(a);
+		console.assert(result.tokens.length == 5);
+		console.assert(result.stack.length == 0);
+		
+		a = new jzt.parser.Assembly('!');
+		result = r.bestMatch(a);
+		console.assert(result.tokens.length == 1);
+		console.assert(result.stack.length == 1);
+		console.assert(result.stack[0] == '!');
 		
 		console.info("All done!");
 	
