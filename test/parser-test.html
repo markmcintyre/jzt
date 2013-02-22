@@ -33,6 +33,15 @@
 		console.assert(result.stack[1] == 'hello');
 		console.assert(result.index == 2);
 		
+		a = new jzt.parser.Assembly('100 200');
+		try {
+			result = s.bestMatch(a);
+			console.assert(false);
+		}
+		catch(ex) {
+			console.assert(ex == 'Unexpected token \'200\'');
+		}
+		
 		// Repetition
 		var r = new jzt.parser.Repetition(new jzt.parser.WordTerminal());
 		

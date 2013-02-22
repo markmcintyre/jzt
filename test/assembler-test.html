@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<head>
+	<title>Assembler Test</title>
+</head>
+<body>
+	
+	<script type="text/javascript" src="../script/parser.js"></script>
+	
+	<script type="text/javascript">
+	
+		var capitalAssembler = {};
+		capitalAssembler.assemble = function(assembly) {
+			if(assembly.stack.length <= 0) {
+				return;
+			}
+			token = assembly.stack.pop();
+			this.value = this.value == undefined ? token.toUpperCase() : this.value + ' ' + token.toUpperCase();
+		};
+		capitalAssembler.clone = function() {
+			var result = {};
+			result.value = this.value;
+			return result;
+		};
+	
+		var t = new jzt.parser.WordTerminal();
+		t.assembler = capitalAssembler;
+		var a = new jzt.parser.Assembly('hello');
+		var result = t.bestMatch(a);
+		console.assert(capitalAssembler.value == 'HELLO');
+		
+		capitalAssembler.value = undefined;
+		t.assembler = undefined;
+		var r = new jzt.parser.Repetition(t);
+		r.assembler = capitalAssembler;
+		a = new jzt.parser.Assembly('hello world this is a test');
+		result = r.bestMatch(a);
+		console.assert(capitalAssembler.value == 'HELLO WORLD THIS IS A TEST');
+		
+		console.info("All done!");
+	
+	</script>
+	
+</body>

@@ -9,6 +9,7 @@ jzt.parser.Assembly = function(text) {
     this.tokens = text != undefined ? text.match(/\w+|"(?:\\"|[^"])+"|[^\s]|\n/g) : [];
     this.index = 0;
     this.stack = [];
+    this.target = undefined;
     
 };
 
@@ -190,7 +191,7 @@ jzt.parser.Sequence.prototype.match = function(assemblies) {
 };
 
 jzt.parser.Sequence.prototype._throwSequenceException = function(previousResult, subParser) {
-    var best = this.best(previousResult);
+    var best = this.findBestAssembly(previousResult);
     var expected = best.peek();
     throw 'Unexpected token \'' + expected + '\'';
 };
