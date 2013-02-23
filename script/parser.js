@@ -141,6 +141,19 @@ jzt.parser.Repetition.prototype.match = function(assemblies) {
 };
 
 /*
+ * Empty
+ */
+jzt.parser.Empty = function() {
+    this.assembler = undefined;
+};
+jzt.parser.Empty.prototype = new jzt.parser.Parser();
+jzt.parser.Empty.prototype.constructor = jzt.parser.Empty;
+
+jzt.parser.Empty.prototype.match = function(assemblies) {
+    return this._cloneAssemblies(assemblies);
+};
+
+/*
  * CollectionParser
  */
 jzt.parser.CollectionParser = function() {
@@ -193,8 +206,12 @@ jzt.parser.Sequence.prototype.match = function(assemblies) {
 
 jzt.parser.Sequence.prototype._throwSequenceException = function(previousResult, subParser) {
     var best = this.findBestAssembly(previousResult);
-    var expected = best.peek();
-    throw 'Unexpected token \'' + expected + '\'';
+    if(best.peek() == undefined) {
+        throw 'Token expected';
+    }
+    else {
+        throw 'Unexpected token \'' + best.peek() + '\'';
+    }
 };
 
 /*
@@ -212,12 +229,7 @@ jzt.parser.Alternation.prototype.match = function(assemblies) {
     
     for(var index = 0; index < this.subParsers.length; ++index) {
         var subParser = this.subParsers[index];
-        try {
-            var alternationResult = subParser.matchAndAssemble(assemblies);
-        }
-        catch(ex) {
-            continue;
-        }
+        var alternationResult = subParser.matchAndAssemble(assemblies);
         result = result.concat(alternationResult);
     }
     

@@ -42,6 +42,15 @@
 			console.assert(ex == 'Unexpected token \'200\'');
 		}
 		
+		a = new jzt.parser.Assembly('100');
+		try {
+			result = s.bestMatch(a);
+			console.assert(false);
+		}
+		catch(ex) {
+			console.assert(ex == 'Token expected');
+		}
+		
 		// Repetition
 		var r = new jzt.parser.Repetition(new jzt.parser.WordTerminal());
 		

@@ -21,11 +21,7 @@ jzt.ParserFactory.createMoveCommandParser = function() {
       var r = jzt.parser.Repetition;
     
       // Our resulting command
-      var result = new a();
-    
-      // Our two syntax options
-      var s1 = new s();
-      var s2 = new s();
+      var result = new s();
       
       // Modifier
       var mod = new a();
@@ -53,22 +49,17 @@ jzt.ParserFactory.createMoveCommandParser = function() {
       dir.add(new l('rndew'));
       dir.add(new l('rndne'));
       
-      // SYNTAX 1
-      s1.add(new l('#'));
-      s1.add(new l('move'));
-      s1.add(new r(mod));
-      s1.add(dir);
+      // Nothing or Count
+      var option = new a();
+      option.add(new jzt.parser.NumberTerminal());
+      option.add(new jzt.parser.Empty());
       
-      // SYNTAX 2
-      s2.add(new l('#'));
-      s2.add(new l('move'));
-      s2.add(new r(mod));
-      s2.add(dir);
-      s2.add(new jzt.parser.NumberTerminal());
-      
-      // Result is either 1 or 2
-      result.add(s1);
-      result.add(s2);
+      // RESULT
+      result.add(new l('#'));
+      result.add(new l('move'));
+      result.add(new r(mod));
+      result.add(dir);
+      result.add(option);
       
       return result;
       
