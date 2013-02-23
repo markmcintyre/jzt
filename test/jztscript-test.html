@@ -9,10 +9,18 @@
 	
 	<script type="text/javascript">
 	
-		var moveParser = jzt.ParserFactory.createMoveCommandParser();
+		var moveParser = jzt.jztscript._createMoveCommandParser();
+		
+		var a = new jzt.parser.Assembly('#move n');
+		var result = moveParser.completeMatch(a);
+		console.assert(result.tokens.length == 3);
+		console.assert(result.stack.length == 3);
+		console.assert(result.stack[0] == '#');
+		console.assert(result.stack[1] == 'move');
+		console.assert(result.stack[2] == 'n');
 		
 		var a = new jzt.parser.Assembly('#move cw opp flow');
-		var result = moveParser.bestMatch(a);
+		result = moveParser.completeMatch(a);
 		console.assert(result.tokens.length == 5);
 		console.assert(result.stack.length == 5);
 		console.assert(result.stack[0] == '#');
@@ -20,6 +28,22 @@
 		console.assert(result.stack[2] == 'cw');
 		console.assert(result.stack[3] == 'opp');
 		console.assert(result.stack[4] == 'flow');
+	
+		a = new jzt.parser.Assembly('#move cw ccw rndp n 5');
+		result = moveParser.completeMatch(a);
+		console.assert(result.tokens.length == 7);
+		console.assert(result.stack.length == 7);
+	
+		a = new jzt.parser.Assembly('#move cw north cw');
+		try {
+			result = moveParser.completeMatch(a);
+			console.assert(false);
+		}
+		catch(ex) {
+			console.assert(ex == 'Unexpected token \'cw\'');
+		}
+		
+		a = new jzt.parser.Assembly('#move 500');
 	
 		console.log("All done!");
 	

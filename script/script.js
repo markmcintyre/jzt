@@ -4,51 +4,68 @@ jzt.Script = function(owner, scriptData) {
     
     this.name = scriptData.name;
     this.owner = owner;
-    this.script = scriptData.lines;
-    this.currentLine = 0;
-    this.labels = this._findLabels();
+    this.commands = [];
+    this.labels = {};
+    this.commandIndex = 0;
+    
+    this._assemble(scriptData.script);
     
 };
 
-jzt.Script.prototype._findLabels = function() {
-    
-    var result = {};
-    
-    // For each line...
-    for(var index = 0; index < this.script.length; ++index) {
+jzt.Script.prototype._assemble = function(script) {
+    if(script) {
         
-        var line = this.script[index];
-        if(line.length > 1) {
+        var factory = new jztscript.CommandFactory();
+        
+        var lines = script.split(/\n/);
+        for(var index = 0; index < lines.length; ++index) {
             
-            if(line.charAt(0) == ':') {
-                var labelName = line.substring(1).toUpperCase();
-                
-                if(result[labelName]) {
-                    result[labelName].indicies.push(index);
-                }
-                else {
-                    result[labelName] = {currentIndex: 0, indicies: [index]};
-                }
+            var line = lines[index];
+            var result;
+            
+            try {
+                result = factory.parseLine(line);
+            }
+            catch(ex) {
+                this.commandIndex = -1;
+                console.warn('Syntax error in script \'%s\' on line %d.\n> %s\n> %s.', this.name, index, line, ex);
+                return;
+            };
+            
+            // If we found a label, add it to our labels
+            if(result instanceof jzt.commands.Label) {
+                this._addLabel(result, this.commands.length-1);
+            }
+            
+            // Otherwise it's a command to add to our set
+            else {
+                this.commands.push(result);
             }
         }
         
     }
-    
-    return result;
+};
+
+jzt.Script.prototype._addLabel = function(label, commandIndex) {
+  
+    if(this.labels.hasOwnProperty(label.id)) {
+        this.labels.indicies.push(commandIndex);
+    }
+    else {
+        this.labels[label.id] = {
+            currentIndex: 0,
+            indicies: [commandIndex]
+        };
+    }
     
 };
 
 jzt.Script.prototype.isRunning = function() {
-    return this.currentLine >= 0 && this.currentLine < this.script.length;
+    return this.commandIndex >= 0 && this.commandIndex < this.commands.length;
 };
 
 jzt.Script.prototype.stop = function() {
-    this.currentLine = -1;
-};
-
-jzt.Script.prototype._fetchCommand = function() {
-    var line = this.script[this.currentLine];
-    return this.parseLine(line, this.currentLine);
+    this.commandIndex = -1;
 };
 
 jzt.Script.prototype.executeTick = function() {
@@ -75,7 +92,7 @@ jzt.Script.prototype.executeTick = function() {
         
         // Otherwise fetch a new command
         else {
-            command = this._fetchCommand(); 
+            command = this.commands[this.commandIndex].clone(); 
         }
         
         if(command) {
@@ -123,7 +140,7 @@ jzt.Script.prototype.jumpToLabel = function(label) {
         if(labelData.currentIndex < labelData.indicies.length) {
             
             // Set our current line to the active label index
-            this.currentLine = labelData.indicies[labelData.currentIndex];
+            this.commandIndex = labelData.indicies[labelData.currentIndex];
         
             /* We wish to start at the line after the label, as well as
                clear any stored commands. */
@@ -172,19 +189,6 @@ jzt.Script.prototype.advanceLine = function() {
             this._storedCommand = undefined;
         }
         
-        this.currentLine++;
-    }
-};
-
-jzt.Script.prototype.parseLine = function(line, lineNumber) {
-    try {
-        var result = jzt.ScriptCommandFactory.create(line);
-        if(!result) {
-            throw 'Unrecognized command.';
-        }
-        return result;
-    }
-    catch(error) {
-        console.error('Syntax error in script \'%s\'\n> Line %d: \'%s\'\n> %s"', this.name, lineNumber, line, error);
+        this.commandIndex++;
     }
 };

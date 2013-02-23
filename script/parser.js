@@ -54,7 +54,7 @@ jzt.parser.Parser.prototype.completeMatch = function(assembly) {
     if(result != undefined && result.isDone()) {
         return result;
     }
-    return undefined;
+    throw 'Unexpected token \'' + result.peek() + '\'';
 };
 
 jzt.parser.Parser.prototype.matchAndAssemble = function(assemblies) {
@@ -346,4 +346,14 @@ jzt.parser.NewLineTerminal.prototype = new jzt.parser.Terminal();
 jzt.parser.NewLineTerminal.prototype.constructor = jzt.parser.NewLineTerminal;
 jzt.parser.NewLineTerminal.prototype.qualifies = function(token) {
     return token === '\n';
+};
+
+/*
+ * Optional convenience parser
+ */
+jzt.parser.optional = function(parser) {
+    var result = new jzt.parser.Alternation();
+    result.add(parser);
+    result.add(new jzt.parser.Empty());
+    return result;
 };
