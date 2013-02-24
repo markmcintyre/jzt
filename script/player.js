@@ -5,7 +5,8 @@ jzt.Player = function(game) {
     var now = Date.now();
     
     this.PLAYER_SPEED = 9;
-    this.TORCH_TTL = 10000; // One Minute
+    this.TORCH_TTL = 60000; // One Minute
+    this.MAX_TORCH_STRENGTH = 4;
     
     this._nextMove = now;
     
@@ -14,6 +15,8 @@ jzt.Player = function(game) {
     this.point = new jzt.Point(1,1);
     this.color = '1F';
     this.torch = false;
+    
+    this._torchStrength = 0;
     this._torchExpiry = now;
     
 };
@@ -49,16 +52,19 @@ jzt.Player.prototype.inVisibleRadius = function(point) {
       var xDiff = Math.abs(point.x - this.point.x);
       var yDiff = Math.abs(point.y - this.point.y);
 
+      var torchModifier = this.MAX_TORCH_STRENGTH - this._torchStrength;
+      yDiff = yDiff + torchModifier;
+
       switch(yDiff) {
           case 0:
-                return xDiff <= 7;
+                return xDiff <= 7 - torchModifier;
           case 1:
           case 2:
-                return xDiff <= 6;
+                return xDiff <= 6 - torchModifier;
           case 3:
-                return xDiff <= 5;
+                return xDiff <= 5 - torchModifier;
           case 4:
-                return xDiff <= 4;
+                return xDiff <= 4 - torchModifier;
           default:
                 return false;
       }
@@ -69,6 +75,7 @@ jzt.Player.prototype.inVisibleRadius = function(point) {
 
 jzt.Player.prototype.useTorch = function() {
     this.torch = true;
+    this._torchStrength = this.MAX_TORCH_STRENGTH;
     this._torchExpiry = Date.now() + this.TORCH_TTL;
 };
     
@@ -76,8 +83,29 @@ jzt.Player.prototype.update = function() {
         
     var now = Date.now();
         
-    if(this.torch && now > this._torchExpiry) {
-        this.torch = false;
+    if(this.torch) {
+        
+        if(now > this._torchExpiry) {
+            this.torch = false;
+        }
+        else {
+            
+            var torchLife = this._torchExpiry - now;
+            if(torchLife > 20000) {
+                this._torchStrength = 4;
+            }
+            else if(torchLife > 10000) {
+                this._torchStrength = 3;
+            }
+            else if(torchLife > 5000) {
+                this._torchStrength = 2;
+            }
+            else {
+                this._torchStrength = 1;
+            }
+            
+        }
+        
     }
         
     // We can only move when permissable speed-wise
