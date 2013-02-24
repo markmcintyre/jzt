@@ -30,9 +30,11 @@ jztscript._createCommandParser = function() {
     var result = new jzt.parser.Alternation();
     
     // Add all our available commands
-    for(var index = 0; index < jztscript.CommandParsers.length; ++index) {
-        var parser = jztscript.CommandParsers[index];
-        result.add(new parser());
+    for(parser in jztscript.parsers) {
+        if(jztscript.parsers.hasOwnProperty(parser)) {
+            var parser = jztscript.parsers[parser];
+            result.add(new parser());
+        }
     }
     
     // Allow blank lines
@@ -45,12 +47,13 @@ jztscript._createCommandParser = function() {
 /*=============================================================
  * PARSERS
  *============================================================*/
+jztscript.parsers = jztscript.parsers || {};
  
 /*
  * Char Parser
  * command = 'char' Number;
  */
-jztscript.CharParser = function() {
+jztscript.parsers.CharParser = function() {
     
     // Establish shorthand to cut character count
     var ns = jzt.parser;
@@ -82,7 +85,7 @@ jztscript.CharParser = function() {
  * Die Parser
  * command = '#' 'die';
  */
-jztscript.DieParser = function() {
+jztscript.parsers.DieParser = function() {
     var ns = jzt.parser;
     var result = new ns.Sequence();
     result.add(ns.discard(new ns.Literal('#')));
@@ -100,7 +103,7 @@ jztscript.DieParser = function() {
  * End Parser
  * command = '#' 'end';
  */
-jztscript.EndParser = function() {
+jztscript.parsers.EndParser = function() {
   
     var ns = jzt.parser;
     var result = new ns.Sequence();
@@ -122,7 +125,7 @@ jztscript.EndParser = function() {
  * direction = 'n' | 's' | 'e' | 'w' | 'north' | 'south' | 'east' | 'west' | 'seek'
  *              | 'flow' | 'rand' | 'randf' | 'randb' | 'rndns' | 'rndew' | 'rndne';
  */
-jztscript.GoParser = function() {
+jztscript.parsers.GoParser = function() {
     
     var ns = jzt.parser;
     var modifiers = jzt.commands.DirectionModifier;
@@ -188,7 +191,7 @@ jztscript.GoParser = function() {
  * id    = Word
  * 
  */
-jztscript.LabelParser = function() {
+jztscript.parsers.LabelParser = function() {
     
     // Establish shorthands to cut character count
     var ns = jzt.parser;
@@ -209,6 +212,23 @@ jztscript.LabelParser = function() {
     return result;
     
 };
+
+/*
+ * Lock Parser
+ * command = '#' 'lock'
+ */
+jztscript.parsers.LockParser = function() {
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+    result.add(ns.discard(new ns.Literal('#')));
+    result.add(ns.discard(new ns.Literal('lock')));
+    result.assembler = {
+        assemble: function(assembly) {
+            assembly.target = new jzt.commands.Lock();
+        }
+    };
+    return result;
+};
   
 /*
  * Move Parser
@@ -218,7 +238,7 @@ jztscript.LabelParser = function() {
  * direction = 'n' | 's' | 'e' | 'w' | 'north' | 'south' | 'east' | 'west' | 'seek'
  *             | 'flow' | 'rand' | 'randf' | 'randb' | 'rndns' | 'rndew' | 'rndne';       
  */
-jztscript.MoveParser = function() {
+jztscript.parsers.MoveParser = function() {
     
     /* 
      * MoveCommandAssembler
@@ -289,7 +309,7 @@ jztscript.MoveParser = function() {
 /*
  * Wait Parser
  */
-jztscript.WaitParser = function() {
+jztscript.parsers.WaitParser = function() {
     
     var ns = jzt.parser;
     
@@ -309,13 +329,3 @@ jztscript.WaitParser = function() {
     return result;
     
 };
-
-jztscript.CommandParsers = [
-    jztscript.CharParser,
-    jztscript.DieParser,
-    jztscript.EndParser,
-    jztscript.GoParser,
-    jztscript.LabelParser,
-    jztscript.MoveParser,
-    jztscript.WaitParser,
-];
