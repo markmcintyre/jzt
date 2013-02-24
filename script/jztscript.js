@@ -346,6 +346,38 @@ jztscript.parsers.SayParser = function() {
 };
 
 /*
+ * Stand Parser
+ */
+jztscript.parsers.StandParser = function() {
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+    result.add(ns.discard(new ns.Literal('#')));
+    result.add(ns.discard(new ns.Literal('stand')));
+    result.assembler = {
+        assemble: function(assembly) {
+            assembly.target = new jzt.commands.Stand();
+        }
+    };
+    return result;
+};
+
+/*
+ * Unlock Parser
+ */
+jztscript.parsers.UnlockParser = function() {
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+    result.add(ns.discard(new ns.Literal('#')));
+    result.add(ns.discard(new ns.Literal('unlock')));
+    result.assembler = {
+        assemble: function(assembly) {
+            assembly.target = new jzt.commands.Unlock();
+        }
+    };
+    return result;
+};
+
+/*
  * Wait Parser
  */
 jztscript.parsers.WaitParser = function() {

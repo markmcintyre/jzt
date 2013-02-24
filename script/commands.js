@@ -260,6 +260,25 @@ jzt.commands.Say.prototype.execute = function(owner) {
     return jzt.commands.CommandResult.CONTINUE;
 };
 
+/*
+ * Stand Command
+ */
+jzt.commands.Stand = function() {};
+jzt.commands.Stand.prototype.clone = function(){return this;};
+jzt.commands.Stand.prototype.execute = function(owner) {
+    owner.walkDirection = undefined;
+};
+
+/*
+ * Unlock Command
+ */
+jzt.commands.Unlock = function() {};
+jzt.commands.Unlock.prototype.clone = function(){return this};
+jzt.commands.Unlock.prototype.execute = function(owner) {
+    owner.setLocked(false);
+    return jzt.commands.CommandResult.CONTINUE;
+};
+
 /**
  * Wait Command
  */
