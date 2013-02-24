@@ -113,7 +113,7 @@ jzt.JztObject.prototype.getMessage = function() {
     
 jzt.JztObject.prototype.setScriptData = function(scriptData) {
     
-    if(scriptData && scriptData.lines && scriptData.name) {
+    if(scriptData && scriptData.script && scriptData.name) {
         this.script = new jzt.Script(this, scriptData);
         this._messageQueue = [];
         this._nextTick = Date.now();
