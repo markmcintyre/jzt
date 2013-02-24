@@ -119,6 +119,22 @@ jztscript.parserhelper.MovementParser = function(command, nameToken, noCount) {
     return result;
     
 };
+
+/*
+ * Simple Parser
+ */
+jztscript.parserhelper.Simple = function(command, nameToken) {
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+    result.add(ns.discard(new ns.Literal('#')));
+    result.add(ns.discard(new ns.Literal(nameToken)));
+    result.assembler = {
+        assemble: function(assembly) {
+            assembly.target = new command();
+        }
+    };
+    return result;
+};
  
 /*
  * Char Parser
@@ -157,17 +173,7 @@ jztscript.parsers.CharParser = function() {
  * command = '#' 'die';
  */
 jztscript.parsers.DieParser = function() {
-    var ns = jzt.parser;
-    var result = new ns.Sequence();
-    result.add(ns.discard(new ns.Literal('#')));
-    result.add(ns.discard(new ns.Literal('die')));
-    result.assembler = {
-        assemble: function(assembly) {
-          assembly.target = new jzt.commands.Die();
-        }
-    };
-    return result;
-    
+    return jztscript.parserhelper.Simple(jzt.commands.Die, 'die');
 };
 
 /*
@@ -175,18 +181,7 @@ jztscript.parsers.DieParser = function() {
  * command = '#' 'end';
  */
 jztscript.parsers.EndParser = function() {
-  
-    var ns = jzt.parser;
-    var result = new ns.Sequence();
-    result.add(ns.discard(new ns.Literal('#')));
-    result.add(ns.discard(new ns.Literal('end')));
-    result.assembler = {
-        assemble: function(assembly) {
-            assembly.target = new jzt.commands.End();
-        }
-    };
-    return result;
-    
+    return jztscript.parserhelper.Simple(jzt.commands.End, 'end');
 };
 
 /*
@@ -233,16 +228,7 @@ jztscript.parsers.LabelParser = function() {
  * command = '#' 'lock'
  */
 jztscript.parsers.LockParser = function() {
-    var ns = jzt.parser;
-    var result = new ns.Sequence();
-    result.add(ns.discard(new ns.Literal('#')));
-    result.add(ns.discard(new ns.Literal('lock')));
-    result.assembler = {
-        assemble: function(assembly) {
-            assembly.target = new jzt.commands.Lock();
-        }
-    };
-    return result;
+    return jztscript.parserhelper.Simple(jzt.commands.Lock, 'lock');
 };
   
 /*
@@ -254,7 +240,7 @@ jztscript.parsers.LockParser = function() {
  *             | 'flow' | 'rand' | 'randf' | 'randb' | 'rndns' | 'rndew' | 'rndne';       
  */
 jztscript.parsers.MoveParser = function() {
-    return new jztscript.parserhelper.MovementParser(jzt.commands.Move, 'move');    
+    return jztscript.parserhelper.MovementParser(jzt.commands.Move, 'move');    
 };
 
 /*
@@ -300,39 +286,14 @@ jztscript.parsers.SayParser = function() {
  * Stand Parser
  */
 jztscript.parsers.StandParser = function() {
-    var ns = jzt.parser;
-    var result = new ns.Sequence();
-    result.add(ns.discard(new ns.Literal('#')));
-    result.add(ns.discard(new ns.Literal('stand')));
-    result.assembler = {
-        assemble: function(assembly) {
-            assembly.target = new jzt.commands.Stand();
-        }
-    };
-    return result;
+    return jztscript.parserhelper.Simple(jzt.commands.Stand, 'stand');
 };
 
 /*
  * Unlock Parser
  */
 jztscript.parsers.UnlockParser = function() {
-    var ns = jzt.parser;
-    var result = new ns.Sequence();
-    result.add(ns.discard(new ns.Literal('#')));
-    result.add(ns.discard(new ns.Literal('unlock')));
-    result.assembler = {
-        assemble: function(assembly) {
-            assembly.target = new jzt.commands.Unlock();
-        }
-    };
-    return result;
-};
-
-/*
- * Walk Parser
- */
-jztscript.parsers.WalkParser = function() {
-    return jztscript.parserhelper.MovementParser(jzt.commands.Walk, 'walk', true);
+    return jztscript.parserhelper.Simple(jzt.commands.Unlock, 'unlock');
 };
 
 /*
@@ -357,4 +318,11 @@ jztscript.parsers.WaitParser = function() {
     result.assembler = assembler;
     return result;
     
+};
+
+/*
+ * Walk Parser
+ */
+jztscript.parsers.WalkParser = function() {
+    return jztscript.parserhelper.MovementParser(jzt.commands.Walk, 'walk', true);
 };
