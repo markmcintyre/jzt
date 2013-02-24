@@ -11,7 +11,8 @@ jzt.Game = function(canvasElement, data) {
     this.MAX_TICKS_SKIPPED = 10;
     this.SKIP_TICKS = Math.round(1000 / this.CPS);
     this.SKIP_BLINK_TICKS = Math.round(1000 / this.BLINK_SPEED);
-    
+    this.COLOR_CYCLE_MAX = 6;
+
     this._intervalId = undefined;
     this._ticks = 0;
     this._nextTick = Date.now();
@@ -29,6 +30,7 @@ jzt.Game = function(canvasElement, data) {
     this.context.webkitImageSmoothingEnabled = false;
     this.context.mozImageSmoothingEnabled = false;
     this.blinkState = true;
+    this.colorCycleIndex = 0;
 
     this.currentBoard = new jzt.Board(this.data.boards[0], this);
 
@@ -56,6 +58,7 @@ jzt.Game.prototype.loop = function() {
             this._ticks++;
             if(now > this._nextBlinkTick) {
                 this.blinkState = ! this.blinkState;
+                this.colorCycleIndex = this.colorCycleIndex >= this.COLOR_CYCLE_MAX ? 0 : this.colorCycleIndex + 1;
                 this._nextBlinkTick += this.SKIP_BLINK_TICKS;
             }
         }

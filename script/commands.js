@@ -256,7 +256,8 @@ jzt.commands.Say.prototype.clone = function() {
 };
 
 jzt.commands.Say.prototype.execute = function(owner) {
-    jzt.debug.log('%s says: %s', owner.name, this.text);
+    //jzt.debug.log('%s says: %s', owner.name, this.text);
+    owner.board.setDisplayMessage(this.text);
     return jzt.commands.CommandResult.CONTINUE;
 };
 

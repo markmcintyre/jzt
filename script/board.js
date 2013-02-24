@@ -11,6 +11,10 @@ jzt.Board = function(boardData, game) {
     this.scripts = boardData.scripts;
     this.jztObjects = [];
     
+    this._displayMessage = undefined;
+    this._displayMessageTick = 0;
+    this.DISPLAY_MESSAGE_TTL = game.CPS * 3; // 3 seconds
+    
     this._initializeTiles(boardData.tiles);
     this._initializeObjects(boardData.jztObjects);
     this._initializePlayer(game.player);
@@ -202,6 +206,14 @@ jzt.Board.prototype.update = function() {
         
 };
 
+jzt.Board.prototype.setDisplayMessage = function(message) {
+    this._displayMessage = message;
+    if(this._displayMessage.length > this.width) {
+        this._displayMessage = this._displayMessage.substring(0, this.width);
+    }
+    this._displayMessageTick = this.DISPLAY_MESSAGE_TTL;
+};
+
 jzt.Board.prototype.removeJztObject = function(index) {
     
     var jztObject = this.jztObjects[index];
@@ -231,5 +243,27 @@ jzt.Board.prototype.render = function(c) {
             sprite.draw(c, tile.point, tile.color);
         }
     });
+    
+    // Draw our display message, if applicable
+    if(this._displayMessage != undefined && this._displayMessage.length > 0) {
+        
+        var messagePoint = new jzt.Point();
+        messagePoint.x = Math.floor((this.width - this._displayMessage.length) / 2);
+        messagePoint.y = this.height-1;
+        
+        for(var index = 0; index < this._displayMessage.length; ++index) {
+            var spriteIndex = this._displayMessage.charCodeAt(index);
+            if(spriteIndex >= 32 && spriteIndex <= 126) {
+                sprite = instance.game.resources.graphics.getSprite(spriteIndex);
+                sprite.draw(c, messagePoint, '0*');
+                messagePoint.x++;
+            }
+        }
+        
+        if(--this._displayMessageTick <= 0) {
+            this._displayMessage = undefined;
+        }
+        
+    }
     
 };
