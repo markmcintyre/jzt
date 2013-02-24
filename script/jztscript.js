@@ -20,46 +20,6 @@ jztscript.CommandFactory.prototype.parseLine = function(line) {
     
 };
   
-/**
- * Direction Modifier Enumerated Types
- * 
- * Each direction modifier has an associated token value, a display name, and a process function.
- * The process function takes a direction and returns a final, calculated direction value.
- */
-jztscript.DIRECTION_MODIFIERS = {
-    CW:   {name: 'Clockwise'},
-    CCW:  {name: 'Counter-clockwise'},
-    OPP:  {name: 'Opposite'},
-    RNDP: {name: 'Perpendicularly Random'}
-};
-
-/**
- * Direction Enumerated Types
- *
- * Each direction has an associated token value, a display name, and a process function.
- * The process function takes a JztObject and returns a final, calculated direction value.
- */
-jztscript.DIRECTIONS = {
-    
-    SEEK:  {name: 'Toward player'},
-    FLOW:  {name: 'Current orientation'},
-    RAND:  {name: 'Random direction'},
-    RANDF: {name: 'Random free direction'},
-    RANDB: {name: 'Random blocked direction'},
-    RNDEW: {name: 'Randomly East or West'},
-    RNDNS: {name: 'Randomly North or South'},
-    RNDNE: {name: 'Randomly North or East'},
-    NORTH: {name: 'North'},
-    EAST:  {name: 'East'},
-    SOUTH: {name: 'South'},
-    WEST:  {name: 'West'},
-    N:     {name: 'North shorthand'},
-    E:     {name: 'East shorthand'},
-    S:     {name: 'South shorthand'},
-    W:     {name: 'West shorthand'}
-
-};
-  
 jztscript._createCommandParser = function() {
   
     var result = new jzt.parser.Alternation();
@@ -84,37 +44,68 @@ jztscript._createCommandParser = function() {
  */
 jztscript._createMoveCommandParser = function() {
     
-      // Establish shorthands to cut character count
-      var ns = jzt.parser;
-      var modifiers = jztscript.DIRECTION_MODIFIERS;
-      var directions = jztscript.DIRECTIONS;
+    /* 
+     * MoveCommandAssembler
+     */
+    var assembler = function() {}
+    assembler.prototype.assemble = function(assembly) {
+        var command = new jzt.commands.Move();
+        
+        // Get our top token
+        var token = assembly.stack.pop();
+        
+        // If it's a number, then that's our count
+        var count = parseInt(token);
+        if(!isNaN(count)) {
+            command.count = count;
+            token = assembly.stack.pop();
+        }
+        
+        // The next token is our direction
+        command.direction = jzt.commands.Direction[token.toUpperCase()];
+        
+        // The rest of the tokens are our modifiers
+        while(assembly.stack.length > 0) {
+            token = assembly.stack.shift();
+            command.modifiers.push(jzt.commands.DirectionModifier[token.toUpperCase()]);
+        }
+        
+        assembly.target = command;
+        
+    }
     
-      // Our resulting command
-      var result = new ns.Sequence();
-      
-      // Direction Modifier
-      var directionModifier = new ns.Alternation();
-      for(var item in modifiers) {
-          if(modifiers.hasOwnProperty(item)) {
-              directionModifier.add( new ns.LiteralTerminal(item));
-          }
+    // Establish shorthands to cut character count
+    var ns = jzt.parser;
+    var modifiers = jzt.commands.DirectionModifier;
+    var directions = jzt.commands.Direction;
+
+    // Our resulting command
+    var result = new ns.Sequence();
+
+    // Direction Modifier
+    var directionModifier = new ns.Alternation();
+    for(var item in modifiers) {
+      if(modifiers.hasOwnProperty(item)) {
+          directionModifier.add( new ns.LiteralTerminal(item));
       }
-      
-      // Direction
-      var direction = new ns.Alternation();
-      for(var item in directions) {
-          if(directions.hasOwnProperty(item)) {
-              direction.add( new ns.LiteralTerminal(item));
-          }
+    }
+
+    // Direction
+    var direction = new ns.Alternation();
+    for(var item in directions) {
+      if(directions.hasOwnProperty(item)) {
+          direction.add( new ns.LiteralTerminal(item));
       }
-      
-      // Our resulting sequence
-      result.add(new ns.LiteralTerminal('#'));
-      result.add(new ns.LiteralTerminal('move'));
-      result.add(jzt.parser.optional(new ns.Repetition(directionModifier)));
-      result.add(direction);
-      result.add(jzt.parser.optional(new jzt.parser.NumberTerminal()));
-      
-      return result;
+    }
+
+    // Establish our literals
+    result.add(ns.discard(new ns.LiteralTerminal('#')));
+    result.add(ns.discard(new ns.LiteralTerminal('move')));
+    result.add(ns.optional(new ns.Repetition(directionModifier)));
+    result.add(direction);
+    result.add(ns.optional(new ns.NumberTerminal()));
+    result.assembler = new assembler();
+
+    return result;
       
 };

@@ -78,11 +78,11 @@ jzt.commands.Move.prototype.execute = function(owner) {
     // If we aren't stuck, calculate our next direction
     if(!this.stuck) {
         
-        direction = this.direction;
+        direction = this.direction.process(owner);
         
         // Evaluate our modifiers into a direction
         var modifiers = this.modifiers.slice(0);
-        for(var modifier; modifier = modifiers.pop;) {
+        for(var modifier; modifier = modifiers.pop();) {
             direction = modifier.process(direction);
         }
         
@@ -109,7 +109,7 @@ jzt.commands.Move.prototype.execute = function(owner) {
         }
         
         // If we are to move a number of times...
-        else if(--this.times > 0) {
+        else if(--this.count > 0) {
             this.stuck = undefined;
             return jzt.commands.CommandResult.REPEAT;
         }

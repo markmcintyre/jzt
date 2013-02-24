@@ -292,6 +292,7 @@ jzt.parser.Terminal.prototype._matchAssembly = function(assembly) {
  */ 
 jzt.parser.NumberTerminal = function() {
     this.assembler = undefined;
+    this.discard = false;
 };
 jzt.parser.NumberTerminal.prototype = new jzt.parser.Terminal();
 
@@ -306,6 +307,7 @@ jzt.parser.LiteralTerminal = function(literalValue, caseSensitive) {
     this.assembler = undefined;
     this.caseSensitive = caseSensitive;
     this.literalValue = literalValue;
+    this.discard = false;
     if(!caseSensitive) {
         this.literalValue = this.literalValue.toUpperCase();
     }
@@ -326,6 +328,7 @@ jzt.parser.LiteralTerminal.prototype.qualifies = function(token) {
  */
 jzt.parser.WordTerminal = function(){
     this.assembler = undefined;
+    this.discard = false;
 };
 jzt.parser.WordTerminal.prototype = new jzt.parser.Terminal();
 jzt.parser.WordTerminal.prototype.constructor = jzt.parser.WordTerminal;
@@ -341,6 +344,7 @@ jzt.parser.WordTerminal.prototype.qualifies = function(token) {
  */
 jzt.parser.NewLineTerminal = function(){
     this.assembler = undefined;
+    this.discard = false;
 };
 jzt.parser.NewLineTerminal.prototype = new jzt.parser.Terminal();
 jzt.parser.NewLineTerminal.prototype.constructor = jzt.parser.NewLineTerminal;
@@ -356,4 +360,9 @@ jzt.parser.optional = function(parser) {
     result.add(parser);
     result.add(new jzt.parser.Empty());
     return result;
+};
+
+jzt.parser.discard = function(terminal) {
+    terminal.discard = true;
+    return terminal;
 };

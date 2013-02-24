@@ -60,6 +60,18 @@ jzt.Script.prototype._addLabel = function(label, commandIndex) {
     
 };
 
+jzt.Script.prototype._getCommand = function() {
+    
+    var result = this.commands[this.commandIndex];
+    if(result == undefined) {
+        this.commandIndex = -1;
+        return undefined;
+    }
+    
+    return result.clone();
+    
+};
+
 jzt.Script.prototype.isRunning = function() {
     return this.commandIndex >= 0 && this.commandIndex < this.commands.length;
 };
@@ -92,7 +104,7 @@ jzt.Script.prototype.executeTick = function() {
         
         // Otherwise fetch a new command
         else {
-            command = this.commands[this.commandIndex].clone(); 
+            command = this._getCommand();
         }
         
         if(command) {
