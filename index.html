@@ -48,8 +48,10 @@
 						scripts: [
 							{
 								name: 'firstScript',
-								script: '#move n 4\n' +
-										'#move s 1',
+								script: '#wait 10\n' +
+								        '#move n 4\n' +
+										'#move s 1\n' +
+										'#char 148\n',
 								lines: [
 									':start',
 									'#wait 10',

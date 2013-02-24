@@ -7,6 +7,12 @@ jzt.parser = jzt.parser || {};
 jzt.parser.Assembly = function(text) {
     
     this.tokens = text != undefined ? text.match(/\w+|"(?:\\"|[^"])+"|[^\s]|\n/g) : [];
+    
+    // If the regex doesn't match, it returns null
+    if(this.tokens == null) {
+        this.tokens = [];
+    }
+    
     this.index = 0;
     this.stack = [];
     this.target = undefined;
@@ -225,12 +231,23 @@ jzt.parser.Alternation.prototype = new jzt.parser.CollectionParser();
 jzt.parser.Alternation.prototype.constructor = jzt.parser.Alternation;
 
 jzt.parser.Alternation.prototype.match = function(assemblies) {
+    
+    var error = undefined;
     var result = [];
     
     for(var index = 0; index < this.subParsers.length; ++index) {
         var subParser = this.subParsers[index];
-        var alternationResult = subParser.matchAndAssemble(assemblies);
-        result = result.concat(alternationResult);
+        try {
+            var alternationResult = subParser.matchAndAssemble(assemblies);
+            result = result.concat(alternationResult);
+        }
+        catch(exception) {
+            error = exception;
+        }
+    }
+    
+    if(result.length <= 0) {
+        throw error;
     }
     
     return result;
@@ -288,22 +305,22 @@ jzt.parser.Terminal.prototype._matchAssembly = function(assembly) {
 };
 
 /*
- *  NumberTerminal
+ *  Number
  */ 
-jzt.parser.NumberTerminal = function() {
+jzt.parser.Number = function() {
     this.assembler = undefined;
     this.discard = false;
 };
-jzt.parser.NumberTerminal.prototype = new jzt.parser.Terminal();
+jzt.parser.Number.prototype = new jzt.parser.Terminal();
 
-jzt.parser.NumberTerminal.prototype.qualifies = function(token) {
+jzt.parser.Number.prototype.qualifies = function(token) {
     return ! isNaN(parseInt(token, 10));
 };
 
 /*
- * LiteralTerminal
+ * Literal
  */
-jzt.parser.LiteralTerminal = function(literalValue, caseSensitive) {
+jzt.parser.Literal = function(literalValue, caseSensitive) {
     this.assembler = undefined;
     this.caseSensitive = caseSensitive;
     this.literalValue = literalValue;
@@ -313,10 +330,10 @@ jzt.parser.LiteralTerminal = function(literalValue, caseSensitive) {
     }
     
 };
-jzt.parser.LiteralTerminal.prototype = new jzt.parser.Terminal();
-jzt.parser.LiteralTerminal.prototype.constructor = jzt.parser.LiteralTerminal;
+jzt.parser.Literal.prototype = new jzt.parser.Terminal();
+jzt.parser.Literal.prototype.constructor = jzt.parser.Literal;
 
-jzt.parser.LiteralTerminal.prototype.qualifies = function(token) {
+jzt.parser.Literal.prototype.qualifies = function(token) {
     if(!this.caseSensitive && token) {
         token = token.toUpperCase();
     }
@@ -324,15 +341,15 @@ jzt.parser.LiteralTerminal.prototype.qualifies = function(token) {
 };
 
 /*
- * WordTerminal
+ * Word
  */
-jzt.parser.WordTerminal = function(){
+jzt.parser.Word = function(){
     this.assembler = undefined;
     this.discard = false;
 };
-jzt.parser.WordTerminal.prototype = new jzt.parser.Terminal();
-jzt.parser.WordTerminal.prototype.constructor = jzt.parser.WordTerminal;
-jzt.parser.WordTerminal.prototype.qualifies = function(token) {
+jzt.parser.Word.prototype = new jzt.parser.Terminal();
+jzt.parser.Word.prototype.constructor = jzt.parser.Word;
+jzt.parser.Word.prototype.qualifies = function(token) {
     if(token) {
         return token.match(/^[^\d\s][\w]*$/) != null;
     }
@@ -340,15 +357,15 @@ jzt.parser.WordTerminal.prototype.qualifies = function(token) {
 };
 
 /*
- * NewLineTerminal
+ * NewLine
  */
-jzt.parser.NewLineTerminal = function(){
+jzt.parser.NewLine = function(){
     this.assembler = undefined;
     this.discard = false;
 };
-jzt.parser.NewLineTerminal.prototype = new jzt.parser.Terminal();
-jzt.parser.NewLineTerminal.prototype.constructor = jzt.parser.NewLineTerminal;
-jzt.parser.NewLineTerminal.prototype.qualifies = function(token) {
+jzt.parser.NewLine.prototype = new jzt.parser.Terminal();
+jzt.parser.NewLine.prototype.constructor = jzt.parser.NewLine;
+jzt.parser.NewLine.prototype.qualifies = function(token) {
     return token === '\n';
 };
 

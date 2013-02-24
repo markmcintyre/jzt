@@ -6,7 +6,7 @@ jzt.Script = function(owner, scriptData) {
     this.owner = owner;
     this.commands = [];
     this.labels = {};
-    this.commandIndex = 0;
+    this.commandIndex = -1;
     
     this._assemble(scriptData.script);
     
@@ -17,30 +17,48 @@ jzt.Script.prototype._assemble = function(script) {
         
         var factory = new jztscript.CommandFactory();
         
+        // Split our lines by newline character
         var lines = script.split(/\n/);
+        
+        // For each script line...
         for(var index = 0; index < lines.length; ++index) {
             
+            // Retrieve the next line
             var line = lines[index];
             var result;
             
+            // Parse the line
             try {
                 result = factory.parseLine(line);
             }
+            
+            // If there was an error parsing, cancel the script and output an error
             catch(ex) {
                 this.commandIndex = -1;
                 console.warn('Syntax error in script \'%s\' on line %d.\n> %s\n> %s.', this.name, index, line, ex);
                 return;
             };
-            
-            // If we found a label, add it to our labels
-            if(result instanceof jzt.commands.Label) {
-                this._addLabel(result, this.commands.length-1);
+
+            // If we got an empty line, skip this iteration
+            if(result == undefined) {
+                continue;
             }
             
+            // If we got a label, add it to our labels
+            else if(result instanceof jzt.commands.Label) {
+                this._addLabel(result, this.commands.length-1);
+            }
+        
             // Otherwise it's a command to add to our set
             else {
                 this.commands.push(result);
             }
+            
+        }
+        
+        // If we have at least one command, we can execute
+        if(this.commands.length > 0) {
+            this.commandIndex = 0;
         }
         
     }

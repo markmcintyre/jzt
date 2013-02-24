@@ -55,6 +55,40 @@ jzt.commands.Direction = {
 };
 
 /*
+ * Char Command
+ */
+jzt.commands.Char = function() {
+    this.character = undefined;
+}
+
+jzt.commands.Char.prototype.clone = function() {
+    var clone = new jzt.commands.Char();
+    clone.character = this.character;
+    return clone;
+};
+
+jzt.commands.Char.prototype.execute = function(owner) {
+    owner.spriteIndex = this.character;
+};
+
+/*
+ * Label
+ */
+jzt.commands.Label = function() {
+    this.id = undefined;
+    this.indicies = [];
+    this.currentIndex = -1;
+};
+
+jzt.commands.Label.prototype.clone = function() {
+    var clone = new jzt.commands.Label();
+    clone.id = this.id;
+    clone.indicies = this.indicies.slice(0);
+    clone.currentIndex = this.currentIndex;
+    return clone;
+};
+
+/*
  * Move Command
  */
 jzt.commands.Move = function() {
@@ -118,4 +152,21 @@ jzt.commands.Move.prototype.execute = function(owner) {
     
 };
 
-jzt.commands.Label = function() {};
+/**
+ * Wait Command
+ */
+jzt.commands.Wait = function() {
+    this.cycles = 1;
+};
+
+jzt.commands.Wait.prototype.clone = function() {
+    var clone = new jzt.commands.Wait();
+    clone.cycles = this.cycles;
+    return clone;
+};
+
+jzt.commands.Wait.prototype.execute = function(owner) {
+    if(--this.cycles > 0) {
+        return jzt.commands.CommandResult.REPEAT;
+    }
+};
