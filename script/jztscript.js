@@ -210,7 +210,7 @@ jztscript.parsers.LabelParser = function() {
     var assembler = {
         assemble: function(assembly) {
             var label = new jzt.commands.Label();
-            label.id = assembly.stack.pop();
+            label.id = assembly.stack.pop().toUpperCase();
             assembly.target = label;
         }
     };
@@ -256,7 +256,7 @@ jztscript.parsers.RestoreParser = function() {
     result.assembler = {
         assemble: function(assembly) {
             var command = new jzt.command.Restore();
-            command.label = assembly.stack.pop();
+            command.label = assembly.stack.pop().toUpperCase();
             assembly.target = command;
         }
     };
@@ -325,4 +325,23 @@ jztscript.parsers.WaitParser = function() {
  */
 jztscript.parsers.WalkParser = function() {
     return jztscript.parserhelper.MovementParser(jzt.commands.Walk, 'walk', true);
+};
+
+/*
+ * Zap Parser
+ */
+jztscript.parsers.ZapParser = function() {
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+    result.add(ns.discard(new ns.Literal('#')));
+    result.add(ns.discard(new ns.Literal('zap')));
+    result.add(new ns.Word());
+    result.assembler = {
+        assemble: function(assembly) {
+            var command = new jzt.commands.Zap();
+            command.label = assembly.stack.pop().toUpperCase();
+            assembly.target = command;
+        }
+    };
+    return result;
 };

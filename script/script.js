@@ -160,8 +160,6 @@ jzt.Script.prototype.executeTick = function() {
 
 jzt.Script.prototype.jumpToLabel = function(label) {
     
-    label = label.toUpperCase();
-    
     if(this.labels.hasOwnProperty(label)) {
         
         var labelData = this.labels[label];
@@ -184,8 +182,6 @@ jzt.Script.prototype.jumpToLabel = function(label) {
 
 jzt.Script.prototype.zapLabel = function(label) {
     
-    label = label.toUpperCase();
-    
     if(this.labels.hasOwnProperty(label)) {
         
         var labelData = this.labels[label];
@@ -198,8 +194,6 @@ jzt.Script.prototype.zapLabel = function(label) {
 
 jzt.Script.prototype.restoreLabel = function(label) {
   
-    label = label.toUpperCase();
-    
     if(this.labels.hasOwnProperty(label)) {
         
         var labelData = this.labels[label];

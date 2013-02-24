@@ -297,3 +297,41 @@ jzt.commands.Wait.prototype.execute = function(owner) {
         return jzt.commands.CommandResult.REPEAT;
     }
 };
+
+/*
+ * Walk Command
+ */
+jzt.commands.Walk = function() {
+    this.modifiers = [];
+    this.direction = undefined;
+};
+
+jzt.commands.Walk.prototype.clone = function() {
+    var clone = new jzt.commands.Walk();
+    clone.modifiers = this.modifiers.slice(0);
+    clone.direction = this.direction;
+    return clone;
+};
+
+jzt.commands.Walk.prototype.execute = function(owner) {
+    var direction = this.direction.process(owner);
+    owner.walkDirection = direction;
+};
+
+/*
+ * Zap Command
+ */
+jzt.commands.Zap = function() {
+    this.label = undefined;
+};
+
+jzt.commands.Zap.prototype.clone = function() {
+    var clone = new jzt.commands.Zap();
+    clone.label = this.label;
+    return clone;
+};
+
+jzt.commands.Zap.prototype.execute = function(owner) {
+    owner.script.zapLabel(this.label);
+    return jzt.commands.CommandResult.CONTINUE;
+};
