@@ -10,8 +10,8 @@
 		
 		// Sequence
 		var s = new jzt.parser.Sequence();
-		s.add(new jzt.parser.NumberTerminal());
-		s.add(new jzt.parser.WordTerminal());
+		s.add(new jzt.parser.Number());
+		s.add(new jzt.parser.Word());
 		
 		var a = new jzt.parser.Assembly('100 hello');
 		var result = s.bestMatch(a);
@@ -52,7 +52,7 @@
 		}
 		
 		// Repetition
-		var r = new jzt.parser.Repetition(new jzt.parser.WordTerminal());
+		var r = new jzt.parser.Repetition(new jzt.parser.Word());
 		
 		a = new jzt.parser.Assembly('hello world this is Mark');
 		result = r.bestMatch(a);
@@ -70,9 +70,9 @@
 		
 		// Alternation
 		var alt = new jzt.parser.Alternation();
-		alt.add(new jzt.parser.LiteralTerminal("hello"));
-		alt.add(new jzt.parser.LiteralTerminal("world"));
-		alt.add(new jzt.parser.LiteralTerminal("!"));
+		alt.add(new jzt.parser.Literal("hello"));
+		alt.add(new jzt.parser.Literal("world"));
+		alt.add(new jzt.parser.Literal("!"));
 		
 		a = new jzt.parser.Assembly('hello');
 		result = alt.bestMatch(a);

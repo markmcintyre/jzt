@@ -23,13 +23,13 @@
 		};
 	
 		// Word Terminal
-		var t = new jzt.parser.WordTerminal();
+		var t = new jzt.parser.Word();
 		t.assembler = capitalAssembler;
 		var a = new jzt.parser.Assembly('hello');
 		var result = t.bestMatch(a);
 		console.assert(capitalAssembler.value == 'HELLO');
 		
-		// Repetition of WordTerminal
+		// Repetition of Word
 		capitalAssembler.value = undefined;
 		t.assembler = undefined;
 		var r = new jzt.parser.Repetition(t);
@@ -41,9 +41,9 @@
 		// Alternation
 		capitalAssembler.value = undefined;
 		var alt = new jzt.parser.Alternation();
-		alt.add(new jzt.parser.LiteralTerminal("hello"));
-		alt.add(new jzt.parser.LiteralTerminal("world"));
-		alt.add(new jzt.parser.LiteralTerminal("!"));
+		alt.add(new jzt.parser.Literal("hello"));
+		alt.add(new jzt.parser.Literal("world"));
+		alt.add(new jzt.parser.Literal("!"));
 		alt.assembler = capitalAssembler;
 		
 		a = new jzt.parser.Assembly('mark');

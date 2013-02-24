@@ -246,7 +246,7 @@ jzt.parser.Alternation.prototype.match = function(assemblies) {
         }
     }
     
-    if(result.length <= 0) {
+    if(result.length <= 0 && error != undefined) {
         throw error;
     }
     

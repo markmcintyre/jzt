@@ -27,7 +27,7 @@
 		var tt1 = new jzt.parser.Assembly("100");
 		var tt2 = new jzt.parser.Assembly("abc");
 		var tt3 = new jzt.parser.Assembly("2");
-		var num = new jzt.parser.NumberTerminal();
+		var num = new jzt.parser.Number();
 		var result = num.findBestAssembly([tt1, tt2, tt3]);
 		console.assert(result == tt1);
 		

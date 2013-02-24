@@ -77,6 +77,110 @@ jztscript.CharParser = function() {
     return result;
     
 }
+
+/*
+ * Die Parser
+ * command = '#' 'die';
+ */
+jztscript.DieParser = function() {
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+    result.add(ns.discard(new ns.Literal('#')));
+    result.add(ns.discard(new ns.Literal('die')));
+    result.assembler = {
+        assemble: function(assembly) {
+          assembly.target = new jzt.commands.Die();
+        }
+    };
+    return result;
+    
+};
+
+/*
+ * End Parser
+ * command = '#' 'end';
+ */
+jztscript.EndParser = function() {
+  
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+    result.add(ns.discard(new ns.Literal('#')));
+    result.add(ns.discard(new ns.Literal('end')));
+    result.assembler = {
+        assemble: function(assembly) {
+            assembly.target = new jzt.commands.End();
+        }
+    };
+    return result;
+    
+};
+
+/*
+ * Go Parser
+ * command   = '#' 'go' modifier* direction (Empty | Number)
+ * modifier  = 'cw' | 'ccw' | 'opp' | 'rndp';
+ * direction = 'n' | 's' | 'e' | 'w' | 'north' | 'south' | 'east' | 'west' | 'seek'
+ *              | 'flow' | 'rand' | 'randf' | 'randb' | 'rndns' | 'rndew' | 'rndne';
+ */
+jztscript.GoParser = function() {
+    
+    var ns = jzt.parser;
+    var modifiers = jzt.commands.DirectionModifier;
+    var directions = jzt.commands.Direction;
+    
+    var assembler = {
+        assemble: function(assembly) {
+            var command = new jzt.commands.Go();
+            
+            // Get our top token
+            var token = assembly.stack.pop();
+
+            // If it's a number, then that's our count
+            var count = parseInt(token);
+            if(!isNaN(count)) {
+                command.count = count;
+                token = assembly.stack.pop();
+            }
+
+            // The next token is our direction
+            command.direction = jzt.commands.Direction[token.toUpperCase()];
+
+            // The rest of the tokens are our modifiers
+            while(assembly.stack.length > 0) {
+                token = assembly.stack.shift();
+                command.modifiers.push(jzt.commands.DirectionModifier[token.toUpperCase()]);
+            }
+            
+            assembly.target = command;
+        }
+    };
+    
+    // Direction Modifier
+    var directionModifier = new ns.Alternation();
+    for(var item in modifiers) {
+      if(modifiers.hasOwnProperty(item)) {
+          directionModifier.add( new ns.Literal(item));
+      }
+    }
+
+    // Direction
+    var direction = new ns.Alternation();
+    for(var item in directions) {
+      if(directions.hasOwnProperty(item)) {
+          direction.add( new ns.Literal(item));
+      }
+    }
+    
+    var result = new ns.Sequence();
+    result.add(ns.discard(new ns.Literal('#')));
+    result.add(ns.discard(new ns.Literal('go')));
+    result.add(ns.optional(new ns.Repetition(directionModifier)));
+    result.add(direction);
+    result.add(ns.optional(new ns.Number()));
+    result.assembler = assembler;
+    return result;
+    
+};
   
 /*
  * Label Parser
@@ -109,13 +213,10 @@ jztscript.LabelParser = function() {
 /*
  * Move Parser
  *
- * command   = syntax1 | syntax2;
- * syntax1   = 'move' modifier* direction;
- * syntax2   = 'move' modifier* direction count;
+ * command   = 'move' modifier* direction (Empty | Number);
  * modifier  = 'cw' | 'ccw' | 'opp' | 'rndp';
  * direction = 'n' | 's' | 'e' | 'w' | 'north' | 'south' | 'east' | 'west' | 'seek'
- *             | 'flow' | 'rand' | 'randf' | 'randb' | 'rndns' | 'rndew' | 'rndne';
- * count     = Number;            
+ *             | 'flow' | 'rand' | 'randf' | 'randb' | 'rndns' | 'rndew' | 'rndne';       
  */
 jztscript.MoveParser = function() {
     
@@ -211,6 +312,9 @@ jztscript.WaitParser = function() {
 
 jztscript.CommandParsers = [
     jztscript.CharParser,
+    jztscript.DieParser,
+    jztscript.EndParser,
+    jztscript.GoParser,
     jztscript.LabelParser,
     jztscript.MoveParser,
     jztscript.WaitParser,

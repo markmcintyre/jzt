@@ -8,23 +8,23 @@
 	
 	<script type="text/javascript">
 	
-		var number = new jzt.parser.NumberTerminal();
+		var number = new jzt.parser.Number();
 		console.assert(number.qualifies("100") == true);
 		console.assert(number.qualifies("abs") == false);
 		console.assert(number.qualifies(undefined) == false);
 		
-		var literal = new jzt.parser.LiteralTerminal("hello");
+		var literal = new jzt.parser.Literal("hello");
 		console.assert(literal.qualifies("hello") == true);
 		console.assert(literal.qualifies("Hello") == true);
 		console.assert(literal.qualifies("HeLlO") == true);
 		console.assert(literal.qualifies(undefined) == false);
 		
-		var caseLiteral = new jzt.parser.LiteralTerminal("hello", true);
+		var caseLiteral = new jzt.parser.Literal("hello", true);
 		console.assert(caseLiteral.qualifies("hello") == true);
 		console.assert(caseLiteral.qualifies("Hello") == false);
 		console.assert(caseLiteral.qualifies(undefined) == false);
 
-		var word = new jzt.parser.WordTerminal();
+		var word = new jzt.parser.Word();
 		console.assert(word.qualifies("hello") == true);
 		console.assert(word.qualifies("hello world") == false);
 		console.assert(word.qualifies("hello!") == false);
@@ -39,7 +39,7 @@
 		console.assert(word.qualifies("1") == false);
 		console.assert(word.qualifies(undefined) == false);
 		
-		var nl = new jzt.parser.NewLineTerminal();
+		var nl = new jzt.parser.NewLine();
 		console.assert(nl.qualifies("\r") == false);
 		console.assert(nl.qualifies("\n") == true);
 		console.assert(nl.qualifies(" ") == false);

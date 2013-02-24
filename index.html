@@ -48,10 +48,15 @@
 						scripts: [
 							{
 								name: 'firstScript',
-								script: '#wait 10\n' +
-								        '#move n 4\n' +
+								script: 
+								        '#move opp ccw cw ccw opp opp w 4\n' +
 										'#move s 1\n' +
-										'#char 148\n',
+										'#char 148\n' +
+										'#wait 5\n' +
+										'#go west 5\n' +
+										'#end\n' + 
+										'#die\n' +
+										'#end',
 								lines: [
 									':start',
 									'#wait 10',

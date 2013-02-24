@@ -59,7 +59,7 @@ jzt.commands.Direction = {
  */
 jzt.commands.Char = function() {
     this.character = undefined;
-}
+};
 
 jzt.commands.Char.prototype.clone = function() {
     var clone = new jzt.commands.Char();
@@ -69,6 +69,68 @@ jzt.commands.Char.prototype.clone = function() {
 
 jzt.commands.Char.prototype.execute = function(owner) {
     owner.spriteIndex = this.character;
+};
+
+/*
+ * Die Command
+ */
+jzt.commands.Die = function() {};
+jzt.commands.Die.prototype.clone = function() {return this;};
+
+jzt.commands.Die.prototype.execute = function(owner) {
+    owner.die();
+};
+
+/*
+ * End Command
+ */
+jzt.commands.End = function() {};
+jzt.commands.End.prototype.clone = function() {return this;};
+
+jzt.commands.End.prototype.execute = function(owner) {
+    owner.stopScript();
+};
+
+/*
+ * Go Command
+ */
+jzt.commands.Go = function() {
+    this.modifiers = [];
+    this.direction = undefined;
+    this.count = 1;
+};
+
+jzt.commands.Go.prototype.clone = function() {
+    var clone = new jzt.commands.Go();
+    clone.modifiers = this.modifiers.slice(0);
+    clone.direction = this.direction;
+    clone.count = this.count;
+    return clone;
+};
+
+jzt.commands.Go.prototype.execute = function(owner) {
+    
+    // Get our direction from our expression
+    var direction = this.direction.process(owner);
+    
+    // Evaluate our modifiers into a direction
+    var modifiers = this.modifiers.slice(0);
+    for(var modifier; modifier = modifiers.pop();) {
+        direction = modifier.process(direction);
+    }
+
+    // If a direction is available
+    if(direction) {
+
+        owner.move(direction);
+
+        // If we are to go a number of times...
+        if(--this.count > 0) {
+            return jzt.commands.CommandResult.REPEAT;
+        }
+
+    }
+
 };
 
 /*
