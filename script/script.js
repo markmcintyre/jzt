@@ -67,7 +67,7 @@ jzt.Script.prototype._assemble = function(script) {
 jzt.Script.prototype._addLabel = function(label, commandIndex) {
   
     if(this.labels.hasOwnProperty(label.id)) {
-        this.labels.indicies.push(commandIndex);
+        this.labels[label.id].indicies.push(commandIndex);
     }
     else {
         this.labels[label.id] = {
