@@ -98,7 +98,6 @@ jzt.JztObject.prototype.addMessage = function(message) {
         // We disallow duplicate messages in a row
         if(this._messageQueue[this._messageQueue.length-1] != message) {
             this._messageQueue.push(message);
-            this._nextTick = Date.now();
         }
 
     }
