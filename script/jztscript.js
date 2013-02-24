@@ -307,6 +307,45 @@ jztscript.parsers.MoveParser = function() {
 };
 
 /*
+ * Restore Parser
+ */
+jztscript.parsers.RestoreParser = function() {
+    var ns = jzt.parser;
+    
+    var result = new ns.Sequence();
+    result.add(ns.discard(new ns.Literal('#')));
+    result.add(ns.discard(new ns.Literal('restore')));
+    result.add(new ns.Word());
+    result.assembler = {
+        assemble: function(assembly) {
+            var command = new jzt.command.Restore();
+            command.label = assembly.stack.pop();
+            assembly.target = command;
+        }
+    };
+    return result;
+};
+
+/*
+ * Say Parser
+ */
+jztscript.parsers.SayParser = function() {
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+    result.add(ns.discard(new ns.Literal('#')));
+    result.add(ns.discard(new ns.Literal('say')));
+    result.add(new ns.String());
+    result.assembler = {
+        assemble: function(assembly) {
+            var command = new jzt.commands.Say();
+            command.text = ns.processString(assembly.stack.pop());
+            assembly.target = command;
+        }
+    };
+    return result;
+};
+
+/*
  * Wait Parser
  */
 jztscript.parsers.WaitParser = function() {

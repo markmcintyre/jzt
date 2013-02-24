@@ -151,6 +151,16 @@ jzt.commands.Label.prototype.clone = function() {
 };
 
 /*
+ * Lock Command
+ */
+jzt.commands.Lock = function() {};
+jzt.commands.Lock.prototype.clone = function(){return this;};
+jzt.commands.Lock.prototype.execute = function(owner) {
+    owner.setLocked(true);
+    return jzt.commands.CommandResult.CONTINUE;
+};
+
+/*
  * Move Command
  */
 jzt.commands.Move = function() {
@@ -212,6 +222,42 @@ jzt.commands.Move.prototype.execute = function(owner) {
         
     }
     
+};
+
+/*
+ * Restore Command
+ */
+jzt.commands.Restore = function() {
+    this.label = undefined;
+};
+
+jzt.commands.Restore.prototype.clone = function() {
+    var clone = new jzt.commands.Restore();
+    clone.label = this.label;
+    return clone;
+};
+
+jzt.commands.Restore.prototype.execute = function(owner) {
+    owner.script.restoreLabel(this.label);
+    return jzt.commands.CommandResult.CONTINUE;
+};
+
+/*
+ * Say Command
+ */
+jzt.commands.Say = function() {
+    this.text = undefined;
+};
+
+jzt.commands.Say.prototype.clone = function() {
+    var clone = new jzt.commands.Say();
+    clone.text = this.text;
+    return clone;
+};
+
+jzt.commands.Say.prototype.execute = function(owner) {
+    jzt.debug.log('%s says: %s', owner.name, this.text);
+    return jzt.commands.CommandResult.CONTINUE;
 };
 
 /**

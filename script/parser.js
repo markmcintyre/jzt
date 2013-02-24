@@ -357,6 +357,22 @@ jzt.parser.Word.prototype.qualifies = function(token) {
 };
 
 /*
+ * String
+ */
+jzt.parser.String = function() {
+    this.assembler = undefined;
+    this.discard = false;
+};
+jzt.parser.String.prototype = new jzt.parser.Terminal();
+jzt.parser.String.prototype.constructor = jzt.parser.String;
+jzt.parser.String.prototype.qualifies = function(token) {
+    if(token) {
+        return (token.charAt(0) == '"' && token.charAt(token.length-1) == '"');
+    }
+    return false;
+};
+
+/*
  * NewLine
  */
 jzt.parser.NewLine = function(){
@@ -370,7 +386,7 @@ jzt.parser.NewLine.prototype.qualifies = function(token) {
 };
 
 /*
- * Optional convenience parser
+ * Optional convenience parsers and methods
  */
 jzt.parser.optional = function(parser) {
     var result = new jzt.parser.Alternation();
@@ -382,4 +398,9 @@ jzt.parser.optional = function(parser) {
 jzt.parser.discard = function(terminal) {
     terminal.discard = true;
     return terminal;
+};
+
+jzt.parser.processString = function(token) {
+    // Remove opening quotes, closing quotes and single slashes
+    return token.replace(/^\"|\\(?!\\)|\"$/g, '');
 };
