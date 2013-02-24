@@ -12,8 +12,7 @@ jzt.JztObject = function(objectData) {
     
     this.point = new jzt.Point(objectData.x || -1, objectData.y || -1);
     
-    this.foregroundColor = objectData.foregroundColor || '#ffff00';
-    this.backgroundColor = objectData.backgroundColor || '#000000';
+    this.color = objectData.color || '0E';
     
 };
     
@@ -127,7 +126,7 @@ jzt.JztObject.prototype.die = function() {
     
 jzt.JztObject.prototype.setSpeed = function(speed) {
     speed = speed ? speed : 10;
-    this._ticksPerCycle = 1000 / speed;
+    this._ticksPerCycle = Math.round(1000 / speed);
 };
     
 jzt.JztObject.prototype.walk = function() {

@@ -7,12 +7,15 @@ jzt.Game = function(canvasElement, data) {
     
     this.FPS = 60;
     this.CPS = 60;
+    this.BLINK_SPEED = 4;
     this.MAX_TICKS_SKIPPED = 10;
-    this.SKIP_TICKS = 1000 / this.CPS;
+    this.SKIP_TICKS = Math.round(1000 / this.CPS);
+    this.SKIP_BLINK_TICKS = Math.round(1000 / this.BLINK_SPEED);
     
     this._intervalId = undefined;
     this._ticks = 0;
     this._nextTick = Date.now();
+    this._nextBlinkTick = Date.now();
     
     this.resources = {};
     this.resources.graphics = new jzt.Graphics(this);
@@ -25,6 +28,7 @@ jzt.Game = function(canvasElement, data) {
     this.context.imageSmoothingEnabled = false;
     this.context.webkitImageSmoothingEnabled = false;
     this.context.mozImageSmoothingEnabled = false;
+    this.blinkState = true;
 
     this.currentBoard = new jzt.Board(this.data.boards[0], this);
 
@@ -44,11 +48,16 @@ jzt.Game.prototype.loop = function() {
     if(this.resources.graphics.isReady()) {
     
         this._ticks = 0;
+        var now = Date.now();
 
-        while(Date.now() > this._nextTick && this._ticks < this.MAX_TICKS_SKIPPED) {
+        while(now > this._nextTick && this._ticks < this.MAX_TICKS_SKIPPED) {
             this.update();
             this._nextTick += this.SKIP_TICKS;
             this._ticks++;
+            if(now > this._nextBlinkTick) {
+                this.blinkState = ! this.blinkState;
+                this._nextBlinkTick += this.SKIP_BLINK_TICKS;
+            }
         }
 
         if(this._ticks) {

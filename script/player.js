@@ -9,8 +9,7 @@ jzt.Player = function(game) {
     this.spriteIndex = 2;
     this.game = game;
     this.point = new jzt.Point(1,1);
-    this.foregroundColor = 'brightWhite';
-    this.backgroundColor = 'blue';
+    this.color = '1F';
     
 };
     
@@ -29,7 +28,7 @@ jzt.Player.prototype.move = function(direction) {
     
     var success = this.game.currentBoard.moveTile(this.point, newLocation);
 
-    this._nextMove = Date.now() + 1000 / this.PLAYER_SPEED;
+    this._nextMove = Date.now() + Math.round(1000 / this.PLAYER_SPEED);
     
     return success;
 

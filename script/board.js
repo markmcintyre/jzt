@@ -228,7 +228,7 @@ jzt.Board.prototype.render = function(c) {
     this.each( function(tile) {
         if(tile) {
             var sprite = instance.game.resources.graphics.getSprite(tile.spriteIndex);
-            sprite.draw(c, tile.point, tile.backgroundColor, tile.foregroundColor);
+            sprite.draw(c, tile.point, tile.color);
         }
     });
     
