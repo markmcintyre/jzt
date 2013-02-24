@@ -10,10 +10,13 @@ jzt.Board = function(boardData, game) {
     this.tiles = new Array(this.width * this.height);
     this.scripts = boardData.scripts;
     this.jztObjects = [];
+    this.dark = boardData.dark;
     
     this._displayMessage = undefined;
     this._displayMessageTick = 0;
     this.DISPLAY_MESSAGE_TTL = game.CPS * 3; // 3 seconds
+    this.DARK_SPRITE = game.resources.graphics.getSprite(176);
+    this.DARK_SPRITE_COLOR = '08';
     
     this._initializeTiles(boardData.tiles);
     this._initializeObjects(boardData.jztObjects);
@@ -97,10 +100,13 @@ jzt.Board.prototype.getScriptData = function(scriptName) {
 };
     
 jzt.Board.prototype.each = function(callback) {
+    var point = new jzt.Point(0,0);
     for(var y = 0; y < this.height; ++y) {
         for(var x = 0; x < this.width; ++x) {
-            var tile = this.getTile(new jzt.Point(x,y));
-            callback(tile);
+            point.x = x;
+            point.y = y;
+            var tile = this.getTile(point);
+            callback(tile, point);
         }
     }
 }
@@ -237,33 +243,39 @@ jzt.Board.prototype.render = function(c) {
     c.fillStyle = '#000000';
     c.fillRect(0, 0, this.width * this.game.TILE_SIZE.x, this.height * this.game.TILE_SIZE.y);
     
-    this.each( function(tile) {
-        if(tile) {
+    this.each( function(tile, point) {
+        if(instance.dark && !instance.game.player.inVisibleRadius(point)) {
+            instance.DARK_SPRITE.draw(c, point, instance.DARK_SPRITE_COLOR);
+        }
+        else if(tile) {
             var sprite = instance.game.resources.graphics.getSprite(tile.spriteIndex);
             sprite.draw(c, tile.point, tile.color);
         }
     });
+
+    if(this._displayMessage != undefined) {
+        this._renderMessage(c);
+    }
     
-    // Draw our display message, if applicable
-    if(this._displayMessage != undefined && this._displayMessage.length > 0) {
-        
-        var messagePoint = new jzt.Point();
-        messagePoint.x = Math.floor((this.width - this._displayMessage.length) / 2);
-        messagePoint.y = this.height-1;
-        
-        for(var index = 0; index < this._displayMessage.length; ++index) {
-            var spriteIndex = this._displayMessage.charCodeAt(index);
-            if(spriteIndex >= 32 && spriteIndex <= 126) {
-                sprite = instance.game.resources.graphics.getSprite(spriteIndex);
-                sprite.draw(c, messagePoint, '0*');
-                messagePoint.x++;
-            }
+};
+
+jzt.Board.prototype._renderMessage = function(c) {
+    
+    var messagePoint = new jzt.Point();
+    messagePoint.x = Math.floor((this.width - this._displayMessage.length) / 2);
+    messagePoint.y = this.height-1;
+    
+    for(var index = 0; index < this._displayMessage.length; ++index) {
+        var spriteIndex = this._displayMessage.charCodeAt(index);
+        if(spriteIndex >= 32 && spriteIndex <= 126) {
+            sprite = this.game.resources.graphics.getSprite(spriteIndex);
+            sprite.draw(c, messagePoint, '0*');
+            messagePoint.x++;
         }
-        
-        if(--this._displayMessageTick <= 0) {
-            this._displayMessage = undefined;
-        }
-        
+    }
+    
+    if(--this._displayMessageTick <= 0) {
+        this._displayMessage = undefined;
     }
     
 };

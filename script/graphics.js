@@ -1,6 +1,6 @@
 window.jzt = window.jzt || {};
 
-jzt.Graphics = function(game) {
+jzt.Graphics = function(game, onLoadCallback) {
   
     this.SPRITE_DATA_WIDTH = 128;
     this.SPRITE_DATA_HEIGHT = 256;
@@ -13,6 +13,7 @@ jzt.Graphics = function(game) {
     this.spriteSource = new Image();
     this.spriteSource.src = this.SPRITE_DATA;
     this.colorSpriteSource = undefined;
+    this.onLoadCallback = onLoadCallback;
     
     var instance = this;
     this.spriteSource.onload = function() {
@@ -55,6 +56,7 @@ jzt.Graphics = function(game) {
                 context.putImageData(imageData, 0, yOffset);
                 
             }
+
         }
 
         // Create sprites
@@ -71,7 +73,7 @@ jzt.Graphics = function(game) {
             }
         }
         
-        instance.ready = true;
+        instance.onLoadCallback();
         
     };
     

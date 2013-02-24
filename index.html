@@ -95,8 +95,9 @@
 		
 			jzt.debug.on = true;
 			var canvas = document.getElementById('jzt');
-			var game = new jzt.Game(canvas, data);
-			game.run();
+			var game = new jzt.Game(canvas, data, function() {
+				this.run();
+			});
 		</script>
 		
 	</body>

@@ -1,6 +1,6 @@
 window.jzt = window.jzt || {};
 
-jzt.Game = function(canvasElement, data) {
+jzt.Game = function(canvasElement, data, onLoadCallback) {
     
     this.TILE_SIZE = new jzt.Point(16, 32);
     this.SPRITE_SIZE = new jzt.Point(8, 16);
@@ -18,10 +18,9 @@ jzt.Game = function(canvasElement, data) {
     this._nextTick = Date.now();
     this._nextBlinkTick = Date.now();
     
-    this.resources = {};
-    this.resources.graphics = new jzt.Graphics(this);
-
     this.data = data;
+    this.onLoadCallback = onLoadCallback;
+    this.resources = {};
     this.player = new jzt.Player(this);
     this.keyboard = new jzt.KeyboardInput();
     this.canvasElement = canvasElement;
@@ -32,13 +31,21 @@ jzt.Game = function(canvasElement, data) {
     this.blinkState = true;
     this.colorCycleIndex = 0;
 
-    this.currentBoard = new jzt.Board(this.data.boards[0], this);
+    this.currentBoard = undefined;
+    
+    var graphicsLoadedCallback = this.onGraphicsLoaded.bind(this);
+    this.resources.graphics = new jzt.Graphics(this, graphicsLoadedCallback);
 
+};
+
+jzt.Game.prototype.onGraphicsLoaded = function() {
+    this.onLoadCallback();
 };
 
 jzt.Game.prototype.run = function() {
 
     this.keyboard.initialize();
+    this.currentBoard = new jzt.Board(this.data.boards[0], this);
         
     // Start the game loop
     this._intervalId = setInterval(this.loop.bind(this), 1000 / this.FPS);
@@ -47,26 +54,22 @@ jzt.Game.prototype.run = function() {
     
 jzt.Game.prototype.loop = function() {
     
-    if(this.resources.graphics.isReady()) {
-    
-        this._ticks = 0;
-        var now = Date.now();
+    this._ticks = 0;
+    var now = Date.now();
 
-        while(now > this._nextTick && this._ticks < this.MAX_TICKS_SKIPPED) {
-            this.update();
-            this._nextTick += this.SKIP_TICKS;
-            this._ticks++;
-            if(now > this._nextBlinkTick) {
-                this.blinkState = ! this.blinkState;
-                this.colorCycleIndex = this.colorCycleIndex >= this.COLOR_CYCLE_MAX ? 0 : this.colorCycleIndex + 1;
-                this._nextBlinkTick += this.SKIP_BLINK_TICKS;
-            }
+    while(now > this._nextTick && this._ticks < this.MAX_TICKS_SKIPPED) {
+        this.update();
+        this._nextTick += this.SKIP_TICKS;
+        this._ticks++;
+        if(now > this._nextBlinkTick) {
+            this.blinkState = ! this.blinkState;
+            this.colorCycleIndex = this.colorCycleIndex >= this.COLOR_CYCLE_MAX ? 0 : this.colorCycleIndex + 1;
+            this._nextBlinkTick += this.SKIP_BLINK_TICKS;
         }
+    }
 
-        if(this._ticks) {
-            this.draw();
-        }
-    
+    if(this._ticks) {
+        this.draw();
     }
     
 };
