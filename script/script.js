@@ -104,7 +104,7 @@ jzt.ScriptContext = function(script, owner) {
 jzt.ScriptContext.prototype.initializeLabels = function(script) {
     for(label in script.labelIndicies) {
         if(script.labelIndicies.hasOwnProperty(label)) {
-            this.labelIndex[label] = script.labelIndicies[label][0];
+            this.currentLabels[label] = 0;
         }
     }
 };
@@ -182,12 +182,13 @@ jzt.ScriptContext.prototype.jumpToLabel = function(label) {
     if(this.currentLabels.hasOwnProperty(label)) {
         
         var labelIndex = this.currentLabels[label];
+        var labelIndicies = this.script.labelIndicies[label];
         
         // If all labels aren't zapped...
-        if(labelIndex < this.script.labelIndicies[label].length) {
+        if(labelIndex < labelIndicies.length) {
             
             // Set our current line to the active label index
-            this.commandIndex = this.script.labelIndicies[label][labelIndex];
+            this.commandIndex = labelIndicies[labelIndex];
         
             /* We wish to start at the line after the label, as well as
                clear any stored commands. */

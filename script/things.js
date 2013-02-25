@@ -184,6 +184,24 @@ jzt.things.Boulder.prototype.constructor = jzt.things.Boulder;
 jzt.things.Boulder.prototype.isPushable = function(direction) {
     return true;
 };
+
+/*
+ * Forest
+ */
+jzt.things.Forest = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.spriteIndex = 176;
+    this.foreground = jzt.colors.Colors['0'];
+    this.background = jzt.colors.Colors['2'];
+};
+jzt.things.Forest.prototype = new jzt.things.Thing();
+jzt.things.Forest.prototype.constructor = jzt.things.Forest;
+
+jzt.things.Forest.prototype.sendMessage = function(message) {
+    if(message == 'TOUCH') {
+        this.board.deleteTile(this.point);
+    }
+}
  
 /*
  * Player

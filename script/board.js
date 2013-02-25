@@ -59,6 +59,9 @@ jzt.Board.prototype.initializeTiles = function(tileDataCollection) {
                 case '@':
                     thing = new jzt.things.Boulder(this);
                     break;
+                case '*':
+                    thing = new jzt.things.Forest(this);
+                    break;
                 case ' ':
                     thing = undefined;
                     break;
