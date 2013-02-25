@@ -351,7 +351,7 @@ jzt.things.Player.prototype.inTorchRange = function(point) {
         var yDiff = Math.abs(point.y - this.point.y);
 
         // Calculate a torch modifier based on its strength
-        var torchModifier = this.MAX_TORCH_STRENGTH - this._torchStrength;
+        var torchModifier = this.MAX_TORCH_STRENGTH - this.torchStrength;
         yDiff = yDiff + torchModifier;
 
         // Our radius depends on the distance

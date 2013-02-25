@@ -16,7 +16,7 @@ jzt.Board = function(boardData, game) {
     this._displayMessageTick = 0;
     this.DISPLAY_MESSAGE_TTL = game.CPS * 3; // 3 seconds
     this.DARK_SPRITE = game.resources.graphics.getSprite(176);
-    this.DARK_SPRITE_COLOR = '08';
+    this.DARK_SPRITE_COLOR = jzt.colors.Colors['8'];
     
     this.initializeTiles(boardData.tiles);
     this.initializeScripts(boardData.scripts);
@@ -259,8 +259,8 @@ jzt.Board.prototype.render = function(c) {
     c.fillRect(0, 0, this.width * this.game.TILE_SIZE.x, this.height * this.game.TILE_SIZE.y);
     
     this.each( function(thing, point) {
-        if(instance.dark && !instance.game.player.inVisibleRadius(point)) {
-            instance.DARK_SPRITE.draw(c, point, instance.DARK_SPRITE_COLOR);
+        if(instance.dark && !instance.game.player.inTorchRange(point)) {
+            instance.DARK_SPRITE.draw(c, point, instance.DARK_SPRITE_COLOR, jzt.colors.Colors['0']);
         }
         else if(thing) {
             var sprite = instance.game.resources.graphics.getSprite(thing.spriteIndex);
