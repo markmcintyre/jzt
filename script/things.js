@@ -38,6 +38,10 @@ jzt.things.Thing.prototype.move = function(direction) {
     return this.board.moveTile(this.point, this.point.add(direction));
 };
 
+jzt.things.Thing.prototype.delete = function() {
+    this.board.deleteTile(this.point);
+};
+
 /*
  * Updateable Thing
  */
@@ -57,10 +61,6 @@ jzt.things.UpdateableThing.prototype.setSpeed = function(speed) {
     this.speed = speed;
     this.ticksPerCycle = Math.round(1000 / this.speed);
     this.nextTick = Date.now() + this.ticksPerCycle;
-};
-
-jzt.things.UpdateableThing.prototype.move = function(direction) {
-    return this.board.moveTile(this.point, this.point.add(direction));
 };
 
 jzt.things.UpdateableThing.prototype.getPlayerDirection = function() {
@@ -106,7 +106,7 @@ jzt.things.UpdateableThing.prototype.update = function() {
  */
 jzt.things.ScriptableThing = function(board) {
     jzt.things.UpdateableThing.call(this, board);
-    this.script = undefined;
+    this.scriptContext = undefined;
     this.messageQueue = [];
     this.walkDirection = undefined;
     this.locked = false;
@@ -117,9 +117,9 @@ jzt.things.ScriptableThing.prototype.constructor = jzt.things.ScriptableThing;
 
 jzt.things.ScriptableThing.prototype.loadFromData = function(data) {
     jzt.things.UpdateableThing.prototype.loadFromData.call(this, data);
-    var scriptData = this.board.getScript(data.script);
-    if(scriptData) {
-        this.script = new jzt.Script(this, scriptData);
+    var script = this.board.getScript(data.script);
+    if(script) {
+        this.scriptContext = script.newContext(this);
     }
 };
 
@@ -138,8 +138,8 @@ jzt.things.ScriptableThing.prototype.sendMessage = function(message) {
 };
 
 jzt.things.ScriptableThing.prototype.move = function(direction) {
-    jzt.things.UpdateableThing.prototype.move.call(this, direction);
     this.orientation = direction;
+    return jzt.things.UpdateableThing.prototype.move.call(this, direction);
 };
 
 jzt.things.ScriptableThing.prototype.walk = function() {
@@ -161,7 +161,7 @@ jzt.things.ScriptableThing.prototype.update = function() {
     
     if(now > this.nextTick) {
         this.walk();
-        this.script.executeTick();
+        this.scriptContext.executeTick();
         this.nextTick = now + this.ticksPerCycle;
     };
     

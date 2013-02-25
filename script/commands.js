@@ -78,7 +78,7 @@ jzt.commands.Die = function() {};
 jzt.commands.Die.prototype.clone = function() {return this;};
 
 jzt.commands.Die.prototype.execute = function(owner) {
-    owner.die();
+    owner.delete();
 };
 
 /*
@@ -88,7 +88,7 @@ jzt.commands.End = function() {};
 jzt.commands.End.prototype.clone = function() {return this;};
 
 jzt.commands.End.prototype.execute = function(owner) {
-    owner.script.stop();
+    owner.scriptContext.stop();
 };
 
 /*

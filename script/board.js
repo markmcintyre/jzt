@@ -8,7 +8,7 @@ jzt.Board = function(boardData, game) {
     this.height = boardData.height;
     this.messages = [];
     this.tiles = new Array(this.width * this.height);
-    this.scripts = boardData.scripts;
+    this.scripts = [];
     this.updateableThings = [];
     this.dark = boardData.dark;
     
@@ -19,8 +19,18 @@ jzt.Board = function(boardData, game) {
     this.DARK_SPRITE_COLOR = '08';
     
     this.initializeTiles(boardData.tiles);
+    this.initializeScripts(boardData.scripts);
     this.initializeScriptableThings(boardData.scriptables);
     this.initializePlayer(game.player);
+    
+};
+
+jzt.Board.prototype.initializeScripts = function(scriptData) {
+    
+    for(var index = 0; index < scriptData.length; ++index) {
+        var script = new jzt.Script(scriptData[index]);
+        this.scripts.push(script);
+    }
     
 };
 
@@ -114,6 +124,29 @@ jzt.Board.prototype.each = function(callback) {
     }
 }
     
+jzt.Board.prototype.deleteTile = function(point) {
+    
+    var thing = this.getTile(point);
+    
+    // If our thing is an UpdateableThing, we need to delete it from our list
+    if(thing instanceof jzt.things.UpdateableThing) {
+        for(var index = this.updateableThings.length-1; index >= 0; --index) {
+            
+            var otherThing = this.updateableThings[index];
+            if(thing === otherThing) {
+                
+                // Remove our thing from our array
+                this.updateableThings.splice(index,1);
+                
+            }  
+        }
+    }
+
+    // Delete the tile
+    this.setTile(point, undefined);
+    
+};
+    
 jzt.Board.prototype.moveTile = function(oldPoint, newPoint) {
     
     
@@ -197,11 +230,6 @@ jzt.Board.prototype.update = function() {
         // Update the thing
         updateableThing.update();
         
-        // If our object died, remove it now
-        if(updateableThing.isDead) {
-            this.removeUpdatableThing(index);
-        }
-        
     }
         
 };
@@ -212,22 +240,6 @@ jzt.Board.prototype.setDisplayMessage = function(message) {
         this._displayMessage = this._displayMessage.substring(0, this.width);
     }
     this._displayMessageTick = this.DISPLAY_MESSAGE_TTL;
-};
-
-jzt.Board.prototype.removeUpdatableThing = function(index) {
-    
-    var moveableThing = this.updateableThings[index];
-    
-    if(moveableThing) {
-        
-        // Update our tile to contain nothing
-        this.setTile(moveableThing.point, undefined);
-    
-        // Remove our thing from our array
-        this.updateableThings.splice(index,1);
-        
-    }
-    
 };
     
 jzt.Board.prototype.render = function(c) {

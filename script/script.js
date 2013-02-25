@@ -1,18 +1,21 @@
 window.jzt = window.jzt || {};
 
-jzt.Script = function(owner, scriptData) {
+jzt.Script = function(scriptData) {
     
     this.name = scriptData.name;
-    this.owner = owner;
     this.commands = [];
-    this.labels = {};
-    this.commandIndex = -1;
+    this.labelIndicies = {};
     
-    this._assemble(scriptData.script);
+    this.assemble(scriptData.script);
     
 };
 
-jzt.Script.prototype._assemble = function(script) {
+jzt.Script.prototype.newContext = function(owner) {
+    return new jzt.ScriptContext(this, owner);
+};
+
+jzt.Script.prototype.assemble = function(script) {
+    
     if(script) {
         
         var factory = new jztscript.CommandFactory();
@@ -46,7 +49,7 @@ jzt.Script.prototype._assemble = function(script) {
             
             // If we got a label, add it to our labels
             else if(result instanceof jzt.commands.Label) {
-                this._addLabel(result, this.commands.length-1);
+                this.addLabel(result, this.commands.length-1);
             }
         
             // Otherwise it's a command to add to our set
@@ -64,25 +67,21 @@ jzt.Script.prototype._assemble = function(script) {
     }
 };
 
-jzt.Script.prototype._addLabel = function(label, commandIndex) {
+jzt.Script.prototype.addLabel = function(label, commandIndex) {
   
-    if(this.labels.hasOwnProperty(label.id)) {
-        this.labels[label.id].indicies.push(commandIndex);
+    if(this.labelIndicies.hasOwnProperty(label.id)) {
+        this.labelIndicies[label.id].push(commandIndex);
     }
     else {
-        this.labels[label.id] = {
-            currentIndex: 0,
-            indicies: [commandIndex]
-        };
+        this.labelIndicies[label.id] = [commandIndex];
     }
     
 };
 
-jzt.Script.prototype._getCommand = function() {
+jzt.Script.prototype.getCommand = function(commandIndex) {
     
-    var result = this.commands[this.commandIndex];
+    var result = this.commands[commandIndex];
     if(result == undefined) {
-        this.commandIndex = -1;
         return undefined;
     }
     
@@ -90,15 +89,35 @@ jzt.Script.prototype._getCommand = function() {
     
 };
 
-jzt.Script.prototype.isRunning = function() {
-    return this.commandIndex >= 0 && this.commandIndex < this.commands.length;
+/*
+ * ScriptContext
+ */
+jzt.ScriptContext = function(script, owner) {
+    this.owner = owner;
+    this.script = script;
+    this.commandIndex = 0;
+    this.currentLabels = {};
+    this.storedCommand = undefined;
+    this.initializeLabels(script);
 };
 
-jzt.Script.prototype.stop = function() {
+jzt.ScriptContext.prototype.initializeLabels = function(script) {
+    for(label in script.labelIndicies) {
+        if(script.labelIndicies.hasOwnProperty(label)) {
+            this.labelIndex[label] = script.labelIndicies[label][0];
+        }
+    }
+};
+
+jzt.ScriptContext.prototype.isRunning = function() {
+    return this.commandIndex >= 0 && this.commandIndex < this.script.commands.length;
+};
+
+jzt.ScriptContext.prototype.stop = function() {
     this.commandIndex = -1;
 };
 
-jzt.Script.prototype.executeTick = function() {
+jzt.ScriptContext.prototype.executeTick = function() {
     
     // If our owner has a message waiting...
     if(this.owner.messageQueue.length > 0) {
@@ -116,13 +135,13 @@ jzt.Script.prototype.executeTick = function() {
         var command;
         
         // If we have a stored command...
-        if(this._storedCommand) {
-            command = this._storedCommand;
+        if(this.storedCommand) {
+            command = this.storedCommand;
         }
         
         // Otherwise fetch a new command
         else {
-            command = this._getCommand();
+            command = this.script.getCommand(this.commandIndex);
         }
         
         if(command) {
@@ -145,7 +164,7 @@ jzt.Script.prototype.executeTick = function() {
             
                 // Execute the same command next tick
                 case jzt.commands.CommandResult.REPEAT:
-                    this._storedCommand = command;
+                    this.storedCommand = command;
                     break;
             
                 default:
@@ -158,17 +177,17 @@ jzt.Script.prototype.executeTick = function() {
     
 };
 
-jzt.Script.prototype.jumpToLabel = function(label) {
+jzt.ScriptContext.prototype.jumpToLabel = function(label) {
     
-    if(this.labels.hasOwnProperty(label)) {
+    if(this.currentLabels.hasOwnProperty(label)) {
         
-        var labelData = this.labels[label];
+        var labelIndex = this.currentLabels[label];
         
         // If all labels aren't zapped...
-        if(labelData.currentIndex < labelData.indicies.length) {
+        if(labelIndex < this.script.labelIndicies[label].length) {
             
             // Set our current line to the active label index
-            this.commandIndex = labelData.indicies[labelData.currentIndex];
+            this.commandIndex = this.script.labelIndicies[label][labelIndex];
         
             /* We wish to start at the line after the label, as well as
                clear any stored commands. */
@@ -180,39 +199,34 @@ jzt.Script.prototype.jumpToLabel = function(label) {
     
 };
 
-jzt.Script.prototype.zapLabel = function(label) {
+jzt.ScriptContext.prototype.zapLabel = function(label) {
     
-    if(this.labels.hasOwnProperty(label)) {
-        
-        var labelData = this.labels[label];
-        if(labelData.currentIndex + 1 <= labelData.indicies.length) {
-            labelData.currentIndex++;
+    if(this.currentLabels.hasOwnProperty(label)) {
+        var labelIndex = this.currentLabels[label];
+        if(labelIndex + 1 <= this.script.labelIndicies.length) {
+            this.currentLabels[label]++;
         }
     }
     
 };
 
-jzt.Script.prototype.restoreLabel = function(label) {
+jzt.ScriptContext.prototype.restoreLabel = function(label) {
   
-    if(this.labels.hasOwnProperty(label)) {
-        
-        var labelData = this.labels[label];
-        if(labelData.currentIndex - 1 >= 0) {
-            this.labels[label].currentIndex--;
+    if(this.currentLabels.hasOwnProperty(label)) {
+        var labelIndex = this.currentLabels[label];
+        if(labelIndex - 1 >= 0) {
+            this.currentLabels[label]--;
         }
-        
     }
     
 };
 
-jzt.Script.prototype.advanceLine = function() {
+jzt.ScriptContext.prototype.advanceLine = function() {
     if(this.isRunning()) {
-        
         // If we have a stored command, clear it
-        if(this._storedCommand) {
-            this._storedCommand = undefined;
+        if(this.storedCommand) {
+            this.storedCommand = undefined;
         }
-        
         this.commandIndex++;
     }
 };
