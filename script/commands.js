@@ -88,7 +88,7 @@ jzt.commands.End = function() {};
 jzt.commands.End.prototype.clone = function() {return this;};
 
 jzt.commands.End.prototype.execute = function(owner) {
-    owner.stopScript();
+    owner.script.stop();
 };
 
 /*
@@ -156,7 +156,7 @@ jzt.commands.Label.prototype.clone = function() {
 jzt.commands.Lock = function() {};
 jzt.commands.Lock.prototype.clone = function(){return this;};
 jzt.commands.Lock.prototype.execute = function(owner) {
-    owner.setLocked(true);
+    owner.locked = true;
     return jzt.commands.CommandResult.CONTINUE;
 };
 
@@ -276,7 +276,7 @@ jzt.commands.Stand.prototype.execute = function(owner) {
 jzt.commands.Unlock = function() {};
 jzt.commands.Unlock.prototype.clone = function(){return this};
 jzt.commands.Unlock.prototype.execute = function(owner) {
-    owner.setLocked(false);
+    owner.locked = false;
     return jzt.commands.CommandResult.CONTINUE;
 };
 

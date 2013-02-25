@@ -5,8 +5,8 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     this.TILE_SIZE = new jzt.Point(16, 32);
     this.SPRITE_SIZE = new jzt.Point(8, 16);
     
-    this.FPS = 60;
-    this.CPS = 60;
+    this.FPS = 30;
+    this.CPS = 30;
     this.BLINK_SPEED = 4;
     this.MAX_TICKS_SKIPPED = 10;
     this.SKIP_TICKS = Math.round(1000 / this.CPS);
@@ -21,7 +21,7 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     this.data = data;
     this.onLoadCallback = onLoadCallback;
     this.resources = {};
-    this.player = new jzt.Player(this);
+    this.player = new jzt.things.Player();
     this.keyboard = new jzt.KeyboardInput();
     this.canvasElement = canvasElement;
     this.context = canvasElement.getContext('2d');
@@ -46,6 +46,8 @@ jzt.Game.prototype.run = function() {
 
     this.keyboard.initialize();
     this.currentBoard = new jzt.Board(this.data.boards[0], this);
+    this.player.board = this.currentBoard;
+    this.player.game = this;
         
     // Start the game loop
     this._intervalId = setInterval(this.loop.bind(this), 1000 / this.FPS);

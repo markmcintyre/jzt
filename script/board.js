@@ -9,7 +9,7 @@ jzt.Board = function(boardData, game) {
     this.messages = [];
     this.tiles = new Array(this.width * this.height);
     this.scripts = boardData.scripts;
-    this.jztObjects = [];
+    this.updateableThings = [];
     this.dark = boardData.dark;
     
     this._displayMessage = undefined;
@@ -18,13 +18,13 @@ jzt.Board = function(boardData, game) {
     this.DARK_SPRITE = game.resources.graphics.getSprite(176);
     this.DARK_SPRITE_COLOR = '08';
     
-    this._initializeTiles(boardData.tiles);
-    this._initializeObjects(boardData.jztObjects);
-    this._initializePlayer(game.player);
+    this.initializeTiles(boardData.tiles);
+    this.initializeScriptableThings(boardData.scriptables);
+    this.initializePlayer(game.player);
     
 };
 
-jzt.Board.prototype._initializePlayer = function(player) {
+jzt.Board.prototype.initializePlayer = function(player) {
     this.player = player;
     this.setTile(player.point, player);
 }
@@ -32,7 +32,7 @@ jzt.Board.prototype._initializePlayer = function(player) {
 /*
  * Intializes tile data given a collection of serialized tiles.
  */
-jzt.Board.prototype._initializeTiles = function(tileDataCollection) {
+jzt.Board.prototype.initializeTiles = function(tileDataCollection) {
     
     for(var row = 0; row < this.height; ++row) {
         
@@ -40,23 +40,23 @@ jzt.Board.prototype._initializeTiles = function(tileDataCollection) {
         
         for(var column = 0; column < this.width; ++column) {
             
-            var tile;
+            var thing;
             
             switch(rowString.charAt(column)) {
                 case '#':
-                    tile = jzt.BuiltInFactory.create('jztWall');
+                    thing = new jzt.things.Wall(this);
                     break;
                 case '@':
-                    tile = jzt.BuiltInFactory.create('jztBounder');
+                    thing = new jzt.things.Boulder(this);
                     break;
                 case ' ':
-                    tile = undefined;
+                    thing = undefined;
                     break;
             }
             
-            if(tile) {
-                tile.setOwnerBoard(this);
-                this.setTile(new jzt.Point(column, row), tile);
+            if(thing) {
+                thing.board = this;
+                this.setTile(new jzt.Point(column, row), thing);
             }
             
         }
@@ -67,22 +67,25 @@ jzt.Board.prototype._initializeTiles = function(tileDataCollection) {
  * Initializes object data given a collection of serialized JZT
  * objects.
  */
-jzt.Board.prototype._initializeObjects = function(objectDataCollection) {
+jzt.Board.prototype.initializeScriptableThings = function(scriptableDataCollection) {
     
-    for(var index = 0; index < objectDataCollection.length; ++index) {
+    if(!scriptableDataCollection) {
+        return;
+    }
+    
+    for(var index = 0; index < scriptableDataCollection.length; ++index) {
         
-        var objectData = objectDataCollection[index];
-        var jztObject = new jzt.JztObject(objectData);
-        jztObject.setOwnerBoard(this);
-        jztObject.setScriptData(this.getScriptData(jztObject.scriptName));
-        this.setTile(jztObject.point, jztObject);
-        this.jztObjects.push(jztObject);
+        var scriptableData = scriptableDataCollection[index];
+        var scriptableThing = new jzt.things.ScriptableThing(this);
+        scriptableThing.loadFromData(scriptableData);
+        this.setTile(scriptableThing.point, scriptableThing);
+        this.updateableThings.push(scriptableThing);
         
     }
     
 };
 
-jzt.Board.prototype.getScriptData = function(scriptName) {
+jzt.Board.prototype.getScript = function(scriptName) {
     
     if(scriptName && this.scripts) {
         
@@ -123,15 +126,15 @@ jzt.Board.prototype.moveTile = function(oldPoint, newPoint) {
     // If we couldn't move, see if we can push
     else {
         
-        var tile = this.getTile(newPoint);
-        if(tile) {
+        var thing = this.getTile(newPoint);
+        if(thing) {
             
             var moveDirection = oldPoint.directionTo(newPoint);
             
-            if(tile.isWillingToMove(moveDirection)) {
+            if(thing.isPushable(moveDirection)) {
                 
                 // Try to move the pushable tile
-                var success = tile.move(moveDirection);
+                var success = thing.move(moveDirection);
             
                 // If the tile pushed, try moving again
                 if(success) {
@@ -185,27 +188,18 @@ jzt.Board.prototype.addMessage = function(message) {
     
 jzt.Board.prototype.update = function() {
         
-    // Iterate backwards in case an object needs to be removed
-    for(var index = this.jztObjects.length-1; index >= 0; --index) {
+    // Iterate backwards in case a thing needs to be removed
+    for(var index = this.updateableThings.length-1; index >= 0; --index) {
         
-        var jztObject = this.jztObjects[index];
+        // Grab our moveable thing
+        var updateableThing = this.updateableThings[index];
         
-        // Enqueue messages for jztObjects
-        for(var messageIndex = 0; messageIndex < this.messages.length; ++messageIndex) {
-            
-            var message = this.messages[messageIndex];
-            if(jztObject.name == message.to) {
-                jztObject.addMessage(message);
-            }
-            
-        }
-        
-        // Update the jztObject
-        jztObject.update();
+        // Update the thing
+        updateableThing.update();
         
         // If our object died, remove it now
-        if(jztObject.isDead) {
-            this.removeJztObject(index);
+        if(updateableThing.isDead) {
+            this.removeUpdatableThing(index);
         }
         
     }
@@ -220,17 +214,17 @@ jzt.Board.prototype.setDisplayMessage = function(message) {
     this._displayMessageTick = this.DISPLAY_MESSAGE_TTL;
 };
 
-jzt.Board.prototype.removeJztObject = function(index) {
+jzt.Board.prototype.removeUpdatableThing = function(index) {
     
-    var jztObject = this.jztObjects[index];
+    var moveableThing = this.updateableThings[index];
     
-    if(jztObject) {
+    if(moveableThing) {
         
         // Update our tile to contain nothing
-        this.setTile(jztObject.point, undefined);
+        this.setTile(moveableThing.point, undefined);
     
-        // Remove our object from our array
-        this.jztObjects.splice(index,1);
+        // Remove our thing from our array
+        this.updateableThings.splice(index,1);
         
     }
     
@@ -243,13 +237,13 @@ jzt.Board.prototype.render = function(c) {
     c.fillStyle = '#000000';
     c.fillRect(0, 0, this.width * this.game.TILE_SIZE.x, this.height * this.game.TILE_SIZE.y);
     
-    this.each( function(tile, point) {
+    this.each( function(thing, point) {
         if(instance.dark && !instance.game.player.inVisibleRadius(point)) {
             instance.DARK_SPRITE.draw(c, point, instance.DARK_SPRITE_COLOR);
         }
-        else if(tile) {
-            var sprite = instance.game.resources.graphics.getSprite(tile.spriteIndex);
-            sprite.draw(c, tile.point, tile.color);
+        else if(thing) {
+            var sprite = instance.game.resources.graphics.getSprite(thing.spriteIndex);
+            sprite.draw(c, thing.point, thing.foreground, thing.background);
         }
     });
 
@@ -269,7 +263,7 @@ jzt.Board.prototype._renderMessage = function(c) {
         var spriteIndex = this._displayMessage.charCodeAt(index);
         if(spriteIndex >= 32 && spriteIndex <= 126) {
             sprite = this.game.resources.graphics.getSprite(spriteIndex);
-            sprite.draw(c, messagePoint, '0*');
+            sprite.draw(c, messagePoint, '*', jzt.colors.Colors['0']);
             messagePoint.x++;
         }
     }

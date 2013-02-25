@@ -92,12 +92,7 @@ jzt.Sprite = function(point, owner) {
     this.owner = owner;
 };
 
-jzt.Sprite.prototype.draw = function(context, point, colorCode) {
-    
-    var backgroundCode = colorCode.charAt(0);
-    var foregroundCode = colorCode.charAt(1);
-    
-    var background = jzt.colors.Colors[backgroundCode];
+jzt.Sprite.prototype.draw = function(context, point, foreground, background) {
     
     /*
      * Back in the DOS days, a bright background would actually signal
@@ -118,7 +113,10 @@ jzt.Sprite.prototype.draw = function(context, point, colorCode) {
     // If we aren't blinking, or if the blink state is off, draw our sprite
     if(!blink || ! this.owner.game.blinkState) {
         
-        var foreground = (foregroundCode == '*') ? jzt.colors.COLOR_CYCLE[this.owner.game.colorCycleIndex] : jzt.colors.Colors[foregroundCode];
+        if(foreground == '*') {
+            foreground = jzt.colors.COLOR_CYCLE[this.owner.game.colorCycleIndex];
+        }
+
         var yOffset = foreground.index * this.owner.SPRITE_DATA_HEIGHT;
         
         context.drawImage(this.owner.colorSpriteSource, this.point.x, yOffset + this.point.y, this.owner.spriteSize.x, this.owner.spriteSize.y,

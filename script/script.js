@@ -101,10 +101,10 @@ jzt.Script.prototype.stop = function() {
 jzt.Script.prototype.executeTick = function() {
     
     // If our owner has a message waiting...
-    if(this.owner.hasMessage()) {
+    if(this.owner.messageQueue.length > 0) {
         
         // Grab our most recent message
-        var message = this.owner.getMessage();
+        var message = this.owner.messageQueue.shift();
         
         // If we were able to receive this message
         this.jumpToLabel(message);
