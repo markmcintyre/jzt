@@ -202,6 +202,23 @@ jzt.things.Forest.prototype.sendMessage = function(message) {
         this.board.deleteTile(this.point);
     }
 }
+
+/*
+ * InvisibleWall
+ */
+jzt.things.InvisibleWall = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.spriteIndex = 0;
+    this.foreground = jzt.colors.Colors['A'];
+};
+jzt.things.InvisibleWall.prototype = new jzt.things.Thing();
+jzt.things.InvisibleWall.prototype.constructor = jzt.things.InvisibleWall;
+
+jzt.things.InvisibleWall.prototype.sendMessage = function(message) {
+    if(message == 'TOUCH') {
+        this.spriteIndex = 178;
+    }
+};
  
 /*
  * Player
@@ -364,3 +381,15 @@ jzt.things.Wall = function(board) {
 };
 jzt.things.Wall.prototype = new jzt.things.Thing();
 jzt.things.Wall.prototype.constructor = jzt.things.Wall;
+
+/*
+ * Water
+ */
+jzt.things.Water = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.spriteIndex = 176;
+    this.background = jzt.colors.Colors['F'];
+    this.foreground = jzt.colors.Colors['9'];
+};
+jzt.things.Water.prototype = new jzt.things.Thing();
+jzt.things.Water.prototype.constructor = jzt.things.Water;

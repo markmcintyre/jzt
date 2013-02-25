@@ -62,6 +62,12 @@ jzt.Board.prototype.initializeTiles = function(tileDataCollection) {
                 case '*':
                     thing = new jzt.things.Forest(this);
                     break;
+                case 'w':
+                    thing = new jzt.things.Water(this);
+                    break;
+                case 'i':
+                    thing = new jzt.things.InvisibleWall(this);
+                    break;
                 case ' ':
                     thing = undefined;
                     break;
