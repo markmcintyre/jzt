@@ -6,7 +6,6 @@ jzt.Board = function(boardData, game) {
     this.game = game;
     this.width = boardData.width;
     this.height = boardData.height;
-    this.messages = [];
     this.tiles = new Array(this.width * this.height);
     this.scripts = [];
     this.updateableThings = [];
@@ -17,12 +16,50 @@ jzt.Board = function(boardData, game) {
     this.DISPLAY_MESSAGE_TTL = game.CPS * 3; // 3 seconds
     this.DARK_SPRITE = game.resources.graphics.getSprite(176);
     this.DARK_SPRITE_COLOR = jzt.colors.Colors['8'];
+    this.BOARD_DATA_WORD_LENGTH = 4;
     
     this.initializeTiles(boardData.tiles);
     this.initializeScripts(boardData.scripts);
     this.initializeScriptableThings(boardData.scriptables);
     this.initializePlayer(game.player);
     
+};
+
+jzt.Board.prototype.serialize = function() {
+
+    var result = {};
+    var point = new jzt.Point(0,0);
+
+    result.width = this.width;
+    result.height = this.height;
+    if(this.dark) {
+        result.dark = this.dark;
+    }
+    result.displayMessage = this._displayMessage;
+    result.tiles = [];
+    for(var row = 0; row < this.height; ++row) {
+
+        point.y = row;
+        var dataStream = '';
+
+        for(var column = 0; column < this.width; ++column) {
+
+            point.x = column;
+            var tile = this.getTile(point);
+            if(tile && tile.constructor.symbol != undefined) {
+                dataStream += tile.constructor.symbol + tile.background.code + tile.foreground.code;
+            }
+            else {
+                dataStream += '    ';
+            }
+        }
+
+        result.tiles.push(dataStream);
+
+    }
+
+    return result;
+
 };
 
 jzt.Board.prototype.initializeScripts = function(scriptData) {
@@ -44,42 +81,58 @@ jzt.Board.prototype.initializePlayer = function(player) {
  */
 jzt.Board.prototype.initializeTiles = function(tileDataCollection) {
     
+    // Establish our board height
+    this.height = tileDataCollection.length;
+    this.width = undefined;
+
+    // For each row in our collection
     for(var row = 0; row < this.height; ++row) {
-        
-        var rowString = tileDataCollection[row];
-        
-        for(var column = 0; column < this.width; ++column) {
-            
-            var thing;
-            
-            switch(rowString.charAt(column)) {
-                case '#':
-                    thing = new jzt.things.Wall(this);
-                    break;
-                case '@':
-                    thing = new jzt.things.Boulder(this);
-                    break;
-                case '*':
-                    thing = new jzt.things.Forest(this);
-                    break;
-                case 'w':
-                    thing = new jzt.things.Water(this);
-                    break;
-                case 'i':
-                    thing = new jzt.things.InvisibleWall(this);
-                    break;
-                case ' ':
-                    thing = undefined;
-                    break;
-            }
-            
-            if(thing) {
-                thing.board = this;
-                this.setTile(new jzt.Point(column, row), thing);
-            }
-            
+
+        var dataStream = tileDataCollection[row];
+
+        // Establiash our board width
+        if(this.width == undefined) {
+            this.width = Math.ceil(dataStream.length / this.BOARD_DATA_WORD_LENGTH);
         }
-    }
+
+        // For each column in our collection
+        for(var column = 0; column < this.width; ++column) {
+
+            // Calculate our string offset for this column
+            var offset = column * this.BOARD_DATA_WORD_LENGTH;
+
+            // Grab our symbol, foreground color, and background color
+            var symbol = dataStream.charAt(offset) + dataStream.charAt(offset+1);
+            var background = dataStream.charAt(offset+2);
+            var foreground = dataStream.charAt(offset+3);
+
+            // Create a thing from our symbol
+            var thing = jzt.things.ThingFactory.createThing(symbol, this);
+
+            // If a thing was created...
+            if(thing) {
+
+                // Assign it to our board
+                thing.board = this;
+
+                // If we have colors, assign those too
+                if(jzt.colors.Colors[background] != undefined) {
+                    thing.background = jzt.colors.Colors[background];
+                }
+
+                if(jzt.colors.Colors[foreground] != undefined) {
+                    thing.foreground = jzt.colors.Colors[foreground];
+                }
+
+                // Set the thing as our board tile at its location
+                this.setTile(new jzt.Point(column, row), thing);
+
+            }
+
+        }
+
+    } 
+    
 };
 
 /*

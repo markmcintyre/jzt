@@ -97,9 +97,7 @@ jzt.things.UpdateableThing.prototype.getBlockedDirections = function() {
  
 };
 
-jzt.things.UpdateableThing.prototype.update = function() {
-    
-};
+jzt.things.UpdateableThing.prototype.update = function() {};
 
 /*
  * Scriptable Thing
@@ -180,6 +178,7 @@ jzt.things.Boulder = function(board) {
 };
 jzt.things.Boulder.prototype = new jzt.things.Thing();
 jzt.things.Boulder.prototype.constructor = jzt.things.Boulder;
+jzt.things.Boulder.symbol = 'BL';
 
 jzt.things.Boulder.prototype.isPushable = function(direction) {
     return true;
@@ -196,6 +195,7 @@ jzt.things.Forest = function(board) {
 };
 jzt.things.Forest.prototype = new jzt.things.Thing();
 jzt.things.Forest.prototype.constructor = jzt.things.Forest;
+jzt.things.Forest.symbol = 'FR';
 
 jzt.things.Forest.prototype.sendMessage = function(message) {
     if(message == 'TOUCH') {
@@ -213,6 +213,7 @@ jzt.things.InvisibleWall = function(board) {
 };
 jzt.things.InvisibleWall.prototype = new jzt.things.Thing();
 jzt.things.InvisibleWall.prototype.constructor = jzt.things.InvisibleWall;
+jzt.things.InvisibleWall.symbol = 'IW';
 
 jzt.things.InvisibleWall.prototype.sendMessage = function(message) {
     if(message == 'TOUCH') {
@@ -381,6 +382,7 @@ jzt.things.Wall = function(board) {
 };
 jzt.things.Wall.prototype = new jzt.things.Thing();
 jzt.things.Wall.prototype.constructor = jzt.things.Wall;
+jzt.things.Wall.symbol = 'WL';
 
 /*
  * Water
@@ -393,3 +395,37 @@ jzt.things.Water = function(board) {
 };
 jzt.things.Water.prototype = new jzt.things.Thing();
 jzt.things.Water.prototype.constructor = jzt.things.Water;
+jzt.things.Water.symbol = 'WT';
+
+/*
+ * THING FACTORY
+ */
+jzt.things.ThingFactory = jzt.things.ThingFactory || {};
+
+jzt.things.ThingFactory.createThing = function(symbol, board) {
+
+    // Create our thing map if it hasn't been created already
+    if(jzt.things.ThingFactory.thingMap == undefined) {
+
+        jzt.things.ThingFactory.thingMap = {};
+
+        for(thing in jzt.things) {
+            if(jzt.things.hasOwnProperty(thing)) {
+
+                var thingProperty = jzt.things[thing];
+
+                if(thingProperty.hasOwnProperty('symbol')) {
+                    jzt.things.ThingFactory.thingMap[thingProperty.symbol] = thingProperty;
+                }
+
+            }
+        }
+
+    }
+
+    var thingFunction = jzt.things.ThingFactory.thingMap[symbol];
+    if(thingFunction) {
+        return new thingFunction(board);
+    }
+
+};

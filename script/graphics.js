@@ -128,7 +128,8 @@ jzt.Sprite.prototype.draw = function(context, point, foreground, background) {
 
 jzt.colors = jzt.colors || {};
 
-jzt.colors.Color = function(name, index, r, g, b) {
+jzt.colors.Color = function(code, name, index, r, g, b) {
+    this.code = code;
     this.name = name;
     this.index = index;
     this.r = r;
@@ -146,22 +147,22 @@ jzt.colors.Color.prototype._byteToHex = function(number) {
 };
 
 jzt.colors.Colors = {
-    '0': new jzt.colors.Color('BLACK',         0,  0,   0,   0  ),
-    '1': new jzt.colors.Color('BLUE',          1,  0,   0,   170),
-    '2': new jzt.colors.Color('GREEN',         2,  0,   170, 0  ),
-    '3': new jzt.colors.Color('CYAN',          3,  0,   170, 170),
-    '4': new jzt.colors.Color('RED',           4,  170, 0,   0  ),
-    '5': new jzt.colors.Color('MAGENTA',       5,  170, 0,   170),
-    '6': new jzt.colors.Color('BROWN',         6,  170, 85,  0  ),
-    '7': new jzt.colors.Color('WHITE',         7,  170, 170, 170),
-    '8': new jzt.colors.Color('DARKGRAY',      8,  85,  85,  85 ),
-    '9': new jzt.colors.Color('BRIGHTBLUE',    9,  85,  85,  255),
-    'A': new jzt.colors.Color('BRIGHTGREEN',   10, 85,  255, 85 ),
-    'B': new jzt.colors.Color('BRIGHTCYAN',    11, 85,  255, 255),
-    'C': new jzt.colors.Color('PINK',          12, 255, 85,  85 ),
-    'D': new jzt.colors.Color('BRIGHTMAGENTA', 13, 255, 85,  255),
-    'E': new jzt.colors.Color('YELLOW',        14, 255, 255, 85 ),
-    'F': new jzt.colors.Color('BRIGHTWHITE',   15, 255, 255, 255)  
+    '0': new jzt.colors.Color('0', 'BLACK',         0,  0,   0,   0  ),
+    '1': new jzt.colors.Color('1', 'BLUE',          1,  0,   0,   170),
+    '2': new jzt.colors.Color('2', 'GREEN',         2,  0,   170, 0  ),
+    '3': new jzt.colors.Color('3', 'CYAN',          3,  0,   170, 170),
+    '4': new jzt.colors.Color('4', 'RED',           4,  170, 0,   0  ),
+    '5': new jzt.colors.Color('5', 'MAGENTA',       5,  170, 0,   170),
+    '6': new jzt.colors.Color('6', 'BROWN',         6,  170, 85,  0  ),
+    '7': new jzt.colors.Color('7', 'WHITE',         7,  170, 170, 170),
+    '8': new jzt.colors.Color('8', 'DARKGRAY',      8,  85,  85,  85 ),
+    '9': new jzt.colors.Color('9', 'BRIGHTBLUE',    9,  85,  85,  255),
+    'A': new jzt.colors.Color('A', 'BRIGHTGREEN',   10, 85,  255, 85 ),
+    'B': new jzt.colors.Color('B', 'BRIGHTCYAN',    11, 85,  255, 255),
+    'C': new jzt.colors.Color('C', 'PINK',          12, 255, 85,  85 ),
+    'D': new jzt.colors.Color('D', 'BRIGHTMAGENTA', 13, 255, 85,  255),
+    'E': new jzt.colors.Color('E', 'YELLOW',        14, 255, 255, 85 ),
+    'F': new jzt.colors.Color('F', 'BRIGHTWHITE',   15, 255, 255, 255)  
 };
 
 jzt.colors.COLOR_COUNT = 16;
