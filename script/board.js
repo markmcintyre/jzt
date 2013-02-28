@@ -4,15 +4,14 @@ jzt.Board = function(boardData, game) {
 
     this.boardData = boardData;
     this.game = game;
-    this.width = boardData.width;
-    this.height = boardData.height;
-    this.tiles = new Array(this.width * this.height);
+    this.tiles = undefined;
     this.scripts = [];
     this.updateableThings = [];
     this.dark = boardData.dark;
     
-    this._displayMessage = undefined;
-    this._displayMessageTick = 0;
+    this.displayMessage = undefined;
+    this.displayMessageTick = 0;
+
     this.DISPLAY_MESSAGE_TTL = game.CPS * 3; // 3 seconds
     this.DARK_SPRITE = game.resources.graphics.getSprite(176);
     this.DARK_SPRITE_COLOR = jzt.colors.Colors['8'];
@@ -30,12 +29,10 @@ jzt.Board.prototype.serialize = function() {
     var result = {};
     var point = new jzt.Point(0,0);
 
-    result.width = this.width;
-    result.height = this.height;
-    if(this.dark) {
-        result.dark = this.dark;
-    }
-    result.displayMessage = this._displayMessage;
+    jzt.util.storeOption(result, 'dark', this.dark);
+    jzt.util.storeOption(result, 'displayMessage', this.displayMessage);
+
+    // Store Tiles
     result.tiles = [];
     for(var row = 0; row < this.height; ++row) {
 
@@ -55,6 +52,28 @@ jzt.Board.prototype.serialize = function() {
         }
 
         result.tiles.push(dataStream);
+
+    }
+
+    // Store scripts
+    result.scripts = [];
+    for(var index = 0; index < this.scripts.length; ++index) {
+        var script = this.scripts[index];
+        result.scripts.push( script.serialize() );
+    }
+
+    // Store ScriptableThings
+    result.scriptables = [];
+    for(var index = 0; index < this.updateableThings.length; ++index) {
+
+        var thing = this.updateableThings[index];
+
+        if(thing instanceof jzt.things.ScriptableThing) {
+            serializedThing = thing.serialize();
+            if(serializedThing) {
+                result.scriptables.push(thing.serialize());
+            }
+        }
 
     }
 
@@ -93,6 +112,10 @@ jzt.Board.prototype.initializeTiles = function(tileDataCollection) {
         // Establiash our board width
         if(this.width == undefined) {
             this.width = Math.ceil(dataStream.length / this.BOARD_DATA_WORD_LENGTH);
+        }
+
+        if(this.tiles == undefined) {
+            this.tiles = new Array(this.width * this.height);
         }
 
         // For each column in our collection
@@ -149,7 +172,7 @@ jzt.Board.prototype.initializeScriptableThings = function(scriptableDataCollecti
         
         var scriptableData = scriptableDataCollection[index];
         var scriptableThing = new jzt.things.ScriptableThing(this);
-        scriptableThing.loadFromData(scriptableData);
+        scriptableThing.deserialize(scriptableData);
         this.setTile(scriptableThing.point, scriptableThing);
         this.updateableThings.push(scriptableThing);
         
@@ -297,11 +320,11 @@ jzt.Board.prototype.update = function() {
 };
 
 jzt.Board.prototype.setDisplayMessage = function(message) {
-    this._displayMessage = message;
-    if(this._displayMessage.length > this.width) {
-        this._displayMessage = this._displayMessage.substring(0, this.width);
+    this.displayMessage = message;
+    if(this.displayMessage.length > this.width) {
+        this.displayMessage = this.displayMessage.substring(0, this.width);
     }
-    this._displayMessageTick = this.DISPLAY_MESSAGE_TTL;
+    this.displayMessageTick = this.DISPLAY_MESSAGE_TTL;
 };
     
 jzt.Board.prototype.render = function(c) {
@@ -321,7 +344,7 @@ jzt.Board.prototype.render = function(c) {
         }
     });
 
-    if(this._displayMessage != undefined) {
+    if(this.displayMessage != undefined) {
         this._renderMessage(c);
     }
     
@@ -330,11 +353,11 @@ jzt.Board.prototype.render = function(c) {
 jzt.Board.prototype._renderMessage = function(c) {
     
     var messagePoint = new jzt.Point();
-    messagePoint.x = Math.floor((this.width - this._displayMessage.length) / 2);
+    messagePoint.x = Math.floor((this.width - this.displayMessage.length) / 2);
     messagePoint.y = this.height-1;
     
-    for(var index = 0; index < this._displayMessage.length; ++index) {
-        var spriteIndex = this._displayMessage.charCodeAt(index);
+    for(var index = 0; index < this.displayMessage.length; ++index) {
+        var spriteIndex = this.displayMessage.charCodeAt(index);
         if(spriteIndex >= 32 && spriteIndex <= 126) {
             sprite = this.game.resources.graphics.getSprite(spriteIndex);
             sprite.draw(c, messagePoint, '*', jzt.colors.Colors['0']);
@@ -342,8 +365,8 @@ jzt.Board.prototype._renderMessage = function(c) {
         }
     }
     
-    if(--this._displayMessageTick <= 0) {
-        this._displayMessage = undefined;
+    if(--this.displayMessageTick <= 0) {
+        this.displayMessage = undefined;
     }
     
 };

@@ -5,8 +5,8 @@ jzt.Script = function(scriptData) {
     this.name = scriptData.name;
     this.commands = [];
     this.labelIndicies = {};
-    
-    this.assemble(scriptData.script);
+    this.rawScript = scriptData.script;
+    this.assemble();
     
 };
 
@@ -14,14 +14,14 @@ jzt.Script.prototype.newContext = function(owner) {
     return new jzt.ScriptContext(this, owner);
 };
 
-jzt.Script.prototype.assemble = function(script) {
+jzt.Script.prototype.assemble = function() {
     
-    if(script) {
+    if(this.rawScript) {
         
         var factory = new jztscript.CommandFactory();
         
         // Split our lines by newline character
-        var lines = script.split(/\n/);
+        var lines = this.rawScript.split(/\n/);
         
         // For each script line...
         for(var index = 0; index < lines.length; ++index) {
@@ -89,6 +89,15 @@ jzt.Script.prototype.getCommand = function(commandIndex) {
     
 };
 
+jzt.Script.prototype.serialize = function() {
+    
+    var result = {};
+    result.name = this.name;
+    result.script = this.rawScript;
+    return result;
+
+};
+
 /*
  * ScriptContext
  */
@@ -99,6 +108,32 @@ jzt.ScriptContext = function(script, owner) {
     this.currentLabels = {};
     this.storedCommand = undefined;
     this.initializeLabels(script);
+};
+
+jzt.ScriptContext.prototype.serialize = function() {
+    var result = {};
+    result.commandIndex = this.commandIndex;
+    result.currentLabels = {};
+    for(label in this.currentLabels) {
+        if(this.currentLabels.hasOwnProperty(label) && this.currentLabels[label]) {
+            result.currentLabels[label] = this.currentLabels[label];
+        }
+    }
+    //TODO: Serialize stored command
+    return result;
+};
+
+jzt.ScriptContext.prototype.deserialize = function(data) {
+
+    this.commandIndex = data.commandIndex;
+    for(label in data.currentLabels) {
+        if(data.currentLabels.hasOwnProperty(label)) {
+            this.currentLabels[label] = data.currentLabels[label];
+        }
+    }
+
+    // TODO: Deserialize stored command
+
 };
 
 jzt.ScriptContext.prototype.initializeLabels = function(script) {

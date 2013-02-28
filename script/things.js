@@ -13,7 +13,17 @@ jzt.things.Thing = function(board) {
     this.background = jzt.colors.Colors['0'];
 };
 
-jzt.things.Thing.prototype.loadFromData = function(data) {
+jzt.things.Thing.prototype.serialize = function() {
+    var result = {};
+    result.name = this.name;
+    result.spriteIndex = this.spriteIndex;
+    result.x = this.point.x;
+    result.y = this.point.y;
+    result.color = this.background.code + (this.foreground == '*' ? '*' : this.foreground.code);
+    return result;
+};
+
+jzt.things.Thing.prototype.deserialize = function(data) {
     
     this.name = data.name;
     this.spriteIndex = data.spriteIndex || 63;
@@ -25,7 +35,7 @@ jzt.things.Thing.prototype.loadFromData = function(data) {
     
     this.foreground = foregroundCode == '*' ? foregroundCode : jzt.colors.Colors[foregroundCode];
     this.background = jzt.colors.Colors[backgroundCode];
-    
+
 };
 
 jzt.things.Thing.prototype.sendMessage = function(messageName) {};
@@ -52,8 +62,14 @@ jzt.things.UpdateableThing = function(board) {
 jzt.things.UpdateableThing.prototype = new jzt.things.Thing();
 jzt.things.UpdateableThing.prototype.constructor = jzt.things.UpdateableThing;
 
-jzt.things.UpdateableThing.prototype.loadFromData = function(data) {
-    jzt.things.Thing.prototype.loadFromData.call(this, data);
+jzt.things.UpdateableThing.prototype.serialize = function() {
+    var result = jzt.things.Thing.prototype.serialize.call(this) || {};
+    result.speed = this.speed;
+    return result;
+};
+
+jzt.things.UpdateableThing.prototype.deserialize = function(data) {
+    jzt.things.Thing.prototype.deserialize.call(this, data);
     this.setSpeed(data.speed);
 };
 
@@ -113,11 +129,32 @@ jzt.things.ScriptableThing = function(board) {
 jzt.things.ScriptableThing.prototype = new jzt.things.UpdateableThing();
 jzt.things.ScriptableThing.prototype.constructor = jzt.things.ScriptableThing;
 
-jzt.things.ScriptableThing.prototype.loadFromData = function(data) {
-    jzt.things.UpdateableThing.prototype.loadFromData.call(this, data);
-    var script = this.board.getScript(data.script);
+jzt.things.ScriptableThing.prototype.serialize = function() {
+    var result = jzt.things.UpdateableThing.prototype.serialize.call(this) || {};
+
+    result.script = this.scriptName;
+
+    if(this.scriptContext) {
+        result.scriptContext = this.scriptContext.serialize();
+        result.messageQueue = this.messageQueue.slice(0);
+        jzt.util.storeOption(result, 'walkDirection', jzt.Direction.getName(this.walkDirection));
+        jzt.util.storeOption(result, 'locked', this.locked);
+        jzt.util.storeOption(result, 'orientation', jzt.Direction.getName(this.orientation));
+    }
+
+    return result;
+
+};
+
+jzt.things.ScriptableThing.prototype.deserialize = function(data) {
+    jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.scriptName = data.script;
+    var script = this.board.getScript(this.scriptName);
     if(script) {
         this.scriptContext = script.newContext(this);
+        if(data.scriptContext) {
+            this.scriptContext.deserialize(data.scriptContext);
+        }
     }
 };
 

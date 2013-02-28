@@ -72,7 +72,7 @@ jzt.Direction.getName = function(direction) {
             return 'West';
     }
     
-    return '[Not a direction]';
+    return undefined;
     
 };
 
@@ -170,3 +170,10 @@ jzt.Direction.opposite = function(direction) {
          console.log.apply(console, arguments);
      }
  };
+
+jzt.util = jzt.util || {};
+jzt.util.storeOption = function(destination, name, value) {
+    if(value != undefined) {
+        destination[name] = value;
+    }
+};
