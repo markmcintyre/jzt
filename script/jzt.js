@@ -18,7 +18,6 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     this._nextTick = Date.now();
     this._nextBlinkTick = Date.now();
     
-    this.data = data;
     this.onLoadCallback = onLoadCallback;
     this.resources = {};
     this.player = new jzt.things.Player();
@@ -32,6 +31,14 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     this.colorCycleIndex = 0;
 
     this.currentBoard = undefined;
+    this.startingBoard = data.startingBoard;
+    this.boards = {};
+
+    // Store our boards
+    for(var index = 0; index < data.boards.length; ++index) {
+        var board = data.boards[index];
+        this.boards[board.name] = board;
+    }
     
     var graphicsLoadedCallback = this.onGraphicsLoaded.bind(this);
     this.resources.graphics = new jzt.Graphics(this, graphicsLoadedCallback);
@@ -45,8 +52,7 @@ jzt.Game.prototype.onGraphicsLoaded = function() {
 jzt.Game.prototype.run = function() {
 
     this.keyboard.initialize();
-    this.currentBoard = new jzt.Board(this.data.boards[0], this);
-    this.player.board = this.currentBoard;
+    this.setBoard(this.startingBoard);
     this.player.game = this;
         
     // Start the game loop
@@ -74,6 +80,19 @@ jzt.Game.prototype.loop = function() {
         this.draw();
     }
     
+};
+
+jzt.Game.prototype.setBoard = function(name) {
+
+    // Serialize the existing board, if applicable
+    if(this.currentBoard != undefined) {
+        this.boards[this.currentBoard.name] = this.currentBoard.serialize();
+    }
+
+    // Load the requested board
+    this.currentBoard = new jzt.Board(this.boards[name], this);
+    this.player.board = this.currentBoard;
+
 };
     
 jzt.Game.prototype.update = function() {

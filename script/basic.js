@@ -39,7 +39,7 @@ jzt.Point.prototype.directionTo = function(other) {
 }
 
 jzt.Point.prototype.equals = function(other) {
-    return this.x == other.x && this.y == other.y;
+    return this.x === other.x && this.y === other.y;
 };
 
 jzt.Point.prototype.toString = function() {

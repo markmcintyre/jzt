@@ -2,13 +2,21 @@ window.jzt = window.jzt || {};
 
 jzt.Board = function(boardData, game) {
 
-    this.boardData = boardData;
+    this.name = boardData.name;
     this.game = game;
     this.tiles = undefined;
     this.scripts = [];
     this.updateableThings = [];
     this.dark = boardData.dark;
-    
+
+    this.north = boardData.north;
+    this.east = boardData.east;
+    this.south = boardData.south;
+    this.west = boardData.west;
+
+    this.game.player.point.x = boardData.playerX;
+    this.game.player.point.y = boardData.playerY;
+
     this.displayMessage = undefined;
     this.displayMessageTick = 0;
 
@@ -29,8 +37,17 @@ jzt.Board.prototype.serialize = function() {
     var result = {};
     var point = new jzt.Point(0,0);
 
+    result.name = this.name;
+
     jzt.util.storeOption(result, 'dark', this.dark);
     jzt.util.storeOption(result, 'displayMessage', this.displayMessage);
+    jzt.util.storeOption(result, 'north', this.north);
+    jzt.util.storeOption(result, 'east', this.east);
+    jzt.util.storeOption(result, 'south', this.south);
+    jzt.util.storeOption(result, 'west', this.west);
+
+    result.playerX = this.player.point.x;
+    result.playerY = this.player.point.y;
 
     // Store Tiles
     result.tiles = [];
@@ -234,6 +251,53 @@ jzt.Board.prototype.deleteTile = function(point) {
     
 jzt.Board.prototype.moveTile = function(oldPoint, newPoint) {
     
+    // If we're trying to move the player outside the board...
+    if(this.player.point.equals(oldPoint) && this.isOutside(newPoint)) {
+
+        var direction = oldPoint.directionTo(newPoint);
+        var newBoard = undefined;
+
+        switch(direction) {
+            case jzt.Direction.North:
+                newBoard = this.north;
+                break;
+            case jzt.Direction.East:
+                newBoard = this.east;
+                break;
+            case jzt.Direction.South:
+                newBoard = this.south;
+                break;
+            case
+                jzt.Direction.West:
+                newBoard = this.west;
+        }
+
+        if(newBoard) {
+
+            var playerPoint = new jzt.Point(0,0);
+            playerPoint = playerPoint.add(this.player.point);
+
+            if(newPoint.x < 0) {
+                playerPoint.x = this.width-1;
+            }
+            else if(newPoint.x >= this.width) {
+                playerPoint.x = 0;
+            }
+            else if(newPoint.y < 0) {
+                playerPoint.y = this.height-1;
+            }
+            else if(newPoint.y >= this.height) {
+                playerPoint.y = 0;
+            }
+            this.game.setBoard(newBoard);
+            this.game.player.point.x = playerPoint.x;
+            this.game.player.point.y = playerPoint.y;
+            this.game.currentBoard.initializePlayer(this.game.player);
+        }
+
+        return false;
+
+    }
     
     if(this.isPassable(newPoint)) {
         this.setTile(newPoint, this.getTile(oldPoint));
@@ -265,7 +329,7 @@ jzt.Board.prototype.moveTile = function(oldPoint, newPoint) {
     }
     
     return false;
-}
+};
     
 jzt.Board.prototype.setTile = function(point, tile) {
     
@@ -275,7 +339,7 @@ jzt.Board.prototype.setTile = function(point, tile) {
     
     this.tiles[point.x + point.y * this.width] = tile;
     
-}
+};
     
 jzt.Board.prototype.getTile = function(point) {
     
@@ -285,18 +349,29 @@ jzt.Board.prototype.getTile = function(point) {
     
     return this.tiles[point.x + point.y * this.width];
     
-}
+};
     
-jzt.Board.prototype.isPassable = function(point) {
-        
+jzt.Board.prototype.replaceTile = function(point, newTile) {
+    this.deleteTile(point);
+    this.setTile(point, newTile);
+};
+
+jzt.Board.prototype.isOutside = function(point) {
+
     if(point.y < 0 || point.y >= this.height) {
-        return false;
+        return true;
     }
     else if(point.x < 0 || point.x >= this.width) {
-        return false;
+        return true;
     }
+
+    return false;
+
+};
+
+jzt.Board.prototype.isPassable = function(point) {
         
-    return !this.getTile(point);
+    return !this.isOutside(point) && !this.getTile(point);
         
 };
     

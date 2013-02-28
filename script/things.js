@@ -254,7 +254,10 @@ jzt.things.InvisibleWall.symbol = 'IW';
 
 jzt.things.InvisibleWall.prototype.sendMessage = function(message) {
     if(message == 'TOUCH') {
-        this.spriteIndex = 178;
+        var replacement = new jzt.things.Wall();
+        replacement.foreground = this.foreground;
+        replacement.background = this.background;
+        this.board.replaceTile(this.point, replacement);
     }
 };
  

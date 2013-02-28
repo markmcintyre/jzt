@@ -26,23 +26,28 @@
 				
 				title: 'First',
 				author: 'Mark McIntyre',
+				startingBoard: 'Board 1',
 				boards : [
-					{"displayMessage":"\"Hmmm...\", the objec","tiles":["WL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0E","WL0E                                WL0EWL0E                                WL0E","WL0E                                WL0EWL0E        IW0AIW0AIW0EIW0A        WL0E","WL0E    WL0EWTF9WTF9        WL0E    WL0EWL0E    WL0E    FR20FR20FR20WL0E    WL0E","WL0E            WTF9                BL0EBL0E            FR20FR20FR20        WL0E","WL0E                                WL0EWL0E            FR20FR20FR20        WL0E","WL0E    WL0E                WL0E    WL0EWL0E        WL0EWL0EWL0EWL0E        WL0E","WL0E        WL0EWL0EWL0EWL0E        WL0EWL0E    WL0E                WL0E    WL0E","WL0E                                WL0EWL0E                                WL0E","WL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0E"],"scripts":[{"name":"firstScript","script":"#say \"Hello, world!\"\n#move opp ccw cw ccw opp opp w 4\n#say \"\\\"Hmmm...\\\", the object thinks to itself.\"\n#move s 1\n#char 148\n#wait 5\n#go west 5\n#end\n:touch\n#die\n#end"},{"name":"secondScript","script":"#say \"Hello!\"\n#end\n:touch\n#lock\n#zap touch\n#say \"Hey there!\"\n#wait 5\n#say \"Nice day, huh?\"\n#unlock\n#end\n:touch\n#say \"I love life!\""}],"scriptables":[{"name":"First Object","spriteIndex":148,"x":8,"y":5,"color":"9D","speed":3,"script":"firstScript","scriptContext":{"commandIndex":5,"currentLabels":{"TOUCH":0}},"messageQueue":[],"locked":false,"orientation":"South"}]},
+					{"west":"Board 1","east":"Board 1","name":"Board 2","playerX":13,"playerY":3,"tiles":["WL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0E","WL0E                                WL0EWL0E                                WL0E","WL0E                                WL0EWL0E        WL0AIW0AWL0EIW0A        WL0E","WL0E    WL0EWTF9WTF9        WL0E    WL0EWL0E    WL0E            FR20WL0E    WL0E","WL0E            WTF9                            BL0EBL0EFR20    FR20        WL0E","WL0E                                WL0EWL0E                    FR20        WL0E","WL0E    WL0E                WL0E    WL0EWL0E        WL0EWL0EWL0EWL0E        WL0E","WL0E        WL0EWL0EWL0EWL0E        WL0EWL0E    WL0E                WL0E    WL0E","WL0E                                WL0EWL0E                                WL0E","WL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0E"],"scripts":[{"name":"firstScript","script":"#say \"Hello, world!\"\n#move opp ccw cw ccw opp opp w 4\n#say \"\\\"Hmmm...\\\", the object thinks to itself.\"\n#move s 1\n#char 148\n#wait 5\n#go west 5\n#end\n:touch\n#die\n#end"},{"name":"secondScript","script":"#say \"Hello!\"\n#end\n:touch\n#lock\n#zap touch\n#say \"Hey there!\"\n#wait 5\n#say \"Nice day, huh?\"\n#unlock\n#end\n:touch\n#say \"I love life!\""}],"scriptables":[{"name":"First Object","spriteIndex":148,"x":3,"y":5,"color":"9D","speed":3,"script":"firstScript","scriptContext":{"commandIndex":-1,"currentLabels":{}},"messageQueue":[],"locked":false,"orientation":"West"}]},
 					{
 						name: 'Board 1',
-						width: 20,
-						height: 10,
+						playerX: 1,
+						playerY: 1,
+						east: 'Board 2',
+						south: 'Board 1',
+						west: 'Board 2',
+						north: 'Board 1',
 						tiles: [
 							'WL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0E',
 							'WL0E                                WL0EWL0E                                WL0E',
 							'WL0E                                WL0EWL0E        IW0AIW0AIW0EIW0A        WL0E',
 							'WL0E    WL0EWT--WT--        WL0E    WL0EWL0E    WL0E    FR--FR--FR--WL0E    WL0E',
 							'WL0E            WT--                BL0EBL0E            FR--FR--FR--        WL0E',
-							'WL0E                                WL0EWL0E            FR--FR--FR--        WL0E',
+							'WL0E                                WL0EWL0E            FR--FR--FR--            ',
 							'WL0E    WL0E                WL0E    WL0EWL0E        WL0EWL0EWL0EWL0E        WL0O',
-							'WL0E        WL0EWL0EWL0EWL0E        WL0EWL0E    WL0E                WL0E    WL0E',
+							'WL0E        WL0EWL0E    WL0E        WL0EWL0E    WL0E                WL0E    WL0E',
 							'WL0E                                WL0EWL0E                                WL0E',
-							'WL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0E'
+							'WL0EWL0EWL0EWL0EWL0E    WL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0E'
 						],
 						scripts: [
 							{
