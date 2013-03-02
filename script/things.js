@@ -329,7 +329,9 @@ jzt.things.ScriptableThing.prototype.update = function() {
  *=================================================================================*/
  
 /*
- * Boulder
+ * A Boulder is a Thing that is pushable in all directions.
+ * 
+ * @param board An owner board for this Boulder.
  */
 jzt.things.Boulder = function(board) {
     jzt.things.Thing.call(this, board);
@@ -339,12 +341,24 @@ jzt.things.Boulder.prototype = new jzt.things.Thing();
 jzt.things.Boulder.prototype.constructor = jzt.things.Boulder;
 jzt.things.Boulder.symbol = 'BL';
 
+/**
+ * Retrurns whether or not this Thing declares itself to be pushable in a provided
+ * direction by other Things.
+ *
+ * @param direction A direction in which to test the pushability of this Thing
+ * @return True if this thing is pushable in a given direction, false otherwise.
+ */
 jzt.things.Boulder.prototype.isPushable = function(direction) {
     return true;
 };
 
+//--------------------------------------------------------------------------------
+
 /*
- * Forest
+ * Forest acts as a non-pushable obstacle, like a wall, but it vanishes when the 
+ * player attempts to move to its location, clearing this Thing from the board.
+ *
+ * @param board An owner board for this Forest
  */
 jzt.things.Forest = function(board) {
     jzt.things.Thing.call(this, board);
@@ -356,14 +370,26 @@ jzt.things.Forest.prototype = new jzt.things.Thing();
 jzt.things.Forest.prototype.constructor = jzt.things.Forest;
 jzt.things.Forest.symbol = 'FR';
 
+/**
+ * Delivers a provided message to this Thing. If a TOUCH message is received,
+ * then this Forest will be deleted from the board, allowing movement onto its
+ * space.
+ *
+ * @param messageName a name of a message to deliver.
+ */
 jzt.things.Forest.prototype.sendMessage = function(message) {
     if(message == 'TOUCH') {
         this.board.deleteTile(this.point);
     }
 }
 
+//--------------------------------------------------------------------------------
+
 /*
- * InvisibleWall
+ * InvisibleWall will appear invisible until it is touched, at which point it
+ * becomes a regular Wall.
+ * 
+ * @param board An owner Board.
  */
 jzt.things.InvisibleWall = function(board) {
     jzt.things.Thing.call(this, board);
@@ -374,6 +400,12 @@ jzt.things.InvisibleWall.prototype = new jzt.things.Thing();
 jzt.things.InvisibleWall.prototype.constructor = jzt.things.InvisibleWall;
 jzt.things.InvisibleWall.symbol = 'IW';
 
+/**
+ * Delivers a provided message to this Thing. If a TOUCH message is received,
+ * then this Thing will turn into a Wall Thing.
+ *
+ * @param messageName a name of a message to deliver.
+ */
 jzt.things.InvisibleWall.prototype.sendMessage = function(message) {
     if(message == 'TOUCH') {
         var replacement = new jzt.things.Wall();
@@ -383,8 +415,13 @@ jzt.things.InvisibleWall.prototype.sendMessage = function(message) {
     }
 };
  
+//--------------------------------------------------------------------------------
+
 /*
- * Player
+ * Player is an UpdateableThing that is controllable by the user and represents
+ * the primary action point for gameplay.
+ *
+ * @param board An owner board for this Player.
  */ 
 jzt.things.Player = function(board) {
     jzt.things.UpdateableThing.call(this, board);
@@ -411,10 +448,23 @@ jzt.things.Player = function(board) {
 jzt.things.Player.prototype = new jzt.things.UpdateableThing();
 jzt.things.Player.prototype.constructor = jzt.things.Player;
 
+/**
+ * Retrurns whether or not this Thing declares itself to be pushable in a provided
+ * direction by other Things.
+ *
+ * @param direction A direction in which to test the pushability of this Thing
+ * @return True if this thing is pushable in a given direction, false otherwise.
+ */
 jzt.things.Player.prototype.isPushable = function(direction) {
     return true;
 };
 
+/**
+ * Moves this Thing in a provided Direction and returns its success.
+ * 
+ * @param direction A Direction in which to move this Thing.
+ * @return true if the move was successful, false otherwise.
+ */
 jzt.things.Player.prototype.move = function(direction) {
     
     // Calculate our new location
@@ -447,6 +497,10 @@ jzt.things.Player.prototype.move = function(direction) {
     
 };
 
+/**
+ * Updates this Player for a single execution cycle. During its update,
+ * Player will check for keypresses and move accordingly.
+ */
 jzt.things.Player.prototype.update = function() {
     
     var now = Date.now();
@@ -469,12 +523,22 @@ jzt.things.Player.prototype.update = function() {
     
 };
 
+/**
+ * Uses a torch, illuminating surrounding tiles if a given board is
+ * dark.
+ */
 jzt.things.Player.prototype.useTorch = function() {
     this.torch = true;
     this.torchExpiry = Date.now() + this.TORCH_TTL;
     this.torchStrength = this.MAX_TORCH_STRENGTH;
 };
 
+/**
+ * Updates this Player's torch as of a provided timestamp moment, dimming
+ * the surrounding area as the torch ages.
+ *
+ * @param timeStamp A moment representing a new reality for this Player's torch.
+ */
 jzt.things.Player.prototype.updateTorch = function(timeStamp) {
     
     // If we've already past our torch expiry date
@@ -512,6 +576,13 @@ jzt.things.Player.prototype.updateTorch = function(timeStamp) {
     
 };
 
+/**
+ * Retrieves whether or not a given point is within range of this Player's
+ * torch.
+ *
+ * @param point A point to test if it is within this Player's torch range
+ * @return true if a point is within torch range, false otherwise.
+ */
 jzt.things.Player.prototype.inTorchRange = function(point) {
     
     // If we don't have a torch, we can only see ourselves
@@ -548,8 +619,12 @@ jzt.things.Player.prototype.inTorchRange = function(point) {
     }  
 };
 
+//--------------------------------------------------------------------------------
+
 /*
- * Wall
+ * Wall is a Thing representing an immoveable obstacle.
+ *
+ * @param board An owner board for this Wall.
  */ 
 jzt.things.Wall = function(board) {
     jzt.things.Thing.call(this, board);
@@ -559,8 +634,11 @@ jzt.things.Wall.prototype = new jzt.things.Thing();
 jzt.things.Wall.prototype.constructor = jzt.things.Wall;
 jzt.things.Wall.symbol = 'WL';
 
+//--------------------------------------------------------------------------------
+
 /*
- * Water
+ * Water is a Thing representing an obstacle to most Things, except for
+ * bullets and other potentially flying Things, which can pass over it.
  */
 jzt.things.Water = function(board) {
     jzt.things.Thing.call(this, board);
@@ -572,11 +650,17 @@ jzt.things.Water.prototype = new jzt.things.Thing();
 jzt.things.Water.prototype.constructor = jzt.things.Water;
 jzt.things.Water.symbol = 'WT';
 
-/*
+/*==================================================================================
  * THING FACTORY
- */
+ *=================================================================================*/
 jzt.things.ThingFactory = jzt.things.ThingFactory || {};
 
+/**
+ * Creates a new Thing based on a provided symbol, and assigns it to a given board.
+ *
+ * @param symbol A symbol used as a shorthand to represent a built-in Thing.
+ * @param board A board which should own the created Thing.
+ */
 jzt.things.ThingFactory.createThing = function(symbol, board) {
 
     // Create our thing map if it hasn't been created already
