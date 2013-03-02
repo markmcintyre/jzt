@@ -502,6 +502,20 @@ jzt.Board.prototype.update = function() {
 };
 
 /**
+ * Returns whether or not this Board is the same as another board, either by
+ * name or reference.
+ *
+ * @param otherBoard another Board or name of another board to test for equality.
+ * @return true if this Board is the same by name, false otherwise
+ */
+jzt.Board.prototype.equals = function(otherBoard) {
+
+    var otherName = (otherBoard instanceof jzt.Board) ? otherBoard.name : otherBoard;
+    return this.name === otherName;
+
+};
+
+/**
  * Assigns a message to be temporarily displayed at the bottom of this Board.
  *
  * @param message a message to be displayed.

@@ -112,8 +112,8 @@ jzt.Game.prototype.loop = function() {
  */ 
 jzt.Game.prototype.movePlayerToBoardEdge = function(edge, boardName) {
 
-    // Retrieve our new board
-    var newBoard = this.getBoard(boardName);
+    // Retrieve our new board (or the current board if it's the same)
+    var newBoard = (boardName == this.currentBoard.name) ? this.currentBoard : this.getBoard(boardName);
 
     // If the board specified does not exist, return false
     if(newBoard == undefined) {
@@ -121,24 +121,34 @@ jzt.Game.prototype.movePlayerToBoardEdge = function(edge, boardName) {
     }
 
     // Initialize our new location to the player position
+    var outsideLocation = new jzt.Point(this.player.point.x, this.player.point.y);
     var newLocation = new jzt.Point(this.player.point.x, this.player.point.y);
 
     switch(edge) {
         case jzt.Direction.North:
+            outsideLocation.y = -1;
             newLocation.y = 0;
             break;
         case jzt.Direction.East:
+            outsideLocation.x = newBoard.width;
             newLocation.x = newBoard.width-1;
             break;
         case jzt.Direction.South:
+            outsideLocation.y = newBoard.height;
             newLocation.y = newBoard.height-1;
             break;
         case jzt.Direction.West:
+            outsideLocation.x = -1;
             newLocation.x = 0;
     }
 
+    // If the player cannot move to this location, return immediately
+    if(!newBoard.moveTile(outsideLocation, newLocation)) {
+        return;
+    }
+
     // Set the current board to our new board
-    this.setBoard(boardName, newLocation);
+    this.setBoard(newBoard, newLocation);
 
 };
 
@@ -168,19 +178,32 @@ jzt.Game.prototype.getBoard = function(name) {
  */
 jzt.Game.prototype.setBoard = function(board, playerPoint) {
 
-    // Serialize the existing board, if applicable
-    if(this.currentBoard != undefined) {
-        this.boards[this.currentBoard.name] = this.currentBoard.serialize();
+    // If we are setting to the same board...
+    if(this.currentBoard && this.currentBoard.equals(board)) {
+
+        // We need to erase the old player position
+        this.currentBoard.setTile(this.player.point, undefined);
+
     }
 
-    // If we were given an actual board, assign it
-    if( board instanceof jzt.Board) {
-        this.currentBoard = board;
-    }
-
-    // If we were given a board name, load it
+    // If we are not setting to the same board...
     else {
-        this.currentBoard = new jzt.Board(this.boards[board], this);
+
+        // Serialize the old board, if applicable
+        if(this.currentBoard != undefined) {
+            this.boards[this.currentBoard.name] = this.currentBoard.serialize();
+        }
+
+        // If we were given an actual board, assign that
+        if(board instanceof jzt.Board) {
+            this.currentBoard = board;
+        }
+
+        // Otherwise, load it
+        else {
+            this.currentBoard = new jzt.Board(this.boards[board], this);
+        }
+
     }
 
     // Assign the player to our new board
