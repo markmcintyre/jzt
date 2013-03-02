@@ -462,6 +462,9 @@ jzt.Board.prototype.movePlayerOffBoard = function(direction) {
             break;
         case jzt.Direction.West:
             boardName = this.west;
+            break;
+        default:
+            return;
     }
 
     // Move our player to that board edge

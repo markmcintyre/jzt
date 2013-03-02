@@ -112,8 +112,16 @@ jzt.Game.prototype.loop = function() {
  */ 
 jzt.Game.prototype.movePlayerToBoardEdge = function(edge, boardName) {
 
-    var newLocation = new jzt.Point(this.player.point.x, this.player.point.y);
+    // Retrieve our new board
     var newBoard = this.getBoard(boardName);
+
+    // If the board specified does not exist, return false
+    if(newBoard == undefined) {
+        return;
+    }
+
+    // Initialize our new location to the player position
+    var newLocation = new jzt.Point(this.player.point.x, this.player.point.y);
 
     switch(edge) {
         case jzt.Direction.North:
@@ -129,6 +137,7 @@ jzt.Game.prototype.movePlayerToBoardEdge = function(edge, boardName) {
             newLocation.x = 0;
     }
 
+    // Set the current board to our new board
     this.setBoard(boardName, newLocation);
 
 };
@@ -140,7 +149,9 @@ jzt.Game.prototype.movePlayerToBoardEdge = function(edge, boardName) {
  */
 jzt.Game.prototype.getBoard = function(name) {
     
-    return new jzt.Board(this.boards[name], this);
+    if(this.boards.hasOwnProperty(name)) {
+        return new jzt.Board(this.boards[name], this);
+    }
 
 };
 
@@ -177,6 +188,7 @@ jzt.Game.prototype.setBoard = function(board, playerPoint) {
         this.player.point.x = playerPoint.x;
         this.player.point.y = playerPoint.y;
     }
+
     this.currentBoard.initializePlayer(this.player);
 
 };

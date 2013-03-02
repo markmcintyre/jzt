@@ -417,7 +417,11 @@ jzt.things.Player.prototype.isPushable = function(direction) {
 
 jzt.things.Player.prototype.move = function(direction) {
     
+    // Calculate our new location
     var newLocation = this.point.add(direction);
+
+    // We can move again at the next cycle
+    this.nextMove = Date.now() + Math.round(1000 / this.speed);
     
     // First, check if the direction is outside the board
     if(this.board.isOutside(newLocation)) {
@@ -438,9 +442,6 @@ jzt.things.Player.prototype.move = function(direction) {
     if(thing) {
         thing.sendMessage('TOUCH');
     }
-    
-    // We can move again at the next cycle
-    this.nextMove = Date.now() + Math.round(1000 / this.speed);
 
     return this.board.moveTile(this.point, newLocation);;
     
