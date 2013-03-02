@@ -1,5 +1,13 @@
 window.jzt = window.jzt || {};
 
+/**
+ * Game represents a playable JZT game, including all Boards and a player.
+ *
+ * @param canvasElement An HTML5 Canvas element in which to display this Game.
+ * @param data Serialized game data to be loaded
+ * @param onLoadCallback A callback function to be executed once this Game
+ *        and its assets have been loaded and initialized.
+ */
 jzt.Game = function(canvasElement, data, onLoadCallback) {
     
     this.TILE_SIZE = new jzt.Point(16, 32);
@@ -45,10 +53,17 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
 
 };
 
+/**
+ * A callback function to be executed once all graphic assets have been
+ * loaded.
+ */
 jzt.Game.prototype.onGraphicsLoaded = function() {
     this.onLoadCallback();
 };
 
+/**
+ * Starts this Game's loop, effectively starting this Game.
+ */
 jzt.Game.prototype.run = function() {
 
     this.keyboard.initialize();
@@ -59,7 +74,11 @@ jzt.Game.prototype.run = function() {
     this._intervalId = setInterval(this.loop.bind(this), 1000 / this.FPS);
         
 };
-    
+  
+/**
+ * Executes a single cycle of this Game's primary loop, effectively running
+ * this Game for a single graphics tick.
+ */  
 jzt.Game.prototype.loop = function() {
     
     this._ticks = 0;
@@ -82,6 +101,15 @@ jzt.Game.prototype.loop = function() {
     
 };
 
+/**
+ * Moves this Game's Player instance to a specified edge of a given board name.
+ * This will cause a new Board to be loaded as the current board, and the player
+ * to be located at a given edge of that board, keeping the player's old perpendicular
+ * coordinate.
+ *
+ * @param edge A Direction representing an edge of a board
+ * @param boardName A name of a Board to be loaded.
+ */ 
 jzt.Game.prototype.movePlayerToBoardEdge = function(edge, boardName) {
 
     var newLocation = new jzt.Point(this.player.point.x, this.player.point.y);
@@ -105,12 +133,28 @@ jzt.Game.prototype.movePlayerToBoardEdge = function(edge, boardName) {
 
 };
 
+/**
+ * Retrieves a deserialized Board instance by name.
+ * 
+ * @param name A name of a Board.
+ */
 jzt.Game.prototype.getBoard = function(name) {
     
     return new jzt.Board(this.boards[name], this);
 
 };
 
+/**
+ * Assigns a given board or board name as this Game's current board,
+ * and relocates this Game's player to a provided location.
+ *
+ * @param board A name of a Board or a Board instance itself to be 
+ *              set as this Game's active board.
+ * @param playerPoint An optional Point to which to relocate this Game's
+ *              player. If no such Point is provided, the player's old
+ *              position will be used, or if that point it outside the new
+ *              Board's boundaries, the board's default player position.
+ */
 jzt.Game.prototype.setBoard = function(board, playerPoint) {
 
     // Serialize the existing board, if applicable
@@ -137,11 +181,18 @@ jzt.Game.prototype.setBoard = function(board, playerPoint) {
 
 };
     
+/**
+ * Updates this Game's state by one execution tick.
+ */
 jzt.Game.prototype.update = function() {
     this.currentBoard.update();
     this.player.update();
 };
     
+/**
+ * Renders a visual representation of this Game to its associated
+ * HTML5 Canvas element.
+ */
 jzt.Game.prototype.draw = function() {
         
     this.currentBoard.render(this.context);
