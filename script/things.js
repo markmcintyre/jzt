@@ -271,7 +271,7 @@ jzt.things.Player = function(board) {
     
     this.name = 'Player';
     this.spriteIndex = 2;
-    this.point = new jzt.Point(1,1);
+    this.point = new jzt.Point(-1,-1);
     this.foreground = jzt.colors.Colors['F'];
     this.background = jzt.colors.Colors['1'];
     this.speed = 9;
@@ -297,7 +297,19 @@ jzt.things.Player.prototype.move = function(direction) {
     
     var newLocation = this.point.add(direction);
     
-    // Inspect the thing we're moving to
+    // First, check if the direction is outside the board
+    if(this.board.isOutside(newLocation)) {
+
+        // Find out which direction we're moving to
+        var direction = this.point.directionTo(newLocation);
+        this.board.movePlayerOffBoard(direction);
+
+        // This isn't a typical board move
+        return false;
+
+    }
+
+    // If we're not moving off board, inspect the thing we're moving to
     var thing = this.board.getTile(newLocation);
     
     // If there's a tile there, send it a touch message

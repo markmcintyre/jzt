@@ -82,16 +82,58 @@ jzt.Game.prototype.loop = function() {
     
 };
 
-jzt.Game.prototype.setBoard = function(name) {
+jzt.Game.prototype.movePlayerToBoardEdge = function(edge, boardName) {
+
+    var newLocation = new jzt.Point(this.player.point.x, this.player.point.y);
+    var newBoard = this.getBoard(boardName);
+
+    switch(edge) {
+        case jzt.Direction.North:
+            newLocation.y = 0;
+            break;
+        case jzt.Direction.East:
+            newLocation.x = newBoard.width-1;
+            break;
+        case jzt.Direction.South:
+            newLocation.y = newBoard.height-1;
+            break;
+        case jzt.Direction.West:
+            newLocation.x = 0;
+    }
+
+    this.setBoard(boardName, newLocation);
+
+};
+
+jzt.Game.prototype.getBoard = function(name) {
+    
+    return new jzt.Board(this.boards[name], this);
+
+};
+
+jzt.Game.prototype.setBoard = function(board, playerPoint) {
 
     // Serialize the existing board, if applicable
     if(this.currentBoard != undefined) {
         this.boards[this.currentBoard.name] = this.currentBoard.serialize();
     }
 
-    // Load the requested board
-    this.currentBoard = new jzt.Board(this.boards[name], this);
-    this.player.board = this.currentBoard;
+    // If we were given an actual board, assign it
+    if( board instanceof jzt.Board) {
+        this.currentBoard = board;
+    }
+
+    // If we were given a board name, load it
+    else {
+        this.currentBoard = new jzt.Board(this.boards[board], this);
+    }
+
+    // Assign the player to our new board
+    if(playerPoint) {
+        this.player.point.x = playerPoint.x;
+        this.player.point.y = playerPoint.y;
+    }
+    this.currentBoard.initializePlayer(this.player);
 
 };
     

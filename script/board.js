@@ -1,5 +1,8 @@
 window.jzt = window.jzt || {};
 
+/**
+ * Board
+ */
 jzt.Board = function(boardData, game) {
 
     this.name = boardData.name;
@@ -14,8 +17,8 @@ jzt.Board = function(boardData, game) {
     this.south = boardData.south;
     this.west = boardData.west;
 
-    this.game.player.point.x = boardData.playerX;
-    this.game.player.point.y = boardData.playerY;
+    this.defaultPlayerX = boardData.playerX;
+    this.defaultPlayerY = boardData.playerY;
 
     this.displayMessage = undefined;
     this.displayMessageTick = 0;
@@ -28,7 +31,6 @@ jzt.Board = function(boardData, game) {
     this.initializeTiles(boardData.tiles);
     this.initializeScripts(boardData.scripts);
     this.initializeScriptableThings(boardData.scriptables);
-    this.initializePlayer(game.player);
     
 };
 
@@ -108,8 +110,25 @@ jzt.Board.prototype.initializeScripts = function(scriptData) {
 };
 
 jzt.Board.prototype.initializePlayer = function(player) {
+
+    // If we already have a player, remove it
+    if(this.player) {
+        this.setTile(player.point, undefined);
+    }
+
+    // Check if our player is outside our range
+    if(this.isOutside(player.point)) {
+
+        // If so, use our default location
+        player.point.x = this.defaultPlayerX;
+        player.point.y = this.defaultPlayerY;
+
+    }
+
+    // Update our player and assign it to a tile
     this.player = player;
     this.setTile(player.point, player);
+    this.player.board = this;
 }
 
 /*
@@ -248,56 +267,9 @@ jzt.Board.prototype.deleteTile = function(point) {
     this.setTile(point, undefined);
     
 };
+
     
 jzt.Board.prototype.moveTile = function(oldPoint, newPoint) {
-    
-    // If we're trying to move the player outside the board...
-    if(this.player.point.equals(oldPoint) && this.isOutside(newPoint)) {
-
-        var direction = oldPoint.directionTo(newPoint);
-        var newBoard = undefined;
-
-        switch(direction) {
-            case jzt.Direction.North:
-                newBoard = this.north;
-                break;
-            case jzt.Direction.East:
-                newBoard = this.east;
-                break;
-            case jzt.Direction.South:
-                newBoard = this.south;
-                break;
-            case
-                jzt.Direction.West:
-                newBoard = this.west;
-        }
-
-        if(newBoard) {
-
-            var playerPoint = new jzt.Point(0,0);
-            playerPoint = playerPoint.add(this.player.point);
-
-            if(newPoint.x < 0) {
-                playerPoint.x = this.width-1;
-            }
-            else if(newPoint.x >= this.width) {
-                playerPoint.x = 0;
-            }
-            else if(newPoint.y < 0) {
-                playerPoint.y = this.height-1;
-            }
-            else if(newPoint.y >= this.height) {
-                playerPoint.y = 0;
-            }
-            this.game.setBoard(newBoard);
-            this.game.player.point.x = playerPoint.x;
-            this.game.player.point.y = playerPoint.y;
-            this.game.currentBoard.initializePlayer(this.game.player);
-        }
-
-        return false;
-
-    }
     
     if(this.isPassable(newPoint)) {
         this.setTile(newPoint, this.getTile(oldPoint));
@@ -373,6 +345,30 @@ jzt.Board.prototype.isPassable = function(point) {
         
     return !this.isOutside(point) && !this.getTile(point);
         
+};
+
+jzt.Board.prototype.movePlayerOffBoard = function(direction) {
+    
+    var boardName;
+
+    // Find the board we are switching to
+    switch(direction) {
+        case jzt.Direction.North:
+            boardName = this.north;
+            break;
+        case jzt.Direction.East:
+            boardName = this.east;
+            break;
+        case jzt.Direction.South:
+            boardName = this.south;
+            break;
+        case jzt.Direction.West:
+            boardName = this.west;
+    }
+
+    // Move our player to that board edge
+    this.game.movePlayerToBoardEdge(jzt.Direction.opposite(direction), boardName);
+    
 };
     
 jzt.Board.prototype.addMessage = function(message) {
