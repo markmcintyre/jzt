@@ -1,7 +1,10 @@
 window.jzt = window.jzt || {};
 
 /**
- * Board
+ * Board represents a single game board.
+ * 
+ * @param boardData Serialized board data to load and use for this Board.
+ * @param game A Game instance to serve as owner of this board
  */
 jzt.Board = function(boardData, game) {
 
@@ -34,6 +37,11 @@ jzt.Board = function(boardData, game) {
     
 };
 
+/**
+ * Serializes this Board instance to an object.
+ *
+ * @return An object representation of this board data.
+ */
 jzt.Board.prototype.serialize = function() {
 
     var result = {};
@@ -100,6 +108,12 @@ jzt.Board.prototype.serialize = function() {
 
 };
 
+/**
+ * Initializes scripts used by this Board based on provided script
+ * data.
+ *
+ * @param scriptData Script data to be deserialized into Script instances.
+ */
 jzt.Board.prototype.initializeScripts = function(scriptData) {
     
     for(var index = 0; index < scriptData.length; ++index) {
@@ -109,6 +123,11 @@ jzt.Board.prototype.initializeScripts = function(scriptData) {
     
 };
 
+/**
+ * Takes a provided player an initializes it for use on this board.
+ * 
+ * @param A player instance to use on this board.
+ */
 jzt.Board.prototype.initializePlayer = function(player) {
 
     // If we already have a player, remove it
@@ -133,6 +152,9 @@ jzt.Board.prototype.initializePlayer = function(player) {
 
 /*
  * Intializes tile data given a collection of serialized tiles.
+ *
+ * @param tileDataCollection an array of serialized tile data to be loaded 
+ *      into this Board.
  */
 jzt.Board.prototype.initializeTiles = function(tileDataCollection) {
     
@@ -194,9 +216,12 @@ jzt.Board.prototype.initializeTiles = function(tileDataCollection) {
     
 };
 
-/*
- * Initializes object data given a collection of serialized JZT
+/**
+ * Initializes Scriptable data given a collection of serialized JZT
  * objects.
+ * 
+ * @param scriptableDataCollection An array of serialized Scriptables to be
+ *        deserialized into actual Scriptable instances for this Board.
  */
 jzt.Board.prototype.initializeScriptableThings = function(scriptableDataCollection) {
     
@@ -216,6 +241,12 @@ jzt.Board.prototype.initializeScriptableThings = function(scriptableDataCollecti
     
 };
 
+/**
+ * Retrieves a Script instance by its name for this Board.
+ *
+ * @param scriptName A name of a Script instance
+ * @return A Script instance.
+ */
 jzt.Board.prototype.getScript = function(scriptName) {
     
     if(scriptName && this.scripts) {
@@ -233,6 +264,14 @@ jzt.Board.prototype.getScript = function(scriptName) {
     
 };
     
+/**
+ * Executes a provided callback function for each tile on this Board,
+ * providing the function with a Thing instance and the Point at which
+ * it occurs. If there is no tile at a specific Point, undefined is
+ * provided instead.
+ *
+ * @param callBack A callback function to be executed for each tile
+ */
 jzt.Board.prototype.each = function(callback) {
     var point = new jzt.Point(0,0);
     for(var y = 0; y < this.height; ++y) {
@@ -244,7 +283,14 @@ jzt.Board.prototype.each = function(callback) {
         }
     }
 }
-    
+ 
+/**
+ * Removes a tile from this Board at a provided Point. This function will also
+ * update its internal representation to remove references to no-longer-used 
+ * tiles.
+ *
+ * @param point A point on this Board to delete.
+ */   
 jzt.Board.prototype.deleteTile = function(point) {
     
     var thing = this.getTile(point);
@@ -269,6 +315,14 @@ jzt.Board.prototype.deleteTile = function(point) {
 };
 
     
+/**
+ * Moves a tile on this Board from a specified Point to another Point.
+ * If the move was successful, true is returned, otherwise false.
+ *
+ * @param oldPoint A point on this Board containing a tile to be moved
+ * @param newPoint A point on the Board to which a tile is to be moved.
+ * @return true if a move was successful, false otherwise.
+ */
 jzt.Board.prototype.moveTile = function(oldPoint, newPoint) {
     
     if(this.isPassable(newPoint)) {
@@ -303,6 +357,13 @@ jzt.Board.prototype.moveTile = function(oldPoint, newPoint) {
     return false;
 };
     
+/**
+ * Assigns a tile to a specific Point on this Board. This function does
+ * not check for saftey of this operation.
+ *
+ * @param point A point to be set to a specific tile
+ * @param tile A tile to be set.
+ */
 jzt.Board.prototype.setTile = function(point, tile) {
     
     if(tile) {
@@ -312,7 +373,14 @@ jzt.Board.prototype.setTile = function(point, tile) {
     this.tiles[point.x + point.y * this.width] = tile;
     
 };
-    
+
+/**
+ * Retrieves a tile from this Board at a provided Point.
+ * 
+ * @param point A point from which to retrieve a tile.
+ * @return a Thing located at a provided Point, or undefined if no such 
+ *          this is available at a given Point.
+ */    
 jzt.Board.prototype.getTile = function(point) {
     
     if(point.x >= this.width || point.x < 0 || point.y >= this.height || point.y < 0) {
@@ -323,11 +391,26 @@ jzt.Board.prototype.getTile = function(point) {
     
 };
     
+/**
+ * Replaces an existing tile at a given Point with a provided Thing.
+ * This function checks for saftey.
+ * 
+ * @param point A point on this Board to be replaced
+ * @param A Thing to be added to a given point.
+ */
 jzt.Board.prototype.replaceTile = function(point, newTile) {
     this.deleteTile(point);
     this.setTile(point, newTile);
 };
 
+/**
+ * Retruns true if a provided Point is located outside of this Board's
+ * boundaries.
+ *
+ * @param point A point to check
+ * @return true if a provided Point is within this Board's boundaries,
+ *         false otherwise.
+ */
 jzt.Board.prototype.isOutside = function(point) {
 
     if(point.y < 0 || point.y >= this.height) {
@@ -341,12 +424,27 @@ jzt.Board.prototype.isOutside = function(point) {
 
 };
 
+/**
+ * Returns whether or not a provided Point contains a tile that is
+ * occupied by another tile in such a way that another tile cannot
+ * move into its space.
+ *
+ * @param point a Point to test for passability.
+ * @return true if a provided Point is passable, false otherwise.
+ */
 jzt.Board.prototype.isPassable = function(point) {
         
     return !this.isOutside(point) && !this.getTile(point);
         
 };
 
+/**
+ * Requests to move this Board's player to a Board located
+ * in a given direction relative to this Board.
+ *
+ * @param direction An adjacent board direction to which to 
+ *        relocate a player.
+ */
 jzt.Board.prototype.movePlayerOffBoard = function(direction) {
     
     var boardName;
@@ -371,10 +469,20 @@ jzt.Board.prototype.movePlayerOffBoard = function(direction) {
     
 };
     
+/**
+ * Adds a provided message to this Board's queue of messages to globally
+ * send to all UpdateableThings tracked by this Board.
+ *
+ * @param message A message to be delivered to all UpdateableThings.
+ */
 jzt.Board.prototype.addMessage = function(message) {
     this.messageQueue.push(message);
 };
     
+/**
+ * Updates this Board instance by one tick in an execution cycle. This will also
+ * update all UpdateableThings tracked by this Board, excluding the player.
+ */
 jzt.Board.prototype.update = function() {
         
     // Iterate backwards in case a thing needs to be removed
@@ -390,6 +498,11 @@ jzt.Board.prototype.update = function() {
         
 };
 
+/**
+ * Assigns a message to be temporarily displayed at the bottom of this Board.
+ *
+ * @param message a message to be displayed.
+ */ 
 jzt.Board.prototype.setDisplayMessage = function(message) {
     this.displayMessage = message;
     if(this.displayMessage.length > this.width) {
@@ -398,6 +511,12 @@ jzt.Board.prototype.setDisplayMessage = function(message) {
     this.displayMessageTick = this.DISPLAY_MESSAGE_TTL;
 };
     
+/**
+ * Renders a visual representation of this Board to a provided graphics
+ * context.
+ *
+ * @param c A graphics context.
+ */
 jzt.Board.prototype.render = function(c) {
         
     var instance = this;
@@ -421,6 +540,12 @@ jzt.Board.prototype.render = function(c) {
     
 };
 
+/**
+ * Renders a visual message to a provided graphics context representing this Board's current
+ * display message. 
+ *
+ * @param c A graphics context.
+ */
 jzt.Board.prototype._renderMessage = function(c) {
     
     var messagePoint = new jzt.Point();
