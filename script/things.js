@@ -394,6 +394,9 @@ jzt.things.Bullet.serializationType = 'Bullet';
 jzt.things.Bullet.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this) || {};
     result.direction = this.direction;
+    if(this.fromPlayer) {
+        result.fromPlayer = true;
+    }
     return result;
 };
 
@@ -406,6 +409,9 @@ jzt.things.Bullet.prototype.serialize = function() {
  jzt.things.Bullet.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
     this.direction = data.direction;
+    if(data.fromPlayer) {
+        this.fromPlayer = data.fromPlayer;
+    }
  };
 
 /**
@@ -431,8 +437,12 @@ jzt.things.Bullet.prototype.update = function() {
                 }
             }
 
-            // If it was an UpdateableThing, send it a SHOT message
-            else if(thing instanceof jzt.things.UpdateableThing) {
+            /*
+             * Send a SHOT message if the bullet was from the player and any UpdateableThing, 
+             * otherwise we only send the SHOT message to the player itself or ScriptabelThings.
+             */
+            else if((this.fromPlayer && thing instanceof jzt.things.UpdateableThing) ||
+                    thing instanceof jzt.things.Player || thing instanceof jzt.things.ScriptableThing) {
                 thing.sendMessage('SHOT');
             }
 
@@ -598,7 +608,7 @@ jzt.things.Player.prototype.shoot = function(direction) {
     this.nextMove = Date.now() + Math.round(1000 / this.speed);
 
     // Shoot
-    jzt.things.ThingFactory.shoot(this.board, this.point.add(direction), direction);
+    jzt.things.ThingFactory.shoot(this.board, this.point.add(direction), direction, true);
 
 };
 
@@ -852,7 +862,7 @@ jzt.things.ThingFactory.getThingMap = function() {
  * a provided direction. If the provided point is blocked by another UpdateableThing,
  * then that UpdateableThing will be sent a 'SHOT' message.
  */
-jzt.things.ThingFactory.shoot = function(board, point, direction) {
+jzt.things.ThingFactory.shoot = function(board, point, direction, fromPlayer) {
 
     // First, see if we need to spawn a bullet at all...
     var tile = board.getTile(point);
@@ -867,6 +877,9 @@ jzt.things.ThingFactory.shoot = function(board, point, direction) {
         
         var bullet = new jzt.things.Bullet(board);
         bullet.direction = direction;
+        if(fromPlayer) {
+            bullet.fromPlayer = fromPlayer;
+        }
 
         board.addUpdateableThing(point, bullet);
 
