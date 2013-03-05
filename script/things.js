@@ -602,6 +602,11 @@ jzt.things.Player.prototype.move = function(direction) {
     
 };
 
+/**
+ * Shoots a player bullet in a provided Direction.
+ *
+ * @param A Direction in which to shoot a player bullet.
+ */
 jzt.things.Player.prototype.shoot = function(direction) {
     
     // We can move again at the next cycle
@@ -868,17 +873,22 @@ jzt.things.ThingFactory.shoot = function(board, point, direction, fromPlayer) {
     var tile = board.getTile(point);
 
     // If an UpdateableThing is in the location, send it a shot message
-    if(tile instanceof jzt.things.UpdateableThing) {
+    if((fromPlayer && tile instanceof jzt.things.UpdateableThing) ||
+        tile instanceof jzt.things.Player || tile instanceof jzt.things.ScriptableThing) {
         tile.sendMessage('SHOT');
     }
 
-    // If there's nothing there, spawn a Bullet Thing
-    else if(tile === undefined) {
+    // If there's nothing there, or it's water, spawn a Bullet Thing
+    else if(tile === undefined || tile instanceof jzt.things.Water) {
         
         var bullet = new jzt.things.Bullet(board);
         bullet.direction = direction;
         if(fromPlayer) {
             bullet.fromPlayer = fromPlayer;
+        }
+
+        if(tile instanceof jzt.things.Water) {
+            bullet.under = tile;
         }
 
         board.addUpdateableThing(point, bullet);
