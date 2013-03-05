@@ -27,6 +27,9 @@ jzt.things.Thing = function(board) {
  */
 jzt.things.Thing.prototype.serialize = function() {
     var result = {};
+    if(this.constructor.hasOwnProperty('serializationType')) {
+        result.serializationType = this.constructor.serializationType;
+    }
     result.name = this.name;
     result.spriteIndex = this.spriteIndex;
     result.x = this.point.x;
@@ -116,6 +119,9 @@ jzt.things.UpdateableThing.prototype.constructor = jzt.things.UpdateableThing;
 jzt.things.UpdateableThing.prototype.serialize = function() {
     var result = jzt.things.Thing.prototype.serialize.call(this) || {};
     result.speed = this.speed;
+    if(this.under) {
+        result.under = this.under.serialize();
+    }
     return result;
 };
 
@@ -127,6 +133,9 @@ jzt.things.UpdateableThing.prototype.serialize = function() {
  */
 jzt.things.UpdateableThing.prototype.deserialize = function(data) {
     jzt.things.Thing.prototype.deserialize.call(this, data);
+    if(data.under) {
+        this.under = jzt.things.ThingFactory.deserialize(data.under);
+    }
     this.setSpeed(data.speed);
 };
 
@@ -218,6 +227,7 @@ jzt.things.ScriptableThing = function(board) {
 };
 jzt.things.ScriptableThing.prototype = new jzt.things.UpdateableThing();
 jzt.things.ScriptableThing.prototype.constructor = jzt.things.ScriptableThing;
+jzt.things.ScriptableThing.serializationType = 'Scriptable';
 
 /**
  * Serializes this Thing to an object and returns it.
@@ -227,6 +237,7 @@ jzt.things.ScriptableThing.prototype.constructor = jzt.things.ScriptableThing;
 jzt.things.ScriptableThing.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this) || {};
 
+    result.serializationType = jzt.things.ScriptableThing.serializationType;
     result.script = this.scriptName;
 
     if(this.scriptContext) {
@@ -341,6 +352,7 @@ jzt.things.Boulder = function(board) {
 };
 jzt.things.Boulder.prototype = new jzt.things.Thing();
 jzt.things.Boulder.prototype.constructor = jzt.things.Boulder;
+jzt.things.Boulder.serializationType = 'Boulder';
 jzt.things.Boulder.symbol = 'BL';
 
 /**
@@ -372,6 +384,7 @@ jzt.things.Bullet = function(board) {
 };
 jzt.things.Bullet.prototype = new jzt.things.UpdateableThing();
 jzt.things.Bullet.prototype.constructor = jzt.things.Bullet;
+jzt.things.Bullet.serializationType = 'Bullet';
 
 /**
  * Serializes this Thing to an object and returns it.
@@ -381,9 +394,6 @@ jzt.things.Bullet.prototype.constructor = jzt.things.Bullet;
 jzt.things.Bullet.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this) || {};
     result.direction = this.direction;
-    if(this.under !== undefined) {
-        result.under = this.under.serialize();
-    }
     return result;
 };
 
@@ -394,6 +404,7 @@ jzt.things.Bullet.prototype.serialize = function() {
  * @param data An object to be deserialized into this Thing.
  */
  jzt.things.Bullet.prototype.deserialize = function(data) {
+    jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
     this.direction = data.direction;
  };
 
@@ -450,6 +461,7 @@ jzt.things.Forest = function(board) {
 };
 jzt.things.Forest.prototype = new jzt.things.Thing();
 jzt.things.Forest.prototype.constructor = jzt.things.Forest;
+jzt.things.Forest.serializationType = 'Forest';
 jzt.things.Forest.symbol = 'FR';
 
 /**
@@ -480,6 +492,7 @@ jzt.things.InvisibleWall = function(board) {
 };
 jzt.things.InvisibleWall.prototype = new jzt.things.Thing();
 jzt.things.InvisibleWall.prototype.constructor = jzt.things.InvisibleWall;
+jzt.things.InvisibleWall.serializationType = 'InvisibleWall';
 jzt.things.InvisibleWall.symbol = 'IW';
 
 /**
@@ -735,6 +748,7 @@ jzt.things.Wall = function(board) {
 };
 jzt.things.Wall.prototype = new jzt.things.Thing();
 jzt.things.Wall.prototype.constructor = jzt.things.Wall;
+jzt.things.Wall.prototype.serializationType = 'Wall';
 jzt.things.Wall.symbol = 'WL';
 
 //--------------------------------------------------------------------------------
@@ -751,6 +765,7 @@ jzt.things.Water = function(board) {
 };
 jzt.things.Water.prototype = new jzt.things.Thing();
 jzt.things.Water.prototype.constructor = jzt.things.Water;
+jzt.things.Water.serializationType = 'Water';
 jzt.things.Water.symbol = 'WT';
 
 /*==================================================================================
@@ -767,9 +782,48 @@ jzt.things.ThingFactory = jzt.things.ThingFactory || {};
 jzt.things.ThingFactory.createThing = function(symbol, board) {
 
     // Create our thing map if it hasn't been created already
-    if(jzt.things.ThingFactory.thingMap == undefined) {
+    var thingMap = jzt.things.ThingFactory.getThingMap();
 
-        jzt.things.ThingFactory.thingMap = {};
+    var thingFunction = thingMap.symbols[symbol];
+    if(thingFunction) {
+        return new thingFunction(board);
+    }
+
+};
+
+/**
+ * Creates a new Thing based on provided serialized data, and assigns it to a given board.
+ * 
+ * @param data Serialized data to turn into a Thing
+ * @param board A board which should own the created Thing.
+ */
+jzt.things.ThingFactory.deserialize = function(data, board) {
+
+    var thingMap = jzt.things.ThingFactory.getThingMap();
+
+    var thingFunction = thingMap.serializationTypes[data.serializationType];
+    if(thingFunction) {
+        var result = new thingFunction(board);
+        result.deserialize(data);
+        return result;
+    }
+
+};
+
+/**
+ * Lazily fetches a map of Things that have declared themself as serializeable in
+ * shorthand (symbol-based) or fully (serializationType).
+ *
+ * @return A map of Thing functions indexed by their symbols or serialization types.
+ */ 
+jzt.things.ThingFactory.getThingMap = function() {
+
+    if(jzt.things.ThingFactory.thingMap === undefined) {
+
+        jzt.things.ThingFactory.thingMap = {
+            symbols: {},
+            serializationTypes: {}
+        };
 
         for(thing in jzt.things) {
             if(jzt.things.hasOwnProperty(thing)) {
@@ -777,20 +831,21 @@ jzt.things.ThingFactory.createThing = function(symbol, board) {
                 var thingProperty = jzt.things[thing];
 
                 if(thingProperty.hasOwnProperty('symbol')) {
-                    jzt.things.ThingFactory.thingMap[thingProperty.symbol] = thingProperty;
+                    jzt.things.ThingFactory.thingMap.symbols[thingProperty.symbol] = thingProperty;
+                }
+
+                if(thingProperty.hasOwnProperty('serializationType')) {
+                    jzt.things.ThingFactory.thingMap.serializationTypes[thingProperty.serializationType] = thingProperty;
                 }
 
             }
         }
-
     }
 
-    var thingFunction = jzt.things.ThingFactory.thingMap[symbol];
-    if(thingFunction) {
-        return new thingFunction(board);
-    }
+    return jzt.things.ThingFactory.thingMap;
 
 };
+
 
 /**
  * Creates a new Bullet Thing on a provided board at a given point, oriented in

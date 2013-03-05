@@ -33,7 +33,7 @@ jzt.Board = function(boardData, game) {
     
     this.initializeTiles(boardData.tiles);
     this.initializeScripts(boardData.scripts);
-    this.initializeUpdateableThings(boardData.scriptables);
+    this.initializeUpdateableThings(boardData.things);
     
 };
 
@@ -90,15 +90,15 @@ jzt.Board.prototype.serialize = function() {
     }
 
     // Store ScriptableThings
-    result.scriptables = [];
+    result.things = [];
     for(var index = 0; index < this.updateableThings.length; ++index) {
 
         var thing = this.updateableThings[index];
 
-        if(thing instanceof jzt.things.ScriptableThing) {
+        if(thing instanceof jzt.things.UpdateableThing) {
             serializedThing = thing.serialize();
             if(serializedThing) {
-                result.scriptables.push(serializedThing);
+                result.things.push(serializedThing);
             }
         }
 
@@ -231,10 +231,11 @@ jzt.Board.prototype.initializeUpdateableThings = function(updateableDataCollecti
     for(var index = 0; index < updateableDataCollection.length; ++index) {
         
         var updateableData = updateableDataCollection[index];
-        var updateableThing = new jzt.things.ScriptableThing(this);
-        updateableThing.deserialize(updateableData);
-        this.setTile(updateableThing.point, updateableThing);
-        this.updateableThings.push(updateableThing);
+        var updateableThing = jzt.things.ThingFactory.deserialize(updateableData, this);
+        if(updateableThing !== undefined) {
+            this.setTile(updateableThing.point, updateableThing);
+            this.updateableThings.push(updateableThing);
+        }
         
     }
     
