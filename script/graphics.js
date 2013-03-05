@@ -98,9 +98,9 @@ jzt.Sprite.prototype.draw = function(context, point, foreground, background) {
      * Back in the DOS days, a bright background would actually signal
      * that the foreground color should blink.
      */
-    if(background.index > 8) {
+    if(jzt.colors.isBlinkableAsBackground(background)) {
         var blink = true;
-        background = jzt.colors.Colors[background.index - 8];
+        background = jzt.colors.getNonBlinkingEquivalent(background);
     }
     
     var destinationX = point.x * this.owner.tileSize.x;
@@ -176,6 +176,17 @@ jzt.colors.COLOR_CYCLE = [
     jzt.colors.Colors['E'],
     jzt.colors.Colors['F']
 ];
+
+jzt.colors.isBlinkableAsBackground = function(color) {
+    return color.index > 8
+};
+
+jzt.colors.getNonBlinkingEquivalent = function(color) {
+    if(jzt.colors.isBlinkableAsBackground) {
+        return jzt.colors.Colors[color.index - 8];
+    }
+    return color;
+};
 
 jzt.colors.getColor = function(name) {
     

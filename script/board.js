@@ -98,7 +98,7 @@ jzt.Board.prototype.serialize = function() {
         if(thing instanceof jzt.things.ScriptableThing) {
             serializedThing = thing.serialize();
             if(serializedThing) {
-                result.scriptables.push(thing.serialize());
+                result.scriptables.push(serializedThing);
             }
         }
 
@@ -309,28 +309,61 @@ jzt.Board.prototype.deleteTile = function(point) {
     }
 
     // Delete the tile
-    this.setTile(point, undefined);
+    this.setTile(point, thing.under);
     
 };
 
 /**
  * Moves a tile on this Board from a specified Point to another Point.
- * If the move was successful, true is returned, otherwise false.
+ * If the move was successful, true is returned, otherwise false. We can
+ * optionally specify whether the move should be weak, meaning moves should
+ * be treated as unsuccessful even when a pushable Thing is in the way. Additionally,
+ * we can specify the move as a flier, which will move the Thing even if an unpushable
+ * Thing is in the way.
  *
  * @param oldPoint A point on this Board containing a tile to be moved
  * @param newPoint A point on the Board to which a tile is to be moved.
+ * @param weak Whether or not we should weakly move the tile.
+ * @param force Whether or not to force the move regardless of what's in the way.
  * @return true if a move was successful, false otherwise.
  */
-jzt.Board.prototype.moveTile = function(oldPoint, newPoint) {
+jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak, flier) {
     
+    var thing = this.getTile(oldPoint);
+
     if(this.isPassable(newPoint)) {
-        this.setTile(newPoint, this.getTile(oldPoint));
-        this.setTile(oldPoint, undefined);
+
+        this.setTile(newPoint, thing);
+        this.setTile(oldPoint, thing === undefined ? undefined : thing.under);
+
+        if(thing !== undefined) {
+            thing.under = undefined;
+        }
+
         return true;
     }
+
+    // If we are blocked, but aren't outside and are a flier, then we can move anyway
+    else if(!this.isOutside(newPoint) && flier) {
+
+        // Get our thing to move, and its new "bottom"
+        var bottom = this.getTile(newPoint);
+
+        // If our thing isn't undefined
+        if(thing !== undefined) {
+            var underOldThing = thing.under;
+            thing.under = bottom;
+        }
+
+        this.setTile(newPoint, thing);
+        this.setTile(oldPoint, underOldThing);
+
+        return true;
+
+    }
     
-    // If we couldn't move, see if we can push
-    else {
+    // If we couldn't move and we're not weak, try to push
+    else if(!weak) {
         
         var thing = this.getTile(newPoint);
         if(thing) {
@@ -344,7 +377,7 @@ jzt.Board.prototype.moveTile = function(oldPoint, newPoint) {
             
                 // If the tile pushed, try moving again
                 if(success) {
-                    return this.moveTile(oldPoint, newPoint);
+                    return this.moveTile(oldPoint, newPoint, weak, flier);
                 }
                 
             }
@@ -563,7 +596,11 @@ jzt.Board.prototype.render = function(c) {
         }
         else if(thing) {
             var sprite = instance.game.resources.graphics.getSprite(thing.spriteIndex);
-            sprite.draw(c, thing.point, thing.foreground, thing.background);
+            var background = thing.background;
+            if(thing.under) {
+                background = jzt.colors.getNonBlinkingEquivalent(thing.under.background);
+            }
+            sprite.draw(c, thing.point, thing.foreground, background);
         }
     });
 

@@ -78,10 +78,12 @@ jzt.things.Thing.prototype.isPushable = function(direction) {
  * Moves this Thing in a provided Direction and returns its success.
  * 
  * @param direction A Direction in which to move this Thing.
+ * @param weak If true, we will move weakly.
+ * @param flier If true, we will move as a flier.
  * @return true if the move was successful, false otherwise.
  */
-jzt.things.Thing.prototype.move = function(direction) {
-    return this.board.moveTile(this.point, this.point.add(direction));
+jzt.things.Thing.prototype.move = function(direction, weak, flier) {
+    return this.board.moveTile(this.point, this.point.add(direction), weak, flier);
 };
 
 /**
@@ -367,7 +369,6 @@ jzt.things.Bullet = function(board) {
     this.background = jzt.colors.Colors['0'];
     this.direction = jzt.Direction.North;
     this.cycle = 0;
-
 };
 jzt.things.Bullet.prototype = new jzt.things.UpdateableThing();
 jzt.things.Bullet.prototype.constructor = jzt.things.Bullet;
@@ -378,9 +379,12 @@ jzt.things.Bullet.prototype.constructor = jzt.things.Bullet;
  * @return A serialized version of this Thing.
  */
 jzt.things.Bullet.prototype.serialize = function() {
-    return {
-        direction: this.direction
-    };
+    var result = jzt.things.UpdateableThing.prototype.serialize.call(this) || {};
+    result.direction = this.direction;
+    if(this.under !== undefined) {
+        result.under = this.under.serialize();
+    }
+    return result;
 };
 
 /**
@@ -404,13 +408,20 @@ jzt.things.Bullet.prototype.update = function() {
         this.cycle = 0;
 
         // If we couldn't move in a given direction...
-        if(! this.move(this.direction)) {
+        if(! this.move(this.direction, true)) {
 
             // See what was in our way.
             var thing = this.board.getTile(this.point.add(this.direction));
 
+            // If it was water, we can shoot over it!
+            if(thing instanceof jzt.things.Water) {
+                if(this.move(this.direction, true, true)) {
+                    return;
+                }
+            }
+
             // If it was an UpdateableThing, send it a SHOT message
-            if(thing instanceof jzt.things.UpdateableThing) {
+            else if(thing instanceof jzt.things.UpdateableThing) {
                 thing.sendMessage('SHOT');
             }
 
