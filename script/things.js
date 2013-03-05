@@ -648,6 +648,7 @@ jzt.things.Player.prototype.update = function() {
             else if (k.isPressed(k.LEFT)) this.move(jzt.Direction.West);
             else if (k.isPressed(k.DOWN)) this.move(jzt.Direction.South);
             else if (k.isPressed(k.RIGHT)) this.move(jzt.Direction.East);
+            else if (k.isPressed([k.T])) this.useTorch();
         }
         
     }
