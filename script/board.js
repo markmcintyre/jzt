@@ -33,7 +33,7 @@ jzt.Board = function(boardData, game) {
     
     this.initializeTiles(boardData.tiles);
     this.initializeScripts(boardData.scripts);
-    this.initializeScriptableThings(boardData.scriptables);
+    this.initializeUpdateableThings(boardData.scriptables);
     
 };
 
@@ -217,25 +217,24 @@ jzt.Board.prototype.initializeTiles = function(tileDataCollection) {
 };
 
 /**
- * Initializes Scriptable data given a collection of serialized JZT
- * objects.
+ * Initializes Updateable data given a collection of serialized UpdateableThings.
  * 
- * @param scriptableDataCollection An array of serialized Scriptables to be
- *        deserialized into actual Scriptable instances for this Board.
+ * @param updateableDataCollection An array of serialized UpdateableThings to be
+ *        deserialized into actual UpdateableThing instances for this Board.
  */
-jzt.Board.prototype.initializeScriptableThings = function(scriptableDataCollection) {
+jzt.Board.prototype.initializeUpdateableThings = function(updateableDataCollection) {
     
-    if(!scriptableDataCollection) {
+    if(!updateableDataCollection) {
         return;
     }
     
-    for(var index = 0; index < scriptableDataCollection.length; ++index) {
+    for(var index = 0; index < updateableDataCollection.length; ++index) {
         
-        var scriptableData = scriptableDataCollection[index];
-        var scriptableThing = new jzt.things.ScriptableThing(this);
-        scriptableThing.deserialize(scriptableData);
-        this.setTile(scriptableThing.point, scriptableThing);
-        this.updateableThings.push(scriptableThing);
+        var updateableData = updateableDataCollection[index];
+        var updateableThing = new jzt.things.ScriptableThing(this);
+        updateableThing.deserialize(updateableData);
+        this.setTile(updateableThing.point, updateableThing);
+        this.updateableThings.push(updateableThing);
         
     }
     
@@ -314,7 +313,6 @@ jzt.Board.prototype.deleteTile = function(point) {
     
 };
 
-    
 /**
  * Moves a tile on this Board from a specified Point to another Point.
  * If the move was successful, true is returned, otherwise false.
@@ -372,6 +370,24 @@ jzt.Board.prototype.setTile = function(point, tile) {
     
     this.tiles[point.x + point.y * this.width] = tile;
     
+};
+
+/**
+ * Adds an UpdateableThing to a specific Point on this Board. This
+ * function does not check for saftey of any existing Things on
+ * that point, but will add the UpdateableThing to the collection of
+ * those tracked by this board for updates.
+ *
+ * @param point A Point at which to set a given UpdateableThing
+ * @param thing An UpdateableThing to add to this board.
+ */
+jzt.Board.prototype.addUpdateableThing = function(point, thing) {
+    
+    if(thing instanceof jzt.things.UpdateableThing) {
+        this.setTile(point, thing);
+        this.updateableThings.push(thing);
+    }
+
 };
 
 /**

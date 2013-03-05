@@ -354,6 +354,77 @@ jzt.things.Boulder.prototype.isPushable = function(direction) {
 
 //--------------------------------------------------------------------------------
 
+
+/**
+ * A Bullet is an UpdateableThing that represents a projectile.
+ *
+ * @param board An owner board for this Bullet
+ */
+jzt.things.Bullet = function(board) {
+    jzt.things.UpdateableThing.call(this, board);
+    this.spriteIndex = 248;
+    this.foreground = jzt.colors.Colors['F'];
+    this.background = jzt.colors.Colors['0'];
+    this.direction = jzt.Direction.North;
+    this.cycle = 0;
+
+};
+jzt.things.Bullet.prototype = new jzt.things.UpdateableThing();
+jzt.things.Bullet.prototype.constructor = jzt.things.Bullet;
+
+/**
+ * Serializes this Thing to an object and returns it.
+ *
+ * @return A serialized version of this Thing.
+ */
+jzt.things.Bullet.prototype.serialize = function() {
+    return {
+        direction: this.direction
+    };
+};
+
+/**
+ * Deserializes a given data object and update's this Thing's state to
+ * that data.
+ *
+ * @param data An object to be deserialized into this Thing.
+ */
+ jzt.things.Bullet.prototype.deserialize = function(data) {
+    this.direction = data.direction;
+ };
+
+/**
+ * Updates this bullet, moving it one tile in its associated
+ * direction.
+ */
+jzt.things.Bullet.prototype.update = function() {
+
+    if(++this.cycle > 1) {
+
+        this.cycle = 0;
+
+        // If we couldn't move in a given direction...
+        if(! this.move(this.direction)) {
+
+            // See what was in our way.
+            var thing = this.board.getTile(this.point.add(this.direction));
+
+            // If it was an UpdateableThing, send it a SHOT message
+            if(thing instanceof jzt.things.UpdateableThing) {
+                thing.sendMessage('SHOT');
+            }
+
+            // Regardless of what we hit, we're done
+            this.delete();
+
+        }
+
+    }
+
+};
+
+//--------------------------------------------------------------------------------
+
 /*
  * Forest acts as a non-pushable obstacle, like a wall, but it vanishes when the 
  * player attempts to move to its location, clearing this Thing from the board.
@@ -497,6 +568,16 @@ jzt.things.Player.prototype.move = function(direction) {
     
 };
 
+jzt.things.Player.prototype.shoot = function(direction) {
+    
+    // We can move again at the next cycle
+    this.nextMove = Date.now() + Math.round(1000 / this.speed);
+
+    // Shoot
+    jzt.things.ThingFactory.shoot(this.board, this.point.add(direction), direction);
+
+};
+
 /**
  * Updates this Player for a single execution cycle. During its update,
  * Player will check for keypresses and move accordingly.
@@ -514,10 +595,21 @@ jzt.things.Player.prototype.update = function() {
         
         var k = this.game.keyboard;
 
-        if (k.isPressed(k.UP)) this.move(jzt.Direction.North);
-        else if (k.isPressed(k.LEFT)) this.move(jzt.Direction.West);
-        else if (k.isPressed(k.DOWN)) this.move(jzt.Direction.South);
-        else if (k.isPressed(k.RIGHT)) this.move(jzt.Direction.East);
+        // If the Shift key is pressed, the player would like to shoot
+        if(k.isPressed(k.SHIFT)) {
+            if(k.isPressed(k.UP)) this.shoot(jzt.Direction.North);
+            else if(k.isPressed(k.LEFT)) this.shoot(jzt.Direction.West);
+            else if(k.isPressed(k.DOWN)) this.shoot(jzt.Direction.South);
+            else if(k.isPressed(k.RIGHT)) this.shoot(jzt.Direction.East);
+        }
+
+        // Otherwise the player would like to move
+        else {
+            if (k.isPressed(k.UP)) this.move(jzt.Direction.North);
+            else if (k.isPressed(k.LEFT)) this.move(jzt.Direction.West);
+            else if (k.isPressed(k.DOWN)) this.move(jzt.Direction.South);
+            else if (k.isPressed(k.RIGHT)) this.move(jzt.Direction.East);
+        }
         
     }
     
@@ -685,6 +777,33 @@ jzt.things.ThingFactory.createThing = function(symbol, board) {
     var thingFunction = jzt.things.ThingFactory.thingMap[symbol];
     if(thingFunction) {
         return new thingFunction(board);
+    }
+
+};
+
+/**
+ * Creates a new Bullet Thing on a provided board at a given point, oriented in
+ * a provided direction. If the provided point is blocked by another UpdateableThing,
+ * then that UpdateableThing will be sent a 'SHOT' message.
+ */
+jzt.things.ThingFactory.shoot = function(board, point, direction) {
+
+    // First, see if we need to spawn a bullet at all...
+    var tile = board.getTile(point);
+
+    // If an UpdateableThing is in the location, send it a shot message
+    if(tile instanceof jzt.things.UpdateableThing) {
+        tile.sendMessage('SHOT');
+    }
+
+    // If there's nothing there, spawn a Bullet Thing
+    else if(tile === undefined) {
+        
+        var bullet = new jzt.things.Bullet(board);
+        bullet.direction = direction;
+
+        board.addUpdateableThing(point, bullet);
+
     }
 
 };
