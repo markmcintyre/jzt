@@ -89,7 +89,7 @@ jzt.Board.prototype.serialize = function() {
         result.scripts.push( script.serialize() );
     }
 
-    // Store ScriptableThings
+    // Store UpdateableThings
     result.things = [];
     for(var index = 0; index < this.updateableThings.length; ++index) {
 

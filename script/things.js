@@ -47,16 +47,31 @@ jzt.things.Thing.prototype.serialize = function() {
 jzt.things.Thing.prototype.deserialize = function(data) {
     
     this.name = data.name;
-    this.spriteIndex = data.spriteIndex || 63;
+
+    if(data.spriteIndex) {
+        this.spriteIndex = data.spriteIndex;
+    }
+
     this.point.x = data.x || 0;
     this.point.y = data.y || 0;
     
-    var backgroundCode = data.color.charAt(0);
-    var foregroundCode = data.color.charAt(1);
-    
-    this.foreground = foregroundCode == '*' ? foregroundCode : jzt.colors.Colors[foregroundCode];
-    this.background = jzt.colors.Colors[backgroundCode];
+    if(data.color) {
+        var backgroundCode = data.color.charAt(0);
+        var foregroundCode = data.color.charAt(1);
 
+        this.foreground = foregroundCode == '*' ? foregroundCode : jzt.colors.Colors[foregroundCode];
+        this.background = jzt.colors.Colors[backgroundCode];
+    }
+    else {
+        if(!this.foreground) {
+            this.foreground = jzt.colors.Colors['9'];
+        }
+        if(!this.background) {
+            this.background = jzt.colors.Colors['0'];
+        }
+
+    }
+    
 };
 
 /**
@@ -519,6 +534,51 @@ jzt.things.InvisibleWall.prototype.sendMessage = function(message) {
         this.board.replaceTile(this.point, replacement);
     }
 };
+
+//--------------------------------------------------------------------------------
+
+/**
+ * Lion is an UpdateableThing representing a lion enemy, which moves around
+ * with a specified randomness and attacks the player.
+ */
+jzt.things.Lion = function(board) {
+    jzt.things.UpdateableThing.call(this, board);
+    this.intelligence = 3;
+    this.spriteIndex = 234;
+    this.foreground = jzt.colors.Colors['C'];
+    this.background = jzt.colors.Colors['0'];
+};
+jzt.things.Lion.prototype = new jzt.things.UpdateableThing();
+jzt.things.Lion.prototype.constructor = jzt.things.Lion;
+jzt.things.Lion.serializationType = 'Lion';
+
+jzt.things.Lion.prototype.serialize = function() {
+    var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    result.intelligence = this.intelligence;
+    return result;
+};
+
+jzt.things.Lion.prototype.deserialize = function(data) {
+    jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.intelligence = data.intelligence;
+};
+
+/**
+ * Retrurns whether or not this Thing declares itself to be pushable in a provided
+ * direction by other Things.
+ *
+ * @param direction A direction in which to test the pushability of this Thing
+ * @return True if this thing is pushable in a given direction, false otherwise.
+ */
+jzt.things.Lion.prototype.isPushable = function(direction) {
+    return true;
+};
+
+jzt.things.Lion.prototype.update = function() {
+    this.move(jzt.Direction.random(), true);
+};
+
+
  
 //--------------------------------------------------------------------------------
 
