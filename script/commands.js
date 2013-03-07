@@ -35,7 +35,7 @@ jzt.commands.DirectionModifier = {
  */
 jzt.commands.Direction = {
     
-    SEEK:  {name: 'Toward player',            process: function(o) {return o.playerDirection();}},
+    SEEK:  {name: 'Toward player',            process: function(o) {return o.getPlayerDirection();}},
     FLOW:  {name: 'Current orientation',      process: function(o) {return o.orientation;}},
     RAND:  {name: 'Random direction',         process: function()  {return jzt.Direction.random();}},
     RANDF: {name: 'Random free direction',    process: function(o) {return jzt.Direction.random(o.getFreeDirections());}},
@@ -256,9 +256,44 @@ jzt.commands.Say.prototype.clone = function() {
 };
 
 jzt.commands.Say.prototype.execute = function(owner) {
-    //jzt.debug.log('%s says: %s', owner.name, this.text);
     owner.board.setDisplayMessage(this.text);
     return jzt.commands.CommandResult.CONTINUE;
+};
+
+/*
+ * Shoot Command
+ */
+jzt.commands.Shoot = function() {
+    this.modifiers = [];
+    this.direction = jzt.Direction.North;
+};
+
+jzt.commands.Shoot.prototype.clone = function() {
+    var clone = new jzt.commands.Shoot();
+    clone.modifiers = this.modifiers.slice(0);
+    clone.direction = this.direction;
+    return clone;
+};
+
+jzt.commands.Shoot.prototype.execute = function(owner) {
+
+    // Get our final direction
+    var direction = this.direction.process(owner);
+        
+    // Evaluate our modifiers into a direction
+    var modifiers = this.modifiers.slice(0);
+    for(var modifier; modifier = modifiers.pop();) {
+        direction = modifier.process(direction);
+    }
+
+    // If a direction is available
+    if(direction) {
+
+        // Shoot
+        jzt.things.ThingFactory.shoot(owner.board, owner.point.add(direction), direction, false);
+
+    }
+
 };
 
 /*

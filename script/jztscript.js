@@ -283,6 +283,17 @@ jztscript.parsers.SayParser = function() {
 };
 
 /*
+ * Shoot Parser
+ * command   = '#' 'shoot' modifier* direction
+ * modifier  = 'cw' | 'ccw' | 'opp' | 'rndp';
+ * direction = 'n' | 's' | 'e' | 'w' | 'north' | 'south' | 'east' | 'west' | 'seek'
+ *              | 'flow' | 'rand' | 'randf' | 'randb' | 'rndns' | 'rndew' | 'rndne';
+ */
+jztscript.parsers.ShootParser = function() {
+    return jztscript.parserhelper.MovementParser(jzt.commands.Shoot, 'shoot', true);
+};
+
+/*
  * Stand Parser
  */
 jztscript.parsers.StandParser = function() {

@@ -420,7 +420,7 @@ jzt.things.Bullet.prototype.serialize = function() {
  */
 jzt.things.Bullet.prototype.update = function() {
 
-    if(++this.cycle > 1) {
+    if(++this.cycle > 2) {
 
         this.cycle = 0;
 
@@ -749,6 +749,19 @@ jzt.things.Player.prototype.inTorchRange = function(point) {
         }
 
     }  
+};
+
+/**
+ * Delivers a provided message to this Thing.
+ *
+ * @param messageName a name of a message to deliver.
+ */
+jzt.things.Player.prototype.sendMessage = function(message) {
+
+    if(message === 'SHOT') {
+        this.board.setDisplayMessage('Ouch!');
+    }
+
 };
 
 //--------------------------------------------------------------------------------
