@@ -164,7 +164,29 @@ jzt.things.UpdateableThing.prototype.deserialize = function(data) {
 jzt.things.UpdateableThing.prototype.setSpeed = function(speed) {
     this.speed = speed;
     this.ticksPerCycle = Math.round(1000 / this.speed);
-    this.nextTick = Date.now() + this.ticksPerCycle;
+    this.nextTick = 0;
+};
+
+/**
+ * Returns whether or not this UpdateableThing is ready to execute
+ * another tick for a given timestamp.
+ *
+ * @param timestamp A timestamp at which we wish to determine if this
+ *      UpdateableThing is ready for another tick.
+ */
+jzt.things.UpdateableThing.prototype.isReady = function(timestamp) {
+    return timestamp > this.nextTick;
+};
+
+/**
+ * Completes a 'tick' for this UpdateableThing, advancing the 
+ * timestamp at which the next tick is allowed to occur, based
+ * on a provided timestamp.
+ *
+ * @param timestamp A timestamp at which this tick should occur.
+ */
+jzt.things.UpdateableThing.prototype.tick = function(timestamp) {
+    this.nextTick = timestamp + this.ticksPerCycle;
 };
 
 /**
@@ -342,10 +364,10 @@ jzt.things.ScriptableThing.prototype.walk = function() {
  */
 jzt.things.ScriptableThing.prototype.update = function(timestamp) {
     
-    if(timestamp > this.nextTick) {
+    if(this.isReady(timestamp)) {
         this.walk();
         this.scriptContext.executeTick();
-        this.nextTick = timestamp + this.ticksPerCycle;
+        this.tick(timestamp);
     };
     
 };
@@ -393,8 +415,7 @@ jzt.things.Bullet = function(board) {
     this.foreground = jzt.colors.Colors['F'];
     this.background = jzt.colors.Colors['0'];
     this.direction = jzt.Direction.North;
-    this.ticksPerCycle = Math.round(1000 / 10);
-    this.nextMove = Date.now();
+    this.setSpeed(10);
 };
 jzt.things.Bullet.prototype = new jzt.things.UpdateableThing();
 jzt.things.Bullet.prototype.constructor = jzt.things.Bullet;
@@ -434,9 +455,9 @@ jzt.things.Bullet.prototype.serialize = function() {
  */
 jzt.things.Bullet.prototype.update = function(timestamp) {
 
-    if(timestamp > this.nextMove) {
+    if(this.isReady(timestamp)) {
 
-        this.nextMove = timestamp + this.ticksPerCycle;
+        this.tick(timestamp);
 
         // If we couldn't move in a given direction...
         if(! this.move(this.direction, true)) {
@@ -546,6 +567,7 @@ jzt.things.Lion = function(board) {
     this.spriteIndex = 234;
     this.foreground = jzt.colors.Colors['C'];
     this.background = jzt.colors.Colors['0'];
+    this.setSpeed(8);
 };
 jzt.things.Lion.prototype = new jzt.things.UpdateableThing();
 jzt.things.Lion.prototype.constructor = jzt.things.Lion;
@@ -590,8 +612,6 @@ jzt.things.Lion.prototype.update = function(timestamp) {
 jzt.things.Player = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     
-    var now = Date.now();
-    
     this.name = 'Player';
     this.spriteIndex = 2;
     this.point = new jzt.Point(-1,-1);
@@ -601,8 +621,7 @@ jzt.things.Player = function(board) {
     
     this.torch = false;
     this.torchStrength = 0;
-    this.torchExpiry = now;
-    this.nextMove = now;
+    this.torchExpiry = 0;
     this.game = undefined;
     
     this.TORCH_TTL = 60000; // One Minute
@@ -634,9 +653,6 @@ jzt.things.Player.prototype.move = function(direction) {
     // Calculate our new location
     var newLocation = this.point.add(direction);
 
-    // We can move again at the next cycle
-    this.nextMove = Date.now() + Math.round(1000 / this.speed);
-    
     // First, check if the direction is outside the board
     if(this.board.isOutside(newLocation)) {
 
@@ -668,9 +684,6 @@ jzt.things.Player.prototype.move = function(direction) {
  */
 jzt.things.Player.prototype.shoot = function(direction) {
     
-    // We can move again at the next cycle
-    this.nextMove = Date.now() + Math.round(1000 / this.speed);
-
     // Shoot
     jzt.things.ThingFactory.shoot(this.board, this.point.add(direction), direction, true);
 
@@ -682,29 +695,39 @@ jzt.things.Player.prototype.shoot = function(direction) {
  */
 jzt.things.Player.prototype.update = function(timestamp) {
 
+    function tickAndShoot(scope, direction) {
+        scope.shoot(direction);
+        scope.tick(timestamp);
+    }
+
+    function tickAndMove(scope, direction) {
+        scope.move(direction);
+        scope.tick(timestamp);
+    }
+
     if(this.torch) {
         this.updateTorch(timestamp);
     }
         
     // We can only move when permissable speed-wise
-    if( timestamp > this.nextMove ) {
+    if(this.isReady(timestamp)) {
         
         var k = this.game.keyboard;
 
         // If the Shift key is pressed, the player would like to shoot
         if(k.isPressed(k.SHIFT)) {
-            if(k.isPressed(k.UP)) this.shoot(jzt.Direction.North);
-            else if(k.isPressed(k.LEFT)) this.shoot(jzt.Direction.West);
-            else if(k.isPressed(k.DOWN)) this.shoot(jzt.Direction.South);
-            else if(k.isPressed(k.RIGHT)) this.shoot(jzt.Direction.East);
+            if(k.isPressed(k.UP)) tickAndShoot(this, jzt.Direction.North);
+            else if(k.isPressed(k.LEFT)) tickAndShoot(this, jzt.Direction.West);
+            else if(k.isPressed(k.DOWN)) tickAndShoot(this, jzt.Direction.South);
+            else if(k.isPressed(k.RIGHT)) tickAndShoot(this, jzt.Direction.East);
         }
 
         // Otherwise the player would like to move
         else {
-            if (k.isPressed(k.UP)) this.move(jzt.Direction.North);
-            else if (k.isPressed(k.LEFT)) this.move(jzt.Direction.West);
-            else if (k.isPressed(k.DOWN)) this.move(jzt.Direction.South);
-            else if (k.isPressed(k.RIGHT)) this.move(jzt.Direction.East);
+            if (k.isPressed(k.UP)) tickAndMove(this, jzt.Direction.North);
+            else if (k.isPressed(k.LEFT)) tickAndMove(this, jzt.Direction.West);
+            else if (k.isPressed(k.DOWN)) tickAndMove(this, jzt.Direction.South);
+            else if (k.isPressed(k.RIGHT)) tickAndMove(this, jzt.Direction.East);
             else if (k.isPressed([k.T])) this.useTorch();
         }
         
