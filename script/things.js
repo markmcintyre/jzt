@@ -92,6 +92,10 @@ jzt.things.Thing.prototype.isPushable = function(direction) {
     return false;
 };
 
+jzt.things.Thing.prototype.isSquishable = function(direction) {
+    return false;
+};
+
 /**
  * Moves this Thing in a provided Direction and returns its success.
  * 
@@ -606,6 +610,10 @@ jzt.things.Lion.prototype.sendMessage = function(message) {
  * @return True if this thing is pushable in a given direction, false otherwise.
  */
 jzt.things.Lion.prototype.isPushable = function(direction) {
+    return true;
+};
+
+jzt.things.Lion.prototype.isSquishable = function(direction) {
     return true;
 };
 

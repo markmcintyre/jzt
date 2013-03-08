@@ -380,6 +380,10 @@ jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak, flier) {
                 if(success) {
                     return this.moveTile(oldPoint, newPoint, weak, flier);
                 }
+                else if(thing.isSquishable(moveDirection)) {
+                    thing.delete();
+                    return true;
+                }
                 
             }
             
