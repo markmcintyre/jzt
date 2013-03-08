@@ -220,8 +220,9 @@ jzt.Game.prototype.setBoard = function(board, playerPoint) {
  * Updates this Game's state by one execution tick.
  */
 jzt.Game.prototype.update = function() {
-    this.currentBoard.update();
-    this.player.update();
+    var now = Date.now();
+    this.currentBoard.update(now);
+    this.player.update(now);
 };
     
 /**

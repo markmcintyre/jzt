@@ -536,7 +536,7 @@ jzt.Board.prototype.addMessage = function(message) {
  * Updates this Board instance by one tick in an execution cycle. This will also
  * update all UpdateableThings tracked by this Board, excluding the player.
  */
-jzt.Board.prototype.update = function() {
+jzt.Board.prototype.update = function(timestamp) {
         
     // Iterate backwards in case a thing needs to be removed
     for(var index = this.updateableThings.length-1; index >= 0; --index) {
@@ -545,7 +545,7 @@ jzt.Board.prototype.update = function() {
         var updateableThing = this.updateableThings[index];
         
         // Update the thing
-        updateableThing.update();
+        updateableThing.update(timestamp);
         
     }
         

@@ -221,7 +221,7 @@ jzt.things.UpdateableThing.prototype.getBlockedDirections = function() {
 /**
  * Updates this UpdateableThing for a single execution cycle.
  */
-jzt.things.UpdateableThing.prototype.update = function() {};
+jzt.things.UpdateableThing.prototype.update = function(timestamp) {};
 
 // ------------------------------------------------------------------------------
 
@@ -340,14 +340,12 @@ jzt.things.ScriptableThing.prototype.walk = function() {
  * Updates this ScriptableThing for a single execution cycle, including its
  * associated Script.
  */
-jzt.things.ScriptableThing.prototype.update = function() {
+jzt.things.ScriptableThing.prototype.update = function(timestamp) {
     
-    var now = Date.now();
-    
-    if(now > this.nextTick) {
+    if(timestamp > this.nextTick) {
         this.walk();
         this.scriptContext.executeTick();
-        this.nextTick = now + this.ticksPerCycle;
+        this.nextTick = timestamp + this.ticksPerCycle;
     };
     
 };
@@ -395,7 +393,8 @@ jzt.things.Bullet = function(board) {
     this.foreground = jzt.colors.Colors['F'];
     this.background = jzt.colors.Colors['0'];
     this.direction = jzt.Direction.North;
-    this.cycle = 0;
+    this.ticksPerCycle = Math.round(1000 / 10);
+    this.nextMove = Date.now();
 };
 jzt.things.Bullet.prototype = new jzt.things.UpdateableThing();
 jzt.things.Bullet.prototype.constructor = jzt.things.Bullet;
@@ -433,11 +432,11 @@ jzt.things.Bullet.prototype.serialize = function() {
  * Updates this bullet, moving it one tile in its associated
  * direction.
  */
-jzt.things.Bullet.prototype.update = function() {
+jzt.things.Bullet.prototype.update = function(timestamp) {
 
-    if(++this.cycle > 2) {
+    if(timestamp > this.nextMove) {
 
-        this.cycle = 0;
+        this.nextMove = timestamp + this.ticksPerCycle;
 
         // If we couldn't move in a given direction...
         if(! this.move(this.direction, true)) {
@@ -574,7 +573,7 @@ jzt.things.Lion.prototype.isPushable = function(direction) {
     return true;
 };
 
-jzt.things.Lion.prototype.update = function() {
+jzt.things.Lion.prototype.update = function(timestamp) {
     this.move(jzt.Direction.random(), true);
 };
 
@@ -681,16 +680,14 @@ jzt.things.Player.prototype.shoot = function(direction) {
  * Updates this Player for a single execution cycle. During its update,
  * Player will check for keypresses and move accordingly.
  */
-jzt.things.Player.prototype.update = function() {
-    
-    var now = Date.now();
-        
+jzt.things.Player.prototype.update = function(timestamp) {
+
     if(this.torch) {
-        this.updateTorch(now);
+        this.updateTorch(timestamp);
     }
         
     // We can only move when permissable speed-wise
-    if( now > this.nextMove ) {
+    if( timestamp > this.nextMove ) {
         
         var k = this.game.keyboard;
 
