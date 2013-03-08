@@ -151,7 +151,9 @@ jzt.things.UpdateableThing.prototype.deserialize = function(data) {
     if(data.under) {
         this.under = jzt.things.ThingFactory.deserialize(data.under);
     }
-    this.setSpeed(data.speed);
+    if(data.speed) {
+        this.setSpeed(data.speed);
+    }
 };
 
 /**
@@ -596,7 +598,10 @@ jzt.things.Lion.prototype.isPushable = function(direction) {
 };
 
 jzt.things.Lion.prototype.update = function(timestamp) {
-    this.move(jzt.Direction.random(), true);
+    if(this.isReady(timestamp)) {
+        this.tick(timestamp);
+        this.move(jzt.Direction.random(), true);
+    }
 };
 
 
@@ -617,7 +622,7 @@ jzt.things.Player = function(board) {
     this.point = new jzt.Point(-1,-1);
     this.foreground = jzt.colors.Colors['F'];
     this.background = jzt.colors.Colors['1'];
-    this.speed = 9;
+    this.setSpeed(9);
     
     this.torch = false;
     this.torchStrength = 0;
@@ -696,13 +701,13 @@ jzt.things.Player.prototype.shoot = function(direction) {
 jzt.things.Player.prototype.update = function(timestamp) {
 
     function tickAndShoot(scope, direction) {
-        scope.shoot(direction);
         scope.tick(timestamp);
+        scope.shoot(direction);
     }
 
     function tickAndMove(scope, direction) {
-        scope.move(direction);
         scope.tick(timestamp);
+        scope.move(direction);
     }
 
     if(this.torch) {
