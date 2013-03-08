@@ -544,8 +544,10 @@ jzt.Board.prototype.update = function(timestamp) {
         // Grab our moveable thing
         var updateableThing = this.updateableThings[index];
         
-        // Update the thing
-        updateableThing.update(timestamp);
+        // Update the thing, if we got one
+        if(updateableThing != undefined) {
+            updateableThing.update(timestamp);
+        }
         
     }
         

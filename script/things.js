@@ -586,6 +586,18 @@ jzt.things.Lion.prototype.deserialize = function(data) {
     this.intelligence = data.intelligence;
 };
 
+jzt.things.Lion.prototype.sendMessage = function(message) {
+
+    if(message === 'SHOT') {
+        this.delete();
+    }
+    else if(message === 'TOUCH') {
+        this.board.player.sendMessage('SHOT');
+        this.delete();
+    }
+
+};
+
 /**
  * Retrurns whether or not this Thing declares itself to be pushable in a provided
  * direction by other Things.
@@ -600,7 +612,13 @@ jzt.things.Lion.prototype.isPushable = function(direction) {
 jzt.things.Lion.prototype.update = function(timestamp) {
     if(this.isReady(timestamp)) {
         this.tick(timestamp);
-        this.move(jzt.Direction.random(), true);
+        var direction = jzt.Direction.random();
+        var thing = this.board.getTile(this.point.add(direction));
+        if(thing && thing instanceof jzt.things.Player) {
+            thing.sendMessage('SHOT');
+            this.delete();
+        }
+        this.move(direction, true);
     }
 };
 
