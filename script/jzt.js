@@ -28,7 +28,7 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     
     this.onLoadCallback = onLoadCallback;
     this.resources = {};
-    this.player = new jzt.things.Player();
+    this.player = undefined;
     this.keyboard = new jzt.KeyboardInput();
     this.canvasElement = canvasElement;
     this.context = canvasElement.getContext('2d');
@@ -68,7 +68,6 @@ jzt.Game.prototype.run = function() {
 
     this.keyboard.initialize();
     this.setBoard(this.startingBoard);
-    this.player.game = this;
         
     // Start the game loop
     this._intervalId = setInterval(this.loop.bind(this), 1000 / this.FPS);
@@ -102,6 +101,31 @@ jzt.Game.prototype.loop = function() {
 };
 
 /**
+ * Moves this Game's Player instance to a specified Door id on a given board name. This will cause
+ * a new Board to be loaded as the current board, and the player to be located at the provided Door.
+ *
+ * @param doorId An ID of a door
+ * @param boardName A name of a Board to be loaded.
+ */
+jzt.Game.prototype.movePlayerToDoor = function(doorId, boardName) {
+
+    // Retrieve our new board (or the current board if it's the same)
+    var newBoard = (boardName === this.currentBoard.name) ? this.currentBoard : this.getBoard(boardName);
+
+    // If the specified board does not exist, return
+    if(newBoard === undefined) {
+        return;
+    }
+
+    var door = newBoard.getDoor(doorId);
+
+    if(door) {
+        this.setBoard(newBoard, door.point);
+    }
+
+};
+
+/**
  * Moves this Game's Player instance to a specified edge of a given board name.
  * This will cause a new Board to be loaded as the current board, and the player
  * to be located at a given edge of that board, keeping the player's old perpendicular
@@ -115,7 +139,7 @@ jzt.Game.prototype.movePlayerToBoardEdge = function(edge, boardName) {
     // Retrieve our new board (or the current board if it's the same)
     var newBoard = (boardName == this.currentBoard.name) ? this.currentBoard : this.getBoard(boardName);
 
-    // If the board specified does not exist, return false
+    // If the board specified does not exist, return
     if(newBoard == undefined) {
         return;
     }
@@ -182,7 +206,7 @@ jzt.Game.prototype.setBoard = function(board, playerPoint) {
     if(this.currentBoard && this.currentBoard.equals(board)) {
 
         // We need to erase the old player position
-        this.currentBoard.setTile(this.player.point, undefined);
+        this.currentBoard.setTile(this.player.point, this.player.under);
 
     }
 
@@ -204,12 +228,17 @@ jzt.Game.prototype.setBoard = function(board, playerPoint) {
             this.currentBoard = new jzt.Board(this.boards[board], this);
         }
 
+        // Construct our new player for this board
+        this.player = new jzt.things.Player(this.currentBoard);
+        this.player.game = this;
+
     }
 
     // Assign the player to our new board
     if(playerPoint) {
         this.player.point.x = playerPoint.x;
         this.player.point.y = playerPoint.y;
+        this.player.under = this.currentBoard.getTile(playerPoint);
     }
 
     this.currentBoard.initializePlayer(this.player);

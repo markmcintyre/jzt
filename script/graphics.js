@@ -182,7 +182,7 @@ jzt.colors.isBlinkableAsBackground = function(color) {
 };
 
 jzt.colors.getNonBlinkingEquivalent = function(color) {
-    if(jzt.colors.isBlinkableAsBackground) {
+    if(jzt.colors.isBlinkableAsBackground(color)) {
         return jzt.colors.Colors[color.index - 8];
     }
     return color;

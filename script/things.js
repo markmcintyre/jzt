@@ -498,6 +498,60 @@ jzt.things.Bullet.prototype.update = function(timestamp) {
 
 //--------------------------------------------------------------------------------
 
+/**
+ * Door is a Thing capable of moving a player to its matching door on a target board.
+ * 
+ * @param board An owner board for this Door
+ */
+jzt.things.Door = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.spriteIndex = 240;
+    this.foreground = jzt.colors.Colors['F'];
+    this.background = jzt.colors.Colors['1'];
+    this.targetBoard = undefined;
+    this.doorId = 0;
+};
+jzt.things.Door.prototype = new jzt.things.Thing();
+jzt.things.Door.prototype.constructor = jzt.things.Door;
+jzt.things.Door.serializationType = 'Door';
+
+/**
+ * Delivers a provided message to this Thing. If a TOUCH message is received,
+ * then this Door will move the player to a matching Door on its target board.
+ *
+ * @param messageName a name of a message to deliver.
+ */
+jzt.things.Door.prototype.sendMessage = function(message) {
+    if(message === 'TOUCH') {
+        this.board.game.movePlayerToDoor(this.doorId, this.targetBoard);
+    }
+};
+
+/**
+ * Serializes this Door to an Object.
+ *
+ * @return A serialized Door
+ */
+jzt.things.Door.prototype.serialize = function() {
+    var result = jzt.things.Thing.prototype.serialize.call(this);
+    result.doorId = this.doorId;
+    result.targetBoard = this.targetBoard;
+    return result;
+};
+
+/**
+ * Deserializes a provided data Object into a Door.
+ *
+ * @param data A data object to be deserialized into a Door.
+ */
+jzt.things.Door.prototype.deserialize = function(data) {
+    jzt.things.Thing.prototype.deserialize.call(this, data);
+    this.targetBoard = data.targetBoard;
+    this.doorId = data.doorId;
+};
+
+//--------------------------------------------------------------------------------
+
 /*
  * Forest acts as a non-pushable obstacle, like a wall, but it vanishes when the 
  * player attempts to move to its location, clearing this Thing from the board.
@@ -579,17 +633,34 @@ jzt.things.Lion.prototype = new jzt.things.UpdateableThing();
 jzt.things.Lion.prototype.constructor = jzt.things.Lion;
 jzt.things.Lion.serializationType = 'Lion';
 
+/**
+ * Serializes this Lion to an Object.
+ *
+ * @return A serialized Lion
+ */
 jzt.things.Lion.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
     result.intelligence = this.intelligence;
     return result;
 };
 
+/**
+ * Deserializes this Lion from a provided data Object
+ * 
+ * @param data A data Lion object to be deserialized.
+ */
 jzt.things.Lion.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
     this.intelligence = data.intelligence;
 };
 
+/**
+ * Delivers a provided message to this Thing. If a SHOT message is received,
+ * then this Lion will be deleted from the board. If a TOUCH message is 
+ * received, then the player will be sent a SHOT message.
+ *
+ * @param messageName a name of a message to deliver.
+ */
 jzt.things.Lion.prototype.sendMessage = function(message) {
 
     if(message === 'SHOT') {
@@ -603,7 +674,7 @@ jzt.things.Lion.prototype.sendMessage = function(message) {
 };
 
 /**
- * Retrurns whether or not this Thing declares itself to be pushable in a provided
+ * Returns whether or not this Thing declares itself to be pushable in a provided
  * direction by other Things.
  *
  * @param direction A direction in which to test the pushability of this Thing
@@ -613,10 +684,22 @@ jzt.things.Lion.prototype.isPushable = function(direction) {
     return true;
 };
 
+/**
+ * Returns whether or not this Thing delcares itself as squishable in a provided
+ * direction.
+ *
+ * @param direction A direction in which to test the squishability of this Thing
+ * @return true if this Thing is squishable, false otherwise
+ */
 jzt.things.Lion.prototype.isSquishable = function(direction) {
     return true;
 };
 
+/**
+ * Updates this Lion for a provided timestamp. This Lion will move itself randomly
+ * during updates. If a Player blocks its movement, then the player will be sent
+ * a SHOT message and this Lion will be removed from its parent board.
+ */
 jzt.things.Lion.prototype.update = function(timestamp) {
     if(this.isReady(timestamp)) {
         this.tick(timestamp);

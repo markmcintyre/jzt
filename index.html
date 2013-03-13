@@ -28,7 +28,7 @@
 				author: 'Mark McIntyre',
 				startingBoard: 'Board 1',
 				boards : [
-					{dark: true, "north":"Board 1","south":"Board 1","name":"Board 2","playerX":13,"playerY":3,"tiles":["WL0EWL0EWL0EWL0EWL0E        WL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0E","WL0E                                WL0EWL0E                                WL0E","WL0E                                WL0EWL0E        WL0AIW0AWL0EIW0A        WL0E","WL0E    WL0EWTF9WTF9        WL0E    WL0EWL0E    WL0E            FR20WL0E    WL0E","WL0E            WTF9                            BL0EBL0EFR20    FR20        WL0E","WL0E                                WL0EWL0E                    FR20        WL0E","WL0E    WL0E                WL0E    WL0EWL0E        WL0EWL0EWL0EWL0E    WL0EWL0E","WL0E        WL0EWL0EWL0EWL0E        WL0EWL0E    WL0E                WL0E    WL0E","WL0E            BL0C                WL0EWL0E                                WL0E","WL0EWL0EWL0EWL0EWL0EBL0D    WL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0E"],"scripts":[{"name":"firstScript","script":"#say \"Hello, world!\"\n#move opp ccw cw ccw opp opp w 4\n#say \"\\\"Hmmm...\\\", the object thinks to itself.\"\n#move s 1\n#char 148\n#wait 5\n#go west 5\n#end\n:touch\n#die\n#end"},{"name":"secondScript","script":"#say \"Hello!\"\n#end\n:touch\n#lock\n#zap touch\n#say \"Hey there!\"\n#wait 5\n#say \"Nice day, huh?\"\n#unlock\n#end\n:touch\n#say \"I love life!\""}],"scriptables":[{"name":"First Object","spriteIndex":148,"x":3,"y":5,"color":"9D","speed":3,"script":"firstScript","scriptContext":{"commandIndex":-1,"currentLabels":{}},"messageQueue":[],"locked":false,"orientation":"West"}]},
+					{dark: true, "north":"Board 1","south":"Board 1","name":"Board 2","playerX":13,"playerY":3,"tiles":["WL0EWL0EWL0EWL0EWL0E        WL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0E","WL0E                                WL0EWL0E                                WL0E","WL0E                                WL0EWL0E        WL0AIW0AWL0EIW0A        WL0E","WL0E    WL0EWTF9WTF9        WL0E    WL0EWL0E    WL0E            FR20WL0E    WL0E","WL0E            WTF9                            BL0EBL0EFR20    FR20        WL0E","WL0E                                WL0EWL0E                    FR20        WL0E","WL0E    WL0E                WL0E    WL0EWL0E        WL0EWL0EWL0EWL0E    WL0EWL0E","WL0E        WL0EWL0EWL0EWL0E        WL0EWL0E    WL0E                WL0E    WL0E","WL0E            BL0C                WL0EWL0E                                WL0E","WL0EWL0EWL0EWL0EWL0EBL0D    WL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0E"],"scripts":[{"name":"firstScript","script":"#say \"Hello, world!\"\n#move opp ccw cw ccw opp opp w 4\n#say \"\\\"Hmmm...\\\", the object thinks to itself.\"\n#move s 1\n#char 148\n#wait 5\n#go west 5\n#end\n:touch\n#die\n#end"},{"name":"secondScript","script":"#say \"Hello!\"\n#end\n:touch\n#lock\n#zap touch\n#say \"Hey there!\"\n#wait 5\n#say \"Nice day, huh?\"\n#unlock\n#end\n:touch\n#say \"I love life!\""}],"scriptables":[{"name":"First Object","spriteIndex":148,"x":3,"y":5,"color":"9D","speed":3,"script":"firstScript","scriptContext":{"commandIndex":-1,"currentLabels":{}},"messageQueue":[],"locked":false,"orientation":"West"}],"doors":[{x:13,y:5,color:'1F',targetBoard:'Board 1',doorId:1}]},
 					{
 						name: 'Board 1',
 						playerX: 1,
@@ -48,6 +48,15 @@
 							'WL0E        WL0EWL0E    WL0E        WL0EWL0E    WL0E                WL0E    WL0E',
 							'WL0E                                WL0EWL0E                                WL0E',
 							'WL0EWL0EWL0EWL0EWL0E    BL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0EWL0E'
+						],
+						doors: [
+							{
+								x: 18,
+								y: 3,
+								targetBoard: 'Board 2',
+								doorId: 1,
+								color: '1F'
+							}
 						],
 						scripts: [
 							{

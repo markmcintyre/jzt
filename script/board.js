@@ -34,6 +34,7 @@ jzt.Board = function(boardData, game) {
     this.initializeTiles(boardData.tiles);
     this.initializeScripts(boardData.scripts);
     this.initializeUpdateableThings(boardData.things);
+    this.initializeDoors(boardData.doors);
     
 };
 
@@ -61,6 +62,7 @@ jzt.Board.prototype.serialize = function() {
 
     // Store Tiles
     result.tiles = [];
+    result.doors = [];
     for(var row = 0; row < this.height; ++row) {
 
         point.y = row;
@@ -72,6 +74,10 @@ jzt.Board.prototype.serialize = function() {
             var tile = this.getTile(point);
             if(tile && tile.constructor.symbol != undefined) {
                 dataStream += tile.constructor.symbol + tile.background.code + tile.foreground.code;
+            }
+            else if(tile instanceof jzt.things.Door) {
+                result.doors.push(tile.serialize());
+                dataStream += '    ';
             }
             else {
                 dataStream += '    ';
@@ -105,6 +111,18 @@ jzt.Board.prototype.serialize = function() {
     }
 
     return result;
+
+};
+
+jzt.Board.prototype.initializeDoors = function(doors) {
+
+    if(doors) {
+        for(var index = 0; index < doors.length; ++index) {
+            var door = new jzt.things.Door(this);
+            door.deserialize(doors[index]);
+            this.setTile(door.point, door);
+        }
+    }
 
 };
 
@@ -325,7 +343,7 @@ jzt.Board.prototype.deleteTile = function(point) {
  * @param oldPoint A point on this Board containing a tile to be moved
  * @param newPoint A point on the Board to which a tile is to be moved.
  * @param weak Whether or not we should weakly move the tile.
- * @param force Whether or not to force the move regardless of what's in the way.
+ * @param flier Whether or not the tile we're moving should "fly" over another
  * @return true if a move was successful, false otherwise.
  */
 jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak, flier) {
@@ -524,6 +542,25 @@ jzt.Board.prototype.movePlayerOffBoard = function(direction) {
     // Move our player to that board edge
     this.game.movePlayerToBoardEdge(jzt.Direction.opposite(direction), boardName);
     
+};
+
+/**
+ * Retrieves a Door with a provided ID from this board.
+ *
+ * @param doorId an ID of a door to retrieve
+ * @return A Door instance.
+ */
+jzt.Board.prototype.getDoor = function(doorId) {
+
+    for(var row = 0; row < this.height; ++row) {
+        for(var column = 0; column < this.width; ++column) {
+            var tile = this.getTile(new jzt.Point(column, row));
+            if(tile instanceof jzt.things.Door && tile.doorId === doorId) {
+                return tile;
+            }
+        }
+    }
+
 };
     
 /**
