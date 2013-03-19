@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>JZT</title>
+		<style type="text/css">
+			#jzt {
+				position: relative;
+			}
+		</style>
+	</head>
+	<body>
+		
+		<header>
+			<!--<h1>Mark's Test Thing</h1>-->
+		</header>
+		
+		<canvas id="jzt" style="border: 1px solid blue;" width="640" height="480"></canvas>
+		
+		<script type="text/javascript" src="script/jzt.js"></script>
+		<script type="text/javascript" src="script/board.js"></script>
+		<script type="text/javascript" src="script/input.js"></script>
+		<script type="text/javascript" src="script/basic.js"></script>
+		<script type="text/javascript" src="script/script.js"></script>
+		<script type="text/javascript" src="script/parser.js"></script>
+		<script type="text/javascript" src="script/jztscript.js"></script>
+		<script type="text/javascript" src="script/commands.js"></script>
+		<script type="text/javascript" src="script/graphics.js"></script>
+		<script type="text/javascript" src="script/things.js"></script>
+		<script type="text/javascript" src="script/editor.js"></script>
+		<script type="text/javascript">
+			var canvas = document.getElementById('jzt');
+			var editor = new jzt.Editor(canvas);
+		</script>
+		
+	</body>
+</html>
