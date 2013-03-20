@@ -2,13 +2,13 @@ window.jzt = window.jzt || {};
 
 jzt.Editor = function(canvasElement) {
 	
+	var me = this;
+
 	this.canvasElement = canvasElement;
 
-	function canvasClicked(event) {
-		this.onCanvasClicked(event);
-	}
-
-	this.canvasElement.addEventListener('click', canvasClicked.bind(this), false);
+	this.canvasElement.addEventListener('mousemove', function(event){me.onCanvasMouseMoved(event)}, false);
+	this.canvasElement.addEventListener('mousedown', function(event){me.onCanvasMouseDown(event)}, false);
+	this.canvasElement.addEventListener('mouseup', function(event){me.onCanvasMouseUp(event)}, false);
 
 	this.context = canvasElement.getContext('2d');
     this.context.imageSmoothingEnabled = false;
@@ -23,7 +23,6 @@ jzt.Editor = function(canvasElement) {
     	resources: {}
 	};
 
-	var me = this;
 	mockGame.resources.graphics = new jzt.Graphics(mockGame, function() {
 		me.addBoard('Untitled', 40, 15);
 	});
@@ -77,15 +76,45 @@ jzt.Editor.prototype.addBoard = function(boardName, width, height) {
 
 };
 
-jzt.Editor.prototype.onCanvasClicked = function(event) {
-
+jzt.Editor.prototype.eventToBoardPoint = function(event) {
 	var x = Math.floor(event.offsetX / this.game.TILE_SIZE.x);
 	var y = Math.floor(event.offsetY / this.game.TILE_SIZE.y);
-	var point = new jzt.Point(x,y);
+	return new jzt.Point(x,y);
+};
 
-	console.log('Position: %s %s', x, y);
 
-	this.currentBoard.setTile(point, new jzt.things.Wall());
-	this.currentBoard.render(this.context);
+jzt.Editor.prototype.onCanvasMouseDown = function(event) {
+	this.drawing = true;
+	this.previousPlot = new jzt.Point(-1,-1);
+	this.onCanvasMouseMoved(event);
 
+};
+
+jzt.Editor.prototype.onCanvasMouseMoved = function(event) {
+
+	var point = this.eventToBoardPoint(event);
+
+	if(!this.previousPlot || !this.previousPlot.equals(point)) {
+		this.previousPlot = point;
+
+		if(this.drawing) {
+			this.currentBoard.setTile(point, new jzt.things.Wall());
+		}
+
+		this.currentBoard.render(this.context);
+		this.drawCursor(point, this.context);
+
+	}
+
+};
+
+jzt.Editor.prototype.onCanvasMouseUp = function(event) {
+	this.drawing = false;
+};
+
+jzt.Editor.prototype.drawCursor = function(point, context) {
+	context.fillStyle = 'rgba(255, 255, 255, 0.25)';
+	context.strokeStyle = '#FFFFFF';
+    context.fillRect(point.x * this.game.TILE_SIZE.x, point.y * this.game.TILE_SIZE.y,  this.game.TILE_SIZE.x, this.game.TILE_SIZE.y);
+    context.strokeRect(point.x * this.game.TILE_SIZE.x, point.y * this.game.TILE_SIZE.y, this.game.TILE_SIZE.x, this.game.TILE_SIZE.y);
 };
