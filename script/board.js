@@ -447,6 +447,27 @@ jzt.Board.prototype.addUpdateableThing = function(point, thing) {
 };
 
 /**
+ * Adds a Thing to a specific Point on this Board. This function
+ * will safely delete any existing Thing if present at the specified
+ * location and will update any UpdateableThing list.
+ */
+jzt.Board.prototype.addThing = function(point, thing) {
+
+    var oldThing = this.getTile(point);
+
+    if(oldThing) {
+        this.deleteTile(point);
+    }
+
+    if(thing && thing instanceof jzt.things.UpdateableThing) {
+        this.updateableThings.push(thing);
+    }
+
+    this.setTile(point, thing);
+
+};
+
+/**
  * Retrieves a tile from this Board at a provided Point.
  * 
  * @param point A point from which to retrieve a tile.

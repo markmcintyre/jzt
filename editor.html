@@ -15,6 +15,18 @@
 		</header>
 		
 		<canvas id="jzt" style="border: 1px solid blue;" width="640" height="480"></canvas>
+
+		<div id="toolbox">
+
+			<label><input type="radio" name="activeTemplate" value="" />Nothing</label>
+			<label><input type="radio" name="activeTemplate" value="Wall" />Wall</label>
+			<label><input type="radio" name="activeTemplate" value="Boulder" />Boulder</label>
+			<label><input type="radio" name="activeTemplate" value="Water" />Water</label>
+			<label><input type="radio" name="activeTemplate" value="Forest" />Forest</label>
+
+			<label><input type="radio" name="activeTemplate" value="Lion" />Lion</label>
+
+		</div>
 		
 		<script type="text/javascript" src="script/jzt.js"></script>
 		<script type="text/javascript" src="script/board.js"></script>
@@ -28,8 +40,29 @@
 		<script type="text/javascript" src="script/things.js"></script>
 		<script type="text/javascript" src="script/editor.js"></script>
 		<script type="text/javascript">
+
+			var editor = undefined;
+
+			function onToolSelected(event) {
+				if(event.target.value) {
+					editor.setActiveTool({serializationType: event.target.value});
+				}
+				else {
+					editor.setActiveTool(undefined);
+				}
+			};
+
+			var tools = document.getElementsByName('activeTemplate');
+			for( var index = 0; index < tools.length; index++ ) {
+        		tools[index].addEventListener('change', onToolSelected, false);
+    		}	
+
+
 			var canvas = document.getElementById('jzt');
-			var editor = new jzt.Editor(canvas);
+			editor = new jzt.Editor(canvas);
+
+
+
 		</script>
 		
 	</body>

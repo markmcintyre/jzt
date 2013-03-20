@@ -76,6 +76,10 @@ jzt.Editor.prototype.addBoard = function(boardName, width, height) {
 
 };
 
+jzt.Editor.prototype.setActiveTool = function(template) {
+	this.activeTool = template;
+};
+
 jzt.Editor.prototype.eventToBoardPoint = function(event) {
 	var x = Math.floor(event.offsetX / this.game.TILE_SIZE.x);
 	var y = Math.floor(event.offsetY / this.game.TILE_SIZE.y);
@@ -86,6 +90,7 @@ jzt.Editor.prototype.eventToBoardPoint = function(event) {
 jzt.Editor.prototype.onCanvasMouseDown = function(event) {
 	this.drawing = true;
 	this.previousPlot = new jzt.Point(-1,-1);
+
 	this.onCanvasMouseMoved(event);
 
 };
@@ -98,7 +103,14 @@ jzt.Editor.prototype.onCanvasMouseMoved = function(event) {
 		this.previousPlot = point;
 
 		if(this.drawing) {
-			this.currentBoard.setTile(point, new jzt.things.Wall());
+
+			if(this.activeTool) {
+				this.currentBoard.addThing(point, jzt.things.ThingFactory.deserialize(this.activeTool, this.currentBoard));
+			}
+			else {
+				this.currentBoard.addThing(point, undefined);
+			}
+			
 		}
 
 		this.currentBoard.render(this.context);

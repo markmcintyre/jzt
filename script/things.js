@@ -627,7 +627,7 @@ jzt.things.Lion = function(board) {
     this.spriteIndex = 234;
     this.foreground = jzt.colors.Colors['C'];
     this.background = jzt.colors.Colors['0'];
-    this.setSpeed(8);
+    this.setSpeed(28);
 };
 jzt.things.Lion.prototype = new jzt.things.UpdateableThing();
 jzt.things.Lion.prototype.constructor = jzt.things.Lion;
@@ -971,7 +971,7 @@ jzt.things.Wall = function(board) {
 };
 jzt.things.Wall.prototype = new jzt.things.Thing();
 jzt.things.Wall.prototype.constructor = jzt.things.Wall;
-jzt.things.Wall.prototype.serializationType = 'Wall';
+jzt.things.Wall.serializationType = 'Wall';
 jzt.things.Wall.symbol = 'WL';
 
 //--------------------------------------------------------------------------------
