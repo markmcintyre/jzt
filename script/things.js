@@ -1076,13 +1076,28 @@ jzt.things.Lion.prototype.isSquishable = function(direction) {
 };
 
 /**
+ * Returns whether or not this Lion should seek the player during its next move.
+ * The probability of a true result depends on this Lion's intelligence
+ * property.
+ *
+ * @return true if this Lion should seek the player, false otherwise.
+ */
+jzt.things.Lion.prototype.seekPlayer = function() {
+
+    var randomValue = Math.floor(Math.random()*10);
+    return randomValue <= this.intelligence;
+
+};
+
+/**
  * Updates this Lion for a provided timestamp. This Lion will move itself randomly
  * during updates. If a Player blocks its movement, then the player will be sent
  * a SHOT message and this Lion will be removed from its parent board.
  */
 jzt.things.Lion.prototype.doTick = function() {
 
-    var direction = jzt.Direction.random();
+    var direction = this.seekPlayer() ? this.getPlayerDirection() : jzt.Direction.random();
+
     var thing = this.board.getTile(this.point.add(direction));
     if(thing && thing instanceof jzt.things.Player) {
         thing.sendMessage('SHOT');
