@@ -1453,6 +1453,60 @@ jzt.things.Player.prototype.sendMessage = function(message) {
 
 //--------------------------------------------------------------------------------
 
+/**
+ * SliderEw is a Thing that is pushable only in the East and West direction.
+ *
+ * @param board An owner board.
+ */
+jzt.things.SliderEw = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.spriteIndex = 29;
+}
+jzt.things.SliderEw.prototype = new jzt.things.Thing();
+jzt.things.SliderEw.prototype.constructor = jzt.things.SliderEw;
+jzt.things.SliderEw.serializationType = 'SliderEw';
+jzt.things.SliderEw.symbol = 'SE';
+
+/**
+ * Retrurns whether or not this Thing declares itself to be pushable in a provided
+ * direction by other Things.
+ *
+ * @param direction A direction in which to test the pushability of this Thing
+ * @return True if this thing is pushable in a given direction, false otherwise.
+ */
+jzt.things.SliderEw.prototype.isPushable = function(direction) {
+    return direction.equals(jzt.Direction.East) || direction.equals(jzt.Direction.West);
+};
+
+//--------------------------------------------------------------------------------
+
+/**
+ * SliderNs is a Thing that is pushable only in the North and South direction.
+ *
+ * @param board An owner board.
+ */
+jzt.things.SliderNs = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.spriteIndex = 18;
+}
+jzt.things.SliderNs.prototype = new jzt.things.Thing();
+jzt.things.SliderNs.prototype.constructor = jzt.things.SliderNs;
+jzt.things.SliderNs.serializationType = 'SliderNs';
+jzt.things.SliderNs.symbol = 'SN';
+
+/**
+ * Retrurns whether or not this Thing declares itself to be pushable in a provided
+ * direction by other Things.
+ *
+ * @param direction A direction in which to test the pushability of this Thing
+ * @return True if this thing is pushable in a given direction, false otherwise.
+ */
+jzt.things.SliderNs.prototype.isPushable = function(direction) {
+    return direction.equals(jzt.Direction.North) || direction.equals(jzt.Direction.South);
+};
+
+//--------------------------------------------------------------------------------
+
 /*
  * SolidWall is a Thing representing an immoveable obstacle.
  *
