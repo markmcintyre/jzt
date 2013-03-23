@@ -31,7 +31,6 @@ jzt.things.Thing.prototype.serialize = function() {
         result.serializationType = this.constructor.serializationType;
     }
     result.name = this.name;
-    result.spriteIndex = this.spriteIndex;
     result.x = this.point.x;
     result.y = this.point.y;
     result.color = this.background.code + (this.foreground == '*' ? '*' : this.foreground.code);
@@ -47,10 +46,6 @@ jzt.things.Thing.prototype.serialize = function() {
 jzt.things.Thing.prototype.deserialize = function(data) {
     
     this.name = data.name;
-
-    if(data.spriteIndex) {
-        this.spriteIndex = data.spriteIndex;
-    }
 
     this.point.x = data.x || 0;
     this.point.y = data.y || 0;
@@ -127,6 +122,15 @@ jzt.things.Thing.prototype.move = function(direction, weak, flier) {
 jzt.things.Thing.prototype.delete = function() {
     this.board.deleteTile(this.point);
 };
+
+/**
+ * Retrieves a sprite index to be used to represent this Thing.
+ *
+ * @return A sprite index.
+ */
+jzt.things.Thing.prototype.getSpriteIndex = function() {
+    return this.spriteIndex;
+}
 
 // ------------------------------------------------------------------------------
 
@@ -335,6 +339,7 @@ jzt.things.ScriptableThing.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this) || {};
 
     result.serializationType = jzt.things.ScriptableThing.serializationType;
+    result.spriteIndex = this.spriteIndex;
     result.script = this.scriptName;
 
     if(this.scriptContext) {
@@ -357,6 +362,7 @@ jzt.things.ScriptableThing.prototype.serialize = function() {
  */
 jzt.things.ScriptableThing.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.spriteIndex = data.spriteIndex;
     this.scriptName = data.script;
     var script = this.board.getScript(this.scriptName);
     if(script) {
@@ -460,6 +466,30 @@ jzt.things.Boulder.prototype.isPushable = function(direction) {
 
 //--------------------------------------------------------------------------------
 
+jzt.things.BreakableWall = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.spriteIndex = 177;
+    this.background = jzt.colors.Colors['0'];
+    this.foreground = jzt.colors.Colors['B'];
+};
+jzt.things.BreakableWall.prototype = new jzt.things.Thing();
+jzt.things.BreakableWall.prototype.constructor = jzt.things.BreakableWall;
+jzt.things.BreakableWall.serializationType = 'BreakableWall';
+jzt.things.BreakableWall.symbol = 'BR';
+
+/**
+ * Sends a provided message to this BreakableWall. If a SHOT message
+ * is received, then this BreakableWall will vanish.
+ * 
+ * @param message A message to receive.
+ */
+jzt.things.BreakableWall.prototype.sendMessage = function(message) {
+    if(message === 'SHOT') {
+        this.delete();
+    }
+};
+
+//--------------------------------------------------------------------------------
 
 /**
  * A Bullet is an UpdateableThing that represents a projectile.
@@ -529,7 +559,7 @@ jzt.things.Bullet.prototype.doTick = function() {
          * Send a SHOT message if the bullet was from the player and any UpdateableThing, 
          * otherwise we only send the SHOT message to the player itself or ScriptabelThings.
          */
-        else if((this.fromPlayer && thing instanceof jzt.things.UpdateableThing) ||
+        else if(this.fromPlayer ||
                 thing instanceof jzt.things.Player || thing instanceof jzt.things.ScriptableThing) {
             thing.sendMessage('SHOT');
         }
@@ -950,6 +980,15 @@ jzt.things.Forest.serializationType = 'Forest';
 jzt.things.Forest.symbol = 'FR';
 
 /**
+ * Deserializes a provided data Object into Forest.
+ *
+ * @param data A data object to be deserialized into Forest.
+ */
+jzt.things.Forest.prototype.deserialize = function(data) {
+    jzt.things.Thing.prototype.deserialize.call(this, data);
+};
+
+/**
  * Delivers a provided message to this Thing. If a TOUCH message is received,
  * then this Forest will be deleted from the board, allowing movement onto its
  * space.
@@ -993,6 +1032,56 @@ jzt.things.InvisibleWall.prototype.sendMessage = function(message) {
         replacement.background = this.background;
         this.board.replaceTile(this.point, replacement);
     }
+};
+
+//--------------------------------------------------------------------------------
+
+/*
+ * LineWall is a Thing representing an immoveable obstacle with line decoration.
+ *
+ * @param board An owner board for this LineWall.
+ */ 
+jzt.things.LineWall = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.spriteIndex = 178;
+};
+jzt.things.LineWall.prototype = new jzt.things.Thing();
+jzt.things.LineWall.prototype.constructor = jzt.things.LineWall;
+jzt.things.LineWall.serializationType = 'LineWall';
+jzt.things.LineWall.symbol = 'LW';
+jzt.things.LineWall.lineMap = {
+    '': 249,
+    'N': 208,
+    'E': 198,
+    'S': 210,
+    'W': 181,
+    'NE': 200,
+    'NS': 186,
+    'NW': 188,
+    'ES': 201,
+    'EW': 205,
+    'SW': 187,
+    'NES': 204,
+    'NEW': 202,
+    'NSW': 185,
+    'ESW': 203,
+    'NESW': 206,
+};
+
+jzt.things.LineWall.prototype.getSpriteIndex = function() {
+
+    function isLineAdjacent(source, direction) {
+        return source.board.getTile(source.point.add(direction)) instanceof jzt.things.LineWall;
+    }
+
+    var surroundingPattern = '';
+    surroundingPattern += isLineAdjacent(this, jzt.Direction.North) ? 'N' : '';
+    surroundingPattern += isLineAdjacent(this, jzt.Direction.East) ? 'E' : '';
+    surroundingPattern += isLineAdjacent(this, jzt.Direction.South) ? 'S' : '';
+    surroundingPattern += isLineAdjacent(this, jzt.Direction.West) ? 'W' : '';
+
+    return jzt.things.LineWall.lineMap[surroundingPattern];
+
 };
 
 //--------------------------------------------------------------------------------
@@ -1355,6 +1444,23 @@ jzt.things.Player.prototype.sendMessage = function(message) {
 //--------------------------------------------------------------------------------
 
 /*
+ * SolidWall is a Thing representing an immoveable obstacle.
+ *
+ * @param board An owner board for this SolidWall.
+ */ 
+jzt.things.SolidWall = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.spriteIndex = 219;
+};
+jzt.things.SolidWall.prototype = new jzt.things.Thing();
+jzt.things.SolidWall.prototype.constructor = jzt.things.SolidWall;
+jzt.things.SolidWall.serializationType = 'SolidWall';
+jzt.things.SolidWall.symbol = 'SW';
+
+
+//--------------------------------------------------------------------------------
+
+/*
  * Wall is a Thing representing an immoveable obstacle.
  *
  * @param board An owner board for this Wall.
@@ -1474,14 +1580,8 @@ jzt.things.ThingFactory.shoot = function(board, point, direction, fromPlayer) {
     // First, see if we need to spawn a bullet at all...
     var tile = board.getTile(point);
 
-    // If an UpdateableThing is in the location, send it a shot message
-    if((fromPlayer && tile instanceof jzt.things.UpdateableThing) ||
-        tile instanceof jzt.things.Player || tile instanceof jzt.things.ScriptableThing) {
-        tile.sendMessage('SHOT');
-    }
-
     // If there's nothing there, or it's water, spawn a Bullet Thing
-    else if(tile === undefined || tile instanceof jzt.things.Water) {
+    if(tile === undefined || tile instanceof jzt.things.Water) {
         
         var bullet = new jzt.things.Bullet(board);
         bullet.direction = direction;
@@ -1496,5 +1596,11 @@ jzt.things.ThingFactory.shoot = function(board, point, direction, fromPlayer) {
         board.addUpdateableThing(point, bullet);
 
     }
+
+    // If the bullet is from the player, or the tile is a Player or ScriptableThing
+    else if(fromPlayer ||
+        tile instanceof jzt.things.Player || tile instanceof jzt.things.ScriptableThing) {
+        tile.sendMessage('SHOT');
+    } 
 
 };
