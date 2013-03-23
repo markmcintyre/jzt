@@ -96,6 +96,15 @@ jzt.things.Thing.prototype.isSquishable = function(direction) {
     return false;
 };
 
+jzt.things.Thing.prototype.isBlocked = function(direction) {
+    return !this.board.isPassable(this.point.add(direction));
+};
+
+jzt.things.Thing.prototype.isPlayerAdjacent = function(direction) {
+    var tile = this.board.getTile(this.point.add(direction));
+    return tile && tile instanceof jzt.things.Player;
+};
+
 /**
  * Moves this Thing in a provided Direction and returns its success.
  * 
@@ -204,6 +213,27 @@ jzt.things.UpdateableThing.prototype.getPlayerDirection = function() {
     return this.point.directionTo(this.board.player.point);
 };
 
+
+/**
+ * Retrieves an Array of Directions in which this UpdateableThing can attack.
+ * An attackable direction is defined as any direction that is free, or is
+ * occupied by the player.
+ * 
+ * @return An array of Directions
+ */
+jzt.things.UpdateableThing.prototype.getAttackableDirections = function() {
+
+    var result = [];
+    var instance = this;
+    jzt.Direction.each(function(direction) {
+        if(instance.isPlayerAdjacent(direction) || !instance.isBlocked(direction)) {
+            result.push(direction);
+        }
+    });
+    return result;
+
+};
+
 /**
  * Retrievs an Array of Directions in which this UpdateableThing is
  * free to move on its owner Board.
@@ -249,7 +279,17 @@ jzt.things.UpdateableThing.prototype.getBlockedDirections = function() {
 /**
  * Updates this UpdateableThing for a single execution cycle.
  */
-jzt.things.UpdateableThing.prototype.update = function(timestamp) {};
+jzt.things.UpdateableThing.prototype.update = function(timestamp) {
+    if(this.isReady(timestamp)) {
+        this.doTick();
+        this.tick(timestamp);
+    }
+};
+
+/**
+ * Updates this UpdateableThing on its tick update cycle.
+ */
+jzt.things.UpdateableThing.prototype.doTick = function() {};
 
 // ------------------------------------------------------------------------------
 
@@ -368,13 +408,10 @@ jzt.things.ScriptableThing.prototype.walk = function() {
  * Updates this ScriptableThing for a single execution cycle, including its
  * associated Script.
  */
-jzt.things.ScriptableThing.prototype.update = function(timestamp) {
-    
-    if(this.isReady(timestamp)) {
-        this.walk();
-        this.scriptContext.executeTick();
-        this.tick(timestamp);
-    };
+jzt.things.ScriptableThing.prototype.doTick = function() {
+
+    this.walk();
+    this.scriptContext.executeTick();
     
 };
 
@@ -459,39 +496,228 @@ jzt.things.Bullet.prototype.serialize = function() {
  * Updates this bullet, moving it one tile in its associated
  * direction.
  */
-jzt.things.Bullet.prototype.update = function(timestamp) {
+jzt.things.Bullet.prototype.doTick = function() {
 
-    if(this.isReady(timestamp)) {
+    // If we couldn't move in a given direction...
+    if(! this.move(this.direction, true)) {
 
-        this.tick(timestamp);
+        // See what was in our way.
+        var thing = this.board.getTile(this.point.add(this.direction));
 
-        // If we couldn't move in a given direction...
-        if(! this.move(this.direction, true)) {
-
-            // See what was in our way.
-            var thing = this.board.getTile(this.point.add(this.direction));
-
-            // If it was water, we can shoot over it!
-            if(thing instanceof jzt.things.Water) {
-                if(this.move(this.direction, true, true)) {
-                    return;
-                }
+        // If it was water, we can shoot over it!
+        if(thing instanceof jzt.things.Water) {
+            if(this.move(this.direction, true, true)) {
+                return;
             }
-
-            /*
-             * Send a SHOT message if the bullet was from the player and any UpdateableThing, 
-             * otherwise we only send the SHOT message to the player itself or ScriptabelThings.
-             */
-            else if((this.fromPlayer && thing instanceof jzt.things.UpdateableThing) ||
-                    thing instanceof jzt.things.Player || thing instanceof jzt.things.ScriptableThing) {
-                thing.sendMessage('SHOT');
-            }
-
-            // Regardless of what we hit, we're done
-            this.delete();
-
         }
 
+        /*
+         * Send a SHOT message if the bullet was from the player and any UpdateableThing, 
+         * otherwise we only send the SHOT message to the player itself or ScriptabelThings.
+         */
+        else if((this.fromPlayer && thing instanceof jzt.things.UpdateableThing) ||
+                thing instanceof jzt.things.Player || thing instanceof jzt.things.ScriptableThing) {
+            thing.sendMessage('SHOT');
+        }
+
+        // Regardless of what we hit, we're done
+        this.delete();
+
+    }
+
+};
+
+//--------------------------------------------------------------------------------
+
+/**
+ * Centipede is an UpdateableThing capable of chaining itself to other
+ * Centipedes and moving around the board as a unit.
+ *
+ * @param board An owner board for this Centipede
+ */
+jzt.things.Centipede = function(board) {
+    jzt.things.UpdateableThing.call(this, board);
+    this.spriteIndex = 79;
+    this.foreground = jzt.colors.Colors['9'];
+    this.background = jzt.colors.Colors['0'];
+    this.setSpeed(2);
+    this.follower = undefined;
+    this.head = false;
+    this.leader = undefined;
+    this.linked = false;
+    this.firstTick = true;
+};
+jzt.things.Centipede.prototype = new jzt.things.UpdateableThing();
+jzt.things.Centipede.prototype.constructor = jzt.things.Centipede;
+jzt.things.Centipede.serializationType = 'Centipede';
+
+jzt.things.Centipede.prototype.serialize = function() {
+    var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    result.head = this.head;
+    return result;
+};
+
+jzt.things.Centipede.prototype.deserialize = function(data) {
+    jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.head = data.head;
+    if(this.head) {
+        this.spriteIndex = 233;
+    }
+};
+
+jzt.things.Centipede.prototype.getAdjacentSegment = function() {
+
+    function isUnlinkedSegment(candidate) {
+        return candidate && candidate instanceof jzt.things.Centipede && !candidate.linked && !candidate.head;
+    }
+
+    var result = undefined;
+
+    // Try North
+    result = this.board.getTile(this.point.add(jzt.Direction.North));
+    if(isUnlinkedSegment(result)) {
+        return result;
+    }
+
+    // East
+    result = this.board.getTile(this.point.add(jzt.Direction.East));
+    if(isUnlinkedSegment(result)) {
+        return result;
+    }
+
+    // South
+    result = this.board.getTile(this.point.add(jzt.Direction.South));
+    if(isUnlinkedSegment(result)) {
+        return result;
+    }
+
+    // West
+    result = this.board.getTile(this.point.add(jzt.Direction.West));
+    if(isUnlinkedSegment(result)) {
+        return result;
+    }
+
+    return undefined;
+
+};
+
+jzt.things.Centipede.prototype.linkSegments = function(leader) {
+
+    this.linked = true;
+    this.leader = leader;
+    this.follower = this.getAdjacentSegment();
+
+    if(this.follower) {
+        this.follower.linkSegments(this);
+    }
+
+};
+
+jzt.things.Centipede.prototype.reverse = function() {
+
+    if(this.head) {
+        this.head = false;
+        this.spriteIndex = 79;
+    }
+
+    var nextSegment = this.follower;
+
+    var oldLeader = this.leader;
+    this.leader = this.follower;
+    this.follower = oldLeader;
+
+    if(nextSegment) {
+        nextSegment.reverse();
+    }
+
+    else {
+        this.becomeHead();
+    }
+
+};
+
+jzt.things.Centipede.prototype.becomeHead = function() {
+    this.head = true;
+    this.spriteIndex = 233;
+};
+
+jzt.things.Centipede.prototype.move = function(direction) {
+
+    var myPlace = this.point;
+
+    // If we're a head, check to see if we're attacking the player
+    if(this.head && this.isPlayerAdjacent(direction)) {
+        this.board.player.sendMessage('SHOT');
+        this.delete();
+        return;
+    }
+
+    this.board.moveTile(this.point, this.point.add(direction), true);
+
+    if(this.follower) {
+        var direction  = this.follower.point.directionTo(myPlace);
+        this.follower.move(direction);
+    }
+
+};
+
+jzt.things.Centipede.prototype.delete = function() {
+
+    if(this.leader) {
+        this.leader.follower = undefined;
+    }
+    if(this.follower) {
+        this.follower.leader = undefined;
+    }
+
+    jzt.things.UpdateableThing.prototype.delete.call(this);
+
+};
+
+jzt.things.Centipede.prototype.sendMessage = function(message) {
+    if(message === 'SHOT') {
+        this.delete();
+    }
+    if(message === 'TOUCH') {
+        this.board.player.sendMessage('SHOT');
+        this.delete();
+    }
+};
+
+jzt.things.Centipede.prototype.doTick = function() {
+    
+    // If this is our first tick...
+    if(this.firstTick) {
+        this.firstTick = false;
+    }
+
+    // If this isn't our first tick...
+    else {
+
+        // If we aren't a head and don't have a leader, become one
+        if(!this.head && this.leader === undefined) {
+            this.becomeHead();
+        }
+
+    }
+
+    // Centipedes only update if they are a head
+    if(!this.head) {
+        return;
+    }
+
+    // If we haven't initialized our segments, do it now
+    if(!this.linked) {
+        this.linkSegments();
+    }
+
+    // Move weakly in a random direction
+    var availableDirections = this.getAttackableDirections();
+    if(availableDirections.length > 0) {
+        this.move(jzt.Direction.random(availableDirections));
+    }
+    else {
+        this.reverse();
     }
 
 };
@@ -627,7 +853,7 @@ jzt.things.Lion = function(board) {
     this.spriteIndex = 234;
     this.foreground = jzt.colors.Colors['C'];
     this.background = jzt.colors.Colors['0'];
-    this.setSpeed(28);
+    this.setSpeed(8);
 };
 jzt.things.Lion.prototype = new jzt.things.UpdateableThing();
 jzt.things.Lion.prototype.constructor = jzt.things.Lion;
@@ -700,17 +926,16 @@ jzt.things.Lion.prototype.isSquishable = function(direction) {
  * during updates. If a Player blocks its movement, then the player will be sent
  * a SHOT message and this Lion will be removed from its parent board.
  */
-jzt.things.Lion.prototype.update = function(timestamp) {
-    if(this.isReady(timestamp)) {
-        this.tick(timestamp);
-        var direction = jzt.Direction.random();
-        var thing = this.board.getTile(this.point.add(direction));
-        if(thing && thing instanceof jzt.things.Player) {
-            thing.sendMessage('SHOT');
-            this.delete();
-        }
-        this.move(direction, true);
+jzt.things.Lion.prototype.doTick = function() {
+
+    var direction = jzt.Direction.random();
+    var thing = this.board.getTile(this.point.add(direction));
+    if(thing && thing instanceof jzt.things.Player) {
+        thing.sendMessage('SHOT');
+        this.delete();
     }
+    this.move(direction, true);
+   
 };
 
 

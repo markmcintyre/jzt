@@ -635,7 +635,7 @@ jzt.Board.prototype.equals = function(otherBoard) {
  * @param message a message to be displayed.
  */ 
 jzt.Board.prototype.setDisplayMessage = function(message) {
-    this.displayMessage = message;
+    this.displayMessage = ' ' + message + ' ';
     if(this.displayMessage.length > this.width) {
         this.displayMessage = this.displayMessage.substring(0, this.width);
     }
