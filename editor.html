@@ -27,6 +27,8 @@
 			<label><input type="radio" name="activeTemplate" value="Lion" />Lion</label>
 			<label><input type="radio" name="activeTemplate" value="Centipede" />Centipede</label>
 
+			<button id="save-game">Save</button>
+
 		</div>
 		
 		<script type="text/javascript" src="script/jzt.js"></script>
@@ -53,11 +55,18 @@
 				}
 			};
 
+			function saveGame(event) {
+				editor.save();
+				alert('Game Saved!');
+			}
+
 			var tools = document.getElementsByName('activeTemplate');
 			for( var index = 0; index < tools.length; index++ ) {
         		tools[index].addEventListener('change', onToolSelected, false);
     		}	
 
+    		var saveButton = document.getElementById('save-game');
+    		saveButton.addEventListener('click', saveGame, false);
 
 			var canvas = document.getElementById('jzt');
 			editor = new jzt.Editor(canvas);

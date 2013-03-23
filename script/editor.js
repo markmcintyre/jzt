@@ -23,12 +23,57 @@ jzt.Editor = function(canvasElement) {
     	resources: {}
 	};
 
-	mockGame.resources.graphics = new jzt.Graphics(mockGame, function() {
-		me.addBoard('Untitled', 40, 15);
-	});
-
 	this.game = mockGame;
 
+	mockGame.resources.graphics = new jzt.Graphics(mockGame, function() {
+
+		if(localStorage['currentGame']) {
+			me.load();
+		}
+		else {
+			me.addBoard('Untitled', 40, 15);
+		}
+	});
+
+
+};
+
+jzt.Editor.prototype.save = function() {
+	localStorage['currentGame'] = JSON.stringify(this.serialize());
+};
+
+jzt.Editor.prototype.load = function() {
+	var data = localStorage['currentGame'];
+	if(data) {
+		var loadedData = JSON.parse(data);
+		this.deserialize(loadedData);
+	}
+	else {
+		console.log('No data available.');
+	}
+};
+
+jzt.Editor.prototype.deserialize = function(data) {
+	this.boards = [];
+	for(var index = 0; index < data.boards.length; ++index) {
+		var board = new jzt.Board(data.boards[index], this.game);
+		this.boards.push(board);
+	}
+	this.currentBoard = this.boards[0];
+	this.currentBoard.initializePlayer(new jzt.things.Player());
+	this.currentBoard.render(this.context);
+};
+
+jzt.Editor.prototype.serialize = function() {
+	var result = {};
+	result.name = 'Untitled Game';
+	result.startingBoard = this.boards[0].name;
+	result.author = 'Mark McIntyre';
+	result.boards = [];
+	for(var index = 0; index < this.boards.length; ++index) {
+		result.boards.push(this.boards[index].serialize());
+	}
+	return result;
 };
 
 jzt.Editor.prototype.addBoard = function(boardName, width, height) {
