@@ -29,6 +29,15 @@
 
 			<button id="save-game">Save</button>
 
+			<label>Boards
+				<select id="board-selector">
+					<option value='jzt.newboard'>Create New Board</option>
+				</select>
+			</label>
+
+			
+
+
 		</div>
 		
 		<script type="text/javascript" src="script/jzt.js"></script>
@@ -44,6 +53,7 @@
 		<script type="text/javascript" src="script/editor.js"></script>
 		<script type="text/javascript">
 
+			var boardSelector = document.getElementById('board-selector');
 			var editor = undefined;
 
 			function onToolSelected(event) {
@@ -53,6 +63,31 @@
 				else {
 					editor.setActiveTool(undefined);
 				}
+			};
+
+			function onBoardSelected(event) {
+				if(event.target.value === 'jzt.newboard') {
+					var newName = window.prompt('Please enter a board name.', 'Untitled');
+					if(newName) {
+						newName = editor.getUniqueBoardName(newName);
+						editor.addBoard(newName, 40, 15);
+					}
+				}
+				else {
+					editor.switchBoard(event.target.value);
+				}
+			};
+
+			function onBoardAdded(boardName) {
+				boardSelector.options[boardSelector.options.length] = new Option(boardName, boardName);
+			};
+
+			function onBoardRemoved(boardName) {
+
+			};
+
+			function onBoardChanged(boardName) {
+				boardSelector.value = boardName;
 			};
 
 			function saveGame(event) {
@@ -69,8 +104,14 @@
     		saveButton.addEventListener('click', saveGame, false);
 
 			var canvas = document.getElementById('jzt');
-			editor = new jzt.Editor(canvas);
+			var callbacks = {
+				addBoard: onBoardAdded,
+				removeBoard: onBoardRemoved,
+				changeBoard: onBoardChanged
+			};
+			editor = new jzt.Editor(canvas, callbacks);
 
+			boardSelector.addEventListener('change', onBoardSelected, false);
 
 
 		</script>

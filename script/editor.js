@@ -1,8 +1,12 @@
 window.jzt = window.jzt || {};
 
-jzt.Editor = function(canvasElement) {
+jzt.Editor = function(canvasElement, configuration) {
 	
 	var me = this;
+
+	this.addBoardCallback = configuration.addBoard;
+	this.removeBoardCallback = configuration.removeBoard;
+	this.changeBoardCallback = configuration.changeBoard;
 
 	this.canvasElement = canvasElement;
 
@@ -38,6 +42,41 @@ jzt.Editor = function(canvasElement) {
 
 };
 
+jzt.Editor.prototype.getUniqueBoardName = function(candidate) {
+
+	var index = 2;
+	var currentTry = candidate;
+
+	while(this.getBoard(currentTry)) {
+		currentTry = candidate + index++;
+	}
+
+	return currentTry;
+
+};
+
+
+jzt.Editor.prototype.getBoard = function(boardName) {
+	for(var index = 0; index < this.boards.length; ++index) {
+		if(this.boards[index].name === boardName) {
+			return this.boards[index];
+		}
+	}
+
+	return undefined;
+};
+
+jzt.Editor.prototype.switchBoard = function(boardName) {
+
+	var board = this.getBoard(boardName);
+	this.currentBoard = board;
+	this.currentBoard.initializePlayer(new jzt.things.Player());
+	this.currentBoard.render(this.context);
+
+	this.changeBoardCallback.call(this, boardName);
+
+};
+
 jzt.Editor.prototype.save = function() {
 	localStorage['currentGame'] = JSON.stringify(this.serialize());
 };
@@ -58,10 +97,9 @@ jzt.Editor.prototype.deserialize = function(data) {
 	for(var index = 0; index < data.boards.length; ++index) {
 		var board = new jzt.Board(data.boards[index], this.game);
 		this.boards.push(board);
+		this.addBoardCallback.call(this, board.name);
 	}
-	this.currentBoard = this.boards[0];
-	this.currentBoard.initializePlayer(new jzt.things.Player());
-	this.currentBoard.render(this.context);
+	this.switchBoard(data.startingBoard);
 };
 
 jzt.Editor.prototype.serialize = function() {
@@ -114,10 +152,12 @@ jzt.Editor.prototype.addBoard = function(boardName, width, height) {
 	var newBoard = new jzt.Board(template, this.game);
 	newBoard.initializePlayer(new jzt.things.Player());
 	this.boards.push(newBoard);
-	this.currentBoard = newBoard;
-	newBoard.render(this.context);
+	
+	if(this.addBoardCallback) {
+		this.addBoardCallback.call(this, newBoard.name);
+	}
 
-
+	this.switchBoard(newBoard.name);
 
 };
 
