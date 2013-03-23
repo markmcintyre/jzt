@@ -24,7 +24,8 @@ jzt.Editor = function(canvasElement, configuration) {
 	var mockGame = {
 		TILE_SIZE: new jzt.Point(16, 32),
     	SPRITE_SIZE: new jzt.Point(8, 16),
-    	resources: {}
+    	resources: {},
+    	inEditor: true
 	};
 
 	this.game = mockGame;

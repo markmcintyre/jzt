@@ -1034,6 +1034,16 @@ jzt.things.InvisibleWall.prototype.sendMessage = function(message) {
     }
 };
 
+/**
+ * Returns a sprite index to be used to represent this InvisibleWall.
+ * If we detect that we are in a game editor, 176 will be used. Otherwise, 0.
+ *
+ * @return A sprite index.
+ */
+jzt.things.InvisibleWall.prototype.getSpriteIndex = function() {
+    return this.board.game.inEditor ? 176 : 0;
+};
+
 //--------------------------------------------------------------------------------
 
 /*
