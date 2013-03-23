@@ -540,7 +540,7 @@ jzt.things.Centipede = function(board) {
     this.spriteIndex = 79;
     this.foreground = jzt.colors.Colors['9'];
     this.background = jzt.colors.Colors['0'];
-    this.setSpeed(2);
+    this.setSpeed(5);
     this.follower = undefined;
     this.head = false;
     this.leader = undefined;
@@ -551,12 +551,23 @@ jzt.things.Centipede.prototype = new jzt.things.UpdateableThing();
 jzt.things.Centipede.prototype.constructor = jzt.things.Centipede;
 jzt.things.Centipede.serializationType = 'Centipede';
 
+/**
+ * Serializes this Thing to an object and returns it.
+ *
+ * @return A serialized version of this Thing.
+ */
 jzt.things.Centipede.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
     result.head = this.head;
     return result;
 };
 
+/**
+ * Deserializes a given data object and update's this Thing's state to
+ * that data.
+ *
+ * @param data An object to be deserialized into this Thing.
+ */
 jzt.things.Centipede.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
     this.head = data.head;
@@ -565,8 +576,20 @@ jzt.things.Centipede.prototype.deserialize = function(data) {
     }
 };
 
+/**
+ * Retrieves an unlinked, non-head, adjacent Centipede segment.
+ *
+ * @return An unlineked, non-head, adjacent Centipede segment.
+ */
 jzt.things.Centipede.prototype.getAdjacentSegment = function() {
 
+    /**
+     * Returns true if a provided candidate Thing is a Centipede, is 
+     * unlinked, and is not a head.
+     *
+     * @param candidate a Thing
+     * @return true if a candidate is an unlinked, non-head Centipede
+     */
     function isUnlinkedSegment(candidate) {
         return candidate && candidate instanceof jzt.things.Centipede && !candidate.linked && !candidate.head;
     }
@@ -601,6 +624,11 @@ jzt.things.Centipede.prototype.getAdjacentSegment = function() {
 
 };
 
+/**
+ * Recursively links adjacent segments to a provided Centipede.
+ *
+ * @param leader a Centipede
+ */
 jzt.things.Centipede.prototype.linkSegments = function(leader) {
 
     this.linked = true;
@@ -613,6 +641,10 @@ jzt.things.Centipede.prototype.linkSegments = function(leader) {
 
 };
 
+/**
+ * Reverses the follower/leader relationship of this Centipede
+ * and its followers.
+ */
 jzt.things.Centipede.prototype.reverse = function() {
 
     if(this.head) {
@@ -636,11 +668,23 @@ jzt.things.Centipede.prototype.reverse = function() {
 
 };
 
+/**
+ * Turns this Centipede into a head segment.
+ */
 jzt.things.Centipede.prototype.becomeHead = function() {
     this.head = true;
     this.spriteIndex = 233;
 };
 
+/**
+ * Moves this Centipede in a given direction. If a Player is
+ * located in that direction, this Centipede will be deleted
+ * and the player will be sent a SHOT message, otherwise this
+ * Centipede and its followers will move one step.
+ *
+ * @param direction A direction in which to move. This direction
+ * is expected to be free for movement, but may contain a Player.
+ */
 jzt.things.Centipede.prototype.move = function(direction) {
 
     var myPlace = this.point;
@@ -661,6 +705,11 @@ jzt.things.Centipede.prototype.move = function(direction) {
 
 };
 
+/**
+ * Deletes this Centipede from its Board. Any leader and follower 
+ * Centipedes will be updates to no longer contain this Centipede
+ * as well.
+ */
 jzt.things.Centipede.prototype.delete = function() {
 
     if(this.leader) {
@@ -674,6 +723,14 @@ jzt.things.Centipede.prototype.delete = function() {
 
 };
 
+/**
+ * Sends a provided message to this Centipede. If a SHOT message
+ * is received, then this Centipede will be deleted from its board.
+ * If a TOUCH message is received, then the board's player will be 
+ * sent a SHOT message and this Centipede will be deleted.
+ *
+ * @param message A message to be sent to this Centipede.
+ */
 jzt.things.Centipede.prototype.sendMessage = function(message) {
     if(message === 'SHOT') {
         this.delete();
@@ -684,6 +741,9 @@ jzt.things.Centipede.prototype.sendMessage = function(message) {
     }
 };
 
+/**
+ * Performs a tick.
+ */
 jzt.things.Centipede.prototype.doTick = function() {
     
     // If this is our first tick...
