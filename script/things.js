@@ -105,6 +105,10 @@ jzt.things.Thing.prototype.isPlayerAdjacent = function(direction) {
     return tile && tile instanceof jzt.things.Player;
 };
 
+jzt.things.Thing.prototype.isPlayerAligned = function() {
+    return this.board.player.point.x === this.point.x || this.board.player.point.y === this.point.y;
+};
+
 /**
  * Moves this Thing in a provided Direction and returns its success.
  * 
@@ -213,6 +217,16 @@ jzt.things.UpdateableThing.prototype.getPlayerDirection = function() {
     return this.point.directionTo(this.board.player.point);
 };
 
+/**
+ * Returns whether or not a position in a provided direction is attackable
+ * by this UpdateableThing. Attackable positions are defined as free spots
+ * or spots occupied by a player.
+ *
+ * return true if a provided direction is attackable, false otherwise
+ */
+jzt.things.UpdateableThing.prototype.isAttackable = function(direction) {
+    return !this.isBlocked(direction) || this.isPlayerAdjacent(direction);
+};
 
 /**
  * Retrieves an Array of Directions in which this UpdateableThing can attack.
@@ -226,7 +240,7 @@ jzt.things.UpdateableThing.prototype.getAttackableDirections = function() {
     var result = [];
     var instance = this;
     jzt.Direction.each(function(direction) {
-        if(instance.isPlayerAdjacent(direction) || !instance.isBlocked(direction)) {
+        if(instance.isAttackable(direction)) {
             result.push(direction);
         }
     });
@@ -546,6 +560,9 @@ jzt.things.Centipede = function(board) {
     this.leader = undefined;
     this.linked = false;
     this.firstTick = true;
+    this.orientation = undefined;
+    this.deviance = 0;
+    this.intelligence = 0;
 };
 jzt.things.Centipede.prototype = new jzt.things.UpdateableThing();
 jzt.things.Centipede.prototype.constructor = jzt.things.Centipede;
@@ -559,6 +576,8 @@ jzt.things.Centipede.serializationType = 'Centipede';
 jzt.things.Centipede.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
     result.head = this.head;
+    result.deviance = this.deviance;
+    result.intelligence = this.intelligence;
     return result;
 };
 
@@ -571,6 +590,11 @@ jzt.things.Centipede.prototype.serialize = function() {
 jzt.things.Centipede.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
     this.head = data.head;
+    this.intelligence = data.intelligence;
+    this.deviance = data.deviance;
+    if(this.deviance > 10) {
+        this.deviance = 10;
+    }
     if(this.head) {
         this.spriteIndex = 233;
     }
@@ -633,6 +657,12 @@ jzt.things.Centipede.prototype.linkSegments = function(leader) {
 
     this.linked = true;
     this.leader = leader;
+
+    if(this.leader) {
+        this.deviance = leader.deviance;
+        this.intelligence = leader.intelligence;
+    }
+
     this.follower = this.getAdjacentSegment();
 
     if(this.follower) {
@@ -742,6 +772,42 @@ jzt.things.Centipede.prototype.sendMessage = function(message) {
 };
 
 /**
+ * Returns whether or not this Centipede should deviate from
+ * its orientation. This is a probability based on this
+ * Centipedes deviance property.
+ *
+ * @return true if this Centipede should deviate now, false otherwise.
+ */
+jzt.things.Centipede.prototype.deviate = function() {
+
+    if(this.deviance === 0) {
+        return false;
+    }
+
+    var randomValue = Math.floor(Math.random()*20);
+    return randomValue <= this.deviance;
+
+};
+
+/**
+ * Returns whether or not this Centipede should seek the player
+ * at this moment, or if it should move randomly. This is a
+ * probability based on this Centipede's intelligence property.
+ */
+jzt.things.Centipede.prototype.seekPlayer = function() {
+
+    if(this.isPlayerAligned()) {
+
+        var randomValue = Math.floor(Math.random()*10);
+        return randomValue <= this.intelligence;
+
+    };
+
+    return false;
+
+};
+
+/**
  * Performs a tick.
  */
 jzt.things.Centipede.prototype.doTick = function() {
@@ -771,15 +837,43 @@ jzt.things.Centipede.prototype.doTick = function() {
         this.linkSegments();
     }
 
-    // Move weakly in a random direction
-    var availableDirections = this.getAttackableDirections();
-    if(availableDirections.length > 0) {
-        this.move(jzt.Direction.random(availableDirections));
-    }
-    else {
-        this.reverse();
+    // If we're to see the player now...
+    if(this.seekPlayer()) {
+
+        // Set our orientation toward the player
+        this.orientation = this.getPlayerDirection();
+
     }
 
+    // If we've got an orientation and it's attackable, move there
+    if(this.orientation && this.isAttackable(this.orientation) && !this.deviate()) {
+        this.move(this.orientation);
+    }
+
+    // Otherwise...
+    else {
+
+        // Find all attackable directions
+        var availableDirections = this.getAttackableDirections();
+
+        // If directions are available...
+        if(availableDirections.length > 0) {
+
+            // Pick one and remember it as our orientation
+            var direction = jzt.Direction.random(availableDirections);
+            this.orientation = direction;
+            this.move(direction);
+
+        }
+
+        // If no direction was available, reverse ourselves
+        else {
+            this.reverse();
+        }
+
+    }
+
+    
 };
 
 //--------------------------------------------------------------------------------
