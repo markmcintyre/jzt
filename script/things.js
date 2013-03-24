@@ -1565,21 +1565,25 @@ jzt.things.Teleporter.prototype.push = function(direction) {
     var currentPoint = this.point.add(getDirection(this.getMatchingOrientation()));
     var destinationPoint = this.point.add(currentDirection);
 
-    // If we're free to the right, we just move things there
-    if(!this.isBlocked(currentDirection)) {
-        this.board.moveTile(currentPoint, destinationPoint);
-    }
+    // If we couldn't move the tile to the other side of this teleporter...
+    if(!this.board.moveTile(currentPoint, destinationPoint)) {
 
-    // Otherwise, look for a matching teleporter
-    else {
-
+        // While we haven't reached the edge of the board...
         while(!this.board.isOutside(destinationPoint)) {
+
+            // Look at the next tile in the direction
             destinationPoint = destinationPoint.add(currentDirection);
+
+            // If we found a matching teleporter...
             var thing = this.board.getTile(destinationPoint);
             if(thing && thing instanceof jzt.things.Teleporter && thing.orientation === this.getMatchingOrientation()) {
+
+                // Move the tile to the matching teleporter's destination
                 this.board.moveTile(currentPoint, destinationPoint.add(currentDirection));
                 break;
+
             }
+
         }
 
     }
