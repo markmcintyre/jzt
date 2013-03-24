@@ -92,22 +92,32 @@ jzt.things.Thing.prototype.isSquishable = function(direction) {
 };
 
 /**
- * Returns whether or not this Thing declares itself to be surrenderable in
- * a provided direction to a given sender.
+ * Returns whether or not this Thing declares itself to be surrenderable to
+ * a given sender.
  *
  * A Thing that is surrenderable will allow another Thing to occupy its
  * space on a board and will agree to be 'under' that Thing.
  *
- * @param direction A direction in which a given sender wishes to walk onto this Thing
  * @param sender A Thing requesting a surrender
  * @return true if this Thing agrees to surrender, false otherwise.
  */
-jzt.things.Thing.prototype.isSurrenderable = function(direction, sender) {
+jzt.things.Thing.prototype.isSurrenderable = function(sender) {
     return false;
 };
 
 jzt.things.Thing.prototype.isBlocked = function(direction) {
-    return !this.board.isPassable(this.point.add(direction));
+
+    var newPoint = this.point.add(direction);
+
+    if(this.board.isPassable(newPoint)) {
+        return false;
+    }
+
+    var obstacle = this.board.getTile(newPoint);
+    if(obstacle) {
+        return !obstacle.isSurrenderable(this);
+    }
+
 };
 
 jzt.things.Thing.prototype.isPlayerAdjacent = function(direction) {
@@ -970,6 +980,39 @@ jzt.things.Door.prototype.deserialize = function(data) {
 
 //--------------------------------------------------------------------------------
 
+/**
+ * FakeWall looks like a normal Wall, but is surrenderable to whatever Thing wishes
+ * to move there.
+ *
+ * @param board An owner board for this FakeWall
+ */
+jzt.things.FakeWall = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.spriteIndex = 178;
+    this.foreground = jzt.colors.Colors['E'];
+    this.background = jzt.colors.Colors['0'];
+};
+jzt.things.FakeWall.prototype = new jzt.things.Thing();
+jzt.things.FakeWall.prototype.constructor = jzt.things.FakeWall;
+jzt.things.FakeWall.serializationType = 'FakeWall';
+jzt.things.FakeWall.symbol = 'FW';
+
+/**
+ * Returns whether or not this FakeWall is surrenderable to another thing.
+ *
+ * @param sender Another Thing that is requesting this Thing to surrender
+ * @return true if this Thing is willing to surrender its position.
+ */
+jzt.things.FakeWall.prototype.isSurrenderable = function(sender) {
+    return true;
+};
+
+jzt.things.FakeWall.prototype.getSpriteIndex = function() {
+    return this.board.game.isDebugRendering ? 176 : 178;
+};
+
+//--------------------------------------------------------------------------------
+
 /*
  * Forest acts as a non-pushable obstacle, like a wall, but it vanishes when the 
  * player attempts to move to its location, clearing this Thing from the board.
@@ -1049,7 +1092,7 @@ jzt.things.InvisibleWall.prototype.sendMessage = function(message) {
  * @return A sprite index.
  */
 jzt.things.InvisibleWall.prototype.getSpriteIndex = function() {
-    return this.board.game.inEditor ? 176 : 0;
+    return this.board.game.isDebugRendering ? 176 : 0;
 };
 
 //--------------------------------------------------------------------------------
@@ -1563,7 +1606,7 @@ jzt.things.Water.prototype.constructor = jzt.things.Water;
 jzt.things.Water.serializationType = 'Water';
 jzt.things.Water.symbol = 'WT';
 
-jzt.things.Water.prototype.isSurrenderable = function(direction, sender) {
+jzt.things.Water.prototype.isSurrenderable = function(sender) {
     if(sender instanceof jzt.things.Bullet) {
         return true;
     }
@@ -1655,27 +1698,24 @@ jzt.things.ThingFactory.getThingMap = function() {
  */
 jzt.things.ThingFactory.shoot = function(board, point, direction, fromPlayer) {
 
-    // First, see if we need to spawn a bullet at all...
+    // First, get our destination tile
     var tile = board.getTile(point);
 
-    // If there's nothing there, or it's water, spawn a Bullet Thing
-    if(tile === undefined || tile instanceof jzt.things.Water) {
-        
-        var bullet = new jzt.things.Bullet(board);
-        bullet.direction = direction;
-        if(fromPlayer) {
-            bullet.fromPlayer = fromPlayer;
-        }
+    // Create a bullet
+    var bullet = new jzt.things.Bullet(board);
+    bullet.direction = direction;
+    if(fromPlayer) {
+        bullet.fromPlayer = fromPlayer;
+    }
 
-        if(tile instanceof jzt.things.Water) {
-            bullet.under = tile;
-        }
+    // If we're allowed to spawn our bullet at our tile position...
+    if(tile === undefined || tile.isSurrenderable(bullet)) {
 
-        board.addUpdateableThing(point, bullet);
+        board.addThing(point, bullet, true);
 
     }
 
-    // If the bullet is from the player, or the tile is a Player or ScriptableThing
+    // Otherwise, if the bullet is from the player, or the tile is a Player or ScriptableThing
     else if(fromPlayer ||
         tile instanceof jzt.things.Player || tile instanceof jzt.things.ScriptableThing) {
         tile.sendMessage('SHOT');

@@ -349,7 +349,6 @@ jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak) {
     
     var thing = this.getTile(oldPoint);
     var obstacle = this.getTile(newPoint);
-    var moveDirection = oldPoint.directionTo(newPoint);
 
     // If the coast is clear...
     if(this.isPassable(newPoint)) {
@@ -365,7 +364,7 @@ jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak) {
     }
 
     // If we are blocked, but the path is surrenderable...
-    else if(!this.isOutside(newPoint) && obstacle.isSurrenderable(moveDirection, thing)) {
+    else if(!this.isOutside(newPoint) && obstacle.isSurrenderable(thing)) {
 
         // If our thing isn't undefined
         if(thing !== undefined) {
@@ -386,7 +385,7 @@ jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak) {
         var thing = this.getTile(newPoint);
         if(thing) {
             
-            
+            var moveDirection = oldPoint.directionTo(newPoint);
             
             if(thing.isPushable(moveDirection)) {
                 
@@ -448,14 +447,25 @@ jzt.Board.prototype.addUpdateableThing = function(point, thing) {
 /**
  * Adds a Thing to a specific Point on this Board. This function
  * will safely delete any existing Thing if present at the specified
- * location and will update any UpdateableThing list.
+ * location and will update any UpdateableThing list, unless we opt
+ * to respect surrenderability, in which case the thing will only be deleted
+ * if it refuses to surrender.
+ *
+ * @param point A point at which to add a Thing
+ * @param thing A Thing to add at a given point
+ * @param respectSurrenderability Whether to respect the surrenderability of an item
  */
-jzt.Board.prototype.addThing = function(point, thing) {
+jzt.Board.prototype.addThing = function(point, thing, respectSurrenderabilty) {
 
     var oldThing = this.getTile(point);
 
     if(oldThing) {
-        this.deleteTile(point);
+        if(respectSurrenderabilty && oldThing.isSurrenderable(thing)) {
+            thing.under = oldThing;
+        }
+        else {
+            this.deleteTile(point);
+        }
     }
 
     if(thing && thing instanceof jzt.things.UpdateableThing) {
@@ -526,7 +536,7 @@ jzt.Board.prototype.isOutside = function(point) {
  */
 jzt.Board.prototype.isPassable = function(point) {
         
-    return !this.isOutside(point) && !this.getTile(point);
+    return !this.isOutside(point) && (!this.getTile(point));
         
 };
 
