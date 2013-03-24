@@ -77,19 +77,11 @@ jzt.things.Thing.prototype.deserialize = function(data) {
 jzt.things.Thing.prototype.sendMessage = function(messageName) {};
 
 /**
- * Retrurns whether or not this Thing declares itself to be pushable in a provided
- * direction by other Things.
+ * Receives a request to be pushed in a given direction.
  *
- * @param direction A direction in which to test the pushability of this Thing
- * @return True if this thing is pushable in a given direction, false otherwise.
+ * @param direction A direction in which this Thing is requested to move.
  */
-jzt.things.Thing.prototype.isPushable = function(direction) {
-    return false;
-};
-
-jzt.things.Thing.prototype.isSquishable = function(direction) {
-    return false;
-};
+jzt.things.Thing.prototype.push = function(direction) {};
 
 /**
  * Returns whether or not this Thing declares itself to be surrenderable to
@@ -109,7 +101,7 @@ jzt.things.Thing.prototype.isBlocked = function(direction) {
 
     var newPoint = this.point.add(direction);
 
-    if(this.board.isPassable(newPoint)) {
+    if(this.board.isFree(newPoint)) {
         return false;
     }
 
@@ -479,14 +471,12 @@ jzt.things.Boulder.serializationType = 'Boulder';
 jzt.things.Boulder.symbol = 'BL';
 
 /**
- * Retrurns whether or not this Thing declares itself to be pushable in a provided
- * direction by other Things.
+ * Receives a request to be pushed in a given direction.
  *
- * @param direction A direction in which to test the pushability of this Thing
- * @return True if this thing is pushable in a given direction, false otherwise.
+ * @param direction A direction in which this Thing is requested to move.
  */
-jzt.things.Boulder.prototype.isPushable = function(direction) {
-    return true;
+jzt.things.Boulder.prototype.push = function(direction) {
+    this.move(direction);
 };
 
 //--------------------------------------------------------------------------------
@@ -781,6 +771,16 @@ jzt.things.Centipede.prototype.move = function(direction) {
         this.follower.move(direction);
     }
 
+};
+
+/**
+ * Requests that this Centipede be pushed in a given direction. Since
+ * Centipedes can't be pushed, the Centipede will be deleted instead.
+ *
+ * @param direction A given direction to push this Centipede.
+ */
+jzt.things.Centipede.prototype.push = function(direction) {
+    this.delete();
 };
 
 /**
@@ -1204,25 +1204,14 @@ jzt.things.Lion.prototype.sendMessage = function(message) {
 };
 
 /**
- * Returns whether or not this Thing declares itself to be pushable in a provided
- * direction by other Things.
+ * Receives a request to be pushed in a given direction.
  *
- * @param direction A direction in which to test the pushability of this Thing
- * @return True if this thing is pushable in a given direction, false otherwise.
+ * @param direction A direction in which this Thing is requested to move.
  */
-jzt.things.Lion.prototype.isPushable = function(direction) {
-    return true;
-};
-
-/**
- * Returns whether or not this Thing delcares itself as squishable in a provided
- * direction.
- *
- * @param direction A direction in which to test the squishability of this Thing
- * @return true if this Thing is squishable, false otherwise
- */
-jzt.things.Lion.prototype.isSquishable = function(direction) {
-    return true;
+jzt.things.Lion.prototype.push = function(direction) {
+    if(!this.move(direction)) {
+        this.delete();
+    }
 };
 
 /**
@@ -1290,14 +1279,12 @@ jzt.things.Player.prototype = new jzt.things.UpdateableThing();
 jzt.things.Player.prototype.constructor = jzt.things.Player;
 
 /**
- * Retrurns whether or not this Thing declares itself to be pushable in a provided
- * direction by other Things.
+ * Receives a request to be pushed in a given direction.
  *
- * @param direction A direction in which to test the pushability of this Thing
- * @return True if this thing is pushable in a given direction, false otherwise.
+ * @param direction A direction in which this Thing is requested to move.
  */
-jzt.things.Player.prototype.isPushable = function(direction) {
-    return true;
+jzt.things.Player.prototype.push = function(direction) {
+    this.move(direction);
 };
 
 /**
@@ -1505,6 +1492,103 @@ jzt.things.Player.prototype.sendMessage = function(message) {
 //--------------------------------------------------------------------------------
 
 /**
+ * Teleporter is an UpdateableThing capable of teleporting the player
+ * to an associated opposite teleporter along the same directional axis.
+ */
+ jzt.things.Teleporter = function(board) {
+    jzt.things.UpdateableThing.call(this, board);
+    this.orientation = 'E';
+    this.animationFrame = 2;
+    this.setSpeed(3);
+ };
+jzt.things.Teleporter.prototype = new jzt.things.UpdateableThing();
+jzt.things.Teleporter.prototype.constructor = jzt.things.Teleporter;
+jzt.things.Teleporter.serializationType = 'Teleporter';
+jzt.things.Teleporter.animationFrames = {
+    'N': [196, 126, 94, 126],
+    'E': [179, 41, 62, 41],
+    'S': [196, 126, 118, 126],
+    'W': [179, 40, 60, 40]
+};
+
+jzt.things.Teleporter.prototype.serialize = function() {
+    var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    result.orientation = this.orientation;
+    return result;
+};
+
+jzt.things.Teleporter.prototype.deserialize = function(data) {
+    jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    if(data.orientation){this.orientation = data.orientation;}
+};
+
+jzt.things.Teleporter.prototype.doTick = function() {
+    this.animationFrame++;
+    if(this.animationFrame >= jzt.things.Teleporter.animationFrames[this.orientation].length) {
+        this.animationFrame = 0;
+    }
+};
+
+jzt.things.Teleporter.prototype.getMatchingOrientation = function() {
+    switch(this.orientation) {
+        case 'N': return 'S';
+        case 'E': return 'W';
+        case 'S': return 'N';
+        case 'W': return 'E';
+        default: return undefined;
+    };
+};
+
+jzt.things.Teleporter.prototype.getSpriteIndex = function() {
+    return jzt.things.Teleporter.animationFrames[this.orientation][this.animationFrame];
+};
+
+jzt.things.Teleporter.prototype.push = function(direction) {
+
+    function getDirection(directionName) {
+        switch(directionName) {
+            case 'N': return jzt.Direction.North;
+            case 'E': return jzt.Direction.East;
+            case 'S': return jzt.Direction.South;
+            case 'W': return jzt.Direction.West;
+            default: return undefined;
+        }
+    }
+
+    var currentDirection = getDirection(this.orientation);
+
+    // We only teleport in our current direction
+    if(!currentDirection.equals(direction)) {
+        return;
+    }
+
+    var currentPoint = this.point.add(getDirection(this.getMatchingOrientation()));
+    var destinationPoint = this.point.add(currentDirection);
+
+    // If we're free to the right, we just move things there
+    if(!this.isBlocked(currentDirection)) {
+        this.board.moveTile(currentPoint, destinationPoint);
+    }
+
+    // Otherwise, look for a matching teleporter
+    else {
+
+        while(!this.board.isOutside(destinationPoint)) {
+            destinationPoint = destinationPoint.add(currentDirection);
+            var thing = this.board.getTile(destinationPoint);
+            if(thing && thing instanceof jzt.things.Teleporter && thing.orientation === this.getMatchingOrientation()) {
+                this.board.moveTile(currentPoint, destinationPoint.add(currentDirection));
+                break;
+            }
+        }
+
+    }
+
+};
+
+//--------------------------------------------------------------------------------
+
+/**
  * SliderEw is a Thing that is pushable only in the East and West direction.
  *
  * @param board An owner board.
@@ -1519,14 +1603,14 @@ jzt.things.SliderEw.serializationType = 'SliderEw';
 jzt.things.SliderEw.symbol = 'SE';
 
 /**
- * Retrurns whether or not this Thing declares itself to be pushable in a provided
- * direction by other Things.
+ * Receives a request to be pushed in a given direction.
  *
- * @param direction A direction in which to test the pushability of this Thing
- * @return True if this thing is pushable in a given direction, false otherwise.
+ * @param direction A direction in which this Thing is requested to move.
  */
-jzt.things.SliderEw.prototype.isPushable = function(direction) {
-    return direction.equals(jzt.Direction.East) || direction.equals(jzt.Direction.West);
+jzt.things.SliderEw.prototype.push = function(direction) {
+    if(direction.equals(jzt.Direction.East) || direction.equals(jzt.Direction.West)) {
+        this.move(direction);
+    }
 };
 
 //--------------------------------------------------------------------------------
@@ -1546,14 +1630,14 @@ jzt.things.SliderNs.serializationType = 'SliderNs';
 jzt.things.SliderNs.symbol = 'SN';
 
 /**
- * Retrurns whether or not this Thing declares itself to be pushable in a provided
- * direction by other Things.
+ * Receives a request to be pushed in a given direction.
  *
- * @param direction A direction in which to test the pushability of this Thing
- * @return True if this thing is pushable in a given direction, false otherwise.
+ * @param direction A direction in which this Thing is requested to move.
  */
-jzt.things.SliderNs.prototype.isPushable = function(direction) {
-    return direction.equals(jzt.Direction.North) || direction.equals(jzt.Direction.South);
+jzt.things.SliderNs.prototype.push = function(direction) {
+    if(direction.equals(jzt.Direction.North) || direction.equals(jzt.Direction.South)) {
+        this.move(direction);
+    }
 };
 
 //--------------------------------------------------------------------------------

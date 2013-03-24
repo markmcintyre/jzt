@@ -351,7 +351,7 @@ jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak) {
     var obstacle = this.getTile(newPoint);
 
     // If the coast is clear...
-    if(this.isPassable(newPoint)) {
+    if(this.isFree(newPoint)) {
 
         this.setTile(newPoint, thing);
         this.setTile(oldPoint, thing === undefined ? undefined : thing.under);
@@ -379,30 +379,20 @@ jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak) {
 
     }
     
-    // If we couldn't move and we're not weak, try to push
+    // If we couldn't move and we're not weak, try to push and try again
     else if(!weak) {
         
-        var thing = this.getTile(newPoint);
-        if(thing) {
-            
-            var moveDirection = oldPoint.directionTo(newPoint);
-            
-            if(thing.isPushable(moveDirection)) {
-                
-                // Try to move the pushable tile
-                var success = thing.move(moveDirection);
-            
-                // If the tile pushed, try moving again
-                if(success) {
-                    return this.moveTile(oldPoint, newPoint, weak);
-                }
-                else if(thing.isSquishable(moveDirection)) {
-                    thing.delete();
-                    return true;
-                }
-                
+        // If an obstacle was encountered
+        if(obstacle) {
+
+            // Try to push the obstacle out of the way
+            obstacle.push(oldPoint.directionTo(newPoint));
+
+            // If a space was opened up, or if the space is surrenderable...
+            if(this.isFree(newPoint) || this.getTile(newPoint).isSurrenderable(thing)) {
+                return this.moveTile(oldPoint, newPoint, weak);
             }
-            
+
         }
     }
     
@@ -527,14 +517,12 @@ jzt.Board.prototype.isOutside = function(point) {
 };
 
 /**
- * Returns whether or not a provided Point contains a tile that is
- * occupied by another tile in such a way that another tile cannot
- * move into its space.
+ * Returns whether or not a provided Point is unoccupied.
  *
- * @param point a Point to test for passability.
- * @return true if a provided Point is passable, false otherwise.
+ * @param point a Point to test.
+ * @return true if a provided Point is free, false otherwise.
  */
-jzt.Board.prototype.isPassable = function(point) {
+jzt.Board.prototype.isFree = function(point) {
         
     return !this.isOutside(point) && (!this.getTile(point));
         
