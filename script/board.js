@@ -26,7 +26,7 @@ jzt.Board = function(boardData, game) {
     this.displayMessage = undefined;
     this.displayMessageTick = 0;
 
-    this.DISPLAY_MESSAGE_TTL = game.CPS * 3; // 3 seconds
+    this.DISPLAY_MESSAGE_TTL = game.FPS * 3; // 3 seconds
     this.DARK_SPRITE = game.resources.graphics.getSprite(176);
     this.DARK_SPRITE_COLOR = jzt.colors.Colors['8'];
     this.BOARD_DATA_WORD_LENGTH = 4;
@@ -595,7 +595,7 @@ jzt.Board.prototype.addMessage = function(message) {
  * Updates this Board instance by one tick in an execution cycle. This will also
  * update all UpdateableThings tracked by this Board, excluding the player.
  */
-jzt.Board.prototype.update = function(timestamp) {
+jzt.Board.prototype.update = function() {
         
     // Iterate backwards in case a thing needs to be removed
     for(var index = this.updateableThings.length-1; index >= 0; --index) {
@@ -605,7 +605,7 @@ jzt.Board.prototype.update = function(timestamp) {
         
         // Update the thing, if we got one
         if(updateableThing != undefined) {
-            updateableThing.update(timestamp);
+            updateableThing.update();
         }
         
     }

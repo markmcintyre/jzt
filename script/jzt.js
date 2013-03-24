@@ -14,17 +14,12 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     this.SPRITE_SIZE = new jzt.Point(8, 16);
     
     this.FPS = 30;
-    this.CPS = 30;
+    this.CYCLE_RATE = 3;
     this.BLINK_SPEED = 4;
-    this.MAX_TICKS_SKIPPED = 10;
-    this.SKIP_TICKS = Math.round(1000 / this.CPS);
-    this.SKIP_BLINK_TICKS = Math.round(1000 / this.BLINK_SPEED);
     this.COLOR_CYCLE_MAX = 6;
 
+    this.tick = 0;
     this._intervalId = undefined;
-    this._ticks = 0;
-    this._nextTick = Date.now();
-    this._nextBlinkTick = Date.now();
     
     this.onLoadCallback = onLoadCallback;
     this.resources = {};
@@ -79,25 +74,8 @@ jzt.Game.prototype.run = function() {
  * this Game for a single graphics tick.
  */  
 jzt.Game.prototype.loop = function() {
-    
-    this._ticks = 0;
-    var now = Date.now();
-
-    while(now > this._nextTick && this._ticks < this.MAX_TICKS_SKIPPED) {
-        this.update();
-        this._nextTick += this.SKIP_TICKS;
-        this._ticks++;
-        if(now > this._nextBlinkTick) {
-            this.blinkState = ! this.blinkState;
-            this.colorCycleIndex = this.colorCycleIndex >= this.COLOR_CYCLE_MAX ? 0 : this.colorCycleIndex + 1;
-            this._nextBlinkTick += this.SKIP_BLINK_TICKS;
-        }
-    }
-
-    if(this._ticks) {
-        this.draw();
-    }
-    
+    this.update();
+    this.draw();
 };
 
 /**
@@ -249,9 +227,14 @@ jzt.Game.prototype.setBoard = function(board, playerPoint) {
  * Updates this Game's state by one execution tick.
  */
 jzt.Game.prototype.update = function() {
-    var now = Date.now();
-    this.currentBoard.update(now);
-    this.player.update(now);
+
+    if(++this.tick > 255) {
+        this.tick = 0;
+    }
+
+    this.currentBoard.update();
+    this.player.update();
+
 };
     
 /**
@@ -260,6 +243,8 @@ jzt.Game.prototype.update = function() {
  */
 jzt.Game.prototype.draw = function() {
         
+    this.blinkState = ! this.blinkState;
+    this.colorCycleIndex = this.colorCycleIndex >= this.COLOR_CYCLE_MAX ? 0 : this.colorCycleIndex + 1;
     this.currentBoard.render(this.context);
             
 };
