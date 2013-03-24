@@ -343,13 +343,15 @@ jzt.Board.prototype.deleteTile = function(point) {
  * @param oldPoint A point on this Board containing a tile to be moved
  * @param newPoint A point on the Board to which a tile is to be moved.
  * @param weak Whether or not we should weakly move the tile.
- * @param flier Whether or not the tile we're moving should "fly" over another
  * @return true if a move was successful, false otherwise.
  */
-jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak, flier) {
+jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak) {
     
     var thing = this.getTile(oldPoint);
+    var obstacle = this.getTile(newPoint);
+    var moveDirection = oldPoint.directionTo(newPoint);
 
+    // If the coast is clear...
     if(this.isPassable(newPoint)) {
 
         this.setTile(newPoint, thing);
@@ -362,16 +364,13 @@ jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak, flier) {
         return true;
     }
 
-    // If we are blocked, but aren't outside and are a flier, then we can move anyway
-    else if(!this.isOutside(newPoint) && flier) {
-
-        // Get our thing to move, and its new "bottom"
-        var bottom = this.getTile(newPoint);
+    // If we are blocked, but the path is surrenderable...
+    else if(!this.isOutside(newPoint) && obstacle.isSurrenderable(moveDirection, thing)) {
 
         // If our thing isn't undefined
         if(thing !== undefined) {
             var underOldThing = thing.under;
-            thing.under = bottom;
+            thing.under = obstacle;
         }
 
         this.setTile(newPoint, thing);
@@ -387,7 +386,7 @@ jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak, flier) {
         var thing = this.getTile(newPoint);
         if(thing) {
             
-            var moveDirection = oldPoint.directionTo(newPoint);
+            
             
             if(thing.isPushable(moveDirection)) {
                 
@@ -396,7 +395,7 @@ jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak, flier) {
             
                 // If the tile pushed, try moving again
                 if(success) {
-                    return this.moveTile(oldPoint, newPoint, weak, flier);
+                    return this.moveTile(oldPoint, newPoint, weak);
                 }
                 else if(thing.isSquishable(moveDirection)) {
                     thing.delete();

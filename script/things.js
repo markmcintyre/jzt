@@ -91,6 +91,21 @@ jzt.things.Thing.prototype.isSquishable = function(direction) {
     return false;
 };
 
+/**
+ * Returns whether or not this Thing declares itself to be surrenderable in
+ * a provided direction to a given sender.
+ *
+ * A Thing that is surrenderable will allow another Thing to occupy its
+ * space on a board and will agree to be 'under' that Thing.
+ *
+ * @param direction A direction in which a given sender wishes to walk onto this Thing
+ * @param sender A Thing requesting a surrender
+ * @return true if this Thing agrees to surrender, false otherwise.
+ */
+jzt.things.Thing.prototype.isSurrenderable = function(direction, sender) {
+    return false;
+};
+
 jzt.things.Thing.prototype.isBlocked = function(direction) {
     return !this.board.isPassable(this.point.add(direction));
 };
@@ -548,18 +563,11 @@ jzt.things.Bullet.prototype.doTick = function() {
         // See what was in our way.
         var thing = this.board.getTile(this.point.add(this.direction));
 
-        // If it was water, we can shoot over it!
-        if(thing instanceof jzt.things.Water) {
-            if(this.move(this.direction, true, true)) {
-                return;
-            }
-        }
-
         /*
          * Send a SHOT message if the bullet was from the player and any UpdateableThing, 
          * otherwise we only send the SHOT message to the player itself or ScriptabelThings.
          */
-        else if(this.fromPlayer ||
+        if(this.fromPlayer ||
                 thing instanceof jzt.things.Player || thing instanceof jzt.things.ScriptableThing) {
             thing.sendMessage('SHOT');
         }
@@ -1554,6 +1562,12 @@ jzt.things.Water.prototype = new jzt.things.Thing();
 jzt.things.Water.prototype.constructor = jzt.things.Water;
 jzt.things.Water.serializationType = 'Water';
 jzt.things.Water.symbol = 'WT';
+
+jzt.things.Water.prototype.isSurrenderable = function(direction, sender) {
+    if(sender instanceof jzt.things.Bullet) {
+        return true;
+    }
+};
 
 /*==================================================================================
  * THING FACTORY
