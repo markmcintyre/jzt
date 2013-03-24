@@ -409,7 +409,7 @@ jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak) {
 jzt.Board.prototype.setTile = function(point, tile) {
     
     if(tile) {
-        tile.point = point;
+        tile.point = point.clone();
     }
     
     this.tiles[point.x + point.y * this.width] = tile;

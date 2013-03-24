@@ -5,6 +5,10 @@ jzt.Point = function(x, y) {
     this.y = y;
 };
 
+jzt.Point.prototype.clone = function() {
+    return new jzt.Point(this.x, this.y);
+};
+
 jzt.Point.prototype.add = function(other) {
     return new jzt.Point(this.x + other.x, this.y + other.y);
 };

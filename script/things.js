@@ -203,8 +203,8 @@ jzt.things.UpdateableThing.prototype.deserialize = function(data) {
  */
 jzt.things.UpdateableThing.prototype.setSpeed = function(speed) {
     this.speed = speed;
-    this.ticksPerCycle = Math.round(1000 / this.speed);
-    this.nextTick = 0;
+    this.ticksPerCycle = Math.floor(1000 / this.speed);
+    this.nextTick = -1;
 };
 
 /**
@@ -215,6 +215,10 @@ jzt.things.UpdateableThing.prototype.setSpeed = function(speed) {
  *      UpdateableThing is ready for another tick.
  */
 jzt.things.UpdateableThing.prototype.isReady = function(timestamp) {
+    if(this.nextTick < 0) {
+        this.nextTick = timestamp + this.ticksPerCycle;
+    }
+
     return timestamp > this.nextTick;
 };
 
@@ -315,6 +319,7 @@ jzt.things.UpdateableThing.prototype.getBlockedDirections = function() {
  * Updates this UpdateableThing for a single execution cycle.
  */
 jzt.things.UpdateableThing.prototype.update = function(timestamp) {
+
     if(this.isReady(timestamp)) {
         this.doTick();
         this.tick(timestamp);
@@ -551,32 +556,44 @@ jzt.things.Bullet.prototype.serialize = function() {
     }
  };
 
+ jzt.things.Bullet.prototype.sendMessage = function(message) {
+    if(message === 'TOUCH') {
+        this.board.player.sendMessage('SHOT');
+        this.delete();
+    }
+ };
+
 /**
  * Updates this bullet, moving it one tile in its associated
  * direction.
  */
 jzt.things.Bullet.prototype.doTick = function() {
+    if(!this.move(this.direction, true)) {
+        this.attack();
+    }
+};
 
-    // If we couldn't move in a given direction...
-    if(! this.move(this.direction, true)) {
+jzt.things.Bullet.prototype.attack = function() {
 
-        // See what was in our way.
-        var thing = this.board.getTile(this.point.add(this.direction));
+    // See what was in our way.
+    var thing = this.board.getTile(this.point.add(this.direction));
 
-        /*
-         * Send a SHOT message if the bullet was from the player and any UpdateableThing, 
-         * otherwise we only send the SHOT message to the player itself or ScriptabelThings.
-         */
-        if(this.fromPlayer ||
-                thing instanceof jzt.things.Player || thing instanceof jzt.things.ScriptableThing) {
-            thing.sendMessage('SHOT');
-        }
-
-        // Regardless of what we hit, we're done
-        this.delete();
-
+    /*
+     * Send a SHOT message if the bullet was from the player and any UpdateableThing, 
+     * otherwise we only send the SHOT message to the player itself or ScriptabelThings.
+     */
+    if(this.fromPlayer ||
+            thing instanceof jzt.things.Player || thing instanceof jzt.things.ScriptableThing) {
+        thing.sendMessage('SHOT');
     }
 
+    // Regardless of what we hit, we're done
+    this.delete();
+
+};
+
+jzt.things.Bullet.prototype.push = function(direction) {
+    this.delete();
 };
 
 //--------------------------------------------------------------------------------
@@ -1798,9 +1815,7 @@ jzt.things.ThingFactory.shoot = function(board, point, direction, fromPlayer) {
 
     // If we're allowed to spawn our bullet at our tile position...
     if(tile === undefined || tile.isSurrenderable(bullet)) {
-
         board.addThing(point, bullet, true);
-
     }
 
     // Otherwise, if the bullet is from the player, or the tile is a Player or ScriptableThing
