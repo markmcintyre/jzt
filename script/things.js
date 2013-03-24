@@ -515,7 +515,7 @@ jzt.things.Bullet = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.spriteIndex = 248;
     this.foreground = jzt.colors.Colors['F'];
-    this.background = jzt.colors.Colors['0'];
+    this.background = undefined;
     this.direction = jzt.Direction.North;
     this.setSpeed(10);
 };

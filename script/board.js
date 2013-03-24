@@ -659,7 +659,7 @@ jzt.Board.prototype.render = function(c) {
         else if(thing) {
             var sprite = instance.game.resources.graphics.getSprite(thing.getSpriteIndex());
             var background = thing.background;
-            if(thing.under) {
+            if(!background && thing.under) {
                 background = jzt.colors.getNonBlinkingEquivalent(thing.under.background);
             }
             sprite.draw(c, thing.point, thing.foreground, background);

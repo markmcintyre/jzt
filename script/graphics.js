@@ -107,8 +107,10 @@ jzt.Sprite.prototype.draw = function(context, point, foreground, background) {
     var destinationY = point.y * this.owner.tileSize.y;
 
     // Draw the background
-    context.fillStyle = background.rgbValue;
-    context.fillRect(destinationX, destinationY, this.owner.tileSize.x, this.owner.tileSize.y);
+    if(background) {
+        context.fillStyle = background.rgbValue;
+        context.fillRect(destinationX, destinationY, this.owner.tileSize.x, this.owner.tileSize.y);
+    }
     
     // If we aren't blinking, or if the blink state is off, draw our sprite
     if(!blink || ! this.owner.game.blinkState) {
@@ -178,10 +180,14 @@ jzt.colors.COLOR_CYCLE = [
 ];
 
 jzt.colors.isBlinkableAsBackground = function(color) {
-    return color.index > 8
+    if(color) {
+        return color.index > 8;
+    }
+    return false;
 };
 
 jzt.colors.getNonBlinkingEquivalent = function(color) {
+
     if(jzt.colors.isBlinkableAsBackground(color)) {
         return jzt.colors.Colors[color.index - 8];
     }
