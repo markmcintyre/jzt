@@ -534,9 +534,11 @@ jzt.things.Bullet.prototype.serialize = function() {
  * direction.
  */
 jzt.things.Bullet.prototype.doTick = function() {
+
     if(!this.move(this.direction, true)) {
         this.attack();
     }
+
 };
 
 jzt.things.Bullet.prototype.attack = function() {
