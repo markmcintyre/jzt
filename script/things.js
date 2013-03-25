@@ -159,7 +159,8 @@ jzt.things.Thing.prototype.getSpriteIndex = function() {
  */
 jzt.things.UpdateableThing = function(board) {
     jzt.things.Thing.call(this, board);
-    this.setSpeed(10);
+    this.cycleCount = 0;
+    this.speed = 3;
 };
 jzt.things.UpdateableThing.prototype = new jzt.things.Thing();
 jzt.things.UpdateableThing.prototype.constructor = jzt.things.UpdateableThing;
@@ -190,20 +191,8 @@ jzt.things.UpdateableThing.prototype.deserialize = function(data) {
         this.under = jzt.things.ThingFactory.deserialize(data.under);
     }
     if(data.speed) {
-        this.setSpeed(data.speed);
+        this.speed = data.speed;
     }
-};
-
-/**
- * Assigns an update speed to this UpdateableThing. Things will only
- * execute their update logic at their own defined speed.
- *
- * @param A speed (in updates per second) at which this UpdateableThing
- *        will update itself.
- */
-jzt.things.UpdateableThing.prototype.setSpeed = function(speed) {
-    this.speed = speed;
-    this.cycleCount = 0;
 };
 
 /**
@@ -295,7 +284,7 @@ jzt.things.UpdateableThing.prototype.update = function() {
 
     this.cycleCount++;
 
-    if(this.cycleCount >= this.speed * 3) {
+    if(this.cycleCount >= this.speed * this.board.game.CYCLE_RATE) {
         this.cycleCount = 0;
         this.doTick();
     }
@@ -498,7 +487,7 @@ jzt.things.Bullet = function(board) {
     this.foreground = jzt.colors.Colors['F'];
     this.background = undefined;
     this.direction = jzt.Direction.North;
-    this.setSpeed(10);
+    this.speed = 1;
 };
 jzt.things.Bullet.prototype = new jzt.things.UpdateableThing();
 jzt.things.Bullet.prototype.constructor = jzt.things.Bullet;
@@ -585,7 +574,7 @@ jzt.things.Centipede = function(board) {
     this.spriteIndex = 79;
     this.foreground = jzt.colors.Colors['9'];
     this.background = jzt.colors.Colors['0'];
-    this.setSpeed(5);
+    this.speed = 3;
     this.follower = undefined;
     this.head = false;
     this.leader = undefined;
@@ -1150,7 +1139,7 @@ jzt.things.Lion = function(board) {
     this.spriteIndex = 234;
     this.foreground = jzt.colors.Colors['C'];
     this.background = jzt.colors.Colors['0'];
-    this.setSpeed(8);
+    this.speed = 3;
 };
 jzt.things.Lion.prototype = new jzt.things.UpdateableThing();
 jzt.things.Lion.prototype.constructor = jzt.things.Lion;
@@ -1287,7 +1276,7 @@ jzt.things.Player.prototype.push = function(direction) {
  * @return true if the move was successful, false otherwise.
  */
 jzt.things.Player.prototype.move = function(direction) {
-    this.nextAllowableMove = Date.now() + (Math.floor(1000 / this.game.FPS) * 3);
+    this.nextAllowableMove = Date.now() + (Math.floor(1000 / this.game.FPS) * this.game.CYCLE_RATE);
     // Calculate our new location
     var newLocation = this.point.add(direction);
 
@@ -1321,7 +1310,7 @@ jzt.things.Player.prototype.move = function(direction) {
  * @param A Direction in which to shoot a player bullet.
  */
 jzt.things.Player.prototype.shoot = function(direction) {
-    this.nextAllowableMove = Date.now() + (Math.floor(1000 / this.game.FPS) * 3);
+    this.nextAllowableMove = Date.now() + (Math.floor(1000 / this.game.FPS) * this.game.CYCLE_RATE);
     // Shoot
     jzt.things.ThingFactory.shoot(this.board, this.point.add(direction), direction, true);
 
@@ -1480,7 +1469,7 @@ jzt.things.Player.prototype.sendMessage = function(message) {
     jzt.things.UpdateableThing.call(this, board);
     this.orientation = 'E';
     this.animationFrame = 2;
-    this.setSpeed(3);
+    this.speed = 3;
  };
 jzt.things.Teleporter.prototype = new jzt.things.UpdateableThing();
 jzt.things.Teleporter.prototype.constructor = jzt.things.Teleporter;

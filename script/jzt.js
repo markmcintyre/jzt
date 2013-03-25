@@ -14,8 +14,9 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     this.SPRITE_SIZE = new jzt.Point(8, 16);
     
     this.FPS = 30;
-    this.CYCLE_RATE = 3;
-    this.BLINK_SPEED = 4;
+    this.CPS = 10;
+    this.CYCLE_RATE = Math.round(this.FPS / this.CPS);
+    this.BLINK_RATE = Math.round(this.FPS / 3);
     this.COLOR_CYCLE_MAX = 6;
 
     this.tick = 0;
@@ -30,6 +31,7 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     this.context.imageSmoothingEnabled = false;
     this.context.webkitImageSmoothingEnabled = false;
     this.context.mozImageSmoothingEnabled = false;
+    this.blinkCycle = 0;
     this.blinkState = true;
     this.colorCycleIndex = 0;
 
@@ -243,8 +245,13 @@ jzt.Game.prototype.update = function() {
  */
 jzt.Game.prototype.draw = function() {
         
-    this.blinkState = ! this.blinkState;
-    this.colorCycleIndex = this.colorCycleIndex >= this.COLOR_CYCLE_MAX ? 0 : this.colorCycleIndex + 1;
+    this.blinkCycle++;
+    if(this.blinkCycle > this.BLINK_RATE) {
+        this.blinkState = ! this.blinkState;
+        this.colorCycleIndex = this.colorCycleIndex >= this.COLOR_CYCLE_MAX ? 0 : this.colorCycleIndex + 1;
+        this.blinkCycle = 0;
+    }
+
     this.currentBoard.render(this.context);
             
 };
