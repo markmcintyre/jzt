@@ -193,6 +193,7 @@ jzt.things.UpdateableThing.prototype.deserialize = function(data) {
     if(data.speed) {
         this.speed = data.speed;
     }
+    this.cycleCount = Math.floor(Math.random() * this.speed);
 };
 
 /**
@@ -618,6 +619,7 @@ jzt.things.Centipede.prototype.deserialize = function(data) {
     if(this.head) {
         this.spriteIndex = 233;
     }
+    this.cycleCount = 0;
 };
 
 /**
@@ -681,6 +683,7 @@ jzt.things.Centipede.prototype.linkSegments = function(leader) {
     if(this.leader) {
         this.deviance = leader.deviance;
         this.intelligence = leader.intelligence;
+        this.cycleCount = leader.cycleCount;
     }
 
     this.follower = this.getAdjacentSegment();
@@ -724,6 +727,7 @@ jzt.things.Centipede.prototype.reverse = function() {
 jzt.things.Centipede.prototype.becomeHead = function() {
     this.head = true;
     this.spriteIndex = 233;
+    this.cycleCount = Math.floor(Math.random() * this.speed);
 };
 
 /**
@@ -1139,7 +1143,7 @@ jzt.things.Lion = function(board) {
     this.spriteIndex = 234;
     this.foreground = jzt.colors.Colors['C'];
     this.background = jzt.colors.Colors['0'];
-    this.speed = 3;
+    this.speed = 2;
 };
 jzt.things.Lion.prototype = new jzt.things.UpdateableThing();
 jzt.things.Lion.prototype.constructor = jzt.things.Lion;
