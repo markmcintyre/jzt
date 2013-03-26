@@ -110,22 +110,14 @@ jzt.Audio.Song.prototype.parse = function(notation) {
 
 	var currentOctave = 4;
 	var currentNote = undefined;
-	var oldDuration = this.barLength / 4;
 	var currentDuration = this.barLength / 4;
+	var tripletDuration = currentDuration / 3;
 	var tripletCount = -1;
 	var timeAndHalf = false;
 
 	notation = notation.toUpperCase();
 
 	for(var index = 0; index < notation.length; ++index) {
-
-		if(tripletCount === 0) {
-			tripletCount = -1;
-			currentDuration = oldDuration;
-		}
-		else if(tripletCount > 0) {
-			tripletCount--;
-		}
 
 		var currentChar = notation.charAt(index);
 		var nextChar = index >= notation.length ? undefined : notation.charAt(index+1);
@@ -152,8 +144,7 @@ jzt.Audio.Song.prototype.parse = function(notation) {
 		}
 		else if(currentChar === '3') {
 			tripletCount = 3;
-			oldDuration = currentDuration;
-			currentDuration = currentDuration / 3;
+			tripletDuration = currentDuration / 3;
 		}
 		else if(currentChar === '+') {
 			currentOctave++;
@@ -166,6 +157,9 @@ jzt.Audio.Song.prototype.parse = function(notation) {
 			if(currentOctave < 0) {
 				currentOctave = 0;
 			}
+		}
+		else if(currentChar === '.') {
+			timeAndHalf = true;
 		}
 		else if(currentChar === 'C' || currentChar === 'D' || currentChar === 'E' || currentChar === 'F' || 
 			currentChar === 'G' || currentChar === 'A' || currentChar === 'B') {
@@ -193,7 +187,20 @@ jzt.Audio.Song.prototype.parse = function(notation) {
 			}
 
 			if(currentNote) {
-				this.notes.push(new jzt.Audio.Note(currentNote, currentDuration));
+
+				var activeDuration = currentDuration;
+
+				if(tripletCount > 0) {
+					tripletCount--;
+					activeDuration = tripletDuration;
+				}
+
+				if(timeAndHalf) {
+					timeAndHalf = false;
+					activeDuration = currentDuration + (currentDuration / 2);
+				}
+
+				this.notes.push(new jzt.Audio.Note(currentNote, activeDuration));
 			}
 
 		}
