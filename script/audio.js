@@ -90,9 +90,15 @@ jzt.Audio.Note.frequencyTable = {
 	'G#': [25.956, 25.956, 103.826, 207.652, 415.304, 830.609, 1661.218, 3322.436, 6644.872, 13289.744],
 	'A':  [27.500, 55.000, 110.000, 220.000, 440.000, 880.000, 1760.000, 3520.000, 7040.000, 14080.000],
 	'A#': [29.135, 58.270, 116.540, 233.081, 466.163, 932.327, 1964.654, 3729.308, 7458.616, 14917.232],
-	'B':  [30.867, 61.735, 123.470, 246.941, 493.883, 987.766, 1975.532, 3951.064, 7902.128, 15804.256]
-
+	'B':  [30.867, 61.735, 123.470, 246.941, 493.883, 987.766, 1975.532, 3951.064, 7902.128, 15804.256],
 };
+jzt.Audio.Note.frequencyTable['E#'] = jzt.Audio.Note.frequencyTable['F'];
+jzt.Audio.Note.frequencyTable['D!'] = jzt.Audio.Note.frequencyTable['C#'];
+jzt.Audio.Note.frequencyTable['E!'] = jzt.Audio.Note.frequencyTable['D#'];
+jzt.Audio.Note.frequencyTable['F!'] = jzt.Audio.Note.frequencyTable['E'];
+jzt.Audio.Note.frequencyTable['G!'] = jzt.Audio.Note.frequencyTable['F#'];
+jzt.Audio.Note.frequencyTable['A!'] = jzt.Audio.Note.frequencyTable['G#'];
+jzt.Audio.Note.frequencyTable['B!'] = jzt.Audio.Note.frequencyTable['A#'];
 
 jzt.Audio.Song = function(notation) {
 	this.barLength = 1.8;
@@ -166,7 +172,16 @@ jzt.Audio.Song.prototype.parse = function(notation) {
 
 			if(nextChar === '#') {
 				if(currentChar === 'B') {
-					currentNote = 'C' + (currentOctave <= 0 ? 0 : currentOctave - 1);
+					currentNote = 'C' + (currentOctave >= 9 ? 9 : currentOctave + 1);
+				}
+				else {
+					currentNote = currentChar + nextChar + currentOctave;
+				}
+				index++;
+			}
+			else if(nextChar === '!') {
+				if(currentChar === 'C') {
+					currentNote = 'B' + (currentOctave <= 0 ? 0 : currentOctave - 1);
 				}
 				else {
 					currentNote = currentChar + nextChar + currentOctave;
