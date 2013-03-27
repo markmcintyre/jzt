@@ -6,12 +6,44 @@
 		<script type="text/javascript" src="../script/audio.js"></script>
 		<script type="text/javascript">
 			var audio = new jzt.Audio();
-			var song = new jzt.Audio.Song('c+.c-c');
-			//var song = new jzt.Audio.Song('t+egbegbegbegbegbdf#adf#adf#adf#a-cegcegcegcegbd#f#bd#f#bd#f#bd#f#sbd#f#ibd#f#qbd#f#b');
-			audio.add(song);
-			//song = new jzt.Audio.Song('iegb+ed#f#-bagb+egf#ad#if#ebsagf#eid#f#-bagbsasgf#eid#f#q-bi+egb+ece-aigf#ad+c-b+d-gfe+esdc-baib+dg-ga+esd-b+c-ab+d-f#sagba+c-b+dig-a+f#gd-qg');
+			//audio.playNotation('t+egbegbegbegbegbdf#adf#adf#adf#a-cegcegcegcegbd#f#bd#f#bd#f#bd#f#sbd#f#ibd#f#qbd#f#bx');
+			//var song = new jzt.Audio.Song('t+egbegbegbegbegbdf#adf#adf#adf#a-cegcegcegcegbd#f#bd#f#bd#f#bd#f#sbd#f#ibd#f#qbd#f#bx');
 			//audio.add(song);
-			audio.play();
+			//var song = new jzt.Audio.Song('iegb+ed#f#-bagb+egf#ad#if#ebsagf#eid#f#-bagbsasgf#eid#f#q-bi+egb+ece-aigf#ad+c-b+d-gfe+esdc-baib+dg-ga+esd-b+c-ab+d-f#sagba+c-b+dig-a+f#gd-qg');
+			//audio.add(song);
+			//audio.play();
+			function doit(notation) {
+				audio.playNotation(notation);
+			}
 		</script>
+		<button onclick="doit('tcf+cf+c')">Bomb Touch</button>
+		<button onclick="doit('t+++c-c-c-c-c-c')">Bomb explode</button><br/>
+		<button onclick="doit('t+c-c-c')">Player shoot</button>
+		<button onclick="doit('t--c+c-c+d#')">Player shot</button>
+		<button onclick="doit('c-f#')">Scriptable shoot</button>
+		<button onclick="doit('t-c')">Breakable Wall shot</button><br/>
+		<button onclick="doit('t+c---c++++c--c')">Enemy killed</button>
+		<button onclick="doit('t--f')">Pusher moved</button><br/>
+		<button onclick="doit('tc+d-e+f#-g#+a#c+d')">Teleporter</button>
+		<button onclick="doit('tc-c+d-d+e-e+f-f+g-g')">Scroll</button>
+		<button onclick="doit('t+c-gec')">Gem</button>
+		<button onclick="doit('tcc#d')">Ammo</button>
+		<button onclick="doit('tcase')">Torch</button>
+		<button onclick="doit('sc-c')">Key blocked</button>
+		<button onclick="doit('t+cegcegceg+sc')">Key</button>
+		<button onclick="doit('tcgbcgb+ic')">Open door</button>
+		<button onclick="doit('t--gc')">Locked door</button>
+		<button onclick="doit('scdefg')">Duplicator</button>
+		<button onclick="doit('--g#f#')">Empty duplicator</button>
+		<button onclick="doit('tceg tc#fg# tdf#a td#ga# teg#+c')">Door</button><br/>
+		<button onclick="doit('t+c+c')">Water</button>
+		<button onclick="doit('ta')">Forest</button>
+		<button onclick="doit('t--dc')">Invisible Wall</button><br/><br/>
+		<p>Fun stuff:</p>
+		<button onclick="doit('t+egbegbegbegbegbdf#adf#adf#adf#a-cegcegcegcegbd#f#bd#f#bd#f#bd#f#sbd#f#ibd#f#qbd#f#bx')">Devil</button>
+		<button onclick="doit('iegb+ed#f#-bagb+egf#ad#if#ebsagf#eid#f#-bagbsasgf#eid#f#q-bi+egb+ece-aigf#ad+c-b+d-gfe+esdc-baib+dg-ga+esd-b+c-ab+d-f#sagba+c-b+dig-a+f#gd-qg')">Monster Zoo</button>
+
+
+
 	</body>
 </html>

@@ -16,10 +16,7 @@ jzt.Audio = function() {
 	this.volume = this.context.createGainNode();
 	this.volume.gain.value = 0.08;
 	this.volume.connect(this.context.destination);
-
-	//this.oscillator = this.context.createOscillator();
-	//this.oscillator.type = 1; // Square wave
-	
+	this.timestamp = 0;
 
 };
 
@@ -30,9 +27,16 @@ jzt.Audio.prototype.add = function(song) {
 	}
 }
 
+jzt.Audio.prototype.playNotation = function(notation) {
+	this.add(new jzt.Audio.Song(notation));
+	this.play();
+};
+
 jzt.Audio.prototype.play = function() {
 
-	var timestamp = 0;
+	if(this.context.currentTime > this.timestamp) {
+		this.timestamp = this.context.currentTime;
+	}
 
 	if(!this.unsupported) {
 
@@ -42,15 +46,15 @@ jzt.Audio.prototype.play = function() {
 
 			if(note.frequency) {
 				var oscillator = this.context.createOscillator();
-				oscillator.type = 1;
+				oscillator.type = oscillator.SQUARE;
 				oscillator.frequency.value = note.frequency;
 				oscillator.connect(this.volume);
-				oscillator.start(timestamp);
-				timestamp += note.duration;
-				oscillator.stop(timestamp);
+				oscillator.start(this.timestamp);
+				this.timestamp += note.duration;
+				oscillator.stop(this.timestamp);
 	    	}
 	    	else {
-	    		timestamp += note.duration;
+	    		this.timestamp += note.duration;
 	    	}
 
 	    	note = this.noteQueue.shift();
@@ -101,6 +105,7 @@ jzt.Audio.Note.frequencyTable['A!'] = jzt.Audio.Note.frequencyTable['G#'];
 jzt.Audio.Note.frequencyTable['B!'] = jzt.Audio.Note.frequencyTable['A#'];
 
 jzt.Audio.Song = function(notation) {
+	this.MAX_OCTAVE = 9;
 	this.barLength = 1.8;
 	this.notes = [];
 	this.parse(notation);
@@ -108,9 +113,22 @@ jzt.Audio.Song = function(notation) {
 
 jzt.Audio.Song.prototype.parse = function(notation) {
 
+	function octaveUp(octave) {
+		if(++octave > this.MAX_OCTAVE) {
+			return this.MAX_OCTAVE;
+		}
+		return octave;
+	}
+
+	function octaveDown(octave) {
+		if(--octave < 0) {
+			return 0;
+		}
+		return octave;
+	}
+
 	var currentOctave = 4;
-	var currentNote = undefined;
-	var currentDuration = this.barLength / 4;
+	var currentDuration = this.barLength / 32;
 	var tripletDuration = currentDuration / 3;
 	var tripletCount = -1;
 	var timeAndHalf = false;
@@ -119,92 +137,107 @@ jzt.Audio.Song.prototype.parse = function(notation) {
 
 	for(var index = 0; index < notation.length; ++index) {
 
+		var currentNote = undefined;
 		var currentChar = notation.charAt(index);
-		var nextChar = index >= notation.length ? undefined : notation.charAt(index+1);
 
 		// If we've got a musical note...
 		
-		if(currentChar === 'T') {
-			currentDuration = this.barLength / 32;
-		}
-		else if(currentChar === 'S') {
-			currentDuration = this.barLength / 16;
-		}
-		else if(currentChar === 'I') {
-			currentDuration = this.barLength / 8;
-		}
-		else if(currentChar === 'Q') {
-			currentDuration = this.barLength / 4;
-		}
-		else if(currentChar === 'H') {
-			currentDuration = this.barLength / 2;
-		}
-		else if(currentChar === 'W') {
-			currentDuration = this.barLength;
-		}
-		else if(currentChar === '3') {
-			tripletCount = 3;
-			tripletDuration = currentDuration / 3;
-		}
-		else if(currentChar === '+') {
-			currentOctave++;
-			if(currentOctave > 9) {
-				currentOctave = 9;
-			}
-		}
-		else if(currentChar === '-') {
-			currentOctave--;
-			if(currentOctave < 0) {
-				currentOctave = 0;
-			}
-		}
-		else if(currentChar === '.') {
-			timeAndHalf = true;
-		}
-		else if(currentChar === 'C' || currentChar === 'D' || currentChar === 'E' || currentChar === 'F' || 
-			currentChar === 'G' || currentChar === 'A' || currentChar === 'B') {
+		switch(currentChar) {
+			case 'T':
+				currentDuration = this.barLength / 32;
+				break;
+			case 'S':
+				currentDuration = this.barLength / 16;
+				break;
+			case 'I':
+				currentDuration = this.barLength / 8;
+				break;
+			case 'Q':
+				currentDuration = this.barLength / 4;
+				break;
+			case 'H':
+				currentDuration = this.barLength / 2;
+				break;
+			case 'W':
+				currentDuration = this.barLength;
+				break;
+			case '3':
+				tripletCount = 3;
+				tripletDuration = currentDuration / 3;
+				break;
+			case '+':
+				currentOctave = octaveUp(currentOctave);
+				break;
+			case '-':
+				currentOctave = octaveDown(currentOctave);
+				break;
+			case '.':
+				timeAndHalf = true;
+				break;
+			case 'X':
+			case 'C':
+			case 'D':
+			case 'E':
+			case 'F':
+			case 'G':
+			case 'A':
+			case 'B':
+				currentNote = currentChar;
+				break;
+			default:
+				currentNote = undefined;
 
-			if(nextChar === '#') {
-				if(currentChar === 'B') {
-					currentNote = 'C' + (currentOctave >= 9 ? 9 : currentOctave + 1);
+		}
+
+		// If we got a note to play...
+		if(currentNote) {
+
+			var nextChar = index >= notation.length ? undefined : notation.charAt(index+1);
+			var activeDuration = currentDuration;
+
+			// If our note is melodic...
+			if(currentNote !== 'X') {
+			
+				// Adjust our note for sharps
+				if(nextChar === '#') {
+					currentNote = currentNote === 'B' ? 'C' + octaveUp(currentOctave) : currentNote + '#' + currentOctave;
+					index++;
 				}
+
+				// Adjust our note for flats
+				else if(nextChar === '!') {
+					currentNote = currentNote === 'C' ? 'B' + octaveDown(currentOctave) : currentNote + '!' + currentOctave;
+					index++;
+				}
+
+				// Take our note as-is
 				else {
-					currentNote = currentChar + nextChar + currentOctave;
+					currentNote += currentOctave;
 				}
-				index++;
+
 			}
-			else if(nextChar === '!') {
-				if(currentChar === 'C') {
-					currentNote = 'B' + (currentOctave <= 0 ? 0 : currentOctave - 1);
-				}
-				else {
-					currentNote = currentChar + nextChar + currentOctave;
-				}
-				index++;
-			}
+
+			// Otherwise, if we got a rest...
 			else {
-				currentNote = currentChar + currentOctave;
+				currentNote = undefined;
 			}
 
-			if(currentNote) {
-
-				var activeDuration = currentDuration;
-
-				if(tripletCount > 0) {
-					tripletCount--;
-					activeDuration = tripletDuration;
-				}
-
-				if(timeAndHalf) {
-					timeAndHalf = false;
-					activeDuration = currentDuration + (currentDuration / 2);
-				}
-
-				this.notes.push(new jzt.Audio.Note(currentNote, activeDuration));
+			// If we're in a triplet, set our duration to 1/3 normal
+			if(tripletCount > 0) {
+				tripletCount--;
+				activeDuration = tripletDuration;
 			}
+
+			// If we're in time and a half, increase our duration by 50%
+			if(timeAndHalf) {
+				timeAndHalf = false;
+				activeDuration = currentDuration + (currentDuration / 2);
+			}
+
+			// Add our note
+			this.notes.push(new jzt.Audio.Note(currentNote, activeDuration));
 
 		}
-
 	}
 
 };
