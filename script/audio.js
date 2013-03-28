@@ -34,32 +34,47 @@ jzt.Audio.prototype.playNotation = function(notation) {
 
 jzt.Audio.prototype.play = function() {
 
-	if(this.context.currentTime > this.timestamp) {
-		this.timestamp = this.context.currentTime;
-	}
-
 	if(!this.unsupported) {
 
-		var me = this;
+		// Cancel previous values, if any
+		if(this.oscillator) {
+			this.oscillator.frequency.cancelScheduledValues(0);
+			this.volume.gain.cancelScheduledValues(0);
+			this.oscillator.stop(0);
+		}
+
+		// Create an oscillator for this play session
+		this.oscillator = this.context.createOscillator();
+		this.oscillator.type = this.oscillator.SQUARE;
+		this.oscillator.connect(this.volume);
+		this.timestamp = this.context.currentTime;
+
+		// Set our oscillator frequency at our scheduled note times
 		var note = this.noteQueue.shift();
 		while(note) {
 
+			// If there's a frequency to set...
 			if(note.frequency) {
-				var oscillator = this.context.createOscillator();
-				oscillator.type = oscillator.SQUARE;
-				oscillator.frequency.value = note.frequency;
-				oscillator.connect(this.volume);
-				oscillator.start(this.timestamp);
-				this.timestamp += note.duration;
-				oscillator.stop(this.timestamp);
-	    	}
-	    	else {
-	    		this.timestamp += note.duration;
-	    	}
+				this.oscillator.frequency.setValueAtTime(note.frequency, this.timestamp);
+			}
 
+			// If there's no frequency, treat it as a 'rest'
+			else {
+				this.volume.gain.setValueAtTime(0, this.timestamp);
+				this.volume.gain.setValueAtTime(0.08, this.timestamp + note.duration);
+			}
+
+			// Update our timestamp
+			this.timestamp += note.duration;
+
+			// Grab our next note
 	    	note = this.noteQueue.shift();
 
     	}
+
+    	// Start our oscillator now, and stop after all notes are done
+    	this.oscillator.start(this.context.currentTime);
+    	this.oscillator.stop(this.timestamp);
 
 	}
 };
