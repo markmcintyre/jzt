@@ -2,6 +2,8 @@ window.jzt = window.jzt || {};
 
 jzt.Audio = function() {
 
+	this.active = true;
+
 	if (typeof AudioContext !== "undefined") {
     	this.context = new AudioContext();
 	}
@@ -9,60 +11,63 @@ jzt.Audio = function() {
     	this.context = new webkitAudioContext();
 	}
 	else {
-    	this.unsupported = true;
+    	this.active = false;
 	}
 
-	this.noteQueue = [];
+	this.userVolume = 0.08;
 	this.volume = this.context.createGainNode();
-	this.volume.gain.value = 0.08;
+	this.volume.gain.value = this.userVolume;
 	this.volume.connect(this.context.destination);
-	this.timestamp = 0;
+	this.timestamp = this.context.currentTime;
 
 };
 
-jzt.Audio.prototype.add = function(song) {
-	for(var index = 0; index < song.notes.length; ++index) {
-		var note = song.notes[index];
-		this.noteQueue.push(note);
+jzt.Audio.prototype.cancel = function() {
+
+	if(this.active && this.oscillator) {
+		this.oscillator.frequency.cancelScheduledValues(0);
+		this.volume.gain.cancelScheduledValues(0);
+		this.volume.gain.value = this.userVolume;
+		this.oscillator.stop(0);
+		this.timestamp = this.context.currentTime;
 	}
+
 }
 
-jzt.Audio.prototype.playNotation = function(notation) {
-	this.add(new jzt.Audio.Song(notation));
-	this.play();
-};
+jzt.Audio.prototype.playAfter = function(notation) {
 
-jzt.Audio.prototype.play = function() {
+	if(this.active) {
 
-	if(!this.unsupported) {
-
-		// Cancel previous values, if any
-		if(this.oscillator) {
-			this.oscillator.frequency.cancelScheduledValues(0);
-			this.volume.gain.cancelScheduledValues(0);
-			this.oscillator.stop(0);
-		}
+		var song = new jzt.Audio.Song(notation);
 
 		// Create an oscillator for this play session
 		this.oscillator = this.context.createOscillator();
 		this.oscillator.type = this.oscillator.SQUARE;
 		this.oscillator.connect(this.volume);
-		this.timestamp = this.context.currentTime;
+
+		if(this.timestamp < this.context.currentTime) {
+			this.timestamp = this.context.currentTime;
+		}
+
+		var startTime = this.timestamp;
 
 		// Set our oscillator frequency at our scheduled note times
-		var note = this.noteQueue.shift();
-		while(note) {
+		for(var index = 0; index < song.notes.length; ++index) {
 
+			var note = song.notes[index];
+
+			// If there's a start and end frequency
 			if(note.frequency && note.endFrequency) {
 				this.oscillator.frequency.setValueAtTime(note.frequency, this.timestamp);
 				this.oscillator.frequency.linearRampToValueAtTime(note.endFrequency, this.timestamp + note.duration);
 			}
 
+			// If there's just a start frequency
 			else if(note.frequency) {
 				this.oscillator.frequency.setValueAtTime(note.frequency, this.timestamp);
 			}
 
-			// If there's no frequency, treat it as a 'rest'
+			// If there's no frequency at all
 			else {
 				this.volume.gain.setValueAtTime(0, this.timestamp);
 				this.volume.gain.setValueAtTime(0.08, this.timestamp + note.duration);
@@ -70,97 +75,110 @@ jzt.Audio.prototype.play = function() {
 
 			// Update our timestamp
 			this.timestamp += note.duration;
-			
-			// Grab our next note
-	    	note = this.noteQueue.shift();
 
     	}
 
     	// Start our oscillator now, and stop after all notes are done
-    	this.oscillator.start(this.context.currentTime);
+    	this.oscillator.start(startTime);
     	this.oscillator.stop(this.timestamp);
 
 	}
+
 };
 
-jzt.Audio.Percussion = function(startFrequency, endFrequency, duration) {
-	this.frequency = startFrequency;
-	this.endFrequency = endFrequency;
+jzt.Audio.prototype.play = function(notation) {
+
+	this.cancel();
+	this.playAfter(notation);
+
+};
+
+jzt.Audio.Note = function(index, duration) {
+	this.noteIndex = index;
+	this.frequency = jzt.Audio.Note.frequencyTable[this.noteIndex];
 	this.duration = duration;
 };
 
-jzt.Audio.Percussion.Tick = new jzt.Audio.Percussion(1, 3135, 0.005); // Good
-jzt.Audio.Percussion.Tweet = new jzt.Audio.Percussion(1046, 2500, 0.01); // Good
-jzt.Audio.Percussion.Cowbell = new jzt.Audio.Percussion(1, 6000, 0.01);
-jzt.Audio.Percussion.HighSnare = new jzt.Audio.Percussion(4000,1, 0.01);
-jzt.Audio.Percussion.HighWoodblock = new jzt.Audio.Percussion(2000, 1, 0.01);
-jzt.Audio.Percussion.LowSnare = new jzt.Audio.Percussion(3000, 1, 0.01);
-jzt.Audio.Percussion.LowTom = new jzt.Audio.Percussion(700, 523, 0.01); // Good
-jzt.Audio.Percussion.LowWoodblock = new jzt.Audio.Percussion(1046, 1396, 0.01);
-jzt.Audio.Percussion.BassDrum = new jzt.Audio.Percussion(1, 600, 0.01);
-
-jzt.Audio.Note = function(note, duration) {
-
-	if(note) {
-		var octave = parseInt(note.charAt(note.length-1));
-		if(!isNaN(octave)) {
-			note = note.slice(0, note.length-1);
+jzt.Audio.Note.prototype.adjustNote = function(adjustmentValue) {
+	if(this.noteIndex !== undefined) {
+		this.noteIndex += adjustmentValue;
+		if(this.noteIndex >= jzt.Audio.Note.frequencyTable.length-1) {
+			this.noteIndex = jzt.Audio.Note.frequencyTable.length-1;
 		}
-		else {
-			octave = 4;
+		else if(this.noteIndex < 0) {
+			this.noteIndex = 0;
 		}
-
-		this.frequency = jzt.Audio.Note.frequencyTable[note][octave];
+		this.frequency = jzt.Audio.Note.frequencyTable[this.noteIndex];
 	}
-
-	this.duration = duration;
-
 };
 
-jzt.Audio.Note.frequencyTable = {
-	'C':  [16.351, 32.703, 65.406, 130.812, 261.625, 523.251, 1046.502, 2093.004, 4186.008, 8372.016],
-	'C#': [17.323, 34.647, 69.295, 138.591, 277.182, 554.365, 1108.730, 2217.460, 4434.920, 8869.840],
-	'D':  [18.354, 36.708, 73.416, 146.832, 293.664, 587.329, 1174.059, 2344.318, 4698.636, 9397.272],
-	'D#': [19.445, 38.890, 77.781, 155.563, 311.126, 622.253, 1244.507, 2489.014, 4978.028, 9956.056],
-	'E':  [20.601, 41.203, 82.406, 164.813, 329.627, 659.255, 1318.510, 2637.020, 5274.040, 10548.080],
-	'F':  [21.826, 43.653, 87.307, 174.614, 349.228, 698.456, 1396.912, 2793.824, 5587.648, 11175.26],
-	'F#': [23.124, 46.249, 92.498, 184.997, 369.994, 739.988, 1479.976, 2959.952, 5919.904, 11839.808],
-	'G':  [24.449, 48.999, 97.998, 195.997, 391.995, 783.991, 1567.982, 3135.964, 6270.928, 12541.856],
-	'G#': [25.956, 25.956, 103.826, 207.652, 415.304, 830.609, 1661.218, 3322.436, 6644.872, 13289.744],
-	'A':  [27.500, 55.000, 110.000, 220.000, 440.000, 880.000, 1760.000, 3520.000, 7040.000, 14080.000],
-	'A#': [29.135, 58.270, 116.540, 233.081, 466.163, 932.327, 1964.654, 3729.308, 7458.616, 14917.232],
-	'B':  [30.867, 61.735, 123.470, 246.941, 493.883, 987.766, 1975.532, 3951.064, 7902.128, 15804.256],
+jzt.Audio.Note.prototype.shiftUp = function() {
+	this.adjustNote(1);
 };
-jzt.Audio.Note.frequencyTable['E#'] = jzt.Audio.Note.frequencyTable['F'];
-jzt.Audio.Note.frequencyTable['D!'] = jzt.Audio.Note.frequencyTable['C#'];
-jzt.Audio.Note.frequencyTable['E!'] = jzt.Audio.Note.frequencyTable['D#'];
-jzt.Audio.Note.frequencyTable['F!'] = jzt.Audio.Note.frequencyTable['E'];
-jzt.Audio.Note.frequencyTable['G!'] = jzt.Audio.Note.frequencyTable['F#'];
-jzt.Audio.Note.frequencyTable['A!'] = jzt.Audio.Note.frequencyTable['G#'];
-jzt.Audio.Note.frequencyTable['B!'] = jzt.Audio.Note.frequencyTable['A#'];
+
+jzt.Audio.Note.prototype.shiftDown = function() {
+	this.adjustNote(-1);
+};
+
+jzt.Audio.Note.prototype.octaveUp = function(octaveCount) {
+	this.adjustNote(12*octaveCount);
+};
+
+jzt.Audio.Note.prototype.octaveDown = function(octaveCount) {
+	this.adjustNote(-12*octaveCount);
+};
+
+jzt.Audio.Note.prototype.bendTo = function(newIndex) {
+	this.endFrequency = jzt.Audio.Note.frequencyTable[newIndex];
+};
+
+jzt.Audio.Note.frequencyTable = [
+//  0      1      2      3      4      5      6      7      8      9      10     11
+	16.35, 17.32, 18.35, 19.45, 20.60, 21.83, 23.12, 24.50, 25.96, 27.50, 29.14, 30.87, // 0
+	32.70, 34.65, 36.71, 38.89, 41.20, 43.65, 46.25, 49.00, 51.91, 55.00, 58.27, 61.74, // 12
+	65.41, 69.30, 73.42, 77.78, 82.41, 87.31, 92.50, 98.00, 103.8, 110.0, 116.5, 123.5, // 24
+	130.8, 138.6, 146.8, 155.6, 164.8, 174.6, 185.0, 196.0, 207.7, 220.0, 233.1, 246.9, // 36
+	261.6, 277.2, 293.7, 311.1, 329.6, 349.2, 370.0, 392.0, 415.3, 440.0, 466.2, 493.9, // 48
+	523.3, 554.4, 587.3, 622.3, 659.3, 698.5, 740.0, 784.0, 830.6, 880.0, 932.3, 987.8, // 60
+	1047,  1109,  1175,  1245,  1319,  1397,  1480,  1568,  1661,  1760,  1865,  1976,  // 72
+	2093,  2217,  2349,  2489,  2637,  2794,  2960,  3136,  3322,  3520,  3729,  3951,  // 84
+	4186,  4435,  4699,  4978,  5274,  5588,  5920,  6272,  6645,  7040,  7459,  7902   // 96
+];
 
 jzt.Audio.Song = function(notation) {
-	this.MAX_OCTAVE = 9;
+	this.MAX_OCTAVE = 8;
 	this.barLength = 1.8;
 	this.notes = [];
 	this.parse(notation);
 };
 
+jzt.Audio.Song.percussiveSound = {
+	'Cowbell': [98,98,105,80,98,98,105,80,98,98,105,80,98,98,105,80],
+	'HighSnare': [71,87,83,94,92,89,85,99,92,68,79,103],
+	'HighWoodblock': [80, 79, 80, 68, 80, 79, 80, 70, 80, 83, 78, 80, 81, 80]
+};
+/*
+*/
+jzt.Audio.Song.prototype.addPercussiveSound = function(noteArray, currentDuration) {
+
+	var remainingDuration = currentDuration;
+
+	for(var index in noteArray) {
+		if(noteArray.hasOwnProperty(index)) {
+			this.notes.push(new jzt.Audio.Note(noteArray[index], 0.001));
+			remainingDuration -= 0.001;
+		};
+	}
+
+	this.addRest(remainingDuration);
+
+};
+
+jzt.Audio.Song.prototype.addRest = function(duration) {
+	this.notes.push(new jzt.Audio.Note(undefined, duration));
+};
+
 jzt.Audio.Song.prototype.parse = function(notation) {
-
-	function octaveUp(octave) {
-		if(++octave > this.MAX_OCTAVE) {
-			return this.MAX_OCTAVE;
-		}
-		return octave;
-	}
-
-	function octaveDown(octave) {
-		if(--octave < 0) {
-			return 0;
-		}
-		return octave;
-	}
 
 	var currentOctave = 4;
 	var currentDuration = this.barLength / 32;
@@ -201,59 +219,66 @@ jzt.Audio.Song.prototype.parse = function(notation) {
 				tripletDuration = currentDuration / 3;
 				break;
 			case '+':
-				currentOctave = octaveUp(currentOctave);
+				currentOctave++;
 				break;
 			case '-':
-				currentOctave = octaveDown(currentOctave);
+				currentOctave--;
 				break;
 			case '.':
 				timeAndHalf = true;
 				break;
 			case 'X':
+				currentNote = new jzt.Audio.Note();
+				break;
 			case 'C':
+				currentNote = new jzt.Audio.Note(0);
+				break;
 			case 'D':
+				currentNote = new jzt.Audio.Note(2);
+				break;
 			case 'E':
+				currentNote = new jzt.Audio.Note(4);
+				break;
 			case 'F':
+				currentNote = new jzt.Audio.Note(5);
+				break;
 			case 'G':
+				currentNote = new jzt.Audio.Note(7);
+				break;
 			case 'A':
+				currentNote = new jzt.Audio.Note(9);
+				break;
 			case 'B':
-				currentNote = currentChar;
+				currentNote = new jzt.Audio.Note(11);
 				break;
 			case '0':
-				currentNote = 'X';
-				this.notes.push(jzt.Audio.Percussion.Tick);
+				var percussiveNote = new jzt.Audio.Note(0, 0.005);
+				percussiveNote.bendTo(56);
+				this.notes.push(percussiveNote);
+				this.addRest(currentDuration - 0.005);
 				break;
 			case '1':
-				currentNote = 'X';
-				this.notes.push(jzt.Audio.Percussion.Tweet);
+				var percussiveNote = new jzt.Audio.Note(72, 0.012);
+				percussiveNote.bendTo(87);
+				this.notes.push(percussiveNote);
+				this.addRest(currentDuration - 0.012);
 				break;
 			case '2':
-				currentNote = 'X';
-				this.notes.push(jzt.Audio.Percussion.Cowbell);
+				this.addPercussiveSound(jzt.Audio.Song.percussiveSound.Cowbell, currentDuration);
 				break;
 			case '4':
-				currentNote = 'X';
-				this.notes.push(jzt.Audio.Percussion.HighSnare);
+				this.addPercussiveSound(jzt.Audio.Song.percussiveSound.HighSnare, currentDuration);
 				break;
 			case '5':
-				currentNote = 'X';
-				this.notes.push(jzt.Audio.Percussion.HighWoodblock);
+				this.addPercussiveSound(jzt.Audio.Song.percussiveSound.HighWoodblock, currentDuration);
 				break;
 			case '6':
-				currentNote = 'X';
-				this.notes.push(jzt.Audio.Percussion.LowSnare);
 				break;
 			case '7':
-				currentNote = 'X';
-				this.notes.push(jzt.Audio.Percussion.LowTom);
-				break;
-			case '8':
-				currentNote = 'X';
-				this.notes.push(jzt.Audio.Percussion.LowWoodblock);
-				break;
-			case '9':
-				currentNote = 'X';
-				this.notes.push(jzt.Audio.Percussion.BassDrum);
+				var percussiveNote = new jzt.Audio.Note(65, 0.012);
+				percussiveNote.bendTo(60);
+				this.notes.push(percussiveNote);
+				this.addRest(currentDuration - 0.012);
 				break;
 			default:
 				currentNote = undefined;
@@ -266,31 +291,13 @@ jzt.Audio.Song.prototype.parse = function(notation) {
 			var nextChar = index >= notation.length ? undefined : notation.charAt(index+1);
 			var activeDuration = currentDuration;
 
-			// If our note is melodic...
-			if(currentNote !== 'X') {
-			
-				// Adjust our note for sharps
-				if(nextChar === '#') {
-					currentNote = currentNote === 'B' ? 'C' + octaveUp(currentOctave) : currentNote + '#' + currentOctave;
-					index++;
-				}
-
-				// Adjust our note for flats
-				else if(nextChar === '!') {
-					currentNote = currentNote === 'C' ? 'B' + octaveDown(currentOctave) : currentNote + '!' + currentOctave;
-					index++;
-				}
-
-				// Take our note as-is
-				else {
-					currentNote += currentOctave;
-				}
-
+			if(nextChar === '#') {
+				currentNote.shiftUp();
+				index++;
 			}
-
-			// Otherwise, if we got a rest...
-			else {
-				currentNote = undefined;
+			else if(nextChar === '!') {
+				currentNote.shiftDown();
+				index++;
 			}
 
 			// If we're in a triplet, set our duration to 1/3 normal
@@ -305,8 +312,14 @@ jzt.Audio.Song.prototype.parse = function(notation) {
 				activeDuration = currentDuration + (currentDuration / 2);
 			}
 
+			// Adjust our octave
+			currentNote.octaveUp(currentOctave);
+
+			// Adjust our duration
+			currentNote.duration = activeDuration;
+
 			// Add our note
-			this.notes.push(new jzt.Audio.Note(currentNote, activeDuration));
+			this.notes.push(currentNote);
 
 		}
 	}
