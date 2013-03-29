@@ -153,9 +153,12 @@ jzt.Audio.Song = function(notation) {
 };
 
 jzt.Audio.Song.percussiveSound = {
-	'Cowbell': [98,98,105,80,98,98,105,80,98,98,105,80,98,98,105,80],
-	'HighSnare': [71,87,83,94,92,89,85,99,92,68,79,103],
-	'HighWoodblock': [80, 79, 80, 68, 80, 79, 80, 70, 80, 83, 78, 80, 81, 80]
+	'Cowbell': [103,103,105,80,103,103,105,80,103,103,105,80,103,103,105,80],
+	'HighSnare': [12,71,87,83,94,12,92,89,85,99,12,92,68,79,103],
+	'HighWoodblock': [80, 79, 80, 68, 80, 79, 80, 70, 80, 83, 78, 80, 81, 80],
+	'LowSnare': [12,97,93,76,88,81,12,97,93,76,88,81,12,97,93,76,88,81],
+	'LowWoodblock': [12,74,74,73,73,12,74,74,75,75,12,74,74,75,75,76,76],
+	'BassDrum': [54,52,50,5,12,30,58,56,54,5,12,30,62,60,58,5,12]
 };
 /*
 */
@@ -258,10 +261,10 @@ jzt.Audio.Song.prototype.parse = function(notation) {
 				this.addRest(currentDuration - 0.005);
 				break;
 			case '1':
-				var percussiveNote = new jzt.Audio.Note(72, 0.012);
+				var percussiveNote = new jzt.Audio.Note(72, 0.015);
 				percussiveNote.bendTo(87);
 				this.notes.push(percussiveNote);
-				this.addRest(currentDuration - 0.012);
+				this.addRest(currentDuration - 0.015);
 				break;
 			case '2':
 				this.addPercussiveSound(jzt.Audio.Song.percussiveSound.Cowbell, currentDuration);
@@ -273,12 +276,19 @@ jzt.Audio.Song.prototype.parse = function(notation) {
 				this.addPercussiveSound(jzt.Audio.Song.percussiveSound.HighWoodblock, currentDuration);
 				break;
 			case '6':
+				this.addPercussiveSound(jzt.Audio.Song.percussiveSound.LowSnare, currentDuration);
 				break;
 			case '7':
-				var percussiveNote = new jzt.Audio.Note(65, 0.012);
+				var percussiveNote = new jzt.Audio.Note(65, 0.015);
 				percussiveNote.bendTo(60);
 				this.notes.push(percussiveNote);
-				this.addRest(currentDuration - 0.012);
+				this.addRest(currentDuration - 0.015);
+				break;
+			case '8':
+				this.addPercussiveSound(jzt.Audio.Song.percussiveSound.LowWoodblock, currentDuration);
+				break;
+			case '9':
+				this.addPercussiveSound(jzt.Audio.Song.percussiveSound.BassDrum, currentDuration);
 				break;
 			default:
 				currentNote = undefined;
