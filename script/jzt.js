@@ -47,6 +47,7 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     
     var graphicsLoadedCallback = this.onGraphicsLoaded.bind(this);
     this.resources.graphics = new jzt.Graphics(this, graphicsLoadedCallback);
+    this.resources.audio = new jzt.Audio();
 
 };
 

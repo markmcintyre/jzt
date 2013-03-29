@@ -447,6 +447,9 @@ jzt.things.Boulder.symbol = 'BL';
  * @param direction A direction in which this Thing is requested to move.
  */
 jzt.things.Boulder.prototype.push = function(direction) {
+    if(! this.isBlocked(direction)) {
+        this.board.game.resources.audio.play('t--f');
+    }
     this.move(direction);
 };
 
@@ -471,6 +474,7 @@ jzt.things.BreakableWall.symbol = 'BR';
  */
 jzt.things.BreakableWall.prototype.sendMessage = function(message) {
     if(message === 'SHOT') {
+        this.board.game.resources.audio.play('t-c');
         this.delete();
     }
 };
@@ -799,6 +803,7 @@ jzt.things.Centipede.prototype.delete = function() {
  */
 jzt.things.Centipede.prototype.sendMessage = function(message) {
     if(message === 'SHOT') {
+        this.board.game.resources.audio.play('t+c---c++++c--c');
         this.delete();
     }
     if(message === 'TOUCH') {
@@ -939,6 +944,7 @@ jzt.things.Door.serializationType = 'Door';
  */
 jzt.things.Door.prototype.sendMessage = function(message) {
     if(message === 'TOUCH') {
+        this.board.game.resources.audio.play('tceg tc#fg# tdf#a td#ga# teg#+c');
         this.board.game.movePlayerToDoor(this.doorId, this.targetBoard);
     }
 };
@@ -1036,6 +1042,7 @@ jzt.things.Forest.prototype.deserialize = function(data) {
  */
 jzt.things.Forest.prototype.sendMessage = function(message) {
     if(message == 'TOUCH') {
+        this.board.game.resources.audio.play('ta');
         this.board.deleteTile(this.point);
     }
 }
@@ -1070,6 +1077,7 @@ jzt.things.InvisibleWall.prototype.sendMessage = function(message) {
         replacement.foreground = this.foreground;
         replacement.background = this.background;
         this.board.replaceTile(this.point, replacement);
+        this.board.game.resources.audio.play('t--dc');
     }
 };
 
@@ -1182,6 +1190,7 @@ jzt.things.Lion.prototype.deserialize = function(data) {
 jzt.things.Lion.prototype.sendMessage = function(message) {
 
     if(message === 'SHOT') {
+        this.board.game.resources.audio.play('t+c---c++++c--c');
         this.delete();
     }
     else if(message === 'TOUCH') {
@@ -1460,6 +1469,7 @@ jzt.things.Player.prototype.inTorchRange = function(point) {
 jzt.things.Player.prototype.sendMessage = function(message) {
 
     if(message === 'SHOT') {
+        this.board.game.resources.audio.play('t--c+c-c+d#');
         this.board.setDisplayMessage('Ouch!');
     }
 
@@ -1541,8 +1551,10 @@ jzt.things.Teleporter.prototype.push = function(direction) {
     var currentPoint = this.point.add(getDirection(this.getMatchingOrientation()));
     var destinationPoint = this.point.add(currentDirection);
 
+    var success = this.board.moveTile(currentPoint, destinationPoint);
+
     // If we couldn't move the tile to the other side of this teleporter...
-    if(!this.board.moveTile(currentPoint, destinationPoint)) {
+    if(!success) {
 
         // While we haven't reached the edge of the board...
         while(!this.board.isOutside(destinationPoint)) {
@@ -1556,12 +1568,17 @@ jzt.things.Teleporter.prototype.push = function(direction) {
 
                 // Move the tile to the matching teleporter's destination
                 this.board.moveTile(currentPoint, destinationPoint.add(currentDirection));
+                this.board.game.resources.audio.play('tc+d-e+f#-g#+a#c+d');
                 break;
 
             }
 
         }
 
+    }
+
+    else {
+        this.board.game.resources.audio.play('tc+d-e+f#-g#+a#c+d');
     }
 
 };
@@ -1589,6 +1606,9 @@ jzt.things.SliderEw.symbol = 'SE';
  */
 jzt.things.SliderEw.prototype.push = function(direction) {
     if(direction.equals(jzt.Direction.East) || direction.equals(jzt.Direction.West)) {
+        if(!this.isBlocked(direction)) {
+            this.board.game.resources.audio.play('t--f');
+        }
         this.move(direction);
     }
 };
@@ -1616,6 +1636,9 @@ jzt.things.SliderNs.symbol = 'SN';
  */
 jzt.things.SliderNs.prototype.push = function(direction) {
     if(direction.equals(jzt.Direction.North) || direction.equals(jzt.Direction.South)) {
+        if(!this.isBlocked(direction)) {
+            this.board.game.resources.audio.play('t--f');
+        }
         this.move(direction);
     }
 };
@@ -1673,6 +1696,12 @@ jzt.things.Water.symbol = 'WT';
 jzt.things.Water.prototype.isSurrenderable = function(sender) {
     if(sender instanceof jzt.things.Bullet) {
         return true;
+    }
+};
+
+jzt.things.Water.prototype.sendMessage = function(message) {
+    if(message === 'TOUCH') {
+        this.board.game.resources.audio.play('t+c+c');
     }
 };
 
@@ -1775,6 +1804,9 @@ jzt.things.ThingFactory.shoot = function(board, point, direction, fromPlayer) {
     // If we're allowed to spawn our bullet at our tile position...
     if(tile === undefined || tile.isSurrenderable(bullet)) {
         board.addThing(point, bullet, true);
+        if(fromPlayer) {
+            board.game.resources.audio.play('t+c-c-c');
+        }
     }
 
     // Otherwise, if the bullet is from the player, or the tile is a Player or ScriptableThing
