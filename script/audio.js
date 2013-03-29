@@ -53,8 +53,12 @@ jzt.Audio.prototype.play = function() {
 		var note = this.noteQueue.shift();
 		while(note) {
 
-			// If there's a frequency to set...
-			if(note.frequency) {
+			if(note.frequency && note.endFrequency) {
+				this.oscillator.frequency.setValueAtTime(note.frequency, this.timestamp);
+				this.oscillator.frequency.linearRampToValueAtTime(note.endFrequency, this.timestamp + note.duration);
+			}
+
+			else if(note.frequency) {
 				this.oscillator.frequency.setValueAtTime(note.frequency, this.timestamp);
 			}
 
@@ -66,7 +70,7 @@ jzt.Audio.prototype.play = function() {
 
 			// Update our timestamp
 			this.timestamp += note.duration;
-
+			
 			// Grab our next note
 	    	note = this.noteQueue.shift();
 
@@ -78,6 +82,22 @@ jzt.Audio.prototype.play = function() {
 
 	}
 };
+
+jzt.Audio.Percussion = function(startFrequency, endFrequency, duration) {
+	this.frequency = startFrequency;
+	this.endFrequency = endFrequency;
+	this.duration = duration;
+};
+
+jzt.Audio.Percussion.Tick = new jzt.Audio.Percussion(1, 3135, 0.005); // Good
+jzt.Audio.Percussion.Tweet = new jzt.Audio.Percussion(1046, 2500, 0.01); // Good
+jzt.Audio.Percussion.Cowbell = new jzt.Audio.Percussion(1, 6000, 0.01);
+jzt.Audio.Percussion.HighSnare = new jzt.Audio.Percussion(4000,1, 0.01);
+jzt.Audio.Percussion.HighWoodblock = new jzt.Audio.Percussion(2000, 1, 0.01);
+jzt.Audio.Percussion.LowSnare = new jzt.Audio.Percussion(3000, 1, 0.01);
+jzt.Audio.Percussion.LowTom = new jzt.Audio.Percussion(700, 523, 0.01); // Good
+jzt.Audio.Percussion.LowWoodblock = new jzt.Audio.Percussion(1046, 1396, 0.01);
+jzt.Audio.Percussion.BassDrum = new jzt.Audio.Percussion(1, 600, 0.01);
 
 jzt.Audio.Note = function(note, duration) {
 
@@ -198,6 +218,42 @@ jzt.Audio.Song.prototype.parse = function(notation) {
 			case 'A':
 			case 'B':
 				currentNote = currentChar;
+				break;
+			case '0':
+				currentNote = 'X';
+				this.notes.push(jzt.Audio.Percussion.Tick);
+				break;
+			case '1':
+				currentNote = 'X';
+				this.notes.push(jzt.Audio.Percussion.Tweet);
+				break;
+			case '2':
+				currentNote = 'X';
+				this.notes.push(jzt.Audio.Percussion.Cowbell);
+				break;
+			case '4':
+				currentNote = 'X';
+				this.notes.push(jzt.Audio.Percussion.HighSnare);
+				break;
+			case '5':
+				currentNote = 'X';
+				this.notes.push(jzt.Audio.Percussion.HighWoodblock);
+				break;
+			case '6':
+				currentNote = 'X';
+				this.notes.push(jzt.Audio.Percussion.LowSnare);
+				break;
+			case '7':
+				currentNote = 'X';
+				this.notes.push(jzt.Audio.Percussion.LowTom);
+				break;
+			case '8':
+				currentNote = 'X';
+				this.notes.push(jzt.Audio.Percussion.LowWoodblock);
+				break;
+			case '9':
+				currentNote = 'X';
+				this.notes.push(jzt.Audio.Percussion.BassDrum);
 				break;
 			default:
 				currentNote = undefined;
