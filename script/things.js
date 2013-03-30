@@ -780,6 +780,7 @@ jzt.things.Centipede.prototype.move = function(direction) {
  * @param direction A given direction to push this Centipede.
  */
 jzt.things.Centipede.prototype.push = function(direction) {
+    this.board.game.resources.audio.play('t+c---c++++c--c');
     this.delete();
 };
 
@@ -1215,6 +1216,7 @@ jzt.things.Lion.prototype.sendMessage = function(message) {
  */
 jzt.things.Lion.prototype.push = function(direction) {
     if(!this.move(direction)) {
+        this.board.game.resources.audio.play('t+c---c++++c--c');
         this.delete();
     }
 };
