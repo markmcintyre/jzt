@@ -80,10 +80,11 @@ jzt.Board.prototype.serialize = function() {
                 dataStream += '    ';
             }
             else if(tile instanceof jzt.things.UpdateableThing) {
-                serializedThing = thing.serialize();
+                serializedThing = tile.serialize();
                 if(serializedThing) {
                     result.things.push(serializedThing);
                 }
+                dataStream += '    ';
             }
             else {
                 dataStream += '    ';

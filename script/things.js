@@ -1600,6 +1600,105 @@ jzt.things.Teleporter.prototype.push = function(direction) {
 
 //--------------------------------------------------------------------------------
 
+jzt.things.Tiger = function(board) {
+    jzt.things.UpdateableThing.call(this, board);
+    this.spriteIndex = 227;
+    this.foreground = jzt.colors.Colors['B'];
+    this.background = jzt.colors.Colors['0'];
+    this.intelligence = 5;
+    this.firingRate = 5;
+    this.speed = 2;
+}
+jzt.things.Tiger.prototype = new jzt.things.UpdateableThing();
+jzt.things.Tiger.prototype.constructor = jzt.things.Tiger;
+jzt.things.Tiger.serializationType = 'Tiger';
+jzt.things.Tiger.symbol = 'TI';
+
+jzt.things.Tiger.prototype.serialize = function() {
+    var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    result.intelligence = this.intelligence;
+    result.firingRate = this.firingRate;
+    return result;
+};
+
+jzt.things.Tiger.prototype.deserialize = function(data) {
+    jzt.things.UpdateableThing.prototype.deserialize(this, data);
+    this.intelligence = data.intelligence;
+    this.firingRate = data.firingRate;
+};
+
+/**
+ * Delivers a provided message to this Thing. If a SHOT message is received,
+ * then this Tiger will be deleted from the board. If a TOUCH message is 
+ * received, then the player will be sent a SHOT message.
+ *
+ * @param messageName a name of a message to deliver.
+ */
+jzt.things.Tiger.prototype.sendMessage = function(message) {
+
+    if(message === 'SHOT') {
+        this.board.game.resources.audio.play('t+c---c++++c--c');
+        this.delete();
+    }
+    else if(message === 'TOUCH') {
+        this.board.player.sendMessage('SHOT');
+        this.delete();
+    }
+
+};
+
+/**
+ * Receives a request to be pushed in a given direction.
+ *
+ * @param direction A direction in which this Thing is requested to move.
+ */
+jzt.things.Tiger.prototype.push = function(direction) {
+    if(!this.move(direction)) {
+        this.board.game.resources.audio.play('t+c---c++++c--c');
+        this.delete();
+    }
+};
+
+/**
+ * Returns whether or not this Tiger should seek the player during its next move.
+ * The probability of a true result depends on this Tiger's intelligence
+ * property.
+ *
+ * @return true if this Tiger should seek the player, false otherwise.
+ */
+jzt.things.Tiger.prototype.seekPlayer = function() {
+
+    var randomValue = Math.floor(Math.random()*10);
+    return randomValue <= this.intelligence;
+
+};
+
+jzt.things.Tiger.prototype.shootPlayer = function() {
+    var randomValue = Math.floor(Math.random()*20);
+    return randomValue <= this.firingRate;
+};
+
+jzt.things.Tiger.prototype.doTick = function() {
+
+    var direction = this.seekPlayer() ? this.getPlayerDirection() : jzt.Direction.random();
+
+    var thing = this.board.getTile(this.point.add(direction));
+    if(thing && thing instanceof jzt.things.Player) {
+        thing.sendMessage('SHOT');
+        this.delete();
+    }
+
+    this.move(direction, true);
+ 
+    if(this.shootPlayer()) {
+        var playerDirection = this.getPlayerDirection();
+        jzt.things.ThingFactory.shoot(this.board, this.point.add(playerDirection), playerDirection);
+    }
+
+};
+
+//--------------------------------------------------------------------------------
+
 /**
  * SliderEw is a Thing that is pushable only in the East and West direction.
  *
@@ -1826,7 +1925,7 @@ jzt.things.ThingFactory.shoot = function(board, point, direction, fromPlayer) {
 
     // Otherwise, if the bullet is from the player, or the tile is a Player or ScriptableThing
     else if(fromPlayer ||
-        tile instanceof jzt.things.Player || tile instanceof jzt.things.ScriptableThing) {
+        tile instanceof jzt.things.Player || tile instanceof jzt.things.ScriptableThing || tile instanceof jzt.things.BreakableWall) {
         tile.sendMessage('SHOT');
     } 
 
