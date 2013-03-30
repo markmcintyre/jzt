@@ -45,6 +45,14 @@ jzt.Audio.prototype.playAfter = function(notation) {
 		this.oscillator.type = this.oscillator.SQUARE;
 		this.oscillator.connect(this.volume);
 
+		// Polyfill for oscillator start and stop
+		if(!this.oscillator.start) {
+			this.oscillator.start = this.oscillator.noteOn;
+		}
+		if(!this.oscillator.stop) {
+			this.oscillator.stop = this.oscillator.noteOff;
+		}
+
 		if(this.timestamp < this.context.currentTime) {
 			this.timestamp = this.context.currentTime;
 		}
