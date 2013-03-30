@@ -12,7 +12,6 @@ jzt.Board = function(boardData, game) {
     this.game = game;
     this.tiles = undefined;
     this.scripts = [];
-    this.updateableThings = [];
     this.dark = boardData.dark;
 
     this.north = boardData.north;
@@ -63,6 +62,7 @@ jzt.Board.prototype.serialize = function() {
     // Store Tiles
     result.tiles = [];
     result.doors = [];
+    result.things = [];
     for(var row = 0; row < this.height; ++row) {
 
         point.y = row;
@@ -79,6 +79,12 @@ jzt.Board.prototype.serialize = function() {
                 result.doors.push(tile.serialize());
                 dataStream += '    ';
             }
+            else if(tile instanceof jzt.things.UpdateableThing) {
+                serializedThing = thing.serialize();
+                if(serializedThing) {
+                    result.things.push(serializedThing);
+                }
+            }
             else {
                 dataStream += '    ';
             }
@@ -93,21 +99,6 @@ jzt.Board.prototype.serialize = function() {
     for(var index = 0; index < this.scripts.length; ++index) {
         var script = this.scripts[index];
         result.scripts.push( script.serialize() );
-    }
-
-    // Store UpdateableThings
-    result.things = [];
-    for(var index = 0; index < this.updateableThings.length; ++index) {
-
-        var thing = this.updateableThings[index];
-
-        if(thing instanceof jzt.things.UpdateableThing) {
-            serializedThing = thing.serialize();
-            if(serializedThing) {
-                result.things.push(serializedThing);
-            }
-        }
-
     }
 
     return result;
@@ -252,7 +243,6 @@ jzt.Board.prototype.initializeUpdateableThings = function(updateableDataCollecti
         var updateableThing = jzt.things.ThingFactory.deserialize(updateableData, this);
         if(updateableThing !== undefined) {
             this.setTile(updateableThing.point, updateableThing);
-            this.updateableThings.push(updateableThing);
         }
         
     }
@@ -284,23 +274,34 @@ jzt.Board.prototype.getScript = function(scriptName) {
     
 /**
  * Executes a provided callback function for each tile on this Board,
- * providing the function with a Thing instance and the Point at which
- * it occurs. If there is no tile at a specific Point, undefined is
- * provided instead.
+ * providing the function with a Thing instance and the point at which
+ * it occurs. If no thing instance is at a location, undefined is returned.
  *
  * @param callBack A callback function to be executed for each tile
  */
 jzt.Board.prototype.each = function(callback) {
+
     var point = new jzt.Point(0,0);
-    for(var y = 0; y < this.height; ++y) {
-        for(var x = 0; x < this.width; ++x) {
-            point.x = x;
-            point.y = y;
-            var tile = this.getTile(point);
-            callback(tile, point);
+
+    for(point.y = 0; point.y < this.height; point.y++) {
+        for(point.x = 0; point.x < this.width; point.x++) {
+            callback(this.getTile(point), point);
         }
     }
-}
+
+};
+
+jzt.Board.prototype.eachBackwards = function(callback) {
+
+    var point = new jzt.Point(0,0);
+
+    for(point.y = this.height-1; point.y >= 0; point.y--) {
+        for(point.x = this.width-1; point.x >= 0; point.x--) {
+            callback(this.getTile(point), point);
+        }
+    }
+
+};
  
 /**
  * Removes a tile from this Board at a provided Point. This function will also
@@ -312,20 +313,6 @@ jzt.Board.prototype.each = function(callback) {
 jzt.Board.prototype.deleteTile = function(point) {
     
     var thing = this.getTile(point);
-    
-    // If our thing is an UpdateableThing, we need to delete it from our list
-    if(thing instanceof jzt.things.UpdateableThing) {
-        for(var index = this.updateableThings.length-1; index >= 0; --index) {
-            
-            var otherThing = this.updateableThings[index];
-            if(thing === otherThing) {
-                
-                // Remove our thing from our array
-                this.updateableThings.splice(index,1);
-                
-            }  
-        }
-    }
 
     // Delete the tile
     this.setTile(point, thing.under);
@@ -417,24 +404,6 @@ jzt.Board.prototype.setTile = function(point, tile) {
 };
 
 /**
- * Adds an UpdateableThing to a specific Point on this Board. This
- * function does not check for saftey of any existing Things on
- * that point, but will add the UpdateableThing to the collection of
- * those tracked by this board for updates.
- *
- * @param point A Point at which to set a given UpdateableThing
- * @param thing An UpdateableThing to add to this board.
- */
-jzt.Board.prototype.addUpdateableThing = function(point, thing) {
-    
-    if(thing instanceof jzt.things.UpdateableThing) {
-        this.setTile(point, thing);
-        this.updateableThings.push(thing);
-    }
-
-};
-
-/**
  * Adds a Thing to a specific Point on this Board. This function
  * will safely delete any existing Thing if present at the specified
  * location and will update any UpdateableThing list, unless we opt
@@ -456,10 +425,6 @@ jzt.Board.prototype.addThing = function(point, thing, respectSurrenderabilty) {
         else {
             this.deleteTile(point);
         }
-    }
-
-    if(thing && thing instanceof jzt.things.UpdateableThing) {
-        this.updateableThings.push(thing);
     }
 
     this.setTile(point, thing);
@@ -593,22 +558,33 @@ jzt.Board.prototype.addMessage = function(message) {
     
 /**
  * Updates this Board instance by one tick in an execution cycle. This will also
- * update all UpdateableThings tracked by this Board, excluding the player.
+ * update all UpdateableThings tracked by this Board.
  */
 jzt.Board.prototype.update = function() {
-        
-    // Iterate backwards in case a thing needs to be removed
-    for(var index = this.updateableThings.length-1; index >= 0; --index) {
-        
-        // Grab our moveable thing
-        var updateableThing = this.updateableThings[index];
-        
-        // Update the thing, if we got one
-        if(updateableThing != undefined) {
-            updateableThing.update();
+    
+    // For each tile on our board...
+    this.each(function(tile) {
+
+        // If we got a tile, and it's updateable
+        if(tile && tile instanceof jzt.things.UpdateableThing) {
+
+            // If we aren't updating backwards...
+            if(!tile.updateOnReverse()) {
+                tile.update();
+            }
         }
-        
-    }
+
+    });
+
+    // For each tile on our board in reverse...
+    this.eachBackwards(function(tile) {
+
+        // If a tile wants to be udpated backwards, do it now
+        if(tile && tile.update && tile.updateOnReverse()) {
+            tile.update();
+        }
+
+    });
         
 };
 

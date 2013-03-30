@@ -292,6 +292,10 @@ jzt.things.UpdateableThing.prototype.update = function() {
 
 };
 
+jzt.things.UpdateableThing.prototype.updateOnReverse = function() {
+    return false;
+};
+
 /**
  * Updates this UpdateableThing on its tick update cycle.
  */
@@ -532,6 +536,10 @@ jzt.things.Bullet.prototype.serialize = function() {
         this.delete();
     }
  };
+
+jzt.things.Bullet.prototype.updateOnReverse = function() {
+    return this.direction === jzt.Direction.South || this.direction === jzt.Direction.East;
+};
 
 /**
  * Updates this bullet, moving it one tile in its associated
@@ -1474,6 +1482,10 @@ jzt.things.Player.prototype.sendMessage = function(message) {
     }
 
 };
+
+jzt.things.Player.prototype.updateOnReverse = function() {
+    return true;
+}
 
 //--------------------------------------------------------------------------------
 

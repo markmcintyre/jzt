@@ -236,7 +236,6 @@ jzt.Game.prototype.update = function() {
     }
 
     this.currentBoard.update();
-    this.player.update();
 
 };
     
