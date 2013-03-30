@@ -562,6 +562,16 @@ jzt.Board.prototype.addMessage = function(message) {
  */
 jzt.Board.prototype.update = function() {
     
+
+    /*
+     * This function works as follows: Each tile is looped through in sequential
+     * order, and once again in reverse order. A tile may opt to be sent its
+     * update message in either one loop or the other via its updateOnReverse
+     * function. Tiles may wish to update in reverse because they are about to
+     * move in the same direction as the updates (for example, a Bullet travelling
+     * South). This results in smoother motion for such movements.
+     */
+
     // For each tile on our board...
     this.each(function(tile) {
 

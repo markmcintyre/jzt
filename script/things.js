@@ -1579,8 +1579,9 @@ jzt.things.Teleporter.prototype.push = function(direction) {
             if(thing && thing instanceof jzt.things.Teleporter && thing.orientation === this.getMatchingOrientation()) {
 
                 // Move the tile to the matching teleporter's destination
-                this.board.moveTile(currentPoint, destinationPoint.add(currentDirection));
-                this.board.game.resources.audio.play('tc+d-e+f#-g#+a#c+d');
+                if(this.board.moveTile(currentPoint, destinationPoint.add(currentDirection))) {
+                    this.board.game.resources.audio.play('tc+d-e+f#-g#+a#c+d');
+                }
                 break;
 
             }
