@@ -70,6 +70,16 @@ jzt.things.Thing.prototype.deserialize = function(data) {
 };
 
 /**
+ * Plays a given audio notation. This function is a convenient shorthand
+ * for a full call chain.
+ *
+ * @param notation An audio notation to play.
+ */
+jzt.things.Thing.prototype.play = function(notation) {
+    this.board.game.resources.audio.play(notation);
+};
+
+/**
  * Delivers a provided message to this Thing.
  *
  * @param messageName a name of a message to deliver.
@@ -452,7 +462,7 @@ jzt.things.Boulder.symbol = 'BL';
  */
 jzt.things.Boulder.prototype.push = function(direction) {
     if(! this.isBlocked(direction)) {
-        this.board.game.resources.audio.play('t--f');
+        this.play('t--f');
     }
     this.move(direction);
 };
@@ -478,7 +488,7 @@ jzt.things.BreakableWall.symbol = 'BR';
  */
 jzt.things.BreakableWall.prototype.sendMessage = function(message) {
     if(message === 'SHOT') {
-        this.board.game.resources.audio.play('t-c');
+        this.play('t-c');
         this.delete();
     }
 };
@@ -780,7 +790,7 @@ jzt.things.Centipede.prototype.move = function(direction) {
  * @param direction A given direction to push this Centipede.
  */
 jzt.things.Centipede.prototype.push = function(direction) {
-    this.board.game.resources.audio.play('t+c---c++++c--c');
+    this.play('t+c---c++++c--c');
     this.delete();
 };
 
@@ -812,7 +822,7 @@ jzt.things.Centipede.prototype.delete = function() {
  */
 jzt.things.Centipede.prototype.sendMessage = function(message) {
     if(message === 'SHOT') {
-        this.board.game.resources.audio.play('t+c---c++++c--c');
+        this.play('t+c---c++++c--c');
         this.delete();
     }
     if(message === 'TOUCH') {
@@ -953,7 +963,7 @@ jzt.things.Door.serializationType = 'Door';
  */
 jzt.things.Door.prototype.sendMessage = function(message) {
     if(message === 'TOUCH') {
-        this.board.game.resources.audio.play('tceg tc#fg# tdf#a td#ga# teg#+c');
+        this.play('tceg tc#fg# tdf#a td#ga# teg#+c');
         this.board.game.movePlayerToDoor(this.doorId, this.targetBoard);
     }
 };
@@ -1030,6 +1040,8 @@ jzt.things.Forest = function(board) {
 };
 jzt.things.Forest.prototype = new jzt.things.Thing();
 jzt.things.Forest.prototype.constructor = jzt.things.Forest;
+jzt.things.Forest.noteCycle = ['e','-b','f#','b','f','c','g','+c'];
+jzt.things.Forest.noteIndex = 0;
 jzt.things.Forest.serializationType = 'Forest';
 jzt.things.Forest.symbol = 'FR';
 
@@ -1051,7 +1063,12 @@ jzt.things.Forest.prototype.deserialize = function(data) {
  */
 jzt.things.Forest.prototype.sendMessage = function(message) {
     if(message == 'TOUCH') {
-        this.board.game.resources.audio.play('ta');
+
+        this.play(this.constructor.noteCycle[this.constructor.noteIndex++]);
+        if(this.constructor.noteIndex >= this.constructor.noteCycle.length) {
+            this.constructor.noteIndex = 0;
+        }
+        
         this.board.deleteTile(this.point);
     }
 }
@@ -1086,7 +1103,7 @@ jzt.things.InvisibleWall.prototype.sendMessage = function(message) {
         replacement.foreground = this.foreground;
         replacement.background = this.background;
         this.board.replaceTile(this.point, replacement);
-        this.board.game.resources.audio.play('t--dc');
+        this.play('t--dc');
     }
 };
 
@@ -1199,7 +1216,7 @@ jzt.things.Lion.prototype.deserialize = function(data) {
 jzt.things.Lion.prototype.sendMessage = function(message) {
 
     if(message === 'SHOT') {
-        this.board.game.resources.audio.play('t+c---c++++c--c');
+        this.play('t+c---c++++c--c');
         this.delete();
     }
     else if(message === 'TOUCH') {
@@ -1216,7 +1233,7 @@ jzt.things.Lion.prototype.sendMessage = function(message) {
  */
 jzt.things.Lion.prototype.push = function(direction) {
     if(!this.move(direction)) {
-        this.board.game.resources.audio.play('t+c---c++++c--c');
+        this.play('t+c---c++++c--c');
         this.delete();
     }
 };
@@ -1536,7 +1553,7 @@ jzt.things.Player.prototype.inTorchRange = function(point) {
 jzt.things.Player.prototype.sendMessage = function(message) {
 
     if(message === 'SHOT') {
-        this.board.game.resources.audio.play('t--c+c-c+d#');
+        this.play('t--c+c-c+d#');
         this.board.setDisplayMessage('Ouch!');
     }
 
@@ -1639,7 +1656,7 @@ jzt.things.Teleporter.prototype.push = function(direction) {
 
                 // Move the tile to the matching teleporter's destination
                 if(this.board.moveTile(currentPoint, destinationPoint.add(currentDirection))) {
-                    this.board.game.resources.audio.play('tc+d-e+f#-g#+a#c+d');
+                    this.play('tc+d-e+f#-g#+a#c+d');
                 }
                 break;
 
@@ -1650,7 +1667,7 @@ jzt.things.Teleporter.prototype.push = function(direction) {
     }
 
     else {
-        this.board.game.resources.audio.play('tc+d-e+f#-g#+a#c+d');
+        this.play('tc+d-e+f#-g#+a#c+d');
     }
 
 };
@@ -1694,7 +1711,7 @@ jzt.things.Tiger.prototype.deserialize = function(data) {
 jzt.things.Tiger.prototype.sendMessage = function(message) {
 
     if(message === 'SHOT') {
-        this.board.game.resources.audio.play('t+c---c++++c--c');
+        this.play('t+c---c++++c--c');
         this.delete();
     }
     else if(message === 'TOUCH') {
@@ -1711,7 +1728,7 @@ jzt.things.Tiger.prototype.sendMessage = function(message) {
  */
 jzt.things.Tiger.prototype.push = function(direction) {
     if(!this.move(direction)) {
-        this.board.game.resources.audio.play('t+c---c++++c--c');
+        this.play('t+c---c++++c--c');
         this.delete();
     }
 };
@@ -1778,7 +1795,7 @@ jzt.things.SliderEw.symbol = 'SE';
 jzt.things.SliderEw.prototype.push = function(direction) {
     if(direction.equals(jzt.Direction.East) || direction.equals(jzt.Direction.West)) {
         if(!this.isBlocked(direction)) {
-            this.board.game.resources.audio.play('t--f');
+            this.play('t--f');
         }
         this.move(direction);
     }
@@ -1808,7 +1825,7 @@ jzt.things.SliderNs.symbol = 'SN';
 jzt.things.SliderNs.prototype.push = function(direction) {
     if(direction.equals(jzt.Direction.North) || direction.equals(jzt.Direction.South)) {
         if(!this.isBlocked(direction)) {
-            this.board.game.resources.audio.play('t--f');
+            this.play('t--f');
         }
         this.move(direction);
     }
@@ -1872,7 +1889,7 @@ jzt.things.Water.prototype.isSurrenderable = function(sender) {
 
 jzt.things.Water.prototype.sendMessage = function(message) {
     if(message === 'TOUCH') {
-        this.board.game.resources.audio.play('t+c+c');
+        this.play('t+c+c');
     }
 };
 
