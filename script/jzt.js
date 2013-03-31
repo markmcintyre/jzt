@@ -16,6 +16,7 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     this.FPS = 30;
     this.CPS = 10;
     this.CYCLE_RATE = Math.round(this.FPS / this.CPS);
+    this.CYCLE_TICKS = Math.floor(1000 / this.FPS) * this.CYCLE_RATE;
     this.BLINK_RATE = Math.round(this.FPS / 3);
     this.COLOR_CYCLE_MAX = 6;
 

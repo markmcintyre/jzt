@@ -31,7 +31,9 @@ jzt.KeyboardInput.prototype.isPressed = function(keyCode) {
   
 jzt.KeyboardInput.prototype.onKeyDown = function(event) {
     if( this._capturableKeys.indexOf(event.keyCode) >= 0) {
-        this._pressed[event.keyCode] = true;
+        if(!this._pressed[event.keyCode]) {
+            this._pressed[event.keyCode] = Date.now();
+        }
         event.preventDefault();
     }
 };

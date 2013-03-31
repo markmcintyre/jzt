@@ -1277,6 +1277,13 @@ jzt.things.Player = function(board) {
     this.torchStrength = 0;
     this.torchExpiry = 0;
     this.game = undefined;
+    this.speed = 1;
+    this.nextAction = {
+        type: undefined,
+        direction: undefined
+    };
+    this.MOVE_ACTION = 0;
+    this.SHOOT_ACTION = 1;
     
     this.TORCH_TTL = 60000; // One Minute
     this.MAX_TORCH_STRENGTH = 4;
@@ -1301,7 +1308,7 @@ jzt.things.Player.prototype.push = function(direction) {
  * @return true if the move was successful, false otherwise.
  */
 jzt.things.Player.prototype.move = function(direction) {
-    this.nextAllowableMove = Date.now() + (Math.floor(1000 / this.game.FPS) * this.game.CYCLE_RATE);
+
     // Calculate our new location
     var newLocation = this.point.add(direction);
 
@@ -1325,7 +1332,7 @@ jzt.things.Player.prototype.move = function(direction) {
         thing.sendMessage('TOUCH');
     }
 
-    return this.board.moveTile(this.point, newLocation);;
+    return this.board.moveTile(this.point, newLocation);
     
 };
 
@@ -1335,43 +1342,93 @@ jzt.things.Player.prototype.move = function(direction) {
  * @param A Direction in which to shoot a player bullet.
  */
 jzt.things.Player.prototype.shoot = function(direction) {
-    this.nextAllowableMove = Date.now() + (Math.floor(1000 / this.game.FPS) * this.game.CYCLE_RATE);
-    // Shoot
     jzt.things.ThingFactory.shoot(this.board, this.point.add(direction), direction, true);
+};
+
+jzt.things.Player.prototype.doTick = function() {
+
+    if(this.nextAction.type === this.MOVE_ACTION) {
+        this.move(this.nextAction.direction);
+    }
+    else if(this.nextAction.type === this.SHOOT_ACTION) {
+        this.shoot(this.nextAction.direction);
+    }
+
+    this.nextAction.type = undefined;
 
 };
 
-jzt.things.Player.prototype.update = function() {
+jzt.things.Player.prototype.scheduleEvent = function(pressTime, eventType, direction) {
+
     var now = Date.now();
+
     if(now > this.nextAllowableMove) {
-        this.doTick();
+        
+        if(pressTime + this.game.CYCLE_TICKS *2 < now) {
+            this.nextAllowableMove = now + this.game.CYCLE_TICKS;
+        }
+        else {
+            this.nextAllowableMove = now + this.game.CYCLE_TICKS * 2;
+        }
+
+        this.nextAction.type = eventType;
+        this.nextAction.direction = direction;
     }
+
 };
 
 /**
  * Updates this Player for a single execution cycle. During its update,
  * Player will check for keypresses and move accordingly.
  */
-jzt.things.Player.prototype.doTick = function() {
+jzt.things.Player.prototype.update = function() {
 
     var k = this.game.keyboard;
+    var now = Date.now();
     if(k.isPressed(k.SHIFT)) {
-        if(k.isPressed(k.UP) ) this.shoot(jzt.Direction.North);
-        else if(k.isPressed(k.RIGHT)) this.shoot(jzt.Direction.East);
-        else if(k.isPressed(k.DOWN)) this.shoot(jzt.Direction.South);
-        else if(k.isPressed(k.LEFT)) this.shoot(jzt.Direction.West);
+
+        var pressTime = undefined;
+
+        if(pressTime = k.isPressed(k.UP)) {
+            this.scheduleEvent(pressTime, this.SHOOT_ACTION, jzt.Direction.North);
+        }
+        else if(pressTime = k.isPressed(k.RIGHT)) {
+            this.scheduleEvent(pressTime, this.SHOOT_ACTION, jzt.Direction.East);
+        }
+        else if(pressTime = k.isPressed(k.DOWN)) {
+            this.scheduleEvent(pressTime, this.SHOOT_ACTION, jzt.Direction.South);
+        } 
+        else if(pressTime = k.isPressed(k.LEFT)) {
+            this.scheduleEvent(pressTime, this.SHOOT_ACTION, jzt.Direction.West);
+        }
+        else {
+            this.nextAllowableMove = 0;
+        }
     }
     else {
-        if(k.isPressed(k.UP)) this.move(jzt.Direction.North);
-        else if(k.isPressed(k.RIGHT)) this.move(jzt.Direction.East);
-        else if(k.isPressed(k.DOWN)) this.move(jzt.Direction.South);
-        else if(k.isPressed(k.LEFT)) this.move(jzt.Direction.West);
-        else if(k.isPressed([k.T])) this.useTorch();
+        if(pressTime = k.isPressed(k.UP)) {
+            this.scheduleEvent(pressTime, this.MOVE_ACTION, jzt.Direction.North);
+        }
+        else if(pressTime = k.isPressed(k.RIGHT)) {
+            this.scheduleEvent(pressTime, this.MOVE_ACTION, jzt.Direction.East);
+        }
+        else if(pressTime = k.isPressed(k.DOWN)) {
+            this.scheduleEvent(pressTime, this.MOVE_ACTION, jzt.Direction.South);
+        }
+        else if(pressTime = k.isPressed(k.LEFT)) {
+            this.scheduleEvent(pressTime, this.MOVE_ACTION, jzt.Direction.West);
+        }
+        else {
+            this.nextAllowableMove = 0;
+        }
+        if(k.isPressed([k.T])) this.useTorch();
     }
 
     if(this.torch) {
         this.updateTorch(Date.now());
     }
+
+    jzt.things.UpdateableThing.prototype.update.call(this);
     
 };
 

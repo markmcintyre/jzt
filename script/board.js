@@ -591,11 +591,14 @@ jzt.Board.prototype.update = function() {
     this.eachBackwards(function(tile) {
 
         // If a tile wants to be udpated backwards, do it now
-        if(tile && tile.update && tile.updateOnReverse()) {
+        if(tile && tile instanceof jzt.things.UpdateableThing && tile.updateOnReverse() && ! (tile instanceof jzt.things.Player)) {
             tile.update();
         }
 
     });
+
+    // Always update the player last
+    this.player.update();
         
 };
 
