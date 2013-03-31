@@ -74,9 +74,10 @@ jzt.things.Thing.prototype.deserialize = function(data) {
  * for a full call chain.
  *
  * @param notation An audio notation to play.
+ * @param uninterruptable Whether or not this notation can be interrupted by another.
  */
-jzt.things.Thing.prototype.play = function(notation) {
-    this.board.game.resources.audio.play(notation);
+jzt.things.Thing.prototype.play = function(notation, uninterruptable) {
+    this.board.game.resources.audio.play(notation, uninterruptable);
 };
 
 /**
@@ -822,7 +823,7 @@ jzt.things.Centipede.prototype.delete = function() {
  */
 jzt.things.Centipede.prototype.sendMessage = function(message) {
     if(message === 'SHOT') {
-        this.play('t+c---c++++c--c');
+        this.play('t+c---c++++c--c', true);
         this.delete();
     }
     if(message === 'TOUCH') {
@@ -1216,7 +1217,7 @@ jzt.things.Lion.prototype.deserialize = function(data) {
 jzt.things.Lion.prototype.sendMessage = function(message) {
 
     if(message === 'SHOT') {
-        this.play('t+c---c++++c--c');
+        this.play('t+c---c++++c--c', true);
         this.delete();
     }
     else if(message === 'TOUCH') {
@@ -1711,7 +1712,7 @@ jzt.things.Tiger.prototype.deserialize = function(data) {
 jzt.things.Tiger.prototype.sendMessage = function(message) {
 
     if(message === 'SHOT') {
-        this.play('t+c---c++++c--c');
+        this.play('t+c---c++++c--c', true);
         this.delete();
     }
     else if(message === 'TOUCH') {

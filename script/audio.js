@@ -19,6 +19,7 @@ jzt.Audio = function() {
 	this.volume.gain.value = this.userVolume;
 	this.volume.connect(this.context.destination);
 	this.timestamp = this.context.currentTime;
+	this.interruptTimestamp = this.context.currentTime;
 
 };
 
@@ -34,7 +35,7 @@ jzt.Audio.prototype.cancel = function() {
 
 }
 
-jzt.Audio.prototype.playAfter = function(notation) {
+jzt.Audio.prototype.playAfter = function(notation, uninterruptable) {
 
 	if(this.active) {
 
@@ -90,15 +91,20 @@ jzt.Audio.prototype.playAfter = function(notation) {
     	this.oscillator.start(startTime);
     	this.oscillator.stop(this.timestamp);
 
+    	// If we're not to be interrupted, upadte the timestamp
+    	if(uninterruptable) {
+    		this.interruptTimestamp = this.timestamp;
+    	}
+
 	}
 
 };
 
-jzt.Audio.prototype.play = function(notation) {
-
-	this.cancel();
-	this.playAfter(notation);
-
+jzt.Audio.prototype.play = function(notation, uninterruptable) {
+	if(this.context.currentTime >= this.interruptTimestamp) {
+		this.cancel();
+		this.playAfter(notation, uninterruptable);
+	}
 };
 
 jzt.Audio.Note = function(index, duration) {
