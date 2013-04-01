@@ -52,7 +52,7 @@ jzt.things.Thing.prototype.deserialize = function(data) {
     }
     else {
         if(!this.foreground) {
-            this.foreground = jzt.colors.Colors['9'];
+            this.foreground = jzt.colors.Colors['E'];
         }
         if(!this.background) {
             this.background = jzt.colors.Colors['0'];
@@ -82,6 +82,14 @@ jzt.things.Thing.prototype.play = function(notation, uninterruptable) {
  */
 jzt.things.Thing.prototype.adjustCounter = function(counter, value) {
     this.board.game.adjustCounter(counter, value);
+};
+
+jzt.things.Thing.prototype.setCounterValue = function(counter, value) {
+    this.board.game.setCounterValue(counter, value);
+};
+
+jzt.things.Thing.prototype.getCounterValue = function(counter) {
+    return this.board.game.getCounterValue(counter);
 };
 
 /**
@@ -454,6 +462,29 @@ jzt.things.ScriptableThing.prototype.doTick = function() {
  * BUILT-IN THINGS
  *=================================================================================*/
  
+jzt.things.Ammo = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.spriteIndex = 132;
+    this.foreground = jzt.colors.Colors['3'];
+}
+jzt.things.Ammo.prototype = new jzt.things.Thing();
+jzt.things.Ammo.prototype.constructor = jzt.things.Ammo;
+jzt.things.Ammo.serializationType = 'Ammo';
+
+jzt.things.Ammo.prototype.push = function(direction) {
+    this.move(direction);
+};
+
+jzt.things.Ammo.prototype.sendMessage = function(message) {
+    if(message === 'TOUCH') {
+        this.play('tcc#d');
+        this.adjustCounter('ammo', 5);
+        this.delete();
+    }
+};
+
+//--------------------------------------------------------------------------------
+
 /*
  * A Boulder is a Thing that is pushable in all directions.
  * 
@@ -1402,7 +1433,13 @@ jzt.things.Player.prototype.move = function(direction) {
  * @param A Direction in which to shoot a player bullet.
  */
 jzt.things.Player.prototype.shoot = function(direction) {
-    jzt.things.ThingFactory.shoot(this.board, this.point.add(direction), direction, true);
+    if(this.getCounterValue('ammo') > 0) {
+        this.adjustCounter('ammo', -1);
+        jzt.things.ThingFactory.shoot(this.board, this.point.add(direction), direction, true);
+    }
+    else {
+        this.board.setDisplayMessage('You don\'t have any ammo!');
+    }
 };
 
 jzt.things.Player.prototype.doTick = function() {

@@ -74,19 +74,30 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
  * @param value A value by which to adjust a counter
  */
 jzt.Game.prototype.adjustCounter = function(counter, value) {
+    this.setCounterValue(counter, this.getCounterValue(counter) + value);
+};
+
+jzt.Game.prototype.getCounterValue = function(counter) {
+    if(this.counters[counter] === undefined)
+        return 0;
+    else
+        return this.counters[counter];
+};
+
+jzt.Game.prototype.setCounterValue = function(counter, value) {
 
     // If the counter doesn't already exist, create it now
     if(this.counters[counter] === undefined) {
         this.counters[counter] = 0;
     }
 
-    // Adjust our value
-    this.counters[counter] += value;
-
     // Values cannot be less than zero
-    if(this.counters[counter] < 0) {
-        this.counters[counter] = 0;
+    if(value < 0) {
+        value = 0;
     }
+
+    // Set our value
+    this.counters[counter] = value;
 
 };
 
