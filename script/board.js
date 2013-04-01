@@ -205,11 +205,12 @@ jzt.Board.prototype.getScript = function(scriptName) {
  */
 jzt.Board.prototype.each = function(callback) {
 
+    var values = this.tiles.slice(0);
     var point = new jzt.Point(0,0);
 
     for(point.y = 0; point.y < this.height; point.y++) {
         for(point.x = 0; point.x < this.width; point.x++) {
-            callback(this.getTile(point), point);
+            callback(values[point.x+point.y*this.width], point);
         }
     }
 
@@ -217,11 +218,12 @@ jzt.Board.prototype.each = function(callback) {
 
 jzt.Board.prototype.eachBackwards = function(callback) {
 
+    var values = this.tiles.slice(0);
     var point = new jzt.Point(0,0);
 
     for(point.y = this.height-1; point.y >= 0; point.y--) {
         for(point.x = this.width-1; point.x >= 0; point.x--) {
-            callback(this.getTile(point), point);
+            callback(values[point.x+point.y*this.width], point);
         }
     }
 

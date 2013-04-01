@@ -504,8 +504,13 @@ jzt.things.Boulder.serializationType = 'Boulder';
  * @param direction A direction in which this Thing is requested to move.
  */
 jzt.things.Boulder.prototype.push = function(direction) {
-    this.play('t--f');
     this.move(direction);
+};
+
+jzt.things.Boulder.prototype.sendMessage = function(message) {
+    if(message === 'TOUCH') {
+        this.play('t--f');
+    }
 };
 
 //--------------------------------------------------------------------------------
@@ -1873,8 +1878,13 @@ jzt.things.SliderEw.serializationType = 'SliderEw';
  */
 jzt.things.SliderEw.prototype.push = function(direction) {
     if(direction.equals(jzt.Direction.East) || direction.equals(jzt.Direction.West)) {
-        this.play('t--f');
         this.move(direction);
+    }
+};
+
+jzt.things.SliderEw.prototype.sendMessage = function(message) {
+    if(message === 'TOUCH') {
+        this.play('t--f');
     }
 };
 
@@ -1900,8 +1910,13 @@ jzt.things.SliderNs.serializationType = 'SliderNs';
  */
 jzt.things.SliderNs.prototype.push = function(direction) {
     if(direction.equals(jzt.Direction.North) || direction.equals(jzt.Direction.South)) {
-        this.play('t--f');
         this.move(direction);
+    }
+};
+
+jzt.things.SliderNs.prototype.sendMessage = function(message) {
+    if(message === 'TOUCH') {
+        this.play('t--f');
     }
 };
 
