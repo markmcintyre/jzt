@@ -473,9 +473,7 @@ jzt.things.Boulder.serializationType = 'Boulder';
  * @param direction A direction in which this Thing is requested to move.
  */
 jzt.things.Boulder.prototype.push = function(direction) {
-    if(! this.isBlocked(direction)) {
-        this.play('t--f');
-    }
+    this.play('t--f');
     this.move(direction);
 };
 
@@ -1079,6 +1077,44 @@ jzt.things.Forest.prototype.sendMessage = function(message) {
         }
         
         this.board.deleteTile(this.point);
+    }
+}
+
+//--------------------------------------------------------------------------------
+
+jzt.things.Gem = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.spriteIndex = 4;
+    this.foreground = jzt.colors.Colors['D'];
+}
+jzt.things.Gem.prototype = new jzt.things.Thing();
+jzt.things.Gem.prototype.constructor = jzt.things.Gem;
+jzt.things.Gem.serializationType = 'Gem';
+
+/**
+ * Delivers a provided message to this Thing. If a TOUCH message is received,
+ * then the game's Gems counter will increase by 1, the health counter will increase
+ * by 1, and the score counter will inrease by 10.
+ *
+ * @param messageName a name of a message to deliver.
+ */
+jzt.things.Gem.prototype.sendMessage = function(message) {
+    if(message === 'TOUCH') {
+        this.delete();
+        this.adjustCounter('health', 1);
+        this.adjustCounter('gems', 1);
+        this.adjustCounter('score', 10);
+        this.play('t+c-gec');
+    }
+    else if(message === 'SHOT') {
+        this.delete();
+        this.play('t-c');
+    }
+};
+
+jzt.things.Gem.prototype.push = function(direction) {
+    if(!this.move(direction)) {
+        this.delete();
     }
 }
 
@@ -1800,9 +1836,7 @@ jzt.things.SliderEw.serializationType = 'SliderEw';
  */
 jzt.things.SliderEw.prototype.push = function(direction) {
     if(direction.equals(jzt.Direction.East) || direction.equals(jzt.Direction.West)) {
-        if(!this.isBlocked(direction)) {
-            this.play('t--f');
-        }
+        this.play('t--f');
         this.move(direction);
     }
 };
@@ -1829,9 +1863,7 @@ jzt.things.SliderNs.serializationType = 'SliderNs';
  */
 jzt.things.SliderNs.prototype.push = function(direction) {
     if(direction.equals(jzt.Direction.North) || direction.equals(jzt.Direction.South)) {
-        if(!this.isBlocked(direction)) {
-            this.play('t--f');
-        }
+        this.play('t--f');
         this.move(direction);
     }
 };
