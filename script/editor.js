@@ -33,7 +33,13 @@ jzt.Editor = function(canvasElement, configuration) {
 	mockGame.resources.graphics = new jzt.Graphics(mockGame, function() {
 
 		if(localStorage['currentGame']) {
-			me.load();
+			try {
+				me.load();
+			}
+			catch(exception) {
+				alert('Could not load previously stored game.');
+				me.addBoard('Untitled', 40, 15);
+			}
 		}
 		else {
 			me.addBoard('Untitled', 40, 15);
@@ -89,7 +95,7 @@ jzt.Editor.prototype.load = function() {
 		this.deserialize(loadedData);
 	}
 	else {
-		console.log('No data available.');
+		throw 'No game data available.';
 	}
 };
 
@@ -119,35 +125,31 @@ jzt.Editor.prototype.addBoard = function(boardName, width, height) {
 
 	var template = {
 		name: boardName,
-		playerX: Math.round(width / 2),
-		playerY: Math.round(height / 2),
+		playerX: Math.floor(width / 2),
+		playerY: Math.floor(height / 2),
+		height: height,
+		width: width,
 		tiles: [],
 		scripts: []
 	};
 
 	for(var row = 0; row < height; ++row) {
-
-		var rowTiles = '';
-
 		for(var column = 0; column < width; ++column) {
 
 			switch(row) {
 				case 0:
 				case height-1:
-					rowTiles += 'WL0E';
+					template.tiles[column + row * width] = {type: 'Wall'};
 					break;
 				default:
 					if(column === 0 || column === width-1) {
-						rowTiles += 'WL0E';
+						template.tiles[column + row * width] = {type: 'Wall'};
 					}
 					else {
-						rowTiles += '    ';
+						template.tiles[column + row * width] = {};
 					}
 			}
 		}
-
-		template.tiles.push(rowTiles);
-
 	}
 
 	var newBoard = new jzt.Board(template, this.game);

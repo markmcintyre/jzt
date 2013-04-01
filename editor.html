@@ -14,7 +14,7 @@
 			<!--<h1>Mark's Test Thing</h1>-->
 		</header>
 		
-		<canvas id="jzt" style="border: 1px solid blue;" width="640" height="480"></canvas>
+		<canvas id="jzt" width="640" height="480"></canvas>
 
 		<div id="toolbox">
 
@@ -71,7 +71,7 @@
 
 			function onToolSelected(event) {
 				if(event.target.value) {
-					editor.setActiveTool({serializationType: event.target.value});
+					editor.setActiveTool({type: event.target.value});
 				}
 				else {
 					editor.setActiveTool(undefined);

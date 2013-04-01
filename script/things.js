@@ -12,12 +12,13 @@ jzt.things = jzt.things || {};
  * @param board A Board instance to "own" this Thing.
  */
 jzt.things.Thing = function(board) {
-    this.name = undefined;
     this.spriteIndex = 63;
     this.board = board;
     this.point = new jzt.Point(0,0);
     this.foreground = jzt.colors.Colors['E'];
     this.background = jzt.colors.Colors['0'];
+    this.x = 0;
+    this.y = 0;
 };
 
 /**
@@ -28,11 +29,8 @@ jzt.things.Thing = function(board) {
 jzt.things.Thing.prototype.serialize = function() {
     var result = {};
     if(this.constructor.hasOwnProperty('serializationType')) {
-        result.serializationType = this.constructor.serializationType;
+        result.type = this.constructor.serializationType;
     }
-    result.name = this.name;
-    result.x = this.point.x;
-    result.y = this.point.y;
     result.color = this.background.code + (this.foreground == '*' ? '*' : this.foreground.code);
     return result;
 };
@@ -44,12 +42,7 @@ jzt.things.Thing.prototype.serialize = function() {
  * @param data An object to be deserialized into this Thing.
  */
 jzt.things.Thing.prototype.deserialize = function(data) {
-    
-    this.name = data.name;
 
-    this.point.x = data.x || 0;
-    this.point.y = data.y || 0;
-    
     if(data.color) {
         var backgroundCode = data.color.charAt(0);
         var foregroundCode = data.color.charAt(1);
@@ -323,6 +316,7 @@ jzt.things.UpdateableThing.prototype.doTick = function() {};
  */
 jzt.things.ScriptableThing = function(board) {
     jzt.things.UpdateableThing.call(this, board);
+    this.name = undefined;
     this.scriptContext = undefined;
     this.messageQueue = [];
     this.walkDirection = undefined;
@@ -342,6 +336,7 @@ jzt.things.ScriptableThing.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this) || {};
 
     result.serializationType = jzt.things.ScriptableThing.serializationType;
+    result.name = this.name;
     result.spriteIndex = this.spriteIndex;
     result.script = this.scriptName;
 
@@ -365,6 +360,7 @@ jzt.things.ScriptableThing.prototype.serialize = function() {
  */
 jzt.things.ScriptableThing.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.name = data.name;
     this.spriteIndex = data.spriteIndex;
     this.scriptName = data.script;
     var script = this.board.getScript(this.scriptName);
@@ -454,7 +450,6 @@ jzt.things.Boulder = function(board) {
 jzt.things.Boulder.prototype = new jzt.things.Thing();
 jzt.things.Boulder.prototype.constructor = jzt.things.Boulder;
 jzt.things.Boulder.serializationType = 'Boulder';
-jzt.things.Boulder.symbol = 'BL';
 
 /**
  * Receives a request to be pushed in a given direction.
@@ -479,7 +474,6 @@ jzt.things.BreakableWall = function(board) {
 jzt.things.BreakableWall.prototype = new jzt.things.Thing();
 jzt.things.BreakableWall.prototype.constructor = jzt.things.BreakableWall;
 jzt.things.BreakableWall.serializationType = 'BreakableWall';
-jzt.things.BreakableWall.symbol = 'BR';
 
 /**
  * Sends a provided message to this BreakableWall. If a SHOT message
@@ -1009,7 +1003,6 @@ jzt.things.FakeWall = function(board) {
 jzt.things.FakeWall.prototype = new jzt.things.Thing();
 jzt.things.FakeWall.prototype.constructor = jzt.things.FakeWall;
 jzt.things.FakeWall.serializationType = 'FakeWall';
-jzt.things.FakeWall.symbol = 'FW';
 
 /**
  * Returns whether or not this FakeWall is surrenderable to another thing.
@@ -1044,7 +1037,6 @@ jzt.things.Forest.prototype.constructor = jzt.things.Forest;
 jzt.things.Forest.noteCycle = ['e','-b','f#','b','f','c','g','+c'];
 jzt.things.Forest.noteIndex = 0;
 jzt.things.Forest.serializationType = 'Forest';
-jzt.things.Forest.symbol = 'FR';
 
 /**
  * Deserializes a provided data Object into Forest.
@@ -1090,7 +1082,6 @@ jzt.things.InvisibleWall = function(board) {
 jzt.things.InvisibleWall.prototype = new jzt.things.Thing();
 jzt.things.InvisibleWall.prototype.constructor = jzt.things.InvisibleWall;
 jzt.things.InvisibleWall.serializationType = 'InvisibleWall';
-jzt.things.InvisibleWall.symbol = 'IW';
 
 /**
  * Delivers a provided message to this Thing. If a TOUCH message is received,
@@ -1132,7 +1123,6 @@ jzt.things.LineWall = function(board) {
 jzt.things.LineWall.prototype = new jzt.things.Thing();
 jzt.things.LineWall.prototype.constructor = jzt.things.LineWall;
 jzt.things.LineWall.serializationType = 'LineWall';
-jzt.things.LineWall.symbol = 'LW';
 jzt.things.LineWall.lineMap = {
     '': 249,
     'N': 208,
@@ -1687,7 +1677,6 @@ jzt.things.Tiger = function(board) {
 jzt.things.Tiger.prototype = new jzt.things.UpdateableThing();
 jzt.things.Tiger.prototype.constructor = jzt.things.Tiger;
 jzt.things.Tiger.serializationType = 'Tiger';
-jzt.things.Tiger.symbol = 'TI';
 
 jzt.things.Tiger.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
@@ -1698,8 +1687,8 @@ jzt.things.Tiger.prototype.serialize = function() {
 
 jzt.things.Tiger.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize(this, data);
-    this.intelligence = data.intelligence;
-    this.firingRate = data.firingRate;
+    this.intelligence = data.intelligence === undefined ? 5 : data.intelligence;
+    this.firingRate = data.firingRate === undefined ? 5 : data.firingRate;
 };
 
 /**
@@ -1786,7 +1775,6 @@ jzt.things.SliderEw = function(board) {
 jzt.things.SliderEw.prototype = new jzt.things.Thing();
 jzt.things.SliderEw.prototype.constructor = jzt.things.SliderEw;
 jzt.things.SliderEw.serializationType = 'SliderEw';
-jzt.things.SliderEw.symbol = 'SE';
 
 /**
  * Receives a request to be pushed in a given direction.
@@ -1816,7 +1804,6 @@ jzt.things.SliderNs = function(board) {
 jzt.things.SliderNs.prototype = new jzt.things.Thing();
 jzt.things.SliderNs.prototype.constructor = jzt.things.SliderNs;
 jzt.things.SliderNs.serializationType = 'SliderNs';
-jzt.things.SliderNs.symbol = 'SN';
 
 /**
  * Receives a request to be pushed in a given direction.
@@ -1846,8 +1833,6 @@ jzt.things.SolidWall = function(board) {
 jzt.things.SolidWall.prototype = new jzt.things.Thing();
 jzt.things.SolidWall.prototype.constructor = jzt.things.SolidWall;
 jzt.things.SolidWall.serializationType = 'SolidWall';
-jzt.things.SolidWall.symbol = 'SW';
-
 
 //--------------------------------------------------------------------------------
 
@@ -1863,7 +1848,6 @@ jzt.things.Wall = function(board) {
 jzt.things.Wall.prototype = new jzt.things.Thing();
 jzt.things.Wall.prototype.constructor = jzt.things.Wall;
 jzt.things.Wall.serializationType = 'Wall';
-jzt.things.Wall.symbol = 'WL';
 
 //--------------------------------------------------------------------------------
 
@@ -1880,7 +1864,6 @@ jzt.things.Water = function(board) {
 jzt.things.Water.prototype = new jzt.things.Thing();
 jzt.things.Water.prototype.constructor = jzt.things.Water;
 jzt.things.Water.serializationType = 'Water';
-jzt.things.Water.symbol = 'WT';
 
 jzt.things.Water.prototype.isSurrenderable = function(sender) {
     if(sender instanceof jzt.things.Bullet) {
@@ -1900,24 +1883,6 @@ jzt.things.Water.prototype.sendMessage = function(message) {
 jzt.things.ThingFactory = jzt.things.ThingFactory || {};
 
 /**
- * Creates a new Thing based on a provided symbol, and assigns it to a given board.
- *
- * @param symbol A symbol used as a shorthand to represent a built-in Thing.
- * @param board A board which should own the created Thing.
- */
-jzt.things.ThingFactory.createThing = function(symbol, board) {
-
-    // Create our thing map if it hasn't been created already
-    var thingMap = jzt.things.ThingFactory.getThingMap();
-
-    var thingFunction = thingMap.symbols[symbol];
-    if(thingFunction) {
-        return new thingFunction(board);
-    }
-
-};
-
-/**
  * Creates a new Thing based on provided serialized data, and assigns it to a given board.
  * 
  * @param data Serialized data to turn into a Thing
@@ -1927,7 +1892,7 @@ jzt.things.ThingFactory.deserialize = function(data, board) {
 
     var thingMap = jzt.things.ThingFactory.getThingMap();
 
-    var thingFunction = thingMap.serializationTypes[data.serializationType];
+    var thingFunction = thingMap[data.type];
     if(thingFunction) {
         var result = new thingFunction(board);
         result.deserialize(data);
@@ -1937,8 +1902,7 @@ jzt.things.ThingFactory.deserialize = function(data, board) {
 };
 
 /**
- * Lazily fetches a map of Things that have declared themself as serializeable in
- * shorthand (symbol-based) or fully (serializationType).
+ * Lazily fetches a map of Things that have declared themself as serializeable .
  *
  * @return A map of Thing functions indexed by their symbols or serialization types.
  */ 
@@ -1946,22 +1910,15 @@ jzt.things.ThingFactory.getThingMap = function() {
 
     if(jzt.things.ThingFactory.thingMap === undefined) {
 
-        jzt.things.ThingFactory.thingMap = {
-            symbols: {},
-            serializationTypes: {}
-        };
+        jzt.things.ThingFactory.thingMap = {};
 
         for(thing in jzt.things) {
             if(jzt.things.hasOwnProperty(thing)) {
 
                 var thingProperty = jzt.things[thing];
 
-                if(thingProperty.hasOwnProperty('symbol')) {
-                    jzt.things.ThingFactory.thingMap.symbols[thingProperty.symbol] = thingProperty;
-                }
-
                 if(thingProperty.hasOwnProperty('serializationType')) {
-                    jzt.things.ThingFactory.thingMap.serializationTypes[thingProperty.serializationType] = thingProperty;
+                    jzt.things.ThingFactory.thingMap[thingProperty.serializationType] = thingProperty;
                 }
 
             }

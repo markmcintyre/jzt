@@ -8,9 +8,11 @@ window.jzt = window.jzt || {};
  */
 jzt.Board = function(boardData, game) {
 
+    this.validateData(boardData);
+
     this.name = boardData.name;
     this.game = game;
-    this.tiles = undefined;
+    this.tiles = [];
     this.scripts = [];
     this.dark = boardData.dark;
 
@@ -30,11 +32,29 @@ jzt.Board = function(boardData, game) {
     this.DARK_SPRITE_COLOR = jzt.colors.Colors['8'];
     this.BOARD_DATA_WORD_LENGTH = 4;
     
+    this.height = boardData.height;
+    this.width = boardData.width;
+
     this.initializeTiles(boardData.tiles);
     this.initializeScripts(boardData.scripts);
-    this.initializeUpdateableThings(boardData.things);
-    this.initializeDoors(boardData.doors);
     
+};
+
+jzt.Board.prototype.validateData = function(data) {
+
+    // Let's hope for the best...
+    var valid = true;
+
+    if(!data.height || !data.width) valid = false;
+    if(typeof data.height !== 'number') valid = false;
+    if(typeof data.width !== 'number') valid = false;
+    if(!data.tiles || !data.tiles instanceof Array) valid = false;
+    if(!data.scripts || !data.script instanceof Array) valid = false;
+
+    if(!valid) {
+        throw 'Invalid board data.';
+    }
+
 };
 
 /**
@@ -58,63 +78,28 @@ jzt.Board.prototype.serialize = function() {
 
     result.playerX = this.player.point.x;
     result.playerY = this.player.point.y;
-
-    // Store Tiles
+    result.width = this.width;
+    result.height = this.height;
     result.tiles = [];
-    result.doors = [];
-    result.things = [];
-    for(var row = 0; row < this.height; ++row) {
+    result.scripts = [];
 
-        point.y = row;
-        var dataStream = '';
-
-        for(var column = 0; column < this.width; ++column) {
-
-            point.x = column;
-            var tile = this.getTile(point);
-            if(tile && tile.constructor.symbol != undefined) {
-                dataStream += tile.constructor.symbol + tile.background.code + tile.foreground.code;
-            }
-            else if(tile instanceof jzt.things.Door) {
-                result.doors.push(tile.serialize());
-                dataStream += '    ';
-            }
-            else if(tile instanceof jzt.things.UpdateableThing) {
-                serializedThing = tile.serialize();
-                if(serializedThing) {
-                    result.things.push(serializedThing);
-                }
-                dataStream += '    ';
-            }
-            else {
-                dataStream += '    ';
-            }
+    // Store tiles
+    this.each(function(tile, point) {
+        if(tile) {
+            result.tiles.push(tile.serialize());
         }
-
-        result.tiles.push(dataStream);
-
-    }
+        else {
+            result.tiles.push({});
+        }
+    });
 
     // Store scripts
-    result.scripts = [];
     for(var index = 0; index < this.scripts.length; ++index) {
         var script = this.scripts[index];
         result.scripts.push( script.serialize() );
     }
 
     return result;
-
-};
-
-jzt.Board.prototype.initializeDoors = function(doors) {
-
-    if(doors) {
-        for(var index = 0; index < doors.length; ++index) {
-            var door = new jzt.things.Door(this);
-            door.deserialize(doors[index]);
-            this.setTile(door.point, door);
-        }
-    }
 
 };
 
@@ -167,86 +152,24 @@ jzt.Board.prototype.initializePlayer = function(player) {
  *      into this Board.
  */
 jzt.Board.prototype.initializeTiles = function(tileDataCollection) {
-    
-    // Establish our board height
-    this.height = tileDataCollection.length;
-    this.width = undefined;
 
-    // For each row in our collection
-    for(var row = 0; row < this.height; ++row) {
+    var x = 0;
+    var y = 0;
 
-        var dataStream = tileDataCollection[row];
+    for(var index in tileDataCollection) {
 
-        // Establiash our board width
-        if(this.width == undefined) {
-            this.width = Math.ceil(dataStream.length / this.BOARD_DATA_WORD_LENGTH);
+        var tile = tileDataCollection[index];
+        var thing = jzt.things.ThingFactory.deserialize(tile, this);
+        if(thing !== undefined) {
+            this.setTile(new jzt.Point(x,y), thing);
         }
 
-        if(this.tiles == undefined) {
-            this.tiles = new Array(this.width * this.height);
+        if(++x >= this.width) {
+            x = 0;
+            y++;
         }
 
-        // For each column in our collection
-        for(var column = 0; column < this.width; ++column) {
-
-            // Calculate our string offset for this column
-            var offset = column * this.BOARD_DATA_WORD_LENGTH;
-
-            // Grab our symbol, foreground color, and background color
-            var symbol = dataStream.charAt(offset) + dataStream.charAt(offset+1);
-            var background = dataStream.charAt(offset+2);
-            var foreground = dataStream.charAt(offset+3);
-
-            // Create a thing from our symbol
-            var thing = jzt.things.ThingFactory.createThing(symbol, this);
-
-            // If a thing was created...
-            if(thing) {
-
-                // Assign it to our board
-                thing.board = this;
-
-                // If we have colors, assign those too
-                if(jzt.colors.Colors[background] != undefined) {
-                    thing.background = jzt.colors.Colors[background];
-                }
-
-                if(jzt.colors.Colors[foreground] != undefined) {
-                    thing.foreground = jzt.colors.Colors[foreground];
-                }
-
-                // Set the thing as our board tile at its location
-                this.setTile(new jzt.Point(column, row), thing);
-
-            }
-
-        }
-
-    } 
-    
-};
-
-/**
- * Initializes Updateable data given a collection of serialized UpdateableThings.
- * 
- * @param updateableDataCollection An array of serialized UpdateableThings to be
- *        deserialized into actual UpdateableThing instances for this Board.
- */
-jzt.Board.prototype.initializeUpdateableThings = function(updateableDataCollection) {
-    
-    if(!updateableDataCollection) {
-        return;
-    }
-    
-    for(var index = 0; index < updateableDataCollection.length; ++index) {
-        
-        var updateableData = updateableDataCollection[index];
-        var updateableThing = jzt.things.ThingFactory.deserialize(updateableData, this);
-        if(updateableThing !== undefined) {
-            this.setTile(updateableThing.point, updateableThing);
-        }
-        
-    }
+    };
     
 };
 
