@@ -519,9 +519,6 @@ jzt.Board.prototype.update = function() {
         }
 
     });
-
-    // Always update the player last
-    this.player.update();
         
 };
 

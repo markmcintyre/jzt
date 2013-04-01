@@ -1,5 +1,11 @@
 window.jzt = window.jzt || {};
 
+jzt.GameState = {
+    Playing: 0,
+    Paused: 1,
+    GameOver: 2
+};
+
 /**
  * Game represents a playable JZT game, including all Boards and a player.
  *
@@ -35,6 +41,14 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     this.blinkCycle = 0;
     this.blinkState = true;
     this.colorCycleIndex = 0;
+    this.state = jzt.GameState.Playing;
+    this.counters = {
+        health: 100,
+        ammo: 0,
+        gems: 0,
+        torches: 0,
+        score: 0
+    };
 
     this.currentBoard = undefined;
     this.startingBoard = data.startingBoard;
@@ -49,6 +63,30 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     var graphicsLoadedCallback = this.onGraphicsLoaded.bind(this);
     this.resources.graphics = new jzt.Graphics(this, graphicsLoadedCallback);
     this.resources.audio = new jzt.Audio();
+
+};
+
+/**
+ * Adjusts a game counter by a provided value offset. This offset may be
+ * positive (to increase the counter), or negative (to decrease it).
+ *
+ * @param counter A name of a counter
+ * @param value A value by which to adjust a counter
+ */
+jzt.Game.prototype.adjustCounter = function(counter, value) {
+
+    // If the counter doesn't already exist, create it now
+    if(this.counters[counter] === undefined) {
+        this.counters[counter] = 0;
+    }
+
+    // Adjust our value
+    this.counters[counter] += value;
+
+    // Values cannot be less than zero
+    if(this.counters[counter] < 0) {
+        this.counters[counter] = 0;
+    }
 
 };
 
@@ -78,8 +116,20 @@ jzt.Game.prototype.run = function() {
  * this Game for a single graphics tick.
  */  
 jzt.Game.prototype.loop = function() {
-    this.update();
-    this.draw();
+    
+    if(this.state === jzt.GameState.Playing) {
+        this.update();
+        this.draw();
+        this.player.update();
+    }
+    else if(this.state === jzt.GameState.GameOver) {
+        this.currentBoard.setDisplayMessage('Game over!');
+        this.update();
+        this.draw();
+    }
+    else if(this.state === jzt.GameState.Paused) {
+        this.draw();
+    }
 };
 
 /**
@@ -237,6 +287,13 @@ jzt.Game.prototype.update = function() {
     }
 
     this.currentBoard.update();
+
+    // Check if our player is dead
+    if(this.counters.health <= 0 && this.state !== jzt.GameState.GameOver) {
+        this.state = jzt.GameState.GameOver;
+        this.resources.audio.play('s-cd#g+c-ga#+dgfg#+cf---q.c', true);
+        this.resources.audio.setActive(false);
+    }
 
 };
     

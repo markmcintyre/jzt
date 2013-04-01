@@ -2,24 +2,30 @@ window.jzt = window.jzt || {};
 
 jzt.Audio = function() {
 
-	this.active = true;
+	this.setActive(true);
 
-	if (typeof AudioContext !== "undefined") {
-    	this.context = new AudioContext();
-	}
-	else if (typeof webkitAudioContext !== "undefined") {
-    	this.context = new webkitAudioContext();
-	}
-	else {
-    	this.active = false;
+	if(this.active) {
+
+		if (typeof AudioContext !== 'undefined') {
+	    	this.context = new AudioContext();
+		}
+		else if (typeof webkitAudioContext !== 'undefined') {
+	    	this.context = new webkitAudioContext();
+		}
+
+		this.userVolume = 0.08;
+		this.volume = this.context.createGainNode();
+		this.volume.gain.value = this.userVolume;
+		this.volume.connect(this.context.destination);
+		this.timestamp = this.context.currentTime;
+		this.interruptTimestamp = this.context.currentTime;
 	}
 
-	this.userVolume = 0.08;
-	this.volume = this.context.createGainNode();
-	this.volume.gain.value = this.userVolume;
-	this.volume.connect(this.context.destination);
-	this.timestamp = this.context.currentTime;
-	this.interruptTimestamp = this.context.currentTime;
+};
+
+jzt.Audio.prototype.setActive = function(activeValue) {
+
+	this.active = (activeValue && (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined'));
 
 };
 
@@ -31,6 +37,7 @@ jzt.Audio.prototype.cancel = function() {
 		this.volume.gain.value = this.userVolume;
 		this.oscillator.stop(0);
 		this.timestamp = this.context.currentTime;
+		this.interruptTimestamp = this.context.currentTime;
 	}
 
 }

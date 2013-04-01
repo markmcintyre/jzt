@@ -74,6 +74,17 @@ jzt.things.Thing.prototype.play = function(notation, uninterruptable) {
 };
 
 /**
+ * Adjusts a game counter by a provided value offset. This offset may be
+ * positive (to increase the counter), or negative (to decrease it).
+ *
+ * @param counter A name of a counter
+ * @param value A value by which to adjust a counter
+ */
+jzt.things.Thing.prototype.adjustCounter = function(counter, value) {
+    this.board.game.adjustCounter(counter, value);
+};
+
+/**
  * Delivers a provided message to this Thing.
  *
  * @param messageName a name of a message to deliver.
@@ -286,6 +297,11 @@ jzt.things.UpdateableThing.prototype.getBlockedDirections = function() {
  * Updates this UpdateableThing for a single execution cycle.
  */
 jzt.things.UpdateableThing.prototype.update = function() {
+
+    if(this.board.game.state === jzt.GameState.GameOver) {
+        this.doTick();
+        return;
+    }
 
     this.cycleCount++;
 
@@ -1546,6 +1562,7 @@ jzt.things.Player.prototype.sendMessage = function(message) {
     if(message === 'SHOT') {
         this.play('t--c+c-c+d#');
         this.board.setDisplayMessage('Ouch!');
+        this.adjustCounter('health', -10);
     }
 
 };
