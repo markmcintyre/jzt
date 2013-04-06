@@ -132,6 +132,9 @@ jzt.Game.prototype.loop = function() {
         this.update();
         this.draw();
         this.player.update();
+        if(this.keyboard.isPressed(this.keyboard.P)) {
+            this.setState(jzt.GameState.Paused);
+        }
     }
     else if(this.state === jzt.GameState.GameOver) {
         this.currentBoard.setDisplayMessage('Game over!');
@@ -140,6 +143,10 @@ jzt.Game.prototype.loop = function() {
     }
     else if(this.state === jzt.GameState.Paused) {
         this.draw();
+        if(this.keyboard.isAnyPressed()) {
+            this.setState(jzt.GameState.Playing);
+            this.player.foregroundColor = jzt.colors.Colors['F'];
+        }
     }
 };
 
@@ -164,7 +171,27 @@ jzt.Game.prototype.movePlayerToDoor = function(doorId, boardName) {
 
     if(door) {
         this.setBoard(newBoard, door.point);
+        this.setState(jzt.GameState.Paused);
     }
+
+};
+
+jzt.Game.prototype.setState = function(state) {
+
+    if(state === jzt.GameState.Paused) {
+        this.player.background = jzt.colors.getBlinkingEquivalent(this.player.background);
+        this.keyboard.cancelInput();
+    }
+
+    else if(state === jzt.GameState.Playing) {
+        if(this.state === jzt.GameState.Paused) {
+            delete this.keyboard._pressed[this.keyboard.P];
+            this.player.background = jzt.colors.getNonBlinkingEquivalent(this.player.background);
+            this.currentBoard.setDisplayMessage(undefined);
+        }
+    }
+
+    this.state = state;
 
 };
 
@@ -301,7 +328,7 @@ jzt.Game.prototype.update = function() {
 
     // Check if our player is dead
     if(this.counters.health <= 0 && this.state !== jzt.GameState.GameOver) {
-        this.state = jzt.GameState.GameOver;
+        this.setState(jzt.GameState.GameOver);
         this.resources.audio.play('s-cd#g+c-ga#+dgfg#+cf---q.c', true);
         this.resources.audio.setActive(false);
     }

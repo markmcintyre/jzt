@@ -194,6 +194,13 @@ jzt.colors.getNonBlinkingEquivalent = function(color) {
     return color;
 };
 
+jzt.colors.getBlinkingEquivalent = function(color) {
+    if(!jzt.colors.isBlinkableAsBackground(color)) {
+        return jzt.colors.Colors[color.index + 8];
+    }
+    return color;
+};
+
 jzt.colors.getColor = function(name) {
     
     name = name.toUpperCase();

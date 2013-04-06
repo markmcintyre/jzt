@@ -6,6 +6,15 @@
 			#jzt {
 				position: relative;
 			}
+			#customizers {
+				position: absolute;
+				top: 0;
+				right: 0;
+				background-color: blue;
+				width: 300px;
+				height: 100%;
+				color: white;
+			}
 		</style>
 	</head>
 	<body>
@@ -34,6 +43,7 @@
 			<label><input type="radio" name="activeTemplate" value="SliderEw" />Slider (East/West)</label>
 			<br/>
 			<label><input type="radio" name="activeTemplate" value="Teleporter" />Teleporter</label>
+			<label><input type="radio" name="activeTemplate" value="Door" />Door</label>
 			<br/>
 			<label><input type="radio" name="activeTemplate" value="Gem" />Gem</label>
 			<label><input type="radio" name="activeTemplate" value="Ammo" />Ammo</label>
@@ -51,9 +61,13 @@
 				</select>
 			</label>
 
+		</div>
 
-
-
+		<div id="customizers">
+			<div id="door-customizer">
+				<label>Door ID: <input id="door-id"/></label><br/>
+				<label>Target Board: <select id="door-target"></select></label><br/>
+			</div>
 		</div>
 		
 		<script type="text/javascript" src="script/jzt.js"></script>
@@ -73,8 +87,22 @@
 			var editor = undefined;
 
 			function onToolSelected(event) {
-				if(event.target.value) {
-					editor.setActiveTool({type: event.target.value});
+
+				var toolType = event.target.value;
+
+				if(toolType) {
+
+					var activeTool = {type: toolType};
+
+					switch(toolType) {
+						case 'Door': 
+							activeTool.doorId = document.getElementById('door-id').value;
+							activeTool.targetBoard = document.getElementById('door-target').value;
+							break;
+					}
+
+					editor.setActiveTool(activeTool);
+
 				}
 				else {
 					editor.setActiveTool(undefined);
@@ -96,6 +124,8 @@
 
 			function onBoardAdded(boardName) {
 				boardSelector.options[boardSelector.options.length] = new Option(boardName, boardName);
+				var doorTarget = document.getElementById('door-target');
+				doorTarget.options[doorTarget.options.length] = new Option(boardName, boardName);
 			};
 
 			function onBoardRemoved(boardName) {

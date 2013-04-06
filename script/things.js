@@ -31,7 +31,7 @@ jzt.things.Thing.prototype.serialize = function() {
     if(this.constructor.hasOwnProperty('serializationType')) {
         result.type = this.constructor.serializationType;
     }
-    result.color = this.background.code + (this.foreground == '*' ? '*' : this.foreground.code);
+    result.color = (this.background === undefined ? '*' : this.background.code) + (this.foreground == '*' ? '*' : this.foreground.code);
     return result;
 };
 
@@ -48,16 +48,12 @@ jzt.things.Thing.prototype.deserialize = function(data) {
         var foregroundCode = data.color.charAt(1);
 
         this.foreground = foregroundCode == '*' ? foregroundCode : jzt.colors.Colors[foregroundCode];
-        this.background = jzt.colors.Colors[backgroundCode];
+        this.background = backgroundCode == '*' ? undefined : jzt.colors.Colors[backgroundCode];
     }
     else {
         if(!this.foreground) {
             this.foreground = jzt.colors.Colors['E'];
         }
-        if(!this.background) {
-            this.background = jzt.colors.Colors['0'];
-        }
-
     }
     
 };

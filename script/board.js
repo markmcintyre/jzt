@@ -76,8 +76,15 @@ jzt.Board.prototype.serialize = function() {
     jzt.util.storeOption(result, 'south', this.south);
     jzt.util.storeOption(result, 'west', this.west);
 
-    result.playerX = this.player.point.x;
-    result.playerY = this.player.point.y;
+    if(this.player) {
+        result.playerX = this.player.point.x;
+        result.playerY = this.player.point.y;
+    }
+    else {
+        result.playerX = this.defaultPlayerX;
+        result.playerY = this.defaultPlayerY;
+    }
+
     result.width = this.width;
     result.height = this.height;
     result.tiles = [];
@@ -544,11 +551,18 @@ jzt.Board.prototype.equals = function(otherBoard) {
  * @param message a message to be displayed.
  */ 
 jzt.Board.prototype.setDisplayMessage = function(message) {
-    this.displayMessage = ' ' + message + ' ';
-    if(this.displayMessage.length > this.width) {
-        this.displayMessage = this.displayMessage.substring(0, this.width);
+
+    if(message !== undefined) {
+        this.displayMessage = ' ' + message + ' ';
+        if(this.displayMessage.length > this.width) {
+            this.displayMessage = this.displayMessage.substring(0, this.width);
+        }
+        this.displayMessageTick = this.DISPLAY_MESSAGE_TTL;
     }
-    this.displayMessageTick = this.DISPLAY_MESSAGE_TTL;
+    else {
+        this.displayMessage = undefined;
+        this.displayMessageTick = 0;
+    }
 };
     
 /**
