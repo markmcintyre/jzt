@@ -1747,15 +1747,13 @@ jzt.things.Teleporter.prototype.getSpriteIndex = function() {
 
 jzt.things.Teleporter.prototype.push = function(direction) {
 
-    var currentDirection = jzt.Direction.getDirectionFromName(this.orientation);
-
     // We only teleport in our current direction
-    if(!currentDirection.equals(direction)) {
+    if(!this.orientation.equals(direction)) {
         return;
     }
 
     var currentPoint = this.point.add(jzt.Direction.opposite(this.orientation));
-    var destinationPoint = this.point.add(currentDirection);
+    var destinationPoint = this.point.add(this.orientation);
 
     var success = this.board.moveTile(currentPoint, destinationPoint);
 
@@ -1766,14 +1764,14 @@ jzt.things.Teleporter.prototype.push = function(direction) {
         while(!this.board.isOutside(destinationPoint)) {
 
             // Look at the next tile in the direction
-            destinationPoint = destinationPoint.add(currentDirection);
+            destinationPoint = destinationPoint.add(this.orientation);
 
             // If we found a matching teleporter...
             var thing = this.board.getTile(destinationPoint);
             if(thing && thing instanceof jzt.things.Teleporter && thing.orientation === jzt.Direction.opposite(this.orientation)) {
 
                 // Move the tile to the matching teleporter's destination
-                if(this.board.moveTile(currentPoint, destinationPoint.add(currentDirection))) {
+                if(this.board.moveTile(currentPoint, destinationPoint.add(this.orientation))) {
                     this.play('tc+d-e+f#-g#+a#c+d');
                 }
                 break;
