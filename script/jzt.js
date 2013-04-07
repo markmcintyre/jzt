@@ -26,7 +26,6 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     this.BLINK_RATE = Math.round(this.FPS / 3);
     this.COLOR_CYCLE_MAX = 6;
 
-    this.tick = 0;
     this._intervalId = undefined;
     
     this.onLoadCallback = onLoadCallback;
@@ -107,47 +106,6 @@ jzt.Game.prototype.setCounterValue = function(counter, value) {
  */
 jzt.Game.prototype.onGraphicsLoaded = function() {
     this.onLoadCallback();
-};
-
-/**
- * Starts this Game's loop, effectively starting this Game.
- */
-jzt.Game.prototype.run = function() {
-
-    this.keyboard.initialize();
-    this.setBoard(this.startingBoard);
-        
-    // Start the game loop
-    this._intervalId = setInterval(this.loop.bind(this), 1000 / this.FPS);
-        
-};
-  
-/**
- * Executes a single cycle of this Game's primary loop, effectively running
- * this Game for a single graphics tick.
- */  
-jzt.Game.prototype.loop = function() {
-    
-    if(this.state === jzt.GameState.Playing) {
-        this.update();
-        this.draw();
-        this.player.update();
-        if(this.keyboard.isPressed(this.keyboard.P)) {
-            this.setState(jzt.GameState.Paused);
-        }
-    }
-    else if(this.state === jzt.GameState.GameOver) {
-        this.currentBoard.setDisplayMessage('Game over!');
-        this.update();
-        this.draw();
-    }
-    else if(this.state === jzt.GameState.Paused) {
-        this.draw();
-        if(this.keyboard.isAnyPressed()) {
-            this.setState(jzt.GameState.Playing);
-            this.player.foregroundColor = jzt.colors.Colors['F'];
-        }
-    }
 };
 
 /**
@@ -316,15 +274,75 @@ jzt.Game.prototype.setBoard = function(board, playerPoint) {
 };
     
 /**
+ * Starts this Game's loop, effectively starting this Game.
+ */
+jzt.Game.prototype.run = function() {
+
+    this.keyboard.initialize();
+    this.setBoard(this.startingBoard);
+        
+    // Start the game loop
+    this._intervalId = setInterval(this.loop.bind(this), 1000 / this.FPS);
+        
+};
+  
+/**
+ * Executes a single cycle of this Game's primary loop, effectively running
+ * this Game for a single graphics tick.
+ */  
+jzt.Game.prototype.loop = function() {
+
+    this.update();
+    this.draw();
+
+};
+
+/**
  * Updates this Game's state by one execution tick.
  */
 jzt.Game.prototype.update = function() {
 
-    if(++this.tick > 255) {
-        this.tick = 0;
+    // If we aren't paused...
+    if(this.state !== jzt.GameState.Paused) {
+
+        // Update our board and our counters
+        this.currentBoard.update();
+        this.checkCounters();
+        
     }
 
-    this.currentBoard.update();
+    // If we're playing...
+    if(this.state === jzt.GameState.Playing) {
+
+        // Update the player
+        this.player.update();
+
+        // Also check if the user wants to pause
+        if(this.keyboard.isPressed(this.keyboard.P)) {
+            this.setState(jzt.GameState.Paused);
+        }
+
+    }
+
+    // If we're paused...
+    else if(this.state === jzt.GameState.Paused) {
+
+        // Unpause on any expected keypress
+        if(this.keyboard.isAnyPressed()) {
+            this.setState(jzt.GameState.Playing);
+            this.player.foregroundColor = jzt.colors.Colors['F'];
+        }
+
+    }
+
+    // If it's game over, say so!
+    else if(this.state === jzt.GameState.GameOver) {
+        this.currentBoard.setDisplayMessage('Game over!');
+    }
+
+};
+
+jzt.Game.prototype.checkCounters = function() {
 
     // Check if our player is dead
     if(this.counters.health <= 0 && this.state !== jzt.GameState.GameOver) {
