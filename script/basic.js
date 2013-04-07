@@ -64,6 +64,25 @@ jzt.Direction.each = function(callback) {
     callback(jzt.Direction.West);
 };
 
+jzt.Direction.fromName = function(name) {
+    switch(name) {
+        case 'N':
+        case 'North':
+            return jzt.Direction.North;
+        case 'E':
+        case 'East':
+            return jzt.Direction.East;
+        case 'S':
+        case 'South':
+            return jzt.Direction.South;
+        case 'W':
+        case 'West':
+            return jzt.Direction.West;
+        default:
+            return undefined;
+    }
+};
+
 jzt.Direction.getName = function(direction) {
     switch(direction) {
         case jzt.Direction.North:

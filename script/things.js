@@ -64,9 +64,21 @@ jzt.things.Thing.prototype.deserialize = function(data) {
  *
  * @param notation An audio notation to play.
  * @param uninterruptable Whether or not this notation can be interrupted by another.
+ * @param defer If set, we do not even schedule our notation if another is already playing.
  */
-jzt.things.Thing.prototype.play = function(notation, uninterruptable) {
-    this.board.game.resources.audio.play(notation, uninterruptable);
+jzt.things.Thing.prototype.play = function(notation, uninterruptable, defer) {
+
+    /*
+     * Deferring audio means we don't even attempt to play something if another
+     * is already playing. This not only saves wasted time scheduling audio
+     * that will be cancelled by a future sound, but also allows previously
+     * triggered sounds to take priority even if that sound wasn't declared
+     * uninterruptable.
+     */
+    if(!defer || !this.board.game.resources.audio.isPlaying()) {
+        this.board.game.resources.audio.play(notation, uninterruptable);
+    }
+
 };
 
 /**
@@ -145,11 +157,10 @@ jzt.things.Thing.prototype.isPlayerAligned = function() {
  * 
  * @param direction A Direction in which to move this Thing.
  * @param weak If true, we will move weakly.
- * @param flier If true, we will move as a flier.
  * @return true if the move was successful, false otherwise.
  */
-jzt.things.Thing.prototype.move = function(direction, weak, flier) {
-    return this.board.moveTile(this.point, this.point.add(direction), weak, flier);
+jzt.things.Thing.prototype.move = function(direction, weak) {
+    return this.board.moveTile(this.point, this.point.add(direction), weak);
 };
 
 /**
@@ -500,12 +511,8 @@ jzt.things.Boulder.serializationType = 'Boulder';
  * @param direction A direction in which this Thing is requested to move.
  */
 jzt.things.Boulder.prototype.push = function(direction) {
-    this.move(direction);
-};
-
-jzt.things.Boulder.prototype.sendMessage = function(message) {
-    if(message === 'TOUCH') {
-        this.play('t--f');
+    if(this.move(direction)) {
+        this.play('t--f', false, true);
     }
 };
 
@@ -1634,7 +1641,7 @@ jzt.things.Player.prototype.inTorchRange = function(point) {
 jzt.things.Player.prototype.sendMessage = function(message) {
 
     if(message === 'SHOT') {
-        this.play('t--c+c-c+d#');
+        this.play('t--c+c-c+d#', true);
         this.board.setDisplayMessage('Ouch!');
         this.adjustCounter('health', -10);
     }
@@ -1647,13 +1654,60 @@ jzt.things.Player.prototype.updateOnReverse = function() {
 
 //--------------------------------------------------------------------------------
 
+jzt.things.Pusher = function(board) {
+    jzt.things.UpdateableThing.call(this, board);
+    this.orientation = jzt.Direction.South;
+    this.speed = 3;
+    this.initializeSprite();
+};
+jzt.things.Pusher.prototype = new jzt.things.UpdateableThing();
+jzt.things.Pusher.prototype.constructor = jzt.things.Pusher;
+jzt.things.Pusher.serializationType = 'Pusher';
+
+jzt.things.Pusher.prototype.initializeSprite = function() {
+    if(this.orientation === jzt.Direction.North) {
+        this.spriteIndex = 30;
+    }
+    else if(this.orientation === jzt.Direction.East) {
+        this.spriteIndex = 16;
+    }
+    else if(this.orientation === jzt.Direction.South) {
+        this.spriteIndex = 31;
+    }
+    else if(this.orientation === jzt.Direction.West) {
+        this.spriteIndex = 17;
+    }
+};
+
+jzt.things.Pusher.prototype.serialize = function() {
+    var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    result.orientation = jzt.Direction.getName(this.orientation);
+    return result;
+};
+
+jzt.things.Pusher.prototype.deserialize = function(data) {
+    jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    if(data.orientation) {
+        this.orientation = jzt.Direction.fromName(data.orientation);
+    }
+    this.initializeSprite();
+};
+
+jzt.things.Pusher.prototype.doTick = function() {
+    if(this.move(this.orientation)) {
+        this.play('t--f', false, true);
+    }
+};
+
+//--------------------------------------------------------------------------------
+
 /**
  * Teleporter is an UpdateableThing capable of teleporting the player
  * to an associated opposite teleporter along the same directional axis.
  */
  jzt.things.Teleporter = function(board) {
     jzt.things.UpdateableThing.call(this, board);
-    this.orientation = 'E';
+    this.orientation = jzt.Direction.East;
     this.animationFrame = 2;
     this.speed = 3;
  };
@@ -1661,64 +1715,46 @@ jzt.things.Teleporter.prototype = new jzt.things.UpdateableThing();
 jzt.things.Teleporter.prototype.constructor = jzt.things.Teleporter;
 jzt.things.Teleporter.serializationType = 'Teleporter';
 jzt.things.Teleporter.animationFrames = {
-    'N': [196, 126, 94, 126],
-    'E': [179, 41, 62, 41],
-    'S': [196, 126, 118, 126],
-    'W': [179, 40, 60, 40]
+    'North': [196, 126, 94, 126],
+    'East': [179, 41, 62, 41],
+    'South': [196, 126, 118, 126],
+    'West': [179, 40, 60, 40]
 };
 
 jzt.things.Teleporter.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
-    result.orientation = this.orientation;
+    result.orientation = jzt.Direction.getName(this.orientation);
     return result;
 };
 
 jzt.things.Teleporter.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
-    if(data.orientation){this.orientation = data.orientation;}
+    if(data.orientation) {
+        this.orientation = jzt.Direction.fromName(data.orientation);
+    }
 };
 
 jzt.things.Teleporter.prototype.doTick = function() {
     this.animationFrame++;
-    if(this.animationFrame >= jzt.things.Teleporter.animationFrames[this.orientation].length) {
+    if(this.animationFrame >= jzt.things.Teleporter.animationFrames[jzt.Direction.getName(this.orientation)].length) {
         this.animationFrame = 0;
     }
 };
 
-jzt.things.Teleporter.prototype.getMatchingOrientation = function() {
-    switch(this.orientation) {
-        case 'N': return 'S';
-        case 'E': return 'W';
-        case 'S': return 'N';
-        case 'W': return 'E';
-        default: return undefined;
-    };
-};
-
 jzt.things.Teleporter.prototype.getSpriteIndex = function() {
-    return jzt.things.Teleporter.animationFrames[this.orientation][this.animationFrame];
+    return jzt.things.Teleporter.animationFrames[jzt.Direction.getName(this.orientation)][this.animationFrame];
 };
 
 jzt.things.Teleporter.prototype.push = function(direction) {
 
-    function getDirection(directionName) {
-        switch(directionName) {
-            case 'N': return jzt.Direction.North;
-            case 'E': return jzt.Direction.East;
-            case 'S': return jzt.Direction.South;
-            case 'W': return jzt.Direction.West;
-            default: return undefined;
-        }
-    }
-
-    var currentDirection = getDirection(this.orientation);
+    var currentDirection = jzt.Direction.getDirectionFromName(this.orientation);
 
     // We only teleport in our current direction
     if(!currentDirection.equals(direction)) {
         return;
     }
 
-    var currentPoint = this.point.add(getDirection(this.getMatchingOrientation()));
+    var currentPoint = this.point.add(jzt.Direction.opposite(this.orientation));
     var destinationPoint = this.point.add(currentDirection);
 
     var success = this.board.moveTile(currentPoint, destinationPoint);
@@ -1734,7 +1770,7 @@ jzt.things.Teleporter.prototype.push = function(direction) {
 
             // If we found a matching teleporter...
             var thing = this.board.getTile(destinationPoint);
-            if(thing && thing instanceof jzt.things.Teleporter && thing.orientation === this.getMatchingOrientation()) {
+            if(thing && thing instanceof jzt.things.Teleporter && thing.orientation === jzt.Direction.opposite(this.orientation)) {
 
                 // Move the tile to the matching teleporter's destination
                 if(this.board.moveTile(currentPoint, destinationPoint.add(currentDirection))) {
@@ -1874,13 +1910,9 @@ jzt.things.SliderEw.serializationType = 'SliderEw';
  */
 jzt.things.SliderEw.prototype.push = function(direction) {
     if(direction.equals(jzt.Direction.East) || direction.equals(jzt.Direction.West)) {
-        this.move(direction);
-    }
-};
-
-jzt.things.SliderEw.prototype.sendMessage = function(message) {
-    if(message === 'TOUCH') {
-        this.play('t--f');
+        if(this.move(direction)) {
+            this.play('t--f', false, true);
+        }
     }
 };
 
@@ -1906,13 +1938,9 @@ jzt.things.SliderNs.serializationType = 'SliderNs';
  */
 jzt.things.SliderNs.prototype.push = function(direction) {
     if(direction.equals(jzt.Direction.North) || direction.equals(jzt.Direction.South)) {
-        this.move(direction);
-    }
-};
-
-jzt.things.SliderNs.prototype.sendMessage = function(message) {
-    if(message === 'TOUCH') {
-        this.play('t--f');
+        if(this.move(direction)) {
+            this.play('t--f', false, true);
+        }
     }
 };
 

@@ -42,6 +42,10 @@ jzt.Audio.prototype.cancel = function() {
 
 }
 
+jzt.Audio.prototype.isPlaying = function() {
+	return this.context.currentTime < this.timestamp;
+};
+
 jzt.Audio.prototype.playAfter = function(notation, uninterruptable) {
 
 	if(this.active) {

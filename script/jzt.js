@@ -347,6 +347,7 @@ jzt.Game.prototype.checkCounters = function() {
     // Check if our player is dead
     if(this.counters.health <= 0 && this.state !== jzt.GameState.GameOver) {
         this.setState(jzt.GameState.GameOver);
+        this.resources.audio.cancel();
         this.resources.audio.play('s-cd#g+c-ga#+dgfg#+cf---q.c', true);
         this.resources.audio.setActive(false);
     }
