@@ -14,7 +14,7 @@ jzt.Point.prototype.add = function(other) {
 };
 
 jzt.Point.prototype.aligned = function(other, spread) {
-    spread = spread === undefined ? 9 : spread;
+    spread = spread === undefined ? 1 : spread;
     return (Math.abs(this.x - other.x) < spread) || (Math.abs(this.y - other.y) < spread);
 };
 

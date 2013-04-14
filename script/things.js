@@ -151,12 +151,12 @@ jzt.things.Thing.prototype.isPlayerAdjacent = function(direction) {
 
 /**
  * Returns whether or not this Thing is aligned to the player
- * with a certain sensitivity.
+ * with a certain spread.
  *
  * @return true if player is aligned, false otherwise.
  */
-jzt.things.Thing.prototype.isPlayerAligned = function(sensitivity) {
-    return this.point.aligned(this.board.player.point, sensitivity);
+jzt.things.Thing.prototype.isPlayerAligned = function(spread) {
+    return this.point.aligned(this.board.player.point, spread);
 };
 
 /**
@@ -528,7 +528,7 @@ jzt.things.Bear.prototype.serialize = function() {
  */
 jzt.things.Bear.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
-    this.sensitivity = data.sensitivity;
+    this.sensitivity = jzt.util.getOption(data, 'sensitivity', 9);
 };
 
 jzt.things.Bear.prototype.push = function(direction) {
@@ -2106,6 +2106,68 @@ jzt.things.Teleporter.prototype.push = function(direction) {
 
 //--------------------------------------------------------------------------------
 
+jzt.things.ThrowingStar = function(board) {
+    jzt.things.UpdateableThing.call(this, board);
+    this.speed = 1;
+    this.spriteIndex = 179;
+    this.animationIndex = Math.floor(Math.random()*jzt.things.ThrowingStar.animationFrames.length-1);
+    this.foreground = '*';
+    this.timeToLive = 255;
+    this.nextMove = Math.floor(Math.random()*2);
+};
+jzt.things.ThrowingStar.prototype = new jzt.things.UpdateableThing();
+jzt.things.ThrowingStar.prototype.constructor = jzt.things.ThrowingStar;
+jzt.things.ThrowingStar.serializationType = 'ThrowingStar';
+jzt.things.ThrowingStar.animationFrames = [179, 47, 196, 92];
+
+jzt.things.ThrowingStar.prototype.serialize = function() {
+    var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    result.timeToLive = this.timeToLive;
+    return result;
+};
+
+jzt.things.ThrowingStar.prototype.deserialize = function(data) {
+    jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.timeToLove = jzt.util.getOption(data, 'timeToLive', 100);
+};
+
+jzt.things.ThrowingStar.prototype.sendMessage = function(message)  {
+    if(message === 'TOUCH') {
+        this.board.player.sendMessage('SHOT');
+        this.delete();
+    }
+}
+
+jzt.things.ThrowingStar.prototype.doTick = function() {
+
+    if(--this.timeToLive <= 0) {
+        this.delete();
+        return;
+    }
+
+    if(++this.animationIndex >= jzt.things.ThrowingStar.animationFrames.length) {
+        this.animationIndex = 0;
+    }
+    this.spriteIndex = jzt.things.ThrowingStar.animationFrames[this.animationIndex];
+
+    if(--this.nextMove <= 0) {
+
+        this.nextMove = 2;
+
+        var direction = this.getPlayerDirection();
+        var thing = this.board.getTile(this.point.add(direction));
+        if(thing instanceof jzt.things.BreakableWall || thing instanceof jzt.things.Player) {
+            thing.sendMessage('SHOT');
+            this.delete();
+            return;
+        }
+        this.move(this.getPlayerDirection());
+    }
+
+};
+
+//--------------------------------------------------------------------------------
+
 jzt.things.Tiger = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.spriteIndex = 227;
@@ -2305,13 +2367,14 @@ jzt.things.ThingFactory.getThingMap = function() {
  * a provided direction. If the provided point is blocked by another UpdateableThing,
  * then that UpdateableThing will be sent a 'SHOT' message.
  */
-jzt.things.ThingFactory.shoot = function(board, point, direction, fromPlayer) {
-
+jzt.things.ThingFactory.shoot = function(board, point, direction, fromPlayer, throwingStar) {
+ 
     // First, get our destination tile
     var tile = board.getTile(point);
 
     // Create a bullet
-    var bullet = new jzt.things.Bullet(board);
+    var bullet = throwingStar ? new jzt.things.ThrowingStar(board) : new jzt.things.Bullet(board);
+
     bullet.direction = direction;
     if(fromPlayer) {
         bullet.fromPlayer = fromPlayer;
