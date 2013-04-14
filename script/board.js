@@ -306,10 +306,15 @@ jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak) {
         if(obstacle) {
 
             // Try to push the obstacle out of the way
-            obstacle.push(oldPoint.directionTo(newPoint));
+            var teleported = obstacle.push(oldPoint.directionTo(newPoint));
 
-            // If a space was opened up, or if the space is surrenderable...
-            if(this.isFree(newPoint) || this.getTile(newPoint).isSurrenderable(thing)) {
+            // If we were teleported, return true
+            if(teleported) {
+                return true;
+            }
+
+            // Otherwise, if a space was opened up, or if the space is surrenderable...
+            else if(this.isFree(newPoint) || this.getTile(newPoint).isSurrenderable(thing)) {
                 return this.moveTile(oldPoint, newPoint, weak);
             }
 

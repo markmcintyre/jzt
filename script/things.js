@@ -111,6 +111,7 @@ jzt.things.Thing.prototype.sendMessage = function(messageName) {};
  * Receives a request to be pushed in a given direction.
  *
  * @param direction A direction in which this Thing is requested to move.
+ * @return true if the push resulted in a teleportation, undefined otherwise.
  */
 jzt.things.Thing.prototype.push = function(direction) {};
 
@@ -1773,6 +1774,7 @@ jzt.things.Teleporter.prototype.push = function(direction) {
                 // Move the tile to the matching teleporter's destination
                 if(this.board.moveTile(currentPoint, destinationPoint.add(this.orientation))) {
                     this.play('tc+d-e+f#-g#+a#c+d');
+                    return true;
                 }
                 break;
 
@@ -1784,6 +1786,7 @@ jzt.things.Teleporter.prototype.push = function(direction) {
 
     else {
         this.play('tc+d-e+f#-g#+a#c+d');
+        return true;
     }
 
 };
