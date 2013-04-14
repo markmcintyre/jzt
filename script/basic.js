@@ -213,3 +213,10 @@ jzt.util.storeOption = function(destination, name, value) {
         destination[name] = value;
     }
 };
+
+jzt.util.getOption = function(data, optionName, defaultValue) {
+    if(data.hasOwnProperty(optionName)) {
+        return data[optionName];
+    }
+    return defaultValue;
+};

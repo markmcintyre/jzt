@@ -1797,6 +1797,169 @@ jzt.things.Pusher.prototype.doTick = function() {
 };
 
 //--------------------------------------------------------------------------------
+jzt.things.Ruffian = function(board) {
+    jzt.things.UpdateableThing.call(this, board);
+    this.spriteIndex = 5;
+    this.foreground = jzt.colors.Colors['D'];
+    this.intelligence = 5;
+    this.restingTime = 5;
+    this.moving = false;
+    this.timeLeft = 0;
+    this.speed = 1;
+    this.orientation = jzt.Direction.North;
+};
+jzt.things.Ruffian.prototype = new jzt.things.UpdateableThing();
+jzt.things.Ruffian.prototype.constructor = jzt.things.Ruffian;
+jzt.things.Ruffian.serializationType = 'Ruffian';
+
+jzt.things.Ruffian.prototype.serialize = function() {
+    var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    result.intelligence = this.intelligence;
+    result.restingTime = this.restingTime;
+    return result;
+};
+
+jzt.things.Ruffian.prototype.deserialize = function(data) {
+    jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.intelligence = jzt.util.getOption(data, 'intelligence', 5);
+    this.restingTime = jzt.util.getOption(data, 'restingTime', 5);
+};
+
+jzt.things.Ruffian.prototype.push = function(direction) {
+    if(!this.move(direction)) {
+        this.delete();
+        this.play('t+c---c++++c--c');
+    }
+};
+
+jzt.things.Ruffian.prototype.sendMessage = function(message) {
+    if(message === 'SHOT') {
+        this.play('t+c---c++++c--c', true);
+        this.delete();
+    }
+    else if(message === 'TOUCH') {
+        this.board.player.sendMessage('SHOT');
+        this.delete();
+    }
+};
+
+/**
+ * Returns whether or not this Ruffian should seek the player during its next move.
+ * The probability of a true result depends on this Ruffian's intelligence
+ * property.
+ *
+ * @return true if this Ruffian should seek the player, false otherwise.
+ */
+jzt.things.Ruffian.prototype.seekPlayer = function() {
+
+    var randomValue = Math.floor(Math.random()*10);
+    return randomValue <= this.intelligence;
+
+};
+
+jzt.things.Ruffian.prototype.doTick = function() {
+
+    if(--this.timeLeft <= 0) {
+
+        this.moving = ! this.moving;
+
+        if(this.moving) {
+            this.orientation = this.seekPlayer() ? this.getPlayerDirection() : jzt.Direction.random();
+            this.timeLeft = Math.floor(Math.random()*10);
+        }
+        else {
+            this.timeLeft = Math.floor(Math.random()*10) - (10 - this.restingTime);
+        }
+
+    }
+
+    if(this.moving) {
+
+        var thing = this.board.getTile(this.point.add(this.orientation));
+        if(thing && thing instanceof jzt.things.Player) {
+            thing.sendMessage('SHOT');
+            this.delete();
+            return;
+        }
+
+        this.move(this.orientation, true);
+
+    }
+
+};
+
+//--------------------------------------------------------------------------------
+
+/**
+ * SliderEw is a Thing that is pushable only in the East and West direction.
+ *
+ * @param board An owner board.
+ */
+jzt.things.SliderEw = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.spriteIndex = 29;
+}
+jzt.things.SliderEw.prototype = new jzt.things.Thing();
+jzt.things.SliderEw.prototype.constructor = jzt.things.SliderEw;
+jzt.things.SliderEw.serializationType = 'SliderEw';
+
+/**
+ * Receives a request to be pushed in a given direction.
+ *
+ * @param direction A direction in which this Thing is requested to move.
+ */
+jzt.things.SliderEw.prototype.push = function(direction) {
+    if(direction.equals(jzt.Direction.East) || direction.equals(jzt.Direction.West)) {
+        if(this.move(direction)) {
+            this.play('t--f', false, true);
+        }
+    }
+};
+
+//--------------------------------------------------------------------------------
+
+/**
+ * SliderNs is a Thing that is pushable only in the North and South direction.
+ *
+ * @param board An owner board.
+ */
+jzt.things.SliderNs = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.spriteIndex = 18;
+}
+jzt.things.SliderNs.prototype = new jzt.things.Thing();
+jzt.things.SliderNs.prototype.constructor = jzt.things.SliderNs;
+jzt.things.SliderNs.serializationType = 'SliderNs';
+
+/**
+ * Receives a request to be pushed in a given direction.
+ *
+ * @param direction A direction in which this Thing is requested to move.
+ */
+jzt.things.SliderNs.prototype.push = function(direction) {
+    if(direction.equals(jzt.Direction.North) || direction.equals(jzt.Direction.South)) {
+        if(this.move(direction)) {
+            this.play('t--f', false, true);
+        }
+    }
+};
+
+//--------------------------------------------------------------------------------
+
+/*
+ * SolidWall is a Thing representing an immoveable obstacle.
+ *
+ * @param board An owner board for this SolidWall.
+ */ 
+jzt.things.SolidWall = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.spriteIndex = 219;
+};
+jzt.things.SolidWall.prototype = new jzt.things.Thing();
+jzt.things.SolidWall.prototype.constructor = jzt.things.SolidWall;
+jzt.things.SolidWall.serializationType = 'SolidWall';
+
+//--------------------------------------------------------------------------------
 
 /**
  * Teleporter is an UpdateableThing capable of teleporting the player
@@ -1988,77 +2151,6 @@ jzt.things.Tiger.prototype.doTick = function() {
 
 //--------------------------------------------------------------------------------
 
-/**
- * SliderEw is a Thing that is pushable only in the East and West direction.
- *
- * @param board An owner board.
- */
-jzt.things.SliderEw = function(board) {
-    jzt.things.Thing.call(this, board);
-    this.spriteIndex = 29;
-}
-jzt.things.SliderEw.prototype = new jzt.things.Thing();
-jzt.things.SliderEw.prototype.constructor = jzt.things.SliderEw;
-jzt.things.SliderEw.serializationType = 'SliderEw';
-
-/**
- * Receives a request to be pushed in a given direction.
- *
- * @param direction A direction in which this Thing is requested to move.
- */
-jzt.things.SliderEw.prototype.push = function(direction) {
-    if(direction.equals(jzt.Direction.East) || direction.equals(jzt.Direction.West)) {
-        if(this.move(direction)) {
-            this.play('t--f', false, true);
-        }
-    }
-};
-
-//--------------------------------------------------------------------------------
-
-/**
- * SliderNs is a Thing that is pushable only in the North and South direction.
- *
- * @param board An owner board.
- */
-jzt.things.SliderNs = function(board) {
-    jzt.things.Thing.call(this, board);
-    this.spriteIndex = 18;
-}
-jzt.things.SliderNs.prototype = new jzt.things.Thing();
-jzt.things.SliderNs.prototype.constructor = jzt.things.SliderNs;
-jzt.things.SliderNs.serializationType = 'SliderNs';
-
-/**
- * Receives a request to be pushed in a given direction.
- *
- * @param direction A direction in which this Thing is requested to move.
- */
-jzt.things.SliderNs.prototype.push = function(direction) {
-    if(direction.equals(jzt.Direction.North) || direction.equals(jzt.Direction.South)) {
-        if(this.move(direction)) {
-            this.play('t--f', false, true);
-        }
-    }
-};
-
-//--------------------------------------------------------------------------------
-
-/*
- * SolidWall is a Thing representing an immoveable obstacle.
- *
- * @param board An owner board for this SolidWall.
- */ 
-jzt.things.SolidWall = function(board) {
-    jzt.things.Thing.call(this, board);
-    this.spriteIndex = 219;
-};
-jzt.things.SolidWall.prototype = new jzt.things.Thing();
-jzt.things.SolidWall.prototype.constructor = jzt.things.SolidWall;
-jzt.things.SolidWall.serializationType = 'SolidWall';
-
-//--------------------------------------------------------------------------------
-
 /*
  * Wall is a Thing representing an immoveable obstacle.
  *
@@ -2097,6 +2189,7 @@ jzt.things.Water.prototype.isSurrenderable = function(sender) {
 jzt.things.Water.prototype.sendMessage = function(message) {
     if(message === 'TOUCH') {
         this.play('t+c+c');
+        this.board.setDisplayMessage('Your way is blocked by water.');
     }
 };
 
