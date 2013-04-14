@@ -13,9 +13,9 @@ jzt.Point.prototype.add = function(other) {
     return new jzt.Point(this.x + other.x, this.y + other.y);
 };
 
-jzt.Point.prototype.aligned = function(other, sensitivity) {
-    sensitivity = sensitivity === undefined ? 9 : sensitivity;
-    return (Math.abs(this.x - other.x) < (10 - sensitivity)) || (Math.abs(this.y - other.y) < (10 - sensitivity));
+jzt.Point.prototype.aligned = function(other, spread) {
+    spread = spread === undefined ? 9 : spread;
+    return (Math.abs(this.x - other.x) < spread) || (Math.abs(this.y - other.y) < spread);
 };
 
 jzt.Point.prototype.directionTo = function(other, axis) {

@@ -565,7 +565,7 @@ jzt.things.Bear.prototype.sendMessage = function(message) {
  */
 jzt.things.Bear.prototype.doTick = function() {
 
-    if(this.isPlayerAligned(this.sensitivity)) {
+    if(this.isPlayerAligned(10-this.sensitivity)) {
 
         // X-Axis always gets priority
         var direction = this.getPlayerDirection('x');
@@ -1958,6 +1958,60 @@ jzt.things.SolidWall = function(board) {
 jzt.things.SolidWall.prototype = new jzt.things.Thing();
 jzt.things.SolidWall.prototype.constructor = jzt.things.SolidWall;
 jzt.things.SolidWall.serializationType = 'SolidWall';
+
+//--------------------------------------------------------------------------------
+
+jzt.things.SpinningGun = function(board) {
+    jzt.things.UpdateableThing.call(this, board);
+    this.intelligence = 5;
+    this.firingRate = 5;
+    this.spriteIndex = 24;
+    this.animationIndex = Math.floor(Math.random()*jzt.things.SpinningGun.animationFrames.length-1);
+    this.speed = 2;
+};
+jzt.things.SpinningGun.prototype = new jzt.things.UpdateableThing();
+jzt.things.SpinningGun.prototype.constructor = jzt.things.SpinningGun;
+jzt.things.SpinningGun.serializationType = 'SpinningGun';
+jzt.things.SpinningGun.animationFrames = [24, 26, 25, 27];
+
+jzt.things.SpinningGun.prototype.serialize = function() {
+    var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    result.intelligence = this.intelligence;
+    result.firingRate = this.firingRate;
+    return result;
+};
+
+jzt.things.SpinningGun.prototype.deserialize = function(data) {
+    jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.intelligence = jzt.util.getOption(data, 'intelligence', 5);
+    this.firingRate = jzt.util.getOption(data, 'firingRate', 5);
+};
+
+jzt.things.SpinningGun.prototype.doTick = function() {
+
+    var me = this;
+    function shoot(random) {
+        if(Math.floor(Math.random() * 10) <= me.firingRate) {
+            var direction = random ? jzt.Direction.random() : me.getPlayerDirection();
+            jzt.things.ThingFactory.shoot(me.board, me.point.add(direction), direction);
+        }
+    }
+
+    if(++this.animationIndex >= jzt.things.SpinningGun.animationFrames.length) {
+        this.animationIndex = 0;
+    }
+    this.spriteIndex = jzt.things.SpinningGun.animationFrames[this.animationIndex];
+
+    if(Math.floor(Math.random()*9) <= this.intelligence) {
+        if(this.isPlayerAligned(2)) {
+            shoot();
+        }
+    }
+    else {
+        shoot(true);
+    }
+
+};
 
 //--------------------------------------------------------------------------------
 
