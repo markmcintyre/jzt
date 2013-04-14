@@ -13,30 +13,43 @@ jzt.Point.prototype.add = function(other) {
     return new jzt.Point(this.x + other.x, this.y + other.y);
 };
 
-jzt.Point.prototype.directionTo = function(other) {
+jzt.Point.prototype.aligned = function(other, sensitivity) {
+    sensitivity = sensitivity === undefined ? 9 : sensitivity;
+    return (Math.abs(this.x - other.x) < (10 - sensitivity)) || (Math.abs(this.y - other.y) < (10 - sensitivity));
+};
+
+jzt.Point.prototype.directionTo = function(other, axis) {
     
     var xDistance = this.x - other.x;
     var yDistance = this.y - other.y;
-    var axis = 'x';
     
     // There is no direction to the same point
-    if(xDistance == 0 && yDistance == 0) {
+    if(xDistance === 0 && yDistance === 0) {
         return undefined;
     }
-    else if(xDistance == 0) {
-        axis = 'y';
-    }
-    else if(yDistance == 0) {
-        axis = 'x'
-    }
-    else {
-        axis = (Math.floor(Math.random()*2)) ? 'x' : 'y';
+
+    if(axis === undefined) {
+        if(xDistance === 0) {
+            axis = 'y';
+        }
+        else if(yDistance === 0) {
+            axis = 'x'
+        }
+        else {
+            axis = (Math.floor(Math.random()*2)) ? 'x' : 'y';
+        }
     }
     
-    if(axis == 'x') {
+    if(axis === 'x') {
+        if(xDistance === 0) {
+            return undefined;
+        }
         return xDistance < 0 ? jzt.Direction.East : jzt.Direction.West;
     }
     else {
+        if(yDistance === 0) {
+            return undefined;
+        }
         return yDistance < 0 ? jzt.Direction.South : jzt.Direction.North;
     }
     

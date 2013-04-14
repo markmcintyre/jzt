@@ -149,8 +149,14 @@ jzt.things.Thing.prototype.isPlayerAdjacent = function(direction) {
     return tile && tile instanceof jzt.things.Player;
 };
 
-jzt.things.Thing.prototype.isPlayerAligned = function() {
-    return this.board.player.point.x === this.point.x || this.board.player.point.y === this.point.y;
+/**
+ * Returns whether or not this Thing is aligned to the player
+ * with a certain sensitivity.
+ *
+ * @return true if player is aligned, false otherwise.
+ */
+jzt.things.Thing.prototype.isPlayerAligned = function(sensitivity) {
+    return this.point.aligned(this.board.player.point, sensitivity);
 };
 
 /**
@@ -232,8 +238,8 @@ jzt.things.UpdateableThing.prototype.deserialize = function(data) {
  *
  * @return a Direction toward a Player.
  */
-jzt.things.UpdateableThing.prototype.getPlayerDirection = function() {
-    return this.point.directionTo(this.board.player.point);
+jzt.things.UpdateableThing.prototype.getPlayerDirection = function(axis) {
+    return this.point.directionTo(this.board.player.point, axis);
 };
 
 /**
@@ -489,6 +495,95 @@ jzt.things.Ammo.prototype.sendMessage = function(message) {
         this.adjustCounter('ammo', 5);
         this.delete();
     }
+};
+
+//--------------------------------------------------------------------------------
+
+jzt.things.Bear = function(board) {
+    jzt.things.UpdateableThing.call(this, board);
+    this.spriteIndex = 153;
+    this.foreground = jzt.colors.Colors['6'];
+    this.sensitivity = 9;
+    this.speed = 3;
+};
+jzt.things.Bear.prototype = new jzt.things.UpdateableThing();
+jzt.things.Bear.prototype.constructor = jzt.things.Bear;
+jzt.things.Bear.serializationType = 'Bear';
+
+/**
+ * Serializes this Bear to an Object.
+ *
+ * @return A serialized Bear
+ */
+jzt.things.Bear.prototype.serialize = function() {
+    var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    result.sensitivity = this.sensitivity;
+    return result;
+};
+
+/**
+ * Deserializes this Bear from a provided data Object
+ * 
+ * @param data A data Bear object to be deserialized.
+ */
+jzt.things.Bear.prototype.deserialize = function(data) {
+    jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.sensitivity = data.sensitivity;
+};
+
+jzt.things.Bear.prototype.push = function(direction) {
+    if(!this.move(direction)) {
+        this.play('t+c---c++++c--c');
+        this.delete();
+    }
+};
+
+/**
+ * Delivers a provided message to this Thing. If a SHOT message is received,
+ * then this Bear will be deleted from the board. If a TOUCH message is 
+ * received, then the player will be sent a SHOT message.
+ *
+ * @param messageName a name of a message to deliver.
+ */
+jzt.things.Bear.prototype.sendMessage = function(message) {
+
+    if(message === 'SHOT') {
+        this.play('t+c---c++++c--c', true);
+        this.delete();
+    }
+    else if(message === 'TOUCH') {
+        this.board.player.sendMessage('SHOT');
+        this.delete();
+    }
+
+};
+
+/**
+ * Updates this Bear for a provided timestamp. This Bear will move itself randomly
+ * during updates. If a Player blocks its movement, then the player will be sent
+ * a SHOT message and this Bear will be removed from its parent board.
+ */
+jzt.things.Bear.prototype.doTick = function() {
+
+    if(this.isPlayerAligned(this.sensitivity)) {
+
+        // X-Axis always gets priority
+        var direction = this.getPlayerDirection('x');
+
+        // If we are already aligned with the player...
+        if(direction === undefined) {
+            direction = this.getPlayerDirection('y');
+        }
+
+        var thing = this.board.getTile(this.point.add(direction));
+        if(thing && (thing instanceof jzt.things.BreakableWall || thing instanceof jzt.things.Player)) {
+            thing.sendMessage('SHOT');
+            this.delete();
+            return;
+        }
+        this.move(direction, true);
+    }
+   
 };
 
 //--------------------------------------------------------------------------------
@@ -1348,6 +1443,7 @@ jzt.things.Lion.prototype.doTick = function() {
     if(thing && thing instanceof jzt.things.Player) {
         thing.sendMessage('SHOT');
         this.delete();
+        return;
     }
     this.move(direction, true);
    
@@ -1878,6 +1974,7 @@ jzt.things.Tiger.prototype.doTick = function() {
     if(thing && thing instanceof jzt.things.Player) {
         thing.sendMessage('SHOT');
         this.delete();
+        return;
     }
 
     this.move(direction, true);
