@@ -581,7 +581,7 @@ jzt.Board.prototype.render = function(c) {
     var instance = this;
     
     c.fillStyle = '#000000';
-    c.fillRect(0, 0, this.width * this.game.TILE_SIZE.x, this.height * this.game.TILE_SIZE.y);
+    c.fillRect(0, 0, this.game.context.canvas.width, this.game.context.canvas.height);
     
     this.each( function(thing, point) {
         if(instance.dark && !instance.game.player.inTorchRange(point)) {
