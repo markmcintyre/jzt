@@ -2305,7 +2305,7 @@ jzt.things.Water.prototype.isSurrenderable = function(sender) {
 jzt.things.Water.prototype.sendMessage = function(message) {
     if(message === 'TOUCH') {
         this.play('t+c+c');
-        this.board.setDisplayMessage('Your way is blocked by water.');
+        this.board.setDisplayMessage('Your way is blocked by water.', 1);
     }
 };
 

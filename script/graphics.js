@@ -87,6 +87,92 @@ jzt.Graphics.prototype.getSprite = function(index) {
     return this.sprites[index];
 };
 
+jzt.Graphics.prototype.textToSprites = function(text) {
+
+    var result = [];
+
+    for(var index = 0; index < text.length; ++index) {
+
+        var spriteIndex = this.convertSpecialCharacter(text.charCodeAt(index));
+        result.push(this.getSprite(spriteIndex));
+
+    }
+
+    return result;
+
+};
+
+jzt.Graphics.prototype.drawString = function(context, point, text, foreground, background) {
+    this.drawSprites(context, point, this.textToSprites(text), foreground, background);
+};
+
+jzt.Graphics.prototype.drawSprites = function(context, point, sprites, foreground, background) {
+    var point = point.clone();
+    foreground = foreground || jzt.colors.Colors['E'];
+    background = background || '*';
+    for(var index = 0; index < sprites.length; ++index) {
+        sprite = sprites[index];
+        sprite.draw(context, point, foreground, background);
+        point.x++;
+    }
+};
+
+/**
+ * Converts a provided special character into its ANSI equivalent.
+ * 
+ * @param characterCode A Unicode character
+ * @return An ANSI character code.
+ */
+jzt.Graphics.prototype.convertSpecialCharacter = function(characterCode) {
+
+    if(characterCode >= 32 && characterCode <= 126) {
+        return characterCode;
+    }
+
+    switch(characterCode) {
+        case 199: return 128;
+        case 252: return 129;
+        case 233: return 130;
+        case 226: return 131;
+        case 228: return 132;
+        case 224: return 133;
+        case 229: return 134;
+        case 231: return 135;
+        case 234: return 136;
+        case 235: return 137;
+        case 232: return 138;
+        case 239: return 139;
+        case 238: return 140;
+        case 236: return 141;
+        case 196: return 142;
+        case 197: return 143;
+        case 201: return 144;
+        case 230: return 145;
+        case 198: return 146;
+        case 244: return 147;
+        case 242: return 149;
+        case 251: return 150;
+        case 249: return 151;
+        case 255: return 152;
+        case 214: return 153;
+        case 220: return 154;
+        case 225: return 160;
+        case 237: return 161;
+        case 243: return 162;
+        case 250: return 163;
+        case 241: return 164;
+        case 209: return 165;
+        case 191: return 168;
+        case 161: return 173;
+        case 171: return 174;
+        case 187: return 175;
+    }
+
+    // If we haven't mapped, return a question mark.
+    return 63;
+
+};
+
 jzt.Sprite = function(point, owner) {
     this.point = point;
     this.owner = owner;

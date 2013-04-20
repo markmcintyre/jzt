@@ -3,7 +3,8 @@ window.jzt = window.jzt || {};
 jzt.GameState = {
     Playing: 0,
     Paused: 1,
-    GameOver: 2
+    GameOver: 2,
+    Reading: 3
 };
 
 /**
@@ -62,6 +63,9 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     var graphicsLoadedCallback = this.onGraphicsLoaded.bind(this);
     this.resources.graphics = new jzt.Graphics(this, graphicsLoadedCallback);
     this.resources.audio = new jzt.Audio();
+
+
+    this.scroll = new jzt.Scroll(this);
 
 };
 
@@ -302,17 +306,11 @@ jzt.Game.prototype.loop = function() {
  */
 jzt.Game.prototype.update = function() {
 
-    // If we aren't paused...
-    if(this.state !== jzt.GameState.Paused) {
-
-        // Update our board and our counters
-        this.currentBoard.update();
-        this.checkCounters();
-        
-    }
-
     // If we're playing...
     if(this.state === jzt.GameState.Playing) {
+
+        this.currentBoard.update();
+        this.checkCounters();
 
         // Update the player
         this.player.update();
@@ -335,8 +333,15 @@ jzt.Game.prototype.update = function() {
 
     }
 
+    else if(this.state == jzt.GameState.Reading) {
+
+        this.scroll.update();
+
+    }
+
     // If it's game over, say so!
     else if(this.state === jzt.GameState.GameOver) {
+        this.currentBoard.update();
         this.currentBoard.setDisplayMessage('Game over!');
     }
 
@@ -368,5 +373,9 @@ jzt.Game.prototype.draw = function() {
     }
 
     this.currentBoard.render(this.context);
+
+    if(this.state === jzt.GameState.Reading) {
+        this.scroll.render(this.context);
+    }
             
 };
