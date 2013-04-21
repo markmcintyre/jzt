@@ -1,5 +1,8 @@
 window.jzt = window.jzt || {};
 jzt.Scroll = function(owner) {
+	var index;
+	var spaceSprite;
+	var dotSprite;
 	this.game = owner;
 	this.graphics = owner.resources.graphics;
 	this.lines = [];
@@ -12,6 +15,17 @@ jzt.Scroll = function(owner) {
 	this.fullHeight = Math.floor(owner.context.canvas.height / owner.TILE_SIZE.y) - 2;
 	this.state = jzt.Scroll.ScrollState.Opening;
 	this.origin = new jzt.Point(0,0);
+	this.dots = [];
+	spaceSprite = this.graphics.getSprite(32);
+	dotSprite = this.graphics.getSprite(7);
+	for(index = 0; index < this.textAreaWidth; ++index) {
+		if(index % 5 === 0) {
+			this.dots.push(dotSprite);
+		}
+		else {
+			this.dots.push(spaceSprite);
+		}
+	}
 };
 
 jzt.Scroll.ScrollState = {
@@ -65,12 +79,16 @@ jzt.Scroll.prototype.setHeight = function(height) {
 		this.textAreaHeight = 0;
 	}
 
+	this.middlePosition = Math.floor(this.textAreaHeight / 2);
+
 	this.origin.x = Math.floor((this.screenWidth- this.width) / 2);
 	this.origin.y = Math.floor((this.screenHeight- this.height) / 2);
 
 };
 
 jzt.Scroll.prototype.update = function() {
+
+	var k = this.game.keyboard;
 
 	if (this.state === jzt.Scroll.ScrollState.Opening) {
 		this.setHeight(this.height+2);
@@ -79,6 +97,16 @@ jzt.Scroll.prototype.update = function() {
 		}
 	}
 	else if(this.state === jzt.Scroll.ScrollState.Open) {
+
+		if(k.isPressed(k.UP)) {
+			this.scrollUp();
+		}
+		else if(k.isPressed(k.DOWN)) {
+			this.scrollDown();
+		}
+		else if(k.isPressed(k.ENTER) || k.isPressed(k.ESCAPE)) {
+			this.state = jzt.Scroll.ScrollState.Closing;
+		}
 
 	}
 	else if(this.state === jzt.Scroll.ScrollState.Closing) {
@@ -99,13 +127,20 @@ jzt.Scroll.prototype.clearLines = function() {
 
 jzt.Scroll.prototype.drawLine = function(scrollIndex) {
 
-	var line = this.lines[this.position + scrollIndex];
+	var lineIndex = this.position + scrollIndex - this.middlePosition;
+	var line = this.lines[lineIndex];
 
 	if(line) {
 		var point = this.origin.clone();
 		point.x += 4;
 		point.y += 3 + scrollIndex;
 		this.drawText(line, point);
+	}
+	else if(lineIndex === -1 || lineIndex === this.lines.length) {
+		var point = this.origin.clone();
+		point.x += 4;
+		point.y += 3 + scrollIndex;
+		this.drawText(this.dots, point);
 	}
 
 };
@@ -182,6 +217,7 @@ jzt.Scroll.prototype.render = function(context) {
 	}
 
 	if(this.height > 5) {
+
 		// Draw Lines
 		for(lineIndex = 0; lineIndex < this.textAreaHeight; ++lineIndex) {
 
@@ -198,7 +234,16 @@ jzt.Scroll.prototype.render = function(context) {
 			this.graphics.drawSprites(context, new jzt.Point(x,++y), sprites, jzt.colors.Colors['F']);
 			this.drawLine(lineIndex);
 
+			// Draw the cursor
+			if(lineIndex === this.middlePosition) {
+				sprite = this.graphics.getSprite(175);
+				sprite.draw(context, new jzt.Point(x+2,y), jzt.colors.Colors['C']);
+				sprite = this.graphics.getSprite(174);
+				sprite.draw(context, new jzt.Point(x+this.width-3,y), jzt.colors.Colors['C']);
+			}
+
 		}
+
 	}
 
 	if(this.height > 1) {

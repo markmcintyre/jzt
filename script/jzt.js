@@ -41,7 +41,7 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     this.blinkCycle = 0;
     this.blinkState = true;
     this.colorCycleIndex = 0;
-    this.state = jzt.GameState.Playing;
+    
     this.counters = {
         health: 100,
         ammo: 0,
@@ -63,9 +63,6 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     var graphicsLoadedCallback = this.onGraphicsLoaded.bind(this);
     this.resources.graphics = new jzt.Graphics(this, graphicsLoadedCallback);
     this.resources.audio = new jzt.Audio();
-
-
-    this.scroll = new jzt.Scroll(this);
 
 };
 
@@ -109,6 +106,7 @@ jzt.Game.prototype.setCounterValue = function(counter, value) {
  * loaded.
  */
 jzt.Game.prototype.onGraphicsLoaded = function() {
+    this.scroll = new jzt.Scroll(this);
     this.onLoadCallback();
 };
 
@@ -146,11 +144,9 @@ jzt.Game.prototype.setState = function(state) {
     }
 
     else if(state === jzt.GameState.Playing) {
-        if(this.state === jzt.GameState.Paused) {
-            delete this.keyboard._pressed[this.keyboard.P];
-            this.player.background = jzt.colors.getNonBlinkingEquivalent(this.player.background);
-            this.currentBoard.setDisplayMessage(undefined);
-        }
+        delete this.keyboard._pressed[this.keyboard.P];
+        this.currentBoard.setDisplayMessage(undefined);
+        this.player.background = jzt.colors.getNonBlinkingEquivalent(this.player.background);
     }
     else if(state === jzt.GameState.Reading) {
         this.scroll.open();
@@ -287,6 +283,7 @@ jzt.Game.prototype.run = function() {
 
     this.keyboard.initialize();
     this.setBoard(this.startingBoard);
+    this.setState(jzt.GameState.Paused);
         
     // Start the game loop
     this._intervalId = setInterval(this.loop.bind(this), 1000 / this.FPS);
