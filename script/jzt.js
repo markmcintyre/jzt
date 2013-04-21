@@ -152,6 +152,9 @@ jzt.Game.prototype.setState = function(state) {
             this.currentBoard.setDisplayMessage(undefined);
         }
     }
+    else if(state === jzt.GameState.Reading) {
+        this.scroll.open();
+    }
 
     this.state = state;
 

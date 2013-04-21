@@ -11,6 +11,7 @@ jzt.Scroll = function(owner) {
 	this.height = 0;
 	this.fullHeight = Math.floor(owner.context.canvas.height / owner.TILE_SIZE.y) - 2;
 	this.state = jzt.Scroll.ScrollState.Opening;
+	this.origin = new jzt.Point(0,0);
 };
 
 jzt.Scroll.ScrollState = {
@@ -20,17 +21,30 @@ jzt.Scroll.ScrollState = {
 	Closed: 3
 };
 
-jzt.Scroll.prototype.addLine = function(line, lineLabel) {
-	if(lineLabel) {
-		line.label = lineLabel;
+jzt.Scroll.prototype.open = function() {
+	this.state = jzt.Scroll.ScrollState.Opening;
+};
+
+jzt.Scroll.prototype.addLine = function(line, center, lineLabel) {
+	var sprites = this.graphics.textToSprites(line);
+	if(center) {
+		sprites.center = true;
 	}
-	this.lines.push(line);
+	if(lineLabel) {
+		sprites.label = lineLabel;
+	}
+	this.lines.push(sprites);
 };
 
 jzt.Scroll.prototype.scrollUp = function() {
 	if(--this.position < 0) {
 		this.position = 0;
 	}
+};
+
+jzt.Scroll.prototype.setTitle = function(title) {
+	this.title = this.graphics.textToSprites(title);
+	this.title.center = true;
 };
 
 jzt.Scroll.prototype.scrollDown = function() {
@@ -50,12 +64,16 @@ jzt.Scroll.prototype.setHeight = function(height) {
 	if(this.textAreaHeight < 0) {
 		this.textAreaHeight = 0;
 	}
+
+	this.origin.x = Math.floor((this.screenWidth- this.width) / 2);
+	this.origin.y = Math.floor((this.screenHeight- this.height) / 2);
+
 };
 
 jzt.Scroll.prototype.update = function() {
 
 	if (this.state === jzt.Scroll.ScrollState.Opening) {
-		this.setHeight(this.height+1);
+		this.setHeight(this.height+2);
 		if(this.height >= this.fullHeight) {
 			this.state = jzt.Scroll.ScrollState.Open;
 		}
@@ -64,8 +82,8 @@ jzt.Scroll.prototype.update = function() {
 
 	}
 	else if(this.state === jzt.Scroll.ScrollState.Closing) {
-		this.setHeight(this.height-1);
-		if(this.height <= 0) {
+		this.setHeight(this.height-2);
+		if(this.height <= 2) {
 			this.state = jzt.Scroll.ScrollState.Closed;
 		}
 	}
@@ -74,15 +92,43 @@ jzt.Scroll.prototype.update = function() {
 	}
 };
 
+jzt.Scroll.prototype.clearLines = function() {
+	this.lines = [];
+	this.position = 0;
+};
+
+jzt.Scroll.prototype.drawLine = function(scrollIndex) {
+
+	var line = this.lines[this.position + scrollIndex];
+
+	if(line) {
+		var point = this.origin.clone();
+		point.x += 4;
+		point.y += 3 + scrollIndex;
+		this.drawText(line, point);
+	}
+
+};
+
+jzt.Scroll.prototype.drawText = function(sprites, point) {
+	var color = jzt.colors.Colors['E'];
+	if(sprites.center) {
+		color = jzt.colors.Colors['F'];
+		point.x += Math.floor((this.textAreaWidth - sprites.length) / 2);
+	}
+	this.graphics.drawSprites(this.game.context, point, sprites, color, '*');
+};
+
 jzt.Scroll.prototype.render = function(context) {
 
 	var sprites = [];
 	var sprite;
 	var lineIndex;
 	var index;
-	var x = Math.floor((this.screenWidth- this.width) / 2);
-	var y = Math.floor((this.screenHeight- this.height) / 2);
-
+	var point;
+	var x = this.origin.x;
+	var y = this.origin.y;
+	
 	context.fillStyle = jzt.colors.Colors['1'].rgbValue;
 	context.fillRect(x * this.game.TILE_SIZE, y * this.game.TILE_SIZE, this.width * this.game.TILE_SIZE.x, this.height * this.game.TILE_SIZE.y);
 
@@ -111,7 +157,12 @@ jzt.Scroll.prototype.render = function(context) {
 		}
 		sprites.push(this.graphics.getSprite(179));
 		sprites.push(sprite);
-		this.graphics.drawSprites(context, new jzt.Point(x,++y), sprites, jzt.colors.Colors['F']);
+		point = new jzt.Point(x,++y);
+		this.graphics.drawSprites(context, point, sprites, jzt.colors.Colors['F']);
+		if(this.title) {
+			point.x += 4;
+			this.drawText(this.title, point);
+		}
 
 	}
 
@@ -145,6 +196,7 @@ jzt.Scroll.prototype.render = function(context) {
 			sprites.push(this.graphics.getSprite(179));
 			sprites.push(sprite);
 			this.graphics.drawSprites(context, new jzt.Point(x,++y), sprites, jzt.colors.Colors['F']);
+			this.drawLine(lineIndex);
 
 		}
 	}
