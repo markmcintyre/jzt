@@ -543,7 +543,7 @@ jzt.Board.prototype.update = function() {
     this.each(function(tile) {
 
         // If we got a tile, and it's updateable
-        if(tile && tile instanceof jzt.things.UpdateableThing) {
+        if(tile && tile instanceof jzt.things.UpdateableThing && ! (tile instanceof jzt.things.Player)) {
 
             // If we aren't updating backwards...
             if(!tile.updateOnReverse()) {

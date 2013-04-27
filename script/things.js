@@ -1,4 +1,14 @@
-window.jzt = window.jzt || {};
+/**
+ * JZT Things
+ * Copyright © 2013 Orangeline Interactive, Inc.
+ * @author Mark McIntyre
+ */
+
+/* jshint globalstrict: true */
+
+"use strict";
+
+var jzt = jzt || {};
 jzt.things = jzt.things || {};
 
 /*
@@ -15,7 +25,7 @@ jzt.things.Thing = function(board) {
     this.spriteIndex = 63;
     this.board = board;
     this.point = new jzt.Point(0,0);
-    this.foreground = jzt.colors.Colors['E'];
+    this.foreground = jzt.colors.Colors.E;
     this.background = jzt.colors.Colors['0'];
     this.x = 0;
     this.y = 0;
@@ -47,12 +57,12 @@ jzt.things.Thing.prototype.deserialize = function(data) {
         var backgroundCode = data.color.charAt(0);
         var foregroundCode = data.color.charAt(1);
 
-        this.foreground = foregroundCode == '*' ? foregroundCode : jzt.colors.Colors[foregroundCode];
-        this.background = backgroundCode == '*' ? undefined : jzt.colors.Colors[backgroundCode];
+        this.foreground = foregroundCode === '*' ? foregroundCode : jzt.colors.Colors[foregroundCode];
+        this.background = backgroundCode === '*' ? undefined : jzt.colors.Colors[backgroundCode];
     }
     else {
         if(!this.foreground) {
-            this.foreground = jzt.colors.Colors['E'];
+            this.foreground = jzt.colors.Colors.E;
         }
         if(!this.background) {
             this.background = jzt.colors.Colors['0'];
@@ -108,7 +118,7 @@ jzt.things.Thing.prototype.getCounterValue = function(counter) {
  *
  * @param messageName a name of a message to deliver.
  */
-jzt.things.Thing.prototype.sendMessage = function(messageName) {};
+jzt.things.Thing.prototype.sendMessage = function() {};
 
 /**
  * Receives a request to be pushed in a given direction.
@@ -116,7 +126,7 @@ jzt.things.Thing.prototype.sendMessage = function(messageName) {};
  * @param direction A direction in which this Thing is requested to move.
  * @return true if the push resulted in a teleportation, undefined otherwise.
  */
-jzt.things.Thing.prototype.push = function(direction) {};
+jzt.things.Thing.prototype.push = function() {};
 
 /**
  * Returns whether or not this Thing declares itself to be surrenderable to
@@ -128,10 +138,18 @@ jzt.things.Thing.prototype.push = function(direction) {};
  * @param sender A Thing requesting a surrender
  * @return true if this Thing agrees to surrender, false otherwise.
  */
-jzt.things.Thing.prototype.isSurrenderable = function(sender) {
+jzt.things.Thing.prototype.isSurrenderable = function() {
     return false;
 };
 
+/**
+ * Retrieves whether or not this Thing instance is blocked in a given direction.
+ * A Thing is defined as blocked if a tile appears at that direction that is occupied
+ * and is not willing to surrender its position to another tile.
+ * 
+ * @param direction A direction in which to test if this Thing is blocked
+ * @return true if this Thing is blocked, false otherwise.
+ */
 jzt.things.Thing.prototype.isBlocked = function(direction) {
 
     var newPoint = this.point.add(direction);
@@ -147,6 +165,13 @@ jzt.things.Thing.prototype.isBlocked = function(direction) {
 
 };
 
+/**
+ * Retrieves whether or not this Thing instance is directly adjacent to a Player Thing in
+ * a provided direction.
+ *
+ * @param direction A direction in which to test if this Thing is player adjacent
+ * @return true if a Player thing is directly adjacent in a given direction, false otherwise.
+ */
 jzt.things.Thing.prototype.isPlayerAdjacent = function(direction) {
     var tile = this.board.getTile(this.point.add(direction));
     return tile && tile instanceof jzt.things.Player;
@@ -176,7 +201,7 @@ jzt.things.Thing.prototype.move = function(direction, weak) {
 /**
  * Removes this Thing from its owner board.
  */
-jzt.things.Thing.prototype.delete = function() {
+jzt.things.Thing.prototype.remove = function() {
     this.board.deleteTile(this.point);
 };
 
@@ -187,7 +212,7 @@ jzt.things.Thing.prototype.delete = function() {
  */
 jzt.things.Thing.prototype.getSpriteIndex = function() {
     return this.spriteIndex;
-}
+};
 
 // ------------------------------------------------------------------------------
 
@@ -426,7 +451,7 @@ jzt.things.ScriptableThing.prototype.sendMessage = function(message) {
     if(!this.locked) {
     
         // We disallow duplicate messages in a row
-        if(this.messageQueue[this.messageQueue.length-1] != message) {
+        if(this.messageQueue[this.messageQueue.length-1] !== message) {
             this.messageQueue.push(message);
         }
         
@@ -479,29 +504,51 @@ jzt.things.ScriptableThing.prototype.doTick = function() {
  * BUILT-IN THINGS
  *=================================================================================*/
  
+/**
+ * Ammo is a Thing that acts as an item capable of increasing a Game's 'ammo' counter
+ * by five units when collected.
+ *
+ * @param board A board to own this Ammo instance
+ */
 jzt.things.Ammo = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 132;
     this.foreground = jzt.colors.Colors['3'];
-}
+};
 jzt.things.Ammo.prototype = new jzt.things.Thing();
 jzt.things.Ammo.prototype.constructor = jzt.things.Ammo;
 jzt.things.Ammo.serializationType = 'Ammo';
 
+/**
+ * Pushes this Ammo in a provided direction on its owner Board.
+ * 
+ * @param direction A direction in which to push this Ammo
+ */
 jzt.things.Ammo.prototype.push = function(direction) {
     this.move(direction);
 };
 
+/**
+ * Sends a provided message to this Ammo instance. If a TOUCH message is received
+ * then this Ammo instance will be removed and increase the Game's 'ammo' counter
+ * by five units.
+ */
 jzt.things.Ammo.prototype.sendMessage = function(message) {
     if(message === 'TOUCH') {
         this.play('tcc#d');
         this.adjustCounter('ammo', 5);
-        this.delete();
+        this.remove();
     }
 };
 
 //--------------------------------------------------------------------------------
 
+/**
+ * Bear represents an UpdateableThing that will attack a Player when it is aligned
+ * vertically or horizontally within a defined sensitivity range.
+ * 
+ * @param board A Board to own this Bear.
+ */
 jzt.things.Bear = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.spriteIndex = 153;
@@ -534,10 +581,16 @@ jzt.things.Bear.prototype.deserialize = function(data) {
     this.sensitivity = jzt.util.getOption(data, 'sensitivity', 9);
 };
 
+/**
+ * Pushes this Bear in a given direction. If this Bear cannot be pushed,
+ * it will be squished and removed from its owner Board.
+ * 
+ * @param direction A direction in which to push this Bear.
+ */
 jzt.things.Bear.prototype.push = function(direction) {
     if(!this.move(direction)) {
         this.play('t+c---c++++c--c');
-        this.delete();
+        this.remove();
     }
 };
 
@@ -552,11 +605,11 @@ jzt.things.Bear.prototype.sendMessage = function(message) {
 
     if(message === 'SHOT') {
         this.play('t+c---c++++c--c', true);
-        this.delete();
+        this.remove();
     }
     else if(message === 'TOUCH') {
         this.board.player.sendMessage('SHOT');
-        this.delete();
+        this.remove();
     }
 
 };
@@ -581,7 +634,7 @@ jzt.things.Bear.prototype.doTick = function() {
         var thing = this.board.getTile(this.point.add(direction));
         if(thing && (thing instanceof jzt.things.BreakableWall || thing instanceof jzt.things.Player)) {
             thing.sendMessage('SHOT');
-            this.delete();
+            this.remove();
             return;
         }
         this.move(direction, true);
@@ -617,11 +670,17 @@ jzt.things.Boulder.prototype.push = function(direction) {
 
 //--------------------------------------------------------------------------------
 
+/**
+ * BreakableWall represents an obstacle for a player until it is shot, at which
+ * point the wall is removed from its owner Board.
+ *
+ * @param board An owner board for this BreakableWall.
+ */
 jzt.things.BreakableWall = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 177;
     this.background = jzt.colors.Colors['0'];
-    this.foreground = jzt.colors.Colors['B'];
+    this.foreground = jzt.colors.Colors.B;
 };
 jzt.things.BreakableWall.prototype = new jzt.things.Thing();
 jzt.things.BreakableWall.prototype.constructor = jzt.things.BreakableWall;
@@ -636,7 +695,7 @@ jzt.things.BreakableWall.serializationType = 'BreakableWall';
 jzt.things.BreakableWall.prototype.sendMessage = function(message) {
     if(message === 'SHOT') {
         this.play('t-c');
-        this.delete();
+        this.remove();
     }
 };
 
@@ -650,7 +709,7 @@ jzt.things.BreakableWall.prototype.sendMessage = function(message) {
 jzt.things.Bullet = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.spriteIndex = 248;
-    this.foreground = jzt.colors.Colors['F'];
+    this.foreground = jzt.colors.Colors.F;
     this.background = undefined;
     this.direction = jzt.Direction.North;
     this.speed = 1;
@@ -687,13 +746,24 @@ jzt.things.Bullet.prototype.serialize = function() {
     }
  };
 
- jzt.things.Bullet.prototype.sendMessage = function(message) {
+/**
+ * Sends a provided message to this Bullet instance. If a Touch message is
+ * received then the player will be sent a shot message and this Bullet will
+ * be removed from its owner Board.
+ *
+ * @param message A message to be delivered to this Bullet.
+ */
+jzt.things.Bullet.prototype.sendMessage = function(message) {
     if(message === 'TOUCH') {
         this.board.player.sendMessage('SHOT');
-        this.delete();
+        this.remove();
     }
  };
 
+/**
+ * Retrieves whether or not this Bullet instance wishes to be updated on its owner Board's
+ * reverse update cycle.
+ */
 jzt.things.Bullet.prototype.updateOnReverse = function() {
     return this.direction === jzt.Direction.South || this.direction === jzt.Direction.East;
 };
@@ -710,6 +780,11 @@ jzt.things.Bullet.prototype.doTick = function() {
 
 };
 
+/**
+ * Attempts to Attack a Thing in this Bullet's path. If a player, ScriptableThing, or BreakableWall is in 
+ * its path, that Thing will be sent a SHOT message. Otherwise, this Bullet will be removed from its owner
+ * board.
+ */
 jzt.things.Bullet.prototype.attack = function() {
 
     // See what was in our way.
@@ -725,12 +800,15 @@ jzt.things.Bullet.prototype.attack = function() {
     }
 
     // Regardless of what we hit, we're done
-    this.delete();
+    this.remove();
 
 };
 
-jzt.things.Bullet.prototype.push = function(direction) {
-    this.delete();
+/**
+ * Attempts to push this Bullet.
+ */
+jzt.things.Bullet.prototype.push = function() {
+    this.remove();
 };
 
 //--------------------------------------------------------------------------------
@@ -811,7 +889,7 @@ jzt.things.Centipede.prototype.getAdjacentSegment = function() {
         return candidate && candidate instanceof jzt.things.Centipede && !candidate.linked && !candidate.head;
     }
 
-    var result = undefined;
+    var result;
 
     // Try North
     result = this.board.getTile(this.point.add(jzt.Direction.North));
@@ -917,14 +995,14 @@ jzt.things.Centipede.prototype.move = function(direction) {
     // If we're a head, check to see if we're attacking the player
     if(this.head && this.isPlayerAdjacent(direction)) {
         this.board.player.sendMessage('SHOT');
-        this.delete();
+        this.remove();
         return;
     }
 
     this.board.moveTile(this.point, this.point.add(direction), true);
 
     if(this.follower) {
-        var direction  = this.follower.point.directionTo(myPlace);
+        direction = this.follower.point.directionTo(myPlace);
         this.follower.move(direction);
     }
 
@@ -936,9 +1014,9 @@ jzt.things.Centipede.prototype.move = function(direction) {
  *
  * @param direction A given direction to push this Centipede.
  */
-jzt.things.Centipede.prototype.push = function(direction) {
+jzt.things.Centipede.prototype.push = function() {
     this.play('t+c---c++++c--c');
-    this.delete();
+    this.remove();
 };
 
 /**
@@ -946,7 +1024,7 @@ jzt.things.Centipede.prototype.push = function(direction) {
  * Centipedes will be updates to no longer contain this Centipede
  * as well.
  */
-jzt.things.Centipede.prototype.delete = function() {
+jzt.things.Centipede.prototype.remove = function() {
 
     if(this.leader) {
         this.leader.follower = undefined;
@@ -955,7 +1033,7 @@ jzt.things.Centipede.prototype.delete = function() {
         this.follower.leader = undefined;
     }
 
-    jzt.things.UpdateableThing.prototype.delete.call(this);
+    jzt.things.UpdateableThing.prototype.remove.call(this);
 
 };
 
@@ -970,11 +1048,11 @@ jzt.things.Centipede.prototype.delete = function() {
 jzt.things.Centipede.prototype.sendMessage = function(message) {
     if(message === 'SHOT') {
         this.play('t+c---c++++c--c', true);
-        this.delete();
+        this.remove();
     }
     if(message === 'TOUCH') {
         this.board.player.sendMessage('SHOT');
-        this.delete();
+        this.remove();
     }
 };
 
@@ -1008,7 +1086,7 @@ jzt.things.Centipede.prototype.seekPlayer = function() {
         var randomValue = Math.floor(Math.random()*10);
         return randomValue <= this.intelligence;
 
-    };
+    }
 
     return false;
 
@@ -1093,7 +1171,7 @@ jzt.things.Centipede.prototype.doTick = function() {
 jzt.things.Door = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 240;
-    this.foreground = jzt.colors.Colors['F'];
+    this.foreground = jzt.colors.Colors.F;
     this.background = jzt.colors.Colors['1'];
     this.targetBoard = undefined;
     this.doorId = 0;
@@ -1149,7 +1227,7 @@ jzt.things.Door.prototype.deserialize = function(data) {
 jzt.things.FakeWall = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 178;
-    this.foreground = jzt.colors.Colors['E'];
+    this.foreground = jzt.colors.Colors.E;
     this.background = jzt.colors.Colors['0'];
 };
 jzt.things.FakeWall.prototype = new jzt.things.Thing();
@@ -1162,10 +1240,15 @@ jzt.things.FakeWall.serializationType = 'FakeWall';
  * @param sender Another Thing that is requesting this Thing to surrender
  * @return true if this Thing is willing to surrender its position.
  */
-jzt.things.FakeWall.prototype.isSurrenderable = function(sender) {
+jzt.things.FakeWall.prototype.isSurrenderable = function() {
     return true;
 };
 
+/**
+ * Retrieves a sprite index used to represent this FakeWall on a rendered
+ * Board. If this FakeWall's owner board's game is in debug mode, then a visible
+ * representation will be used.
+ */
 jzt.things.FakeWall.prototype.getSpriteIndex = function() {
     return this.board.game.isDebugRendering ? 176 : 178;
 };
@@ -1207,7 +1290,7 @@ jzt.things.Forest.prototype.deserialize = function(data) {
  * @param messageName a name of a message to deliver.
  */
 jzt.things.Forest.prototype.sendMessage = function(message) {
-    if(message == 'TOUCH') {
+    if(message === 'TOUCH') {
 
         this.play(this.constructor.noteCycle[this.constructor.noteIndex++]);
         if(this.constructor.noteIndex >= this.constructor.noteCycle.length) {
@@ -1216,15 +1299,15 @@ jzt.things.Forest.prototype.sendMessage = function(message) {
         
         this.board.deleteTile(this.point);
     }
-}
+};
 
 //--------------------------------------------------------------------------------
 
 jzt.things.Gem = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 4;
-    this.foreground = jzt.colors.Colors['D'];
-}
+    this.foreground = jzt.colors.Colors.D;
+};
 jzt.things.Gem.prototype = new jzt.things.Thing();
 jzt.things.Gem.prototype.constructor = jzt.things.Gem;
 jzt.things.Gem.serializationType = 'Gem';
@@ -1238,23 +1321,29 @@ jzt.things.Gem.serializationType = 'Gem';
  */
 jzt.things.Gem.prototype.sendMessage = function(message) {
     if(message === 'TOUCH') {
-        this.delete();
+        this.remove();
         this.adjustCounter('health', 1);
         this.adjustCounter('gems', 1);
         this.adjustCounter('score', 10);
         this.play('t+c-gec');
     }
     else if(message === 'SHOT') {
-        this.delete();
+        this.remove();
         this.play('t-c');
     }
 };
 
+/**
+ * Pushes this Gem in a provided direction. If this Gem cannot be pushed,
+ * then it will be squished and removed from its owner Board.
+ *
+ * @param direction A direction in which to push this Gem.
+ */
 jzt.things.Gem.prototype.push = function(direction) {
     if(!this.move(direction)) {
-        this.delete();
+        this.remove();
     }
-}
+};
 
 //--------------------------------------------------------------------------------
 
@@ -1267,7 +1356,7 @@ jzt.things.Gem.prototype.push = function(direction) {
 jzt.things.InvisibleWall = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 0;
-    this.foreground = jzt.colors.Colors['A'];
+    this.foreground = jzt.colors.Colors.A;
 };
 jzt.things.InvisibleWall.prototype = new jzt.things.Thing();
 jzt.things.InvisibleWall.prototype.constructor = jzt.things.InvisibleWall;
@@ -1280,7 +1369,7 @@ jzt.things.InvisibleWall.serializationType = 'InvisibleWall';
  * @param messageName a name of a message to deliver.
  */
 jzt.things.InvisibleWall.prototype.sendMessage = function(message) {
-    if(message == 'TOUCH') {
+    if(message === 'TOUCH') {
         var replacement = new jzt.things.Wall();
         replacement.foreground = this.foreground;
         replacement.background = this.background;
@@ -1329,9 +1418,14 @@ jzt.things.LineWall.lineMap = {
     'NEW': 202,
     'NSW': 185,
     'ESW': 203,
-    'NESW': 206,
+    'NESW': 206
 };
 
+/**
+ * Retrieves a sprite index to be used when visually representing this LineWall on a rendered
+ * game Board. The sprite index of this LineWall will depend on its surroundings, altering
+ * its image when connecting LineWalls are found.
+ */
 jzt.things.LineWall.prototype.getSpriteIndex = function() {
 
     function isLineAdjacent(source, direction) {
@@ -1358,7 +1452,7 @@ jzt.things.Lion = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.intelligence = 3;
     this.spriteIndex = 234;
-    this.foreground = jzt.colors.Colors['C'];
+    this.foreground = jzt.colors.Colors.C;
     this.background = jzt.colors.Colors['0'];
     this.speed = 2;
 };
@@ -1398,11 +1492,11 @@ jzt.things.Lion.prototype.sendMessage = function(message) {
 
     if(message === 'SHOT') {
         this.play('t+c---c++++c--c', true);
-        this.delete();
+        this.remove();
     }
     else if(message === 'TOUCH') {
         this.board.player.sendMessage('SHOT');
-        this.delete();
+        this.remove();
     }
 
 };
@@ -1415,7 +1509,7 @@ jzt.things.Lion.prototype.sendMessage = function(message) {
 jzt.things.Lion.prototype.push = function(direction) {
     if(!this.move(direction)) {
         this.play('t+c---c++++c--c');
-        this.delete();
+        this.remove();
     }
 };
 
@@ -1445,7 +1539,7 @@ jzt.things.Lion.prototype.doTick = function() {
     var thing = this.board.getTile(this.point.add(direction));
     if(thing && thing instanceof jzt.things.Player) {
         thing.sendMessage('SHOT');
-        this.delete();
+        this.remove();
         return;
     }
     this.move(direction, true);
@@ -1468,7 +1562,7 @@ jzt.things.Player = function(board) {
     this.name = 'Player';
     this.spriteIndex = 2;
     this.point = new jzt.Point(-1,-1);
-    this.foreground = jzt.colors.Colors['F'];
+    this.foreground = jzt.colors.Colors.F;
     this.background = jzt.colors.Colors['1'];
     this.nextAllowableMove = 0;
 
@@ -1515,7 +1609,7 @@ jzt.things.Player.prototype.move = function(direction) {
     if(this.board.isOutside(newLocation)) {
 
         // Find out which direction we're moving to
-        var direction = this.point.directionTo(newLocation);
+        direction = this.point.directionTo(newLocation);
         this.board.movePlayerOffBoard(direction);
 
         // This isn't a typical board move
@@ -1550,6 +1644,10 @@ jzt.things.Player.prototype.shoot = function(direction) {
     }
 };
 
+/**
+ * Performs an update tick of this Player instance, moving or shooting
+ * in its direction, as necessary.
+ */
 jzt.things.Player.prototype.doTick = function() {
 
     if(this.nextAction.type === this.MOVE_ACTION) {
@@ -1563,6 +1661,14 @@ jzt.things.Player.prototype.doTick = function() {
 
 };
 
+/**
+ * Schedules a provided event for this Player instance to be performed at its
+ * next tick update. 
+ *
+ * @param pressTime a timestamp at which time a press event occurred
+ * @param eventType a type of event to schedule (MOVE_ACTION or SHOOT_ACTION)
+ * @param direction A direction in which the movement or shooting should occur
+ */
 jzt.things.Player.prototype.scheduleEvent = function(pressTime, eventType, direction) {
 
     var now = Date.now();
@@ -1589,44 +1695,44 @@ jzt.things.Player.prototype.scheduleEvent = function(pressTime, eventType, direc
 jzt.things.Player.prototype.update = function() {
 
     var k = this.game.keyboard;
-    var now = Date.now();
+
     if(k.isPressed(k.SHIFT)) {
 
-        var pressTime = undefined;
-
-        if(pressTime = k.isPressed(k.UP)) {
-            this.scheduleEvent(pressTime, this.SHOOT_ACTION, jzt.Direction.North);
+        if(k.isPressed(k.UP)) {
+            this.scheduleEvent(k.isPressed(k.UP), this.SHOOT_ACTION, jzt.Direction.North);
         }
-        else if(pressTime = k.isPressed(k.RIGHT)) {
-            this.scheduleEvent(pressTime, this.SHOOT_ACTION, jzt.Direction.East);
+        else if(k.isPressed(k.RIGHT)) {
+            this.scheduleEvent(k.isPressed(k.RIGHT), this.SHOOT_ACTION, jzt.Direction.East);
         }
-        else if(pressTime = k.isPressed(k.DOWN)) {
-            this.scheduleEvent(pressTime, this.SHOOT_ACTION, jzt.Direction.South);
+        else if(k.isPressed(k.DOWN)) {
+            this.scheduleEvent(k.isPressed(k.DOWN), this.SHOOT_ACTION, jzt.Direction.South);
         } 
-        else if(pressTime = k.isPressed(k.LEFT)) {
-            this.scheduleEvent(pressTime, this.SHOOT_ACTION, jzt.Direction.West);
+        else if(k.isPressed(k.LEFT)) {
+            this.scheduleEvent(k.isPressed(k.LEFT), this.SHOOT_ACTION, jzt.Direction.West);
         }
         else {
             this.nextAllowableMove = 0;
         }
     }
     else {
-        if(pressTime = k.isPressed(k.UP)) {
-            this.scheduleEvent(pressTime, this.MOVE_ACTION, jzt.Direction.North);
+        if(k.isPressed(k.UP)) {
+            this.scheduleEvent(k.isPressed(k.UP), this.MOVE_ACTION, jzt.Direction.North);
         }
-        else if(pressTime = k.isPressed(k.RIGHT)) {
-            this.scheduleEvent(pressTime, this.MOVE_ACTION, jzt.Direction.East);
+        else if(k.isPressed(k.RIGHT)) {
+            this.scheduleEvent(k.isPressed(k.RIGHT), this.MOVE_ACTION, jzt.Direction.East);
         }
-        else if(pressTime = k.isPressed(k.DOWN)) {
-            this.scheduleEvent(pressTime, this.MOVE_ACTION, jzt.Direction.South);
+        else if(k.isPressed(k.DOWN)) {
+            this.scheduleEvent(k.isPressed(k.DOWN), this.MOVE_ACTION, jzt.Direction.South);
         }
-        else if(pressTime = k.isPressed(k.LEFT)) {
-            this.scheduleEvent(pressTime, this.MOVE_ACTION, jzt.Direction.West);
+        else if(k.isPressed(k.LEFT)) {
+            this.scheduleEvent(k.isPressed(k.LEFT), this.MOVE_ACTION, jzt.Direction.West);
         }
         else {
             this.nextAllowableMove = 0;
         }
-        if(k.isPressed([k.T])) this.useTorch();
+        if(k.isPressed([k.T])) {
+            this.useTorch();
+        }
     }
 
     if(this.torch) {
@@ -1701,7 +1807,7 @@ jzt.things.Player.prototype.inTorchRange = function(point) {
     
     // If we don't have a torch, we can only see ourselves
     if(!this.torch) {
-        return point.x == this.point.x && point.y == this.point.y;
+        return point.x === this.point.x && point.y === this.point.y;
     }
     
     // Otherwise...
@@ -1748,12 +1854,14 @@ jzt.things.Player.prototype.sendMessage = function(message) {
 
 };
 
-jzt.things.Player.prototype.updateOnReverse = function() {
-    return true;
-}
-
 //--------------------------------------------------------------------------------
 
+/**
+ * Pusher represents an UpdateableThing that continually moves in a defined direction,
+ * pushing obstacles in its path.
+ * 
+ * @param board An owner board for this Pusher.
+ */
 jzt.things.Pusher = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.orientation = jzt.Direction.South;
@@ -1764,6 +1872,10 @@ jzt.things.Pusher.prototype = new jzt.things.UpdateableThing();
 jzt.things.Pusher.prototype.constructor = jzt.things.Pusher;
 jzt.things.Pusher.serializationType = 'Pusher';
 
+/**
+ * Initializes a spriteIndex for this Pusher based on its defined
+ * direction.
+ */
 jzt.things.Pusher.prototype.initializeSprite = function() {
     if(this.orientation === jzt.Direction.North) {
         this.spriteIndex = 30;
@@ -1779,12 +1891,22 @@ jzt.things.Pusher.prototype.initializeSprite = function() {
     }
 };
 
+/**
+ * Serializes this Pusher instance to an object.
+ *
+ * @return A serialized Pusher
+ */
 jzt.things.Pusher.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
     result.orientation = jzt.Direction.getName(this.orientation);
     return result;
 };
 
+/**
+ * Deserializes a provided data object into a Pusher instance.
+ * 
+ * @param data Serializes Pusher data to be deserialized.
+ */
 jzt.things.Pusher.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
     if(data.orientation) {
@@ -1793,6 +1915,9 @@ jzt.things.Pusher.prototype.deserialize = function(data) {
     this.initializeSprite();
 };
 
+/**
+ * Performs a tick update of this Pusher.
+ */
 jzt.things.Pusher.prototype.doTick = function() {
     if(this.move(this.orientation)) {
         this.play('t--f', false, true);
@@ -1800,10 +1925,17 @@ jzt.things.Pusher.prototype.doTick = function() {
 };
 
 //--------------------------------------------------------------------------------
+
+/**
+ * Ruffian is an UpdateableThing that attacks in a burst of movement, followed
+ * by a wait time, then another burst of movement.
+ *
+ * @param board An owner board for this Ruffian.
+ */
 jzt.things.Ruffian = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.spriteIndex = 5;
-    this.foreground = jzt.colors.Colors['D'];
+    this.foreground = jzt.colors.Colors.D;
     this.intelligence = 5;
     this.restingTime = 5;
     this.moving = false;
@@ -1815,6 +1947,11 @@ jzt.things.Ruffian.prototype = new jzt.things.UpdateableThing();
 jzt.things.Ruffian.prototype.constructor = jzt.things.Ruffian;
 jzt.things.Ruffian.serializationType = 'Ruffian';
 
+/**
+ * Serializes this Ruffian to a data object.
+ * 
+ * @return A serialized Ruffian.
+ */
 jzt.things.Ruffian.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
     result.intelligence = this.intelligence;
@@ -1822,27 +1959,43 @@ jzt.things.Ruffian.prototype.serialize = function() {
     return result;
 };
 
+/**
+ * Deserializes a provided data object, configuring this Ruffian.
+ * 
+ * @param data A data object to be deserialized into a Ruffian.
+ */
 jzt.things.Ruffian.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
     this.intelligence = jzt.util.getOption(data, 'intelligence', 5);
     this.restingTime = jzt.util.getOption(data, 'restingTime', 5);
 };
 
+/** 
+ * Pushes this Ruffian instance in a given direction. If this Ruffian
+ * cannot be pushed, it will be squished and removed from its owner Board.
+ * 
+ * @param direction A direction in which to push this Ruffian.
+ */
 jzt.things.Ruffian.prototype.push = function(direction) {
     if(!this.move(direction)) {
-        this.delete();
+        this.remove();
         this.play('t+c---c++++c--c');
     }
 };
 
+/**
+ * Sends a provided message to this Ruffian.
+ *
+ * @param message A message to be delivered to this Ruffian.
+ */
 jzt.things.Ruffian.prototype.sendMessage = function(message) {
     if(message === 'SHOT') {
         this.play('t+c---c++++c--c', true);
-        this.delete();
+        this.remove();
     }
     else if(message === 'TOUCH') {
         this.board.player.sendMessage('SHOT');
-        this.delete();
+        this.remove();
     }
 };
 
@@ -1860,31 +2013,44 @@ jzt.things.Ruffian.prototype.seekPlayer = function() {
 
 };
 
+/**
+ * Performs an update tick for this Ruffian instance.
+ */
 jzt.things.Ruffian.prototype.doTick = function() {
 
+    // Decrement our remaining time and check if it has elapsed...
     if(--this.timeLeft <= 0) {
 
+        // Toggle our movement status
         this.moving = ! this.moving;
 
+        // If we're about to move, choose a direction and duration
         if(this.moving) {
             this.orientation = this.seekPlayer() ? this.getPlayerDirection() : jzt.Direction.random();
             this.timeLeft = Math.floor(Math.random()*10);
         }
+
+        // If we're waiting, choose a wait time
         else {
             this.timeLeft = Math.floor(Math.random()*10) - (10 - this.restingTime);
         }
 
     }
 
+    // If we're moving...
     if(this.moving) {
 
+        // Determine what's in our way
         var thing = this.board.getTile(this.point.add(this.orientation));
+
+        // If it's the player, attack it
         if(thing && thing instanceof jzt.things.Player) {
             thing.sendMessage('SHOT');
-            this.delete();
+            this.remove();
             return;
         }
 
+        // Otherwise just move
         this.move(this.orientation, true);
 
     }
@@ -1901,7 +2067,7 @@ jzt.things.Ruffian.prototype.doTick = function() {
 jzt.things.SliderEw = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 29;
-}
+};
 jzt.things.SliderEw.prototype = new jzt.things.Thing();
 jzt.things.SliderEw.prototype.constructor = jzt.things.SliderEw;
 jzt.things.SliderEw.serializationType = 'SliderEw';
@@ -1929,7 +2095,7 @@ jzt.things.SliderEw.prototype.push = function(direction) {
 jzt.things.SliderNs = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 18;
-}
+};
 jzt.things.SliderNs.prototype = new jzt.things.Thing();
 jzt.things.SliderNs.prototype.constructor = jzt.things.SliderNs;
 jzt.things.SliderNs.serializationType = 'SliderNs';
@@ -1963,29 +2129,52 @@ jzt.things.SolidWall.prototype.constructor = jzt.things.SolidWall;
 jzt.things.SolidWall.serializationType = 'SolidWall';
 
 //--------------------------------------------------------------------------------
+
+/**
+ * Spider is an UpdateableThing that only moves along SpideWebs.
+ *
+ * @param board An owner Board for this Spider
+ */
 jzt.things.Spider = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.spriteIndex = 15;
-    this.foreground = jzt.colors.Colors['C'];
+    this.foreground = jzt.colors.Colors.C;
     this.background = jzt.colors.Colors['0'];
     this.intelligence = 5;
     this.speed = 1;
-}
+};
 jzt.things.Spider.prototype = new jzt.things.UpdateableThing();
 jzt.things.Spider.prototype.constructor = jzt.things.Spider;
 jzt.things.Spider.serializationType = 'Spider';
 
+/**
+ * Serializes this Spider instance into a data object.
+ * 
+ * @return A serialized Spider
+ */
 jzt.things.Spider.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
     result.intelligence = this.intelligence;
     return result;
 };
 
+/**
+ * Deserializes a data object and configure this Spider instance.
+ *
+ * @param data A data object to be deserialized into a Spider.
+ */
 jzt.things.Spider.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
     this.intelligence = data.intelligence;
 };
 
+/**
+ * Returns whether or not this Spider instance should seek the player
+ * for an attack, or choose a random direction. This decision is weighted
+ * based on this Spider's intelligence property.
+ *
+ * @return true if this Spider should seek the player, false otherwise
+ */
 jzt.things.Spider.prototype.seekPlayer = function() {
 
     var randomValue = Math.floor(Math.random()*10);
@@ -2016,11 +2205,11 @@ jzt.things.Spider.prototype.sendMessage = function(message) {
 
     if(message === 'SHOT') {
         this.play('t+c---c++++c--c', true);
-        this.delete();
+        this.remove();
     }
     else if(message === 'TOUCH') {
         this.board.player.sendMessage('SHOT');
-        this.delete();
+        this.remove();
     }
 
 };
@@ -2033,34 +2222,52 @@ jzt.things.Spider.prototype.sendMessage = function(message) {
 jzt.things.Spider.prototype.push = function(direction) {
     if(!this.move(direction)) {
         this.play('t+c---c++++c--c');
-        this.delete();
+        this.remove();
     }
 };
 
+/**
+ * Performs an update tick for this Spider instance.
+ */
 jzt.things.Spider.prototype.doTick = function() {
 
+    // Get a direction based on our intelligence
     var direction = this.seekPlayer() ? this.getPlayerDirection() : jzt.Direction.random(this.getAttackableDirections());
 
+    // If a direction was decided upon...
     if(direction !== undefined) {
+
+        // Determine any obstacle in our way
         var thing = this.board.getTile(this.point.add(direction));
+
+        // If it's a player, attack it
         if(thing && thing instanceof jzt.things.Player) {
             thing.sendMessage('SHOT');
-            this.delete();
+            this.remove();
             return;
         }
+
+        // Otherwise, if it's a spider web, move in that direction
         else if(thing && thing instanceof jzt.things.SpiderWeb) {
             this.move(direction, true);
-        };
+        }
+
     }
 };
 
 //--------------------------------------------------------------------------------
+
+/**
+ * SpiderWeb is a Thing that represents a path along which Spiders will travel.
+ * 
+ * @param board An owner Board for this SpiderWeb.
+ */
 jzt.things.SpiderWeb = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 249;
     this.foreground = jzt.colors.Colors['8'];
     this.background = jzt.colors.Colors['0'];
-}
+};
 jzt.things.SpiderWeb.prototype = new jzt.things.Thing();
 jzt.things.SpiderWeb.prototype.constructor = jzt.things.SpiderWeb;
 jzt.things.SpiderWeb.serializationType = 'SpiderWeb';
@@ -2080,9 +2287,14 @@ jzt.things.SpiderWeb.lineMap = {
     'NEW': 193,
     'NSW': 180,
     'ESW': 194,
-    'NESW': 197,
+    'NESW': 197
 };
 
+/**
+ * Retrieves a sprite index to be used as a visual representation of this SpiderWeb.
+ * The index returned depends on the surrounings of this SpiderWeb, which will appear
+ * to connect with adjacent spider webs.
+ */
 jzt.things.SpiderWeb.prototype.getSpriteIndex = function() {
 
     function isLineAdjacent(source, direction) {
@@ -2106,12 +2318,19 @@ jzt.things.SpiderWeb.prototype.getSpriteIndex = function() {
  * @param sender Another Thing that is requesting this Thing to surrender
  * @return true if this Thing is willing to surrender its position.
  */
-jzt.things.SpiderWeb.prototype.isSurrenderable = function(sender) {
+jzt.things.SpiderWeb.prototype.isSurrenderable = function() {
     return true;
 };
 
 //--------------------------------------------------------------------------------
 
+/**
+ * SpinningGun is an UpdateableThing that spins in place and shoots. Its shooting
+ * behaviour will depend on its intelligence (which affects when it shoots) and its
+ * firing rate (which affects how often it shoots).
+ *
+ * @param board An owner Board for this SpinningGun.
+ */
 jzt.things.SpinningGun = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.intelligence = 5;
@@ -2125,6 +2344,11 @@ jzt.things.SpinningGun.prototype.constructor = jzt.things.SpinningGun;
 jzt.things.SpinningGun.serializationType = 'SpinningGun';
 jzt.things.SpinningGun.animationFrames = [24, 26, 25, 27];
 
+/**
+ * Serializes this SpinningGun instance into a data object.
+ *
+ * @return A serialized SpinningGun.
+ */
 jzt.things.SpinningGun.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
     result.intelligence = this.intelligence;
@@ -2132,12 +2356,20 @@ jzt.things.SpinningGun.prototype.serialize = function() {
     return result;
 };
 
+/**
+ * Deserializes a provided data object to configure this SpinningGun instance.
+ *
+ * @param data A serialized SpinningGun data object.
+ */
 jzt.things.SpinningGun.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
     this.intelligence = jzt.util.getOption(data, 'intelligence', 5);
     this.firingRate = jzt.util.getOption(data, 'firingRate', 5);
 };
 
+/**
+ * Performs a single update tick of this SpinningGun instance.
+ */
 jzt.things.SpinningGun.prototype.doTick = function() {
 
     var me = this;
@@ -2169,6 +2401,8 @@ jzt.things.SpinningGun.prototype.doTick = function() {
 /**
  * Teleporter is an UpdateableThing capable of teleporting the player
  * to an associated opposite teleporter along the same directional axis.
+ *
+ * @param board An owner Board for this Teleporter.
  */
  jzt.things.Teleporter = function(board) {
     jzt.things.UpdateableThing.call(this, board);
@@ -2186,12 +2420,22 @@ jzt.things.Teleporter.animationFrames = {
     'West': [179, 40, 60, 40]
 };
 
+/**
+ * Serializes this Teleporter instance into a data object.
+ *
+ * @return A data object representing a serialized Teleporter.
+ */
 jzt.things.Teleporter.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
     result.orientation = jzt.Direction.getName(this.orientation);
     return result;
 };
 
+/**
+ * Deserializes a provided data object to configure this Teleporter instance.
+ *
+ * @param data A data object representing a serialized Teleporter.
+ */
 jzt.things.Teleporter.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
     if(data.orientation) {
@@ -2199,6 +2443,9 @@ jzt.things.Teleporter.prototype.deserialize = function(data) {
     }
 };
 
+/**
+ * Performs a single update tick of this Teleporter instance.
+ */
 jzt.things.Teleporter.prototype.doTick = function() {
     this.animationFrame++;
     if(this.animationFrame >= jzt.things.Teleporter.animationFrames[jzt.Direction.getName(this.orientation)].length) {
@@ -2206,10 +2453,23 @@ jzt.things.Teleporter.prototype.doTick = function() {
     }
 };
 
+/**
+ * Retrieves a sprite index used to visually represent this Teleporter instance on 
+ * a rendered game Board.
+ *
+ * @return a sprite index.
+ */
 jzt.things.Teleporter.prototype.getSpriteIndex = function() {
     return jzt.things.Teleporter.animationFrames[jzt.Direction.getName(this.orientation)][this.animationFrame];
 };
 
+/**
+ * Attempts to push this Teleporter instance in a given direction. This teleporter, rather than
+ * be pushed, may teleport the item being pushed to another location on its owner Board, based
+ * on this Teleporter's orientation, and the location and orientation of other Teleporters on the board.
+ * 
+ * @param direction A direction in which to push this Teleporter.
+ */
 jzt.things.Teleporter.prototype.push = function(direction) {
 
     // We only teleport in our current direction
@@ -2257,6 +2517,13 @@ jzt.things.Teleporter.prototype.push = function(direction) {
 
 //--------------------------------------------------------------------------------
 
+/**
+ * ThrowingStar is an UpdateableThing representing a projectile that seeks the player
+ * continually with a spinning animation until its time to live has expired and it
+ * is removed from its owner Board.
+ *
+ * @param board An owner board for this ThrowingStar.
+ */
 jzt.things.ThrowingStar = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.speed = 1;
@@ -2271,28 +2538,46 @@ jzt.things.ThrowingStar.prototype.constructor = jzt.things.ThrowingStar;
 jzt.things.ThrowingStar.serializationType = 'ThrowingStar';
 jzt.things.ThrowingStar.animationFrames = [179, 47, 196, 92];
 
+/**
+ * Serializes this ThrowingStar into a data object.
+ *
+ * @return A data object representing a serialized ThrowingStar.
+ */
 jzt.things.ThrowingStar.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
     result.timeToLive = this.timeToLive;
     return result;
 };
 
+/**
+ * Deserializes a provided data object to configure this ThrowingStar instance.
+ *
+ * @param A data object representing a serialized ThrowingStar.
+ */
 jzt.things.ThrowingStar.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
     this.timeToLove = jzt.util.getOption(data, 'timeToLive', 100);
 };
 
+/**
+ * Sends a provided message to this ThrowingStar instance.
+ *
+ * @param message A message to send to this ThrowingStar.
+ */
 jzt.things.ThrowingStar.prototype.sendMessage = function(message)  {
     if(message === 'TOUCH') {
         this.board.player.sendMessage('SHOT');
-        this.delete();
+        this.remove();
     }
-}
+};
 
+/**
+ * Performs a single update tick of this ThrowingStar instance.
+ */
 jzt.things.ThrowingStar.prototype.doTick = function() {
 
     if(--this.timeToLive <= 0) {
-        this.delete();
+        this.remove();
         return;
     }
 
@@ -2309,7 +2594,7 @@ jzt.things.ThrowingStar.prototype.doTick = function() {
         var thing = this.board.getTile(this.point.add(direction));
         if(thing instanceof jzt.things.BreakableWall || thing instanceof jzt.things.Player) {
             thing.sendMessage('SHOT');
-            this.delete();
+            this.remove();
             return;
         }
         this.move(this.getPlayerDirection());
@@ -2319,19 +2604,30 @@ jzt.things.ThrowingStar.prototype.doTick = function() {
 
 //--------------------------------------------------------------------------------
 
+/**
+ * Tiger is an UpdateableThing representing a creature that moves and shoots
+ * bullets at a player.
+ *
+ * @param board An owner Board for this Tiger.
+ */
 jzt.things.Tiger = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.spriteIndex = 227;
-    this.foreground = jzt.colors.Colors['B'];
+    this.foreground = jzt.colors.Colors.B;
     this.background = jzt.colors.Colors['0'];
     this.intelligence = 5;
     this.firingRate = 5;
     this.speed = 2;
-}
+};
 jzt.things.Tiger.prototype = new jzt.things.UpdateableThing();
 jzt.things.Tiger.prototype.constructor = jzt.things.Tiger;
 jzt.things.Tiger.serializationType = 'Tiger';
 
+/**
+ * Serializes this Tiger into a data object.
+ *
+ * @return A data object representing a serialized Tiger.
+ */
 jzt.things.Tiger.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
     result.intelligence = this.intelligence;
@@ -2339,6 +2635,11 @@ jzt.things.Tiger.prototype.serialize = function() {
     return result;
 };
 
+/**
+ * Deserializes a provided data object to configure this Tiger instance.
+ * 
+ * @param data A data object representing a serialized Tiger.
+ */
 jzt.things.Tiger.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize(this, data);
     this.intelligence = data.intelligence === undefined ? 5 : data.intelligence;
@@ -2356,11 +2657,11 @@ jzt.things.Tiger.prototype.sendMessage = function(message) {
 
     if(message === 'SHOT') {
         this.play('t+c---c++++c--c', true);
-        this.delete();
+        this.remove();
     }
     else if(message === 'TOUCH') {
         this.board.player.sendMessage('SHOT');
-        this.delete();
+        this.remove();
     }
 
 };
@@ -2373,7 +2674,7 @@ jzt.things.Tiger.prototype.sendMessage = function(message) {
 jzt.things.Tiger.prototype.push = function(direction) {
     if(!this.move(direction)) {
         this.play('t+c---c++++c--c');
-        this.delete();
+        this.remove();
     }
 };
 
@@ -2391,11 +2692,21 @@ jzt.things.Tiger.prototype.seekPlayer = function() {
 
 };
 
+/**
+ * Returns whether or not this Tiger should shoot the player during its next
+ * move. The probability of a true result depends on this Tiger's firing rate
+ * property.
+ *
+ * @return true if this Tiger should shoot the player, false otherwise.
+ */
 jzt.things.Tiger.prototype.shootPlayer = function() {
     var randomValue = Math.floor(Math.random()*20);
     return randomValue <= this.firingRate;
 };
 
+/**
+ * Performs a single update tick of this Tiger.
+ */
 jzt.things.Tiger.prototype.doTick = function() {
 
     var direction = this.seekPlayer() ? this.getPlayerDirection() : jzt.Direction.random();
@@ -2403,7 +2714,7 @@ jzt.things.Tiger.prototype.doTick = function() {
     var thing = this.board.getTile(this.point.add(direction));
     if(thing && thing instanceof jzt.things.Player) {
         thing.sendMessage('SHOT');
-        this.delete();
+        this.remove();
         return;
     }
 
@@ -2440,19 +2751,31 @@ jzt.things.Wall.serializationType = 'Wall';
 jzt.things.Water = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 176;
-    this.background = jzt.colors.Colors['F'];
+    this.background = jzt.colors.Colors.F;
     this.foreground = jzt.colors.Colors['9'];
 };
 jzt.things.Water.prototype = new jzt.things.Thing();
 jzt.things.Water.prototype.constructor = jzt.things.Water;
 jzt.things.Water.serializationType = 'Water';
 
+/**
+ * Returns whether or not this Water is surrenderable to a provided
+ * sender. Water will return true if the sender is a bullet or ThrowingStar,
+ * but false otherwise.
+ */
 jzt.things.Water.prototype.isSurrenderable = function(sender) {
-    if(sender instanceof jzt.things.Bullet) {
+    if(sender instanceof jzt.things.Bullet || sender instanceof jzt.things.ThrowingStar) {
         return true;
     }
 };
 
+/**
+ * Sends a provided message to this Water. If a TOUCH message is received, then 
+ * a sound effect is played and a message indicating that players cannot
+ * move through water is shown.
+ *
+ * @param message A message to be delivered to this Water.
+ */
 jzt.things.Water.prototype.sendMessage = function(message) {
     if(message === 'TOUCH') {
         this.play('t+c+c');
@@ -2475,9 +2798,9 @@ jzt.things.ThingFactory.deserialize = function(data, board) {
 
     var thingMap = jzt.things.ThingFactory.getThingMap();
 
-    var thingFunction = thingMap[data.type];
-    if(thingFunction) {
-        var result = new thingFunction(board);
+    var ThingFunction = thingMap[data.type];
+    if(ThingFunction) {
+        var result = new ThingFunction(board);
         result.deserialize(data);
         return result;
     }
@@ -2495,7 +2818,7 @@ jzt.things.ThingFactory.getThingMap = function() {
 
         jzt.things.ThingFactory.thingMap = {};
 
-        for(thing in jzt.things) {
+        for(var thing in jzt.things) {
             if(jzt.things.hasOwnProperty(thing)) {
 
                 var thingProperty = jzt.things[thing];

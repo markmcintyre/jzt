@@ -196,6 +196,19 @@ jzt.Game.prototype.setState = function(state) {
         this.scroll.open();
     }
 
+    else if(state === jzt.GameState.GameOver) {
+
+        // Stop all scheduled audio
+        this.resources.audio.cancel();
+
+        // Play our game over sound
+        this.resources.audio.play('s-cd#g+c-ga#+dgfg#+cf---q.c', true);
+
+        // Deactivate subsequent audio output
+        this.resources.audio.setActive(false);
+        
+    }
+
     // Assign our new state
     this.state = state;
 
@@ -397,20 +410,11 @@ jzt.Game.prototype.update = function() {
  */
 jzt.Game.prototype.checkCounters = function() {
 
-    // If our player is dead
+    // If our player is dead, and it's not already GameOver state
     if(this.counters.health <= 0 && this.state !== jzt.GameState.GameOver) {
 
         // Assign our state to be GameOVer
         this.setState(jzt.GameState.GameOver);
-
-        // Stop all scheduled audio
-        this.resources.audio.cancel();
-
-        // Play our game over sound
-        this.resources.audio.play('s-cd#g+c-ga#+dgfg#+cf---q.c', true);
-
-        // Deactivate subsequent audio output
-        this.resources.audio.setActive(false);
 
     }
 
