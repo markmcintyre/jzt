@@ -3,6 +3,7 @@ jzt.Scroll = function(owner) {
 	var index;
 	var spaceSprite;
 	var dotSprite;
+	this.listener;
 	this.game = owner;
 	this.graphics = owner.resources.graphics;
 	this.lines = [];
@@ -89,6 +90,8 @@ jzt.Scroll.prototype.setHeight = function(height) {
 jzt.Scroll.prototype.update = function() {
 
 	var k = this.game.keyboard;
+	var label;
+	var index;
 
 	if (this.state === jzt.Scroll.ScrollState.Opening) {
 		this.setHeight(this.height+2);
@@ -104,7 +107,13 @@ jzt.Scroll.prototype.update = function() {
 		else if(k.isPressed(k.DOWN)) {
 			this.scrollDown();
 		}
-		else if(k.isPressed(k.ENTER) || k.isPressed(k.ESCAPE)) {
+		else if(k.isPressed(k.ENTER)) {
+			this.state = jzt.Scroll.ScrollState.Closing;
+			if(this.getCurrentLabel()) {
+				this.listener.sendMessage();
+			}
+		}
+		else if(k.isPressed(k.ESCAPE)) {
 			this.state = jzt.Scroll.ScrollState.Closing;
 		}
 
