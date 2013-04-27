@@ -25,7 +25,8 @@ jzt.Editor = function(canvasElement, configuration) {
 		TILE_SIZE: new jzt.Point(16, 32),
     	SPRITE_SIZE: new jzt.Point(8, 16),
     	resources: {},
-    	isDebugRendering: true
+    	isDebugRendering: true,
+    	context: this.context
 	};
 
 	this.game = mockGame;

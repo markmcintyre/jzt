@@ -34,6 +34,7 @@
 			<label><input type="radio" name="activeTemplate" value="InvisibleWall" />Invisible Wall</label>
 			<label><input type="radio" name="activeTemplate" value="BreakableWall" />Breakable Wall</label>
 			<label><input type="radio" name="activeTemplate" value="FakeWall" />Fake Wall</label>
+			<label><input type="radio" name="activeTemplate" value="SpiderWeb" />Spider Web</label>
 			<br/>
 			<label><input type="radio" name="activeTemplate" value="Water" />Water</label>
 			<label><input type="radio" name="activeTemplate" value="Forest" />Forest</label>
@@ -55,6 +56,7 @@
 			<label><input type="radio" name="activeTemplate" value="Centipede" />Centipede</label>
 			<label><input type="radio" name="activeTemplate" value="Bear" />Bear</label>
 			<label><input type="radio" name="activeTemplate" value="SpinningGun" />Spinning Gun</label>
+			<label><input type="radio" name="activeTemplate" value="Spider" />Spider</label>
 			<br/>
 
 			<button id="save-game">Save</button>
@@ -103,7 +105,11 @@
 							activeTool.doorId = document.getElementById('door-id').value;
 							activeTool.targetBoard = document.getElementById('door-target').value;
 							break;
+						case 'Spider':
+							activeTool.under = new jzt.things.SpiderWeb().serialize();
+							break;
 					}
+
 
 					editor.setActiveTool(activeTool);
 

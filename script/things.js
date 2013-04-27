@@ -31,7 +31,7 @@ jzt.things.Thing.prototype.serialize = function() {
     if(this.constructor.hasOwnProperty('serializationType')) {
         result.type = this.constructor.serializationType;
     }
-    result.color = (this.background === undefined ? '*' : this.background.code) + (this.foreground == '*' ? '*' : this.foreground.code);
+    result.color = (this.background === undefined || this.background === '*' ? '*' : this.background.code) + (this.foreground === undefined || this.foreground === '*' ? '*' : this.foreground.code);
     return result;
 };
 
@@ -43,7 +43,7 @@ jzt.things.Thing.prototype.serialize = function() {
  */
 jzt.things.Thing.prototype.deserialize = function(data) {
 
-    if(data.color) {
+    if(data.color && data.color.length === 2) {
         var backgroundCode = data.color.charAt(0);
         var foregroundCode = data.color.charAt(1);
 
@@ -53,6 +53,9 @@ jzt.things.Thing.prototype.deserialize = function(data) {
     else {
         if(!this.foreground) {
             this.foreground = jzt.colors.Colors['E'];
+        }
+        if(!this.background) {
+            this.background = jzt.colors.Colors['0'];
         }
     }
     
@@ -225,7 +228,7 @@ jzt.things.UpdateableThing.prototype.serialize = function() {
 jzt.things.UpdateableThing.prototype.deserialize = function(data) {
     jzt.things.Thing.prototype.deserialize.call(this, data);
     if(data.under) {
-        this.under = jzt.things.ThingFactory.deserialize(data.under);
+        this.under = jzt.things.ThingFactory.deserialize(data.under, this.board);
     }
     if(data.speed) {
         this.speed = data.speed;
@@ -1958,6 +1961,154 @@ jzt.things.SolidWall = function(board) {
 jzt.things.SolidWall.prototype = new jzt.things.Thing();
 jzt.things.SolidWall.prototype.constructor = jzt.things.SolidWall;
 jzt.things.SolidWall.serializationType = 'SolidWall';
+
+//--------------------------------------------------------------------------------
+jzt.things.Spider = function(board) {
+    jzt.things.UpdateableThing.call(this, board);
+    this.spriteIndex = 15;
+    this.foreground = jzt.colors.Colors['C'];
+    this.background = jzt.colors.Colors['0'];
+    this.intelligence = 5;
+    this.speed = 1;
+}
+jzt.things.Spider.prototype = new jzt.things.UpdateableThing();
+jzt.things.Spider.prototype.constructor = jzt.things.Spider;
+jzt.things.Spider.serializationType = 'Spider';
+
+jzt.things.Spider.prototype.serialize = function() {
+    var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    result.intelligence = this.intelligence;
+    return result;
+};
+
+jzt.things.Spider.prototype.deserialize = function(data) {
+    jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.intelligence = data.intelligence;
+};
+
+jzt.things.Spider.prototype.seekPlayer = function() {
+
+    var randomValue = Math.floor(Math.random()*10);
+    return randomValue <= this.intelligence;
+
+};
+
+/**
+ * Returns whether or not a position in a provided direction is attackable
+ * by this Spider. Attackable positions are defined as spider webs
+ * or spots occupied by a player.
+ *
+ * return true if a provided direction is attackable, false otherwise
+ */
+jzt.things.Spider.prototype.isAttackable = function(direction) {
+    var thing = this.board.getTile(this.point.add(direction));
+    return thing && (thing instanceof jzt.things.SpiderWeb || thing instanceof jzt.things.Player);
+};
+
+/**
+ * Delivers a provided message to this Thing. If a SHOT message is received,
+ * then this Lion will be deleted from the board. If a TOUCH message is 
+ * received, then the player will be sent a SHOT message.
+ *
+ * @param messageName a name of a message to deliver.
+ */
+jzt.things.Spider.prototype.sendMessage = function(message) {
+
+    if(message === 'SHOT') {
+        this.play('t+c---c++++c--c', true);
+        this.delete();
+    }
+    else if(message === 'TOUCH') {
+        this.board.player.sendMessage('SHOT');
+        this.delete();
+    }
+
+};
+
+/**
+ * Receives a request to be pushed in a given direction.
+ *
+ * @param direction A direction in which this Thing is requested to move.
+ */
+jzt.things.Spider.prototype.push = function(direction) {
+    if(!this.move(direction)) {
+        this.play('t+c---c++++c--c');
+        this.delete();
+    }
+};
+
+jzt.things.Spider.prototype.doTick = function() {
+
+    var direction = this.seekPlayer() ? this.getPlayerDirection() : jzt.Direction.random(this.getAttackableDirections());
+
+    if(direction !== undefined) {
+        var thing = this.board.getTile(this.point.add(direction));
+        if(thing && thing instanceof jzt.things.Player) {
+            thing.sendMessage('SHOT');
+            this.delete();
+            return;
+        }
+        else if(thing && thing instanceof jzt.things.SpiderWeb) {
+            this.move(direction, true);
+        };
+    }
+};
+
+//--------------------------------------------------------------------------------
+jzt.things.SpiderWeb = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.spriteIndex = 249;
+    this.foreground = jzt.colors.Colors['8'];
+    this.background = jzt.colors.Colors['0'];
+}
+jzt.things.SpiderWeb.prototype = new jzt.things.Thing();
+jzt.things.SpiderWeb.prototype.constructor = jzt.things.SpiderWeb;
+jzt.things.SpiderWeb.serializationType = 'SpiderWeb';
+jzt.things.SpiderWeb.lineMap = {
+    '': 249,
+    'N': 179,
+    'E': 196,
+    'S': 179,
+    'W': 196,
+    'NE': 192,
+    'NS': 179,
+    'NW': 217,
+    'ES': 218,
+    'EW': 196,
+    'SW': 191,
+    'NES': 195,
+    'NEW': 193,
+    'NSW': 180,
+    'ESW': 194,
+    'NESW': 197,
+};
+
+jzt.things.SpiderWeb.prototype.getSpriteIndex = function() {
+
+    function isLineAdjacent(source, direction) {
+        var tile = source.board.getTile(source.point.add(direction));
+        return (tile && (tile instanceof jzt.things.SpiderWeb || (tile.under && (tile.under instanceof jzt.things.SpiderWeb))));
+    }
+
+    var surroundingPattern = '';
+    surroundingPattern += isLineAdjacent(this, jzt.Direction.North) ? 'N' : '';
+    surroundingPattern += isLineAdjacent(this, jzt.Direction.East) ? 'E' : '';
+    surroundingPattern += isLineAdjacent(this, jzt.Direction.South) ? 'S' : '';
+    surroundingPattern += isLineAdjacent(this, jzt.Direction.West) ? 'W' : '';
+
+    return jzt.things.SpiderWeb.lineMap[surroundingPattern];
+
+};
+
+/**
+ * Returns whether or not this SpiderWeb is surrenderable to another thing.
+ *
+ * @param sender Another Thing that is requesting this Thing to surrender
+ * @return true if this Thing is willing to surrender its position.
+ */
+jzt.things.SpiderWeb.prototype.isSurrenderable = function(sender) {
+    return true;
+};
 
 //--------------------------------------------------------------------------------
 
