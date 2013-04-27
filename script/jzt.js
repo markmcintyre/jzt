@@ -1,5 +1,19 @@
-window.jzt = window.jzt || {};
+/**
+ * JZT Game
+ * Copyright © 2013 Orangeline Interactive, Inc.
+ * @author Mark McIntyre
+ */
 
+/* jshint globalstrict: true */
+
+"use strict";
+
+var jzt = jzt || {};
+
+/**
+ * GameState is an enumerated type representing a state in our game's finite state
+ * machine.
+ */
 jzt.GameState = {
     Playing: 0,
     Paused: 1,
@@ -78,12 +92,20 @@ jzt.Game.prototype.adjustCounter = function(counter, value) {
 };
 
 jzt.Game.prototype.getCounterValue = function(counter) {
-    if(this.counters[counter] === undefined)
+    if(this.counters[counter] === undefined) {
         return 0;
-    else
+    }
+    else {
         return this.counters[counter];
+    }
 };
 
+/**
+ * Assigns a provided game counter to a provided value.
+ *
+ * @param counter A name of a counter to be assigned a value.
+ * @param value A value for a counter.
+ */
 jzt.Game.prototype.setCounterValue = function(counter, value) {
 
     // If the counter doesn't already exist, create it now
@@ -136,22 +158,45 @@ jzt.Game.prototype.movePlayerToDoor = function(doorId, boardName) {
 
 };
 
+/**
+ * Assigns a GameState to this Game instance, changing the current state of this Game's finite
+ * state machine.
+ *
+ * @param state A GameState to be assigned to this Game.
+ */
 jzt.Game.prototype.setState = function(state) {
 
+    // If we are to pause the game...
     if(state === jzt.GameState.Paused) {
+
+        // Blink the player
         this.player.background = jzt.colors.getBlinkingEquivalent(this.player.background);
+
+        // Cancel all keyboard input
         this.keyboard.cancelInput();
+
     }
 
+    // If we are to resume playing...
     else if(state === jzt.GameState.Playing) {
+
+        // Forget if P was pressed
         delete this.keyboard._pressed[this.keyboard.P];
+
+        // Clear any active display message
         this.currentBoard.setDisplayMessage(undefined);
+
+        // No longer blink the player
         this.player.background = jzt.colors.getNonBlinkingEquivalent(this.player.background);
+
     }
+
+    // If we are to start reading
     else if(state === jzt.GameState.Reading) {
         this.scroll.open();
     }
 
+    // Assign our new state
     this.state = state;
 
 };
@@ -168,10 +213,10 @@ jzt.Game.prototype.setState = function(state) {
 jzt.Game.prototype.movePlayerToBoardEdge = function(edge, boardName) {
 
     // Retrieve our new board (or the current board if it's the same)
-    var newBoard = (boardName == this.currentBoard.name) ? this.currentBoard : this.getBoard(boardName);
+    var newBoard = (boardName === this.currentBoard.name) ? this.currentBoard : this.getBoard(boardName);
 
     // If the board specified does not exist, return
-    if(newBoard == undefined) {
+    if(newBoard === undefined) {
         return;
     }
 
@@ -245,7 +290,7 @@ jzt.Game.prototype.setBoard = function(board, playerPoint) {
     else {
 
         // Serialize the old board, if applicable
-        if(this.currentBoard != undefined) {
+        if(this.currentBoard !== undefined) {
             this.boards[this.currentBoard.name] = this.currentBoard.serialize();
         }
 
@@ -328,12 +373,12 @@ jzt.Game.prototype.update = function() {
         // Unpause on any expected keypress
         if(this.keyboard.isAnyPressed()) {
             this.setState(jzt.GameState.Playing);
-            this.player.foregroundColor = jzt.colors.Colors['F'];
+            this.player.foregroundColor = jzt.colors.Colors.F;
         }
 
     }
 
-    else if(this.state == jzt.GameState.Reading) {
+    else if(this.state === jzt.GameState.Reading) {
 
         this.scroll.update();
 
@@ -347,24 +392,36 @@ jzt.Game.prototype.update = function() {
 
 };
 
+/**
+ * Checks this Game instance's counters and updates the game state as necessary.
+ */
 jzt.Game.prototype.checkCounters = function() {
 
-    // Check if our player is dead
+    // If our player is dead
     if(this.counters.health <= 0 && this.state !== jzt.GameState.GameOver) {
+
+        // Assign our state to be GameOVer
         this.setState(jzt.GameState.GameOver);
+
+        // Stop all scheduled audio
         this.resources.audio.cancel();
+
+        // Play our game over sound
         this.resources.audio.play('s-cd#g+c-ga#+dgfg#+cf---q.c', true);
+
+        // Deactivate subsequent audio output
         this.resources.audio.setActive(false);
+
     }
 
 };
     
 /**
- * Renders a visual representation of this Game to its associated
- * HTML5 Canvas element.
+ * Renders a visual representation of this Game to its associated HTML5 Canvas element.
  */
 jzt.Game.prototype.draw = function() {
         
+    // Update our blink state based on our blinking rate
     this.blinkCycle++;
     if(this.blinkCycle > this.BLINK_RATE) {
         this.blinkState = ! this.blinkState;
@@ -372,8 +429,10 @@ jzt.Game.prototype.draw = function() {
         this.blinkCycle = 0;
     }
 
+    // Render the current board
     this.currentBoard.render(this.context);
 
+    // If we are reading, also render our scroll instance
     if(this.state === jzt.GameState.Reading) {
         this.scroll.render(this.context);
     }

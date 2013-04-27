@@ -1,4 +1,14 @@
-window.jzt = window.jzt || {};
+/**
+ * JZT Board
+ * Copyright © 2013 Orangeline Interactive, Inc.
+ * @author Mark McIntyre
+ */
+
+/* jshint globalstrict: true */
+
+"use strict";
+
+var jzt = jzt || {};
 
 /**
  * Board represents a single game board.
@@ -31,25 +41,31 @@ jzt.Board = function(boardData, game) {
     this.DARK_SPRITE = game.resources.graphics.getSprite(176);
     this.DARK_SPRITE_COLOR = jzt.colors.Colors['8'];
     this.BOARD_DATA_WORD_LENGTH = 4;
-    
+
     this.height = boardData.height;
     this.width = boardData.width;
 
     this.initializeTiles(boardData.tiles);
     this.initializeScripts(boardData.scripts);
-    
+
 };
 
+/**
+ * Validates provided board data to make sure it contains some expected
+ * properties for deserialization.
+ *
+ * @param data Data to be validated
+ */
 jzt.Board.prototype.validateData = function(data) {
 
     // Let's hope for the best...
     var valid = true;
 
-    if(!data.height || !data.width) valid = false;
-    if(typeof data.height !== 'number') valid = false;
-    if(typeof data.width !== 'number') valid = false;
-    if(!data.tiles || !data.tiles instanceof Array) valid = false;
-    if(!data.scripts || !data.script instanceof Array) valid = false;
+    if(!data.height || !data.width) {valid = false;}
+    if(typeof data.height !== 'number') {valid = false;}
+    if(typeof data.width !== 'number') {valid = false;}
+    if(!data.tiles || !data.tiles instanceof Array) {valid = false;}
+    if(!data.scripts || !data.script instanceof Array) {valid = false;}
 
     if(!valid) {
         throw 'Invalid board data.';
@@ -65,7 +81,8 @@ jzt.Board.prototype.validateData = function(data) {
 jzt.Board.prototype.serialize = function() {
 
     var result = {};
-    var point = new jzt.Point(0,0);
+    var index;
+    var script;
 
     result.name = this.name;
 
@@ -91,7 +108,7 @@ jzt.Board.prototype.serialize = function() {
     result.scripts = [];
 
     // Store tiles
-    this.each(function(tile, point) {
+    this.each(function(tile) {
         if(tile) {
             result.tiles.push(tile.serialize());
         }
@@ -101,8 +118,8 @@ jzt.Board.prototype.serialize = function() {
     });
 
     // Store scripts
-    for(var index = 0; index < this.scripts.length; ++index) {
-        var script = this.scripts[index];
+    for(index = 0; index < this.scripts.length; ++index) {
+        script = this.scripts[index];
         result.scripts.push( script.serialize() );
     }
 
@@ -118,8 +135,10 @@ jzt.Board.prototype.serialize = function() {
  */
 jzt.Board.prototype.initializeScripts = function(scriptData) {
     
-    for(var index = 0; index < scriptData.length; ++index) {
-        var script = new jzt.Script(scriptData[index]);
+    var index, script;
+
+    for(index = 0; index < scriptData.length; ++index) {
+        script = new jzt.Script(scriptData[index]);
         this.scripts.push(script);
     }
     
@@ -150,7 +169,7 @@ jzt.Board.prototype.initializePlayer = function(player) {
     this.player = player;
     this.setTile(player.point, player);
     this.player.board = this;
-}
+};
 
 /*
  * Intializes tile data given a collection of serialized tiles.
@@ -164,19 +183,21 @@ jzt.Board.prototype.initializeTiles = function(tileDataCollection) {
     var y = 0;
 
     for(var index in tileDataCollection) {
+        if(tileDataCollection.hasOwnProperty(index)) {
+            var tile = tileDataCollection[index];
+            var thing = jzt.things.ThingFactory.deserialize(tile, this);
+            if(thing !== undefined) {
+                this.setTile(new jzt.Point(x,y), thing);
+            }
 
-        var tile = tileDataCollection[index];
-        var thing = jzt.things.ThingFactory.deserialize(tile, this);
-        if(thing !== undefined) {
-            this.setTile(new jzt.Point(x,y), thing);
+            if(++x >= this.width) {
+                x = 0;
+                y++;
+            }
+
         }
 
-        if(++x >= this.width) {
-            x = 0;
-            y++;
-        }
-
-    };
+    }
     
 };
 
@@ -192,7 +213,7 @@ jzt.Board.prototype.getScript = function(scriptName) {
         
         for(var index = 0; index < this.scripts.length; ++index) {
             var script = this.scripts[index];
-            if(scriptName == script.name) {
+            if(scriptName === script.name) {
                 return script;
             }
         }
@@ -208,7 +229,7 @@ jzt.Board.prototype.getScript = function(scriptName) {
  * providing the function with a Thing instance and the point at which
  * it occurs. If no thing instance is at a location, undefined is returned.
  *
- * @param callBack A callback function to be executed for each tile
+ * @param callback A callback function to be executed for each tile
  */
 jzt.Board.prototype.each = function(callback) {
 
@@ -223,6 +244,14 @@ jzt.Board.prototype.each = function(callback) {
 
 };
 
+/**
+ * Executes a provided callback function for each tile on this Board,
+ * delivered in reverse order. The callback function will be provided with
+ * a Thing instance and the point at which it occurs. If no Thing instance
+ * is available at a location, undefined is returned.
+ *
+ * @param callback A callback function to be executed for each tile, in reverse.
+ */
 jzt.Board.prototype.eachBackwards = function(callback) {
 
     var values = this.tiles.slice(0);
@@ -269,6 +298,7 @@ jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak) {
     
     var thing = this.getTile(oldPoint);
     var obstacle = this.getTile(newPoint);
+    var underOldThing;
 
     // If the coast is clear...
     if(this.isFree(newPoint)) {
@@ -288,7 +318,7 @@ jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak) {
 
         // If our thing isn't undefined
         if(thing !== undefined) {
-            var underOldThing = thing.under;
+            underOldThing = thing.under;
             thing.under = obstacle;
         }
 
@@ -499,7 +529,6 @@ jzt.Board.prototype.addMessage = function(message) {
  * update all UpdateableThings tracked by this Board.
  */
 jzt.Board.prototype.update = function() {
-    
 
     /*
      * This function works as follows: Each tile is looped through in sequential
@@ -584,21 +613,31 @@ jzt.Board.prototype.render = function(c) {
     c.fillRect(0, 0, this.game.context.canvas.width, this.game.context.canvas.height);
     
     this.each( function(thing, point) {
+
+        // If this board is dark, we should only render the tiles in a visible range
         if(instance.dark && !instance.game.player.inTorchRange(point)) {
             instance.DARK_SPRITE.draw(c, point, instance.DARK_SPRITE_COLOR, jzt.colors.Colors['0']);
         }
+
+        // If this board is not dark, and there's a thing to render...
         else if(thing) {
+
+            // Grab our sprite
             var sprite = instance.game.resources.graphics.getSprite(thing.getSpriteIndex());
+
+            // Our background colour may come from the 'under' tile if no background is defined
             var background = thing.background;
             if(!background && thing.under) {
                 background = jzt.colors.getNonBlinkingEquivalent(thing.under.background);
             }
             sprite.draw(c, thing.point, thing.foreground, background);
         }
+
     });
 
-    if(this.displayMessage != undefined) {
-        this._renderMessage(c);
+    // If there is a display message, render it
+    if(this.displayMessage !== undefined) {
+        this.renderMessage(c);
     }
     
 };
@@ -609,7 +648,7 @@ jzt.Board.prototype.render = function(c) {
  *
  * @param c A graphics context.
  */
-jzt.Board.prototype._renderMessage = function(c) {
+jzt.Board.prototype.renderMessage = function(c) {
     
     var messagePoint = new jzt.Point();
 
