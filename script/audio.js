@@ -43,7 +43,7 @@ jzt.Audio.prototype.cancel = function() {
 }
 
 jzt.Audio.prototype.isPlaying = function() {
-	return this.context.currentTime < this.timestamp;
+	return this.active && this.context.currentTime < this.timestamp;
 };
 
 jzt.Audio.prototype.playAfter = function(notation, uninterruptable) {
@@ -112,7 +112,7 @@ jzt.Audio.prototype.playAfter = function(notation, uninterruptable) {
 };
 
 jzt.Audio.prototype.play = function(notation, uninterruptable) {
-	if(this.context.currentTime >= this.interruptTimestamp) {
+	if(this.active && this.context.currentTime >= this.interruptTimestamp) {
 		this.cancel();
 		this.playAfter(notation, uninterruptable);
 	}

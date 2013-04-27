@@ -42,6 +42,9 @@ jzt.things.Thing.prototype.serialize = function() {
         result.type = this.constructor.serializationType;
     }
     result.color = (this.background === undefined || this.background === '*' ? '*' : this.background.code) + (this.foreground === undefined || this.foreground === '*' ? '*' : this.foreground.code);
+    if(this.under) {
+        result.under = this.under.serialize();
+    }
     return result;
 };
 
@@ -67,6 +70,10 @@ jzt.things.Thing.prototype.deserialize = function(data) {
         if(!this.background) {
             this.background = jzt.colors.Colors['0'];
         }
+    }
+
+    if(data.under) {
+        this.under = jzt.things.ThingFactory.deserialize(data.under, this.board);
     }
     
 };
@@ -238,9 +245,6 @@ jzt.things.UpdateableThing.prototype.constructor = jzt.things.UpdateableThing;
 jzt.things.UpdateableThing.prototype.serialize = function() {
     var result = jzt.things.Thing.prototype.serialize.call(this) || {};
     result.speed = this.speed;
-    if(this.under) {
-        result.under = this.under.serialize();
-    }
     return result;
 };
 
@@ -252,9 +256,6 @@ jzt.things.UpdateableThing.prototype.serialize = function() {
  */
 jzt.things.UpdateableThing.prototype.deserialize = function(data) {
     jzt.things.Thing.prototype.deserialize.call(this, data);
-    if(data.under) {
-        this.under = jzt.things.ThingFactory.deserialize(data.under, this.board);
-    }
     if(data.speed) {
         this.speed = data.speed;
     }
@@ -1397,7 +1398,7 @@ jzt.things.InvisibleWall.prototype.getSpriteIndex = function() {
  */ 
 jzt.things.LineWall = function(board) {
     jzt.things.Thing.call(this, board);
-    this.spriteIndex = 178;
+    this.spriteIndex = undefined;
 };
 jzt.things.LineWall.prototype = new jzt.things.Thing();
 jzt.things.LineWall.prototype.constructor = jzt.things.LineWall;
@@ -1428,6 +1429,10 @@ jzt.things.LineWall.lineMap = {
  */
 jzt.things.LineWall.prototype.getSpriteIndex = function() {
 
+    if(this.spriteIndex !== undefined) {
+        return this.spriteIndex;
+    }
+
     function isLineAdjacent(source, direction) {
         return source.board.getTile(source.point.add(direction)) instanceof jzt.things.LineWall;
     }
@@ -1438,7 +1443,8 @@ jzt.things.LineWall.prototype.getSpriteIndex = function() {
     surroundingPattern += isLineAdjacent(this, jzt.Direction.South) ? 'S' : '';
     surroundingPattern += isLineAdjacent(this, jzt.Direction.West) ? 'W' : '';
 
-    return jzt.things.LineWall.lineMap[surroundingPattern];
+    this.spriteIndex = jzt.things.LineWall.lineMap[surroundingPattern];
+    return this.spriteIndex;
 
 };
 
@@ -2264,7 +2270,7 @@ jzt.things.Spider.prototype.doTick = function() {
  */
 jzt.things.SpiderWeb = function(board) {
     jzt.things.Thing.call(this, board);
-    this.spriteIndex = 249;
+    this.spriteIndex = undefined;
     this.foreground = jzt.colors.Colors['8'];
     this.background = jzt.colors.Colors['0'];
 };
@@ -2297,6 +2303,10 @@ jzt.things.SpiderWeb.lineMap = {
  */
 jzt.things.SpiderWeb.prototype.getSpriteIndex = function() {
 
+    if(this.spriteIndex !== undefined) {
+        return this.spriteIndex;
+    }
+
     function isLineAdjacent(source, direction) {
         var tile = source.board.getTile(source.point.add(direction));
         return (tile && (tile instanceof jzt.things.SpiderWeb || (tile.under && (tile.under instanceof jzt.things.SpiderWeb))));
@@ -2308,7 +2318,8 @@ jzt.things.SpiderWeb.prototype.getSpriteIndex = function() {
     surroundingPattern += isLineAdjacent(this, jzt.Direction.South) ? 'S' : '';
     surroundingPattern += isLineAdjacent(this, jzt.Direction.West) ? 'W' : '';
 
-    return jzt.things.SpiderWeb.lineMap[surroundingPattern];
+    this.spriteIndex = jzt.things.SpiderWeb.lineMap[surroundingPattern];
+    return this.spriteIndex;
 
 };
 
