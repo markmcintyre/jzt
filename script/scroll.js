@@ -25,12 +25,12 @@ jzt.Scroll = function(owner) {
 	this.graphics = owner.resources.graphics;
 	this.lines = [];
 	this.position = 0;
-	this.screenWidth = Math.floor(owner.context.canvas.width / owner.TILE_SIZE.x);
-	this.screenHeight = Math.floor(owner.context.canvas.height / owner.TILE_SIZE.y);
+	this.screenWidth = Math.floor(owner.context.canvas.width / this.graphics.TILE_SIZE.x);
+	this.screenHeight = Math.floor(owner.context.canvas.height / this.graphics.TILE_SIZE.y);
 	this.width = 49;
 	this.textAreaWidth = this.width - 6;
 	this.height = 0;
-	this.fullHeight = Math.floor(owner.context.canvas.height / owner.TILE_SIZE.y) - 2;
+	this.fullHeight = Math.floor(owner.context.canvas.height / this.graphics.TILE_SIZE.y) - 2;
 	this.state = jzt.Scroll.ScrollState.Opening;
 	this.origin = new jzt.Point(0,0);
 	this.dots = [];
@@ -287,7 +287,7 @@ jzt.Scroll.prototype.render = function(context) {
 	var y = this.origin.y;
 	
 	context.fillStyle = jzt.colors.Colors['1'].rgbValue;
-	context.fillRect(x * this.game.TILE_SIZE, y * this.game.TILE_SIZE, this.width * this.game.TILE_SIZE.x, this.height * this.game.TILE_SIZE.y);
+	context.fillRect(x * this.graphics.TILE_SIZE, y * this.graphics.TILE_SIZE, this.width * this.graphics.TILE_SIZE.x, this.height * this.graphics.TILE_SIZE.y);
 
 	// Draw top
 	sprites.push(this.graphics.getSprite(198));

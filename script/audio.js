@@ -385,15 +385,20 @@ jzt.Audio.Song.prototype.parse = function(notation) {
     var tripletCount = -1;
     var timeAndHalf = false;
     var percussiveNote;
+    var currentNote;
+    var currentChar;
+    var nextChar;
+    var activeDuration;
+    var index;
 
     // Convert the notation to uppercase so that it's effectively case-insensitive
     notation = notation.toUpperCase();
 
     // For each character in our notation...
-    for(var index = 0; index < notation.length; ++index) {
+    for(index = 0; index < notation.length; ++index) {
 
-        var currentNote;
-        var currentChar = notation.charAt(index);
+        currentNote = undefined;
+        currentChar = notation.charAt(index);
 
         // If we've got a musical note...
         switch(currentChar) {
@@ -496,8 +501,8 @@ jzt.Audio.Song.prototype.parse = function(notation) {
         // If we got a note to play...
         if(currentNote) {
 
-            var nextChar = index >= notation.length ? undefined : notation.charAt(index+1);
-            var activeDuration = currentDuration;
+            nextChar = index >= notation.length ? undefined : notation.charAt(index+1);
+            activeDuration = currentDuration;
 
             if(nextChar === '#') {
                 currentNote.shiftUp();

@@ -22,8 +22,6 @@ jzt.Editor = function(canvasElement, configuration) {
 	this.boards = [];
 
 	var mockGame = {
-		TILE_SIZE: new jzt.Point(16, 32),
-    	SPRITE_SIZE: new jzt.Point(8, 16),
     	resources: {},
     	isDebugRendering: true,
     	context: this.context
@@ -31,7 +29,7 @@ jzt.Editor = function(canvasElement, configuration) {
 
 	this.game = mockGame;
 
-	mockGame.resources.graphics = new jzt.Graphics(mockGame, function() {
+	mockGame.resources.graphics = new jzt.Graphics(function() {
 
 		if(localStorage['currentGame']) {
 			try {
@@ -170,8 +168,8 @@ jzt.Editor.prototype.setActiveTool = function(template) {
 };
 
 jzt.Editor.prototype.eventToBoardPoint = function(event) {
-	var x = Math.floor(event.offsetX / this.game.TILE_SIZE.x);
-	var y = Math.floor(event.offsetY / this.game.TILE_SIZE.y);
+	var x = Math.floor(event.offsetX / this.game.resources.graphics.TILE_SIZE.x);
+	var y = Math.floor(event.offsetY / this.game.resources.graphics.TILE_SIZE.y);
 	return new jzt.Point(x,y);
 };
 
@@ -216,6 +214,6 @@ jzt.Editor.prototype.onCanvasMouseUp = function(event) {
 jzt.Editor.prototype.drawCursor = function(point, context) {
 	context.fillStyle = 'rgba(255, 255, 255, 0.25)';
 	context.strokeStyle = '#FFFFFF';
-    context.fillRect(point.x * this.game.TILE_SIZE.x, point.y * this.game.TILE_SIZE.y,  this.game.TILE_SIZE.x, this.game.TILE_SIZE.y);
-    context.strokeRect(point.x * this.game.TILE_SIZE.x, point.y * this.game.TILE_SIZE.y, this.game.TILE_SIZE.x, this.game.TILE_SIZE.y);
+    context.fillRect(point.x * this.game.resources.graphics.TILE_SIZE.x, point.y * this.game.resources.graphics.TILE_SIZE.y,  this.game.resources.graphics.TILE_SIZE.x, this.game.TILE_SIZE.y);
+    context.strokeRect(point.x * this.game.resources.graphics.TILE_SIZE.x, point.y * this.game.resources.graphics.TILE_SIZE.y, this.game.resources.graphics.TILE_SIZE.x, this.game.TILE_SIZE.y);
 };

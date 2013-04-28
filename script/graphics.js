@@ -1,99 +1,194 @@
-window.jzt = window.jzt || {};
+/**
+ * JZT Audio
+ * Copyright © 2013 Orangeline Interactive, Inc.
+ * @author Mark McIntyre
+ */
 
-jzt.Graphics = function(game, onLoadCallback) {
+/* jshint globalstrict: true */
+
+"use strict";
+
+var jzt = jzt || {};
+jzt.colors = jzt.colors || {};
+
+/**
+ * Graphics provides functions for drawing standard DOS CodePage 437 characters in the usual 16 colour
+ * pallette to a graphics context. An optional callback can be provided that will signal when all graphics
+ * have been loaded and initialized.
+ *
+ * @param onLoadCallback An optional callback function to be triggered when this Graphics is loaded and ready to use.
+ */
+jzt.Graphics = function(onLoadCallback) {
   
+    this.TILE_SIZE = new jzt.Point(16, 32);
+    this.SPRITE_SIZE = new jzt.Point(8, 16);
+
+    this.BLINK_RATE = 10;
     this.SPRITE_DATA_WIDTH = 128;
     this.SPRITE_DATA_HEIGHT = 256;
+    this.COLOR_CYCLE_MAX = 6;
+
     this.SPRITE_DATA = 'data:image/png;base64,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';
     
-    this.game = game;
+    this.blinkCycle = 0;
+    this.blinkState = true;
+    this.colorCycleIndex = 0;
+
     this.sprites = [];
-    this.spriteSize = game.SPRITE_SIZE;
-    this.tileSize = game.TILE_SIZE;
     this.spriteSource = new Image();
     this.spriteSource.src = this.SPRITE_DATA;
     this.colorSpriteSource = undefined;
     this.onLoadCallback = onLoadCallback;
     
-    var instance = this;
+    // Our anonymouse function is not bound to this Graphics instance
+    var me = this;
+
+    // An anonymous function to finish initialization once our sprite source has been fully loaded
     this.spriteSource.onload = function() {
         
+        // Create a buffer to store our sprite graphics
         var buffer = document.createElement('canvas');
+
+        // We will create a version of our sprite for each foreground color
         buffer.width = this.width;
         buffer.height = this.height * jzt.colors.COLOR_COUNT;
-        instance.colorSpriteSource = buffer;
-        //document.body.appendChild(buffer);
+        me.colorSpriteSource = buffer;
         
+        // Grab our 2D context
         var context = buffer.getContext('2d');
+
+        // Each pixel has an ARGB value
         var pixelCount = this.width * this.height * 4;
         
         // Create offscreen canvases
         for(var color in jzt.colors.Colors) {
             if(jzt.colors.Colors.hasOwnProperty(color)) {
                 
-                var color = jzt.colors.Colors[color];
+                // Get our color
+                color = jzt.colors.Colors[color];
+
+                // Start drawing at our colored sprite offset
                 var yOffset = color.index * this.height;
 
+                // Draw the black and white image first
                 context.drawImage(this, 0, yOffset);
+
+                // Grab the raw image data
                 var imageData = context.getImageData(0, yOffset, this.width, yOffset + this.height);
                 var rgba = imageData.data;
 
+                // For each of our pixels...
                 for(var pixel = 0; pixel < pixelCount; pixel += 4) {
 
-                    // Only need to read the red value for a B&W image
+                    /* For a black and white image, we only need to test one of the
+                     * values to determine if we need to write a color or a transparent
+                     * value.
+                     */
+
+                    // If we found an 'on' pixel
                     if(rgba[pixel] >= 255) {
+
+                        // Assign our new pixel color
                         rgba[pixel] = color.r;
                         rgba[pixel+1] = color.g;
                         rgba[pixel+2] = color.b;
+
+                        // Make it completely opaque
                         rgba[pixel+3] = 255;
+
                     }
+
+                    // If we found an 'off' pixel
                     else {
+
+                        // Make our pixel completely transparent
                         rgba[pixel + 3] = 0;
+
                     }
 
                 }
 
+                // Write our image data at the same location as it was read from
                 context.putImageData(imageData, 0, yOffset);
                 
             }
 
         }
 
-        // Create sprites
-        var tilesPerRow = this.width / instance.spriteSize.x;
-        var tilesPerColumn = this.height / instance.spriteSize.y;
+        // Create our sprites
+        var tilesPerRow = this.width / me.SPRITE_SIZE.x;
+        var tilesPerColumn = this.height / me.SPRITE_SIZE.y;
     
         for(var row = 0; row < tilesPerColumn; ++row) {
             for(var column = 0; column < tilesPerRow; ++column) {
             
-                var spritePoint = new jzt.Point(column * instance.spriteSize.x, row * instance.spriteSize.y);
-                var sprite = new jzt.Sprite(spritePoint, instance);
-                instance.sprites.push(sprite);
+                var spritePoint = new jzt.Point(column * me.SPRITE_SIZE.x, row * me.SPRITE_SIZE.y);
+                var sprite = new jzt.Sprite(spritePoint, me);
+                me.sprites.push(sprite);
             
             }
         }
         
-        instance.onLoadCallback();
+        // Now that everything is initialized, trigger our load callback
+        me.onLoadCallback();
         
     };
     
 };
 
-jzt.Graphics.prototype.isReady = function() {
-    return this.ready;
-}
+/**
+ * Updates this Graphics's instance's blinking and color cycle state.
+ */
+jzt.Graphics.prototype.update = function() {
 
+    // Increment our blink cycle counter
+    this.blinkCycle++;
+
+    // If we've passed the blink rate threshold...
+    if(this.blinkCycle > this.BLINK_RATE) {
+
+        // Adjust our blink state
+        this.blinkState = ! this.blinkState;
+
+        // Our color cycle uses the same rate; increment our color index
+
+        this.colorCycleIndex = this.colorCycleIndex >= this.COLOR_CYCLE_MAX ? 0 : this.colorCycleIndex + 1;
+
+        // Reset the blink cycle
+        this.blinkCycle = 0;
+    }
+
+};
+
+/**
+ * Gets a Sprite instance for a provided CodePage-437 character index.
+ *
+ * @param index A CodePage-437 character index
+ * @return A sprite representing a provided CodePage-437 index.
+ */
 jzt.Graphics.prototype.getSprite = function(index) {
     return this.sprites[index];
 };
 
+/**
+ * Converts a provided text string into an array of Sprite instances representing
+ * CodePage-437 characters. Any text character that does not have an equivalent
+ * CodePage-437 representation will be represented by a '?' character.
+ *
+ * @param text A text string to convert to Sprite instances
+ * @return An array of Sprite instances
+ */
 jzt.Graphics.prototype.textToSprites = function(text) {
 
     var result = [];
 
+    // For each character in our string...
     for(var index = 0; index < text.length; ++index) {
 
+        // Convert the character into its CodePage-437 index
         var spriteIndex = this.convertSpecialCharacter(text.charCodeAt(index));
+
+        // Push the resulting Sprite onto our result
         result.push(this.getSprite(spriteIndex));
 
     }
@@ -102,13 +197,34 @@ jzt.Graphics.prototype.textToSprites = function(text) {
 
 };
 
+/**
+ * Draws a provided text string to a provided graphics context at a provided Point using a 
+ * provided background and foreground color.
+ *
+ * @param context A 2D graphics context onto which to draw our string
+ * @param point A Point instance representing X,Y coordinates (in sprite blocks) where to draw
+ * @param text A text string to draw, represented as Sprites
+ * @param foreground A foreground Color.
+ * @param background A background Color.
+ */
 jzt.Graphics.prototype.drawString = function(context, point, text, foreground, background) {
     this.drawSprites(context, point, this.textToSprites(text), foreground, background);
 };
 
+/**
+ * Draws a provided array of Sprite instances to a given Point on a provided 2D graphics context
+ * using a provided foreground and background color.
+ *
+ * @param context A 2D graphics context onto which to draw our sprites
+ * @param point A Point instance representing X,Y coordinates (in sprite blocks) where to draw
+ * @param sprites An array of Sprite instances
+ * @param foreground A foreground Color.
+ * @param background A background Color.
+ */
 jzt.Graphics.prototype.drawSprites = function(context, point, sprites, foreground, background) {
-    var point = point.clone();
-    foreground = foreground || jzt.colors.Colors['E'];
+    point = point.clone();
+    var sprite;
+    foreground = foreground || jzt.colors.Colors.E;
     background = background || '*';
     for(var index = 0; index < sprites.length; ++index) {
         sprite = sprites[index];
@@ -173,49 +289,75 @@ jzt.Graphics.prototype.convertSpecialCharacter = function(characterCode) {
 
 };
 
+/**
+ * Sprite represents a subsection of a larger graphic that can be drawn independetly
+ * at a location.
+ *
+ * @param point A point defining the top-left sprite origin
+ * @param owner A Graphics instance to which this Sprite belongs
+ */
 jzt.Sprite = function(point, owner) {
     this.point = point;
     this.owner = owner;
 };
 
+/**
+ * Draws this Sprite instance on a provided context at a provided Point using a given
+ * foreground and background color.
+ *
+ * @param context A 2D graphics context
+ * @param point A Point
+ * @param foreground A foreground color.
+ * @param background A background color.
+ */
 jzt.Sprite.prototype.draw = function(context, point, foreground, background) {
     
+    var blink;
+
     /*
      * Back in the DOS days, a bright background would actually signal
-     * that the foreground color should blink.
+     * that the foreground color should blink. We're doing the same.
      */
     if(jzt.colors.isBlinkableAsBackground(background)) {
-        var blink = true;
+        blink = true;
         background = jzt.colors.getNonBlinkingEquivalent(background);
     }
     
-    var destinationX = point.x * this.owner.tileSize.x;
-    var destinationY = point.y * this.owner.tileSize.y;
+    var destinationX = point.x * this.owner.TILE_SIZE.x;
+    var destinationY = point.y * this.owner.TILE_SIZE.y;
 
     // Draw the background
     if(background) {
         context.fillStyle = background.rgbValue;
-        context.fillRect(destinationX, destinationY, this.owner.tileSize.x, this.owner.tileSize.y);
+        context.fillRect(destinationX, destinationY, this.owner.TILE_SIZE.x, this.owner.TILE_SIZE.y);
     }
     
     // If we aren't blinking, or if the blink state is off, draw our sprite
-    if(!blink || ! this.owner.game.blinkState) {
+    if(!blink || ! this.owner.blinkState) {
         
-        if(foreground == '*') {
-            foreground = jzt.colors.COLOR_CYCLE[this.owner.game.colorCycleIndex];
+        if(foreground === '*') {
+            foreground = jzt.colors.COLOR_CYCLE[this.owner.colorCycleIndex];
         }
 
         var yOffset = foreground.index * this.owner.SPRITE_DATA_HEIGHT;
         
-        context.drawImage(this.owner.colorSpriteSource, this.point.x, yOffset + this.point.y, this.owner.spriteSize.x, this.owner.spriteSize.y,
-            destinationX, destinationY, this.owner.tileSize.x, this.owner.tileSize.y);
+        context.drawImage(this.owner.colorSpriteSource, this.point.x, yOffset + this.point.y, this.owner.SPRITE_SIZE.x, this.owner.SPRITE_SIZE.y,
+            destinationX, destinationY, this.owner.TILE_SIZE.x, this.owner.TILE_SIZE.y);
             
     }
  
 };
 
-jzt.colors = jzt.colors || {};
-
+/**
+ * Color represents a named RBG color.
+ * 
+ * @param code A Hex character representing a DOS color code
+ * @param name A name of this color
+ * @param index An index for this color
+ * @param r A red value
+ * @param g A green value
+ * @param b A blue value
+ */
 jzt.colors.Color = function(code, name, index, r, g, b) {
     this.code = code;
     this.name = name;
@@ -223,10 +365,16 @@ jzt.colors.Color = function(code, name, index, r, g, b) {
     this.r = r;
     this.g = g;
     this.b = b;
-    this.rgbValue = '#' + this._byteToHex(r) + this._byteToHex(g) + this._byteToHex(b);
-}
+    this.rgbValue = '#' + this.byteToHex(r) + this.byteToHex(g) + this.byteToHex(b);
+};
 
-jzt.colors.Color.prototype._byteToHex = function(number) {
+/**
+ * Converts a byte into a Hexidecimal character digit.
+ * 
+ * @param number A number from 0 to 255 to convert
+ * @return A hexidecimal representation
+ */
+jzt.colors.Color.prototype.byteToHex = function(number) {
     var value = number.toString(16);
     if(value.length <= 1) {
         value = '0' + value;
@@ -234,6 +382,9 @@ jzt.colors.Color.prototype._byteToHex = function(number) {
     return value;
 };
 
+/**
+ * Colors is an enumerated type representing defined DOS colors.
+ */
 jzt.colors.Colors = {
     '0': new jzt.colors.Color('0', 'BLACK',         0,  0,   0,   0  ),
     '1': new jzt.colors.Color('1', 'BLUE',          1,  0,   0,   170),
@@ -253,18 +404,31 @@ jzt.colors.Colors = {
     'F': new jzt.colors.Color('F', 'BRIGHTWHITE',   15, 255, 255, 255)  
 };
 
+/**
+ * A constant representing the total number of colors defined.
+ */
 jzt.colors.COLOR_COUNT = 16;
 
+/**
+ * An array representing a color cycle sequence.
+ */
 jzt.colors.COLOR_CYCLE = [
     jzt.colors.Colors['9'],
-    jzt.colors.Colors['A'],
-    jzt.colors.Colors['B'],
-    jzt.colors.Colors['C'],
-    jzt.colors.Colors['D'],
-    jzt.colors.Colors['E'],
-    jzt.colors.Colors['F']
+    jzt.colors.Colors.A,
+    jzt.colors.Colors.B,
+    jzt.colors.Colors.C,
+    jzt.colors.Colors.D,
+    jzt.colors.Colors.E,
+    jzt.colors.Colors.F
 ];
 
+/**
+ * Retrieves a whether or not a provided color is considered a 'blinking'
+ * value when used as a background color.
+ *
+ * @param color A color to test for blinkability
+ * @return true if a provided color will indicate blinking, false otherwise.
+ */
 jzt.colors.isBlinkableAsBackground = function(color) {
     if(color) {
         return color.index > 8;
@@ -272,6 +436,12 @@ jzt.colors.isBlinkableAsBackground = function(color) {
     return false;
 };
 
+/**
+ * Returns a non-blinking color when provided with a blinking one.
+ *
+ * @param color A color to convert to a non-blinking version
+ * @return A non-blinking color.
+ */
 jzt.colors.getNonBlinkingEquivalent = function(color) {
 
     if(jzt.colors.isBlinkableAsBackground(color)) {
@@ -280,6 +450,12 @@ jzt.colors.getNonBlinkingEquivalent = function(color) {
     return color;
 };
 
+/**
+ * Returns a blinking color when provided with a non-blinking one.
+ *
+ * @param color A color to convert to a blinking version
+ * @return A blinking color.
+ */
 jzt.colors.getBlinkingEquivalent = function(color) {
     if(!jzt.colors.isBlinkableAsBackground(color)) {
         return jzt.colors.Colors[color.index + 8];
@@ -287,14 +463,22 @@ jzt.colors.getBlinkingEquivalent = function(color) {
     return color;
 };
 
+/**
+ * Retrieves a color by its name.
+ * 
+ * @param name A name of a color
+ * @return A Color instance with a provided name.
+ */
 jzt.colors.getColor = function(name) {
     
+    var color;
+
     name = name.toUpperCase();
     
     for(color in jzt.colors.Colors) {
         if(jzt.colors.Colors.hasOwnProperty(color)) {
-            var color = jzt.colors.Colors[color];
-            if(color.name == name) {
+            color = jzt.colors.Colors[color];
+            if(color.name === name) {
                 return color;
             }
         }

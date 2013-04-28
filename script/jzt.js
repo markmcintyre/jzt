@@ -31,17 +31,12 @@ jzt.GameState = {
  */
 jzt.Game = function(canvasElement, data, onLoadCallback) {
     
-    this.TILE_SIZE = new jzt.Point(16, 32);
-    this.SPRITE_SIZE = new jzt.Point(8, 16);
-    
     this.FPS = 30;
     this.CPS = 10;
     this.CYCLE_RATE = Math.round(this.FPS / this.CPS);
     this.CYCLE_TICKS = Math.floor(1000 / this.FPS) * this.CYCLE_RATE;
-    this.BLINK_RATE = Math.round(this.FPS / 3);
-    this.COLOR_CYCLE_MAX = 6;
 
-    this._intervalId = undefined;
+    this.intervalId = undefined;
     
     this.onLoadCallback = onLoadCallback;
     this.resources = {};
@@ -52,9 +47,6 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     this.context.imageSmoothingEnabled = false;
     this.context.webkitImageSmoothingEnabled = false;
     this.context.mozImageSmoothingEnabled = false;
-    this.blinkCycle = 0;
-    this.blinkState = true;
-    this.colorCycleIndex = 0;
     
     this.counters = {
         health: 100,
@@ -75,7 +67,7 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     }
     
     var graphicsLoadedCallback = this.onGraphicsLoaded.bind(this);
-    this.resources.graphics = new jzt.Graphics(this, graphicsLoadedCallback);
+    this.resources.graphics = new jzt.Graphics(graphicsLoadedCallback);
     this.resources.audio = new jzt.Audio();
 
 };
@@ -344,7 +336,7 @@ jzt.Game.prototype.run = function() {
     this.setState(jzt.GameState.Paused);
         
     // Start the game loop
-    this._intervalId = setInterval(this.loop.bind(this), 1000 / this.FPS);
+    this.intervalId = setInterval(this.loop.bind(this), 1000 / this.FPS);
         
 };
   
@@ -363,6 +355,9 @@ jzt.Game.prototype.loop = function() {
  * Updates this Game's state by one execution tick.
  */
 jzt.Game.prototype.update = function() {
+
+    // Update our graphics resource
+    this.resources.graphics.update();
 
     // If we're playing...
     if(this.state === jzt.GameState.Playing) {
@@ -424,14 +419,6 @@ jzt.Game.prototype.checkCounters = function() {
  * Renders a visual representation of this Game to its associated HTML5 Canvas element.
  */
 jzt.Game.prototype.draw = function() {
-        
-    // Update our blink state based on our blinking rate
-    this.blinkCycle++;
-    if(this.blinkCycle > this.BLINK_RATE) {
-        this.blinkState = ! this.blinkState;
-        this.colorCycleIndex = this.colorCycleIndex >= this.COLOR_CYCLE_MAX ? 0 : this.colorCycleIndex + 1;
-        this.blinkCycle = 0;
-    }
 
     // Render the current board
     this.currentBoard.render(this.context);
