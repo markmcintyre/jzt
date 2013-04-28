@@ -1,4 +1,14 @@
-window.jzt = window.jzt || {};
+/**
+ * JZT Commands
+ * Copyright © 2013 Orangeline Interactive, Inc.
+ * @author Mark McIntyre
+ */
+
+/* jshint globalstrict: true */
+
+"use strict";
+
+var jzt = jzt || {};
 jzt.commands = jzt.commands || {};
 
 /**
@@ -22,7 +32,7 @@ jzt.commands.CommandResult = {
  */
 jzt.commands.DirectionModifier = {
     CW:   {name: 'Clockwise',              process: function(d) {return jzt.Direction.clockwise(d);}},
-    CCW:  {name: 'Counter-clockwise',      process: function(d) {return jzt.Direction.counterClockwise(d)}},
+    CCW:  {name: 'Counter-clockwise',      process: function(d) {return jzt.Direction.counterClockwise(d);}},
     OPP:  {name: 'Opposite',               process: function(d) {return jzt.Direction.opposite(d);}},
     RNDP: {name: 'Perpendicularly Random', process: function(d) {return jzt.Direction.randomPerpendicular(d);}}
 };
@@ -78,7 +88,7 @@ jzt.commands.Die = function() {};
 jzt.commands.Die.prototype.clone = function() {return this;};
 
 jzt.commands.Die.prototype.execute = function(owner) {
-    owner.delete();
+    owner.remove();
 };
 
 /*
@@ -115,8 +125,8 @@ jzt.commands.Go.prototype.execute = function(owner) {
     
     // Evaluate our modifiers into a direction
     var modifiers = this.modifiers.slice(0);
-    for(var modifier; modifier = modifiers.pop();) {
-        direction = modifier.process(direction);
+    while(modifiers.length) {
+        direction = modifiers.pop().process(direction);
     }
 
     // If a direction is available
@@ -188,8 +198,8 @@ jzt.commands.Move.prototype.execute = function(owner) {
         
         // Evaluate our modifiers into a direction
         var modifiers = this.modifiers.slice(0);
-        for(var modifier; modifier = modifiers.pop();) {
-            direction = modifier.process(direction);
+        while(modifiers.length) {
+            direction = modifiers.pop().process(direction);
         }
         
     }
@@ -282,8 +292,8 @@ jzt.commands.Shoot.prototype.execute = function(owner) {
         
     // Evaluate our modifiers into a direction
     var modifiers = this.modifiers.slice(0);
-    for(var modifier; modifier = modifiers.pop();) {
-        direction = modifier.process(direction);
+    while(modifiers.length) {
+        direction = modifiers.pop().process(direction);
     }
 
     // If a direction is available
@@ -309,7 +319,7 @@ jzt.commands.Stand.prototype.execute = function(owner) {
  * Unlock Command
  */
 jzt.commands.Unlock = function() {};
-jzt.commands.Unlock.prototype.clone = function(){return this};
+jzt.commands.Unlock.prototype.clone = function(){return this;};
 jzt.commands.Unlock.prototype.execute = function(owner) {
     owner.locked = false;
     return jzt.commands.CommandResult.CONTINUE;
@@ -328,7 +338,7 @@ jzt.commands.Wait.prototype.clone = function() {
     return clone;
 };
 
-jzt.commands.Wait.prototype.execute = function(owner) {
+jzt.commands.Wait.prototype.execute = function() {
     if(--this.cycles > 0) {
         return jzt.commands.CommandResult.REPEAT;
     }

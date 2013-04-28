@@ -608,9 +608,11 @@ jzt.Board.prototype.setDisplayMessage = function(message, duration) {
 jzt.Board.prototype.render = function(c) {
         
     var instance = this;
-    
+    var canvasWidth = this.game.context.canvas.width;
+    var canvasHeight = this.game.context.canvas.height;
+
     c.fillStyle = '#000000';
-    c.fillRect(0, 0, this.game.context.canvas.width, this.game.context.canvas.height);
+    c.fillRect(0, 0, canvasWidth, canvasHeight);
     
     this.each( function(thing, point) {
 

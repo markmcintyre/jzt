@@ -1,4 +1,14 @@
-window.jztscript = window.jztscript || {};
+/**
+ * JZT JZTScript
+ * Copyright © 2013 Orangeline Interactive, Inc.
+ * @author Mark McIntyre
+ */
+
+/* jshint globalstrict: true */
+
+"use strict";
+
+var jztscript = jztscript || {};
   
 jztscript.CommandFactory = function() {
     this.commandParser = jztscript._createCommandParser();
@@ -16,7 +26,7 @@ jztscript.CommandFactory.prototype.parseLine = function(line) {
     // Match our assembly
     var result = this.commandParser.completeMatch(assembly);
 
-    if(result == undefined || result.target == undefined) {
+    if(result === undefined || result.target === undefined) {
         throw 'Unknown command';
     };
 
