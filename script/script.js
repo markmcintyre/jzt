@@ -1,5 +1,22 @@
-window.jzt = window.jzt || {};
+/**
+ * JZT Script
+ * Copyright © 2013 Orangeline Interactive, Inc.
+ * @author Mark McIntyre
+ */
 
+/* jshint globalstrict: true */
+/* global jztscript, console */
+
+"use strict";
+
+var jzt = jzt || {};
+
+/**
+ * Script is an executable set of command instructions that dictates the behaviour
+ * of a ScriptableThing.
+ * 
+ * @param scriptData Serialized script data
+ */
 jzt.Script = function(scriptData) {
     
     this.name = scriptData.name;
@@ -10,12 +27,22 @@ jzt.Script = function(scriptData) {
     
 };
 
+/**
+ * Creates a new ScriptContext that can be used to execute a script
+ * 
+ * @param owner A ScriptableThing to own the new script context
+ * @return A new ScriptContext for a provided owner
+ */
 jzt.Script.prototype.newContext = function(owner) {
     return new jzt.ScriptContext(this, owner);
 };
 
+/**
+ * Assembles this Script's script data into executable commands.
+ */
 jzt.Script.prototype.assemble = function() {
     
+    // If script text is available...
     if(this.rawScript) {
         
         var factory = new jztscript.CommandFactory();
@@ -40,10 +67,10 @@ jzt.Script.prototype.assemble = function() {
                 this.commandIndex = -1;
                 console.warn('Syntax error in script \'%s\' on line %d.\n> %s\n> %s.', this.name, index, line, ex);
                 return;
-            };
+            }
 
             // If we got an empty line, skip this iteration
-            if(result == undefined) {
+            if(result === undefined) {
                 continue;
             }
             
@@ -67,6 +94,12 @@ jzt.Script.prototype.assemble = function() {
     }
 };
 
+/**
+ * Adds a provided label to this Script, and associates it with a command index.
+ *
+ * @param label A label
+ * @param commandIndex An index of a command to which the label points.
+ */
 jzt.Script.prototype.addLabel = function(label, commandIndex) {
   
     if(this.labelIndicies.hasOwnProperty(label.id)) {
@@ -78,10 +111,16 @@ jzt.Script.prototype.addLabel = function(label, commandIndex) {
     
 };
 
+/**
+ * Retrieves a Command instance for a provided command index value.
+ *
+ * @param commandIndex An index of a command to retrieve
+ * @return A Command instance
+ */
 jzt.Script.prototype.getCommand = function(commandIndex) {
     
     var result = this.commands[commandIndex];
-    if(result == undefined) {
+    if(result === undefined) {
         return undefined;
     }
     
@@ -89,6 +128,11 @@ jzt.Script.prototype.getCommand = function(commandIndex) {
     
 };
 
+/**
+ * Serializes this Script instance into a data object.
+ *
+ * @return A data object representing a serialized Script.
+ */
 jzt.Script.prototype.serialize = function() {
     
     var result = {};
@@ -98,8 +142,12 @@ jzt.Script.prototype.serialize = function() {
 
 };
 
-/*
- * ScriptContext
+/**
+ * A ScriptContext is a context in which a script can run, including an associated
+ * ScriptableThing, a current execution index, labels, and more.
+ *
+ * @param script A script which this ScriptContext is set to execute.
+ * @param owner A ScriptableThing to own this ScriptContext.
  */
 jzt.ScriptContext = function(script, owner) {
     this.owner = owner;
@@ -110,8 +158,15 @@ jzt.ScriptContext = function(script, owner) {
     this.initializeLabels(script);
 };
 
+/**
+ * Serializes this ScriptContext to a data object.
+ *
+ * @return A data object representing this ScriptContext.
+ */
 jzt.ScriptContext.prototype.serialize = function() {
+
     var result = {};
+    var label;
     result.commandIndex = this.commandIndex;
     result.currentLabels = {};
     for(label in this.currentLabels) {
@@ -119,11 +174,20 @@ jzt.ScriptContext.prototype.serialize = function() {
             result.currentLabels[label] = this.currentLabels[label];
         }
     }
+
     //TODO: Serialize stored command
     return result;
+
 };
 
+/**
+ * De-serializes a provided data object to initialize this ScriptContext.
+ *
+ * @param data A serialized ScriptContext.
+ */
 jzt.ScriptContext.prototype.deserialize = function(data) {
+
+    var label;
 
     this.commandIndex = data.commandIndex;
     for(label in data.currentLabels) {
@@ -136,7 +200,13 @@ jzt.ScriptContext.prototype.deserialize = function(data) {
 
 };
 
+/**
+ * Initializes this ScriptContext's labels to that of a provided Script instance.
+ * 
+ * @param script A Script used to initialize this ScriptContext's labels.
+ */
 jzt.ScriptContext.prototype.initializeLabels = function(script) {
+    var label;
     for(label in script.labelIndicies) {
         if(script.labelIndicies.hasOwnProperty(label)) {
             this.currentLabels[label] = 0;
@@ -144,14 +214,26 @@ jzt.ScriptContext.prototype.initializeLabels = function(script) {
     }
 };
 
+/**
+ * Retrieves whether or not this ScriptContext is currently running.
+ *
+ * @return true if this ScriptContext is running, false otherwise.
+ */
 jzt.ScriptContext.prototype.isRunning = function() {
     return this.commandIndex >= 0 && this.commandIndex < this.script.commands.length;
 };
 
+/**
+ * Stops running this ScriptContext.
+ */
 jzt.ScriptContext.prototype.stop = function() {
     this.commandIndex = -1;
 };
 
+/**
+ * Executes a single tick of this ScriptContext, taking a command from its associated
+ * Script and executing it.
+ */
 jzt.ScriptContext.prototype.executeTick = function() {
     
     // If our owner has a message waiting...
@@ -212,6 +294,12 @@ jzt.ScriptContext.prototype.executeTick = function() {
     
 };
 
+/**
+ * Updates the active command of this ScriptContext to that of a provided label
+ * name.
+ *
+ * @param label A name of a label to which to jump.
+ */
 jzt.ScriptContext.prototype.jumpToLabel = function(label) {
     
     if(this.currentLabels.hasOwnProperty(label)) {
@@ -235,6 +323,13 @@ jzt.ScriptContext.prototype.jumpToLabel = function(label) {
     
 };
 
+/**
+ * Zaps a provided label name, making it no longer jumpable. If more than one
+ * label with the same name exists, only the first will be zapped. Subsequent
+ * zaps will zap the next unzapped label.
+ *
+ * @param label A name of a label to zap.
+ */
 jzt.ScriptContext.prototype.zapLabel = function(label) {
     
     if(this.currentLabels.hasOwnProperty(label)) {
@@ -246,6 +341,13 @@ jzt.ScriptContext.prototype.zapLabel = function(label) {
     
 };
 
+/**
+ * Restores a previously zapped label, making it resumable for jupming. If more than
+ * one label with the same name has been zapped, the most recently zapped label will
+ * be unzapped.
+ * 
+ * @param label A name of a label to restore.
+ */
 jzt.ScriptContext.prototype.restoreLabel = function(label) {
   
     if(this.currentLabels.hasOwnProperty(label)) {
@@ -257,6 +359,10 @@ jzt.ScriptContext.prototype.restoreLabel = function(label) {
     
 };
 
+/**
+ * Advances this ScriptContext by one line, preparing a new command to be executed
+ * at the next tick event.
+ */
 jzt.ScriptContext.prototype.advanceLine = function() {
     if(this.isRunning()) {
         // If we have a stored command, clear it
