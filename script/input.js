@@ -55,6 +55,15 @@ jzt.KeyboardInput.prototype.cancelInput = function() {
 };
 
 /**
+ * Cancels a provided key code press.
+ *
+ * @param keyCode A key code.
+ */
+jzt.KeyboardInput.prototype.cancelKey = function(keyCode) {
+    delete this.pressed[keyCode];
+};
+
+/**
  * Returns whether or not any trackable key is currently being pressed.
  *
  * @return true if any key is pressed, false otherwise.

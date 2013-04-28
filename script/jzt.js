@@ -173,7 +173,7 @@ jzt.Game.prototype.setState = function(state) {
     else if(state === jzt.GameState.Playing) {
 
         // Forget if P was pressed
-        delete this.keyboard._pressed[this.keyboard.P];
+        delete this.keyboard.cancelKey[this.keyboard.P];
 
         // Clear any active display message
         this.currentBoard.setDisplayMessage(undefined);
