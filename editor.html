@@ -41,6 +41,7 @@
 			<br/>
 			<label><input type="radio" name="activeTemplate" value="Water" />Water</label>
 			<label><input type="radio" name="activeTemplate" value="Forest" />Forest</label>
+			<label><input type="radio" name="activeTemplate" value="Door" />Door</label>
 			<br/>
 			<label><input type="radio" name="activeTemplate" value="Boulder" />Boulder</label>
 			<label><input type="radio" name="activeTemplate" value="SliderNs" />Slider (North/South)</label>
@@ -120,9 +121,9 @@
 					else {
 						activeTemplate = {type: toolType};
 						switch(toolType) {
-							case 'Door': 
-								activeTemplate.doorId = 'default-door';
-								activeTemplate.targetBoard = 'Untitled Board';
+							case 'Passage': 
+								activeTemplate.passageId = 1;
+								activeTemplate.targetBoard = 'Untitled';
 								break;
 							case 'Spider':
 								activeTemplate.under = new jzt.things.SpiderWeb().serialize();

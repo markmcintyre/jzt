@@ -1167,58 +1167,40 @@ jzt.things.Centipede.prototype.doTick = function() {
 };
 
 //--------------------------------------------------------------------------------
-
-/**
- * Passage is a Thing capable of moving a player to its matching passage on a target board.
- * 
- * @param board An owner board for this Passage
- */
-jzt.things.Passage = function(board) {
+jzt.things.Door = function(board) {
     jzt.things.Thing.call(this, board);
-    this.spriteIndex = 240;
+    this.spriteIndex = 10;
     this.foreground = jzt.colors.Colors.F;
     this.background = jzt.colors.Colors['1'];
-    this.targetBoard = undefined;
-    this.passageId = 0;
 };
-jzt.things.Passage.prototype = new jzt.things.Thing();
-jzt.things.Passage.prototype.constructor = jzt.things.Passage;
-jzt.things.Passage.serializationType = 'Passage';
+jzt.things.Door.prototype = new jzt.things.Thing();
+jzt.things.Door.prototype.constructor = jzt.things.Door;
+jzt.things.Door.serializationType = 'Door';
 
-/**
- * Delivers a provided message to this Thing. If a TOUCH message is received,
- * then this Passage will move the player to a matching Passage on its target board.
- *
- * @param messageName a name of a message to deliver.
- */
-jzt.things.Passage.prototype.sendMessage = function(message) {
+jzt.things.Door.prototype.sendMessage = function(message) {
+
+    var doorType;
+    var matchingKeyCode;
+
     if(message === 'TOUCH') {
-        this.play('tceg tc#fg# tdf#a td#ga# teg#+c');
-        this.board.game.movePlayerToPassage(this.passageId, this.targetBoard);
+
+        doorType = jzt.i18n.getMessage('doors.' + this.background.code);
+        matchingKeyCode = 'key' + jzt.colors.getLightVersion(this.background).code;
+
+        // If the player has the corresponding key type...
+        if(this.getCounterValue(matchingKeyCode) > 0) {
+            this.remove();
+            this.adjustCounter(matchingKeyCode, -1);
+            this.board.setDisplayMessage(jzt.i18n.getMessage('doors.open', doorType));
+            this.play('tcgbcgb+ic');
+        }
+        else {
+            this.board.setDisplayMessage(jzt.i18n.getMessage('doors.locked', doorType));
+            this.play('t--gc');
+        }
+
     }
-};
 
-/**
- * Serializes this Passage to an Object.
- *
- * @return A serialized Passage
- */
-jzt.things.Passage.prototype.serialize = function() {
-    var result = jzt.things.Thing.prototype.serialize.call(this);
-    result.passageId = this.passageId;
-    result.targetBoard = this.targetBoard;
-    return result;
-};
-
-/**
- * Deserializes a provided data Object into a Passage.
- *
- * @param data A data object to be deserialized into a Passage.
- */
-jzt.things.Passage.prototype.deserialize = function(data) {
-    jzt.things.Thing.prototype.deserialize.call(this, data);
-    this.targetBoard = data.targetBoard;
-    this.passageId = data.passageId;
 };
 
 //--------------------------------------------------------------------------------
@@ -1397,6 +1379,7 @@ jzt.things.InvisibleWall.prototype.getSpriteIndex = function() {
 jzt.things.Key = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 12;
+    this.foreground = jzt.colors.Colors['9'];
 };
 jzt.things.Key.prototype = new jzt.things.Thing();
 jzt.things.Key.prototype.constructor = jzt.things.Key;
@@ -1600,6 +1583,60 @@ jzt.things.Lion.prototype.doTick = function() {
    
 };
 
+//--------------------------------------------------------------------------------
+
+/**
+ * Passage is a Thing capable of moving a player to its matching passage on a target board.
+ * 
+ * @param board An owner board for this Passage
+ */
+jzt.things.Passage = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.spriteIndex = 240;
+    this.foreground = jzt.colors.Colors.F;
+    this.background = jzt.colors.Colors['1'];
+    this.targetBoard = undefined;
+    this.passageId = 0;
+};
+jzt.things.Passage.prototype = new jzt.things.Thing();
+jzt.things.Passage.prototype.constructor = jzt.things.Passage;
+jzt.things.Passage.serializationType = 'Passage';
+
+/**
+ * Delivers a provided message to this Thing. If a TOUCH message is received,
+ * then this Passage will move the player to a matching Passage on its target board.
+ *
+ * @param messageName a name of a message to deliver.
+ */
+jzt.things.Passage.prototype.sendMessage = function(message) {
+    if(message === 'TOUCH') {
+        this.play('tceg tc#fg# tdf#a td#ga# teg#+c');
+        this.board.game.movePlayerToPassage(this.passageId, this.targetBoard);
+    }
+};
+
+/**
+ * Serializes this Passage to an Object.
+ *
+ * @return A serialized Passage
+ */
+jzt.things.Passage.prototype.serialize = function() {
+    var result = jzt.things.Thing.prototype.serialize.call(this);
+    result.passageId = this.passageId;
+    result.targetBoard = this.targetBoard;
+    return result;
+};
+
+/**
+ * Deserializes a provided data Object into a Passage.
+ *
+ * @param data A data object to be deserialized into a Passage.
+ */
+jzt.things.Passage.prototype.deserialize = function(data) {
+    jzt.things.Thing.prototype.deserialize.call(this, data);
+    this.targetBoard = data.targetBoard;
+    this.passageId = data.passageId;
+};
 
  
 //--------------------------------------------------------------------------------

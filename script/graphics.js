@@ -422,6 +422,14 @@ jzt.colors.COLOR_CYCLE = [
     jzt.colors.Colors.F
 ];
 
+jzt.colors.getDarkVersion = function(color) {
+    return jzt.colors.Colors[(color.index - 8).toString(16)];
+};
+
+jzt.colors.getLightVersion = function(color) {
+    return jzt.colors.Colors[(color.index + 8).toString(16)];
+};
+
 /**
  * Retrieves a whether or not a provided color is considered a 'blinking'
  * value when used as a background color.
