@@ -1169,56 +1169,56 @@ jzt.things.Centipede.prototype.doTick = function() {
 //--------------------------------------------------------------------------------
 
 /**
- * Door is a Thing capable of moving a player to its matching door on a target board.
+ * Passage is a Thing capable of moving a player to its matching passage on a target board.
  * 
- * @param board An owner board for this Door
+ * @param board An owner board for this Passage
  */
-jzt.things.Door = function(board) {
+jzt.things.Passage = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 240;
     this.foreground = jzt.colors.Colors.F;
     this.background = jzt.colors.Colors['1'];
     this.targetBoard = undefined;
-    this.doorId = 0;
+    this.passageId = 0;
 };
-jzt.things.Door.prototype = new jzt.things.Thing();
-jzt.things.Door.prototype.constructor = jzt.things.Door;
-jzt.things.Door.serializationType = 'Door';
+jzt.things.Passage.prototype = new jzt.things.Thing();
+jzt.things.Passage.prototype.constructor = jzt.things.Passage;
+jzt.things.Passage.serializationType = 'Passage';
 
 /**
  * Delivers a provided message to this Thing. If a TOUCH message is received,
- * then this Door will move the player to a matching Door on its target board.
+ * then this Passage will move the player to a matching Passage on its target board.
  *
  * @param messageName a name of a message to deliver.
  */
-jzt.things.Door.prototype.sendMessage = function(message) {
+jzt.things.Passage.prototype.sendMessage = function(message) {
     if(message === 'TOUCH') {
         this.play('tceg tc#fg# tdf#a td#ga# teg#+c');
-        this.board.game.movePlayerToDoor(this.doorId, this.targetBoard);
+        this.board.game.movePlayerToPassage(this.passageId, this.targetBoard);
     }
 };
 
 /**
- * Serializes this Door to an Object.
+ * Serializes this Passage to an Object.
  *
- * @return A serialized Door
+ * @return A serialized Passage
  */
-jzt.things.Door.prototype.serialize = function() {
+jzt.things.Passage.prototype.serialize = function() {
     var result = jzt.things.Thing.prototype.serialize.call(this);
-    result.doorId = this.doorId;
+    result.passageId = this.passageId;
     result.targetBoard = this.targetBoard;
     return result;
 };
 
 /**
- * Deserializes a provided data Object into a Door.
+ * Deserializes a provided data Object into a Passage.
  *
- * @param data A data object to be deserialized into a Door.
+ * @param data A data object to be deserialized into a Passage.
  */
-jzt.things.Door.prototype.deserialize = function(data) {
+jzt.things.Passage.prototype.deserialize = function(data) {
     jzt.things.Thing.prototype.deserialize.call(this, data);
     this.targetBoard = data.targetBoard;
-    this.doorId = data.doorId;
+    this.passageId = data.passageId;
 };
 
 //--------------------------------------------------------------------------------

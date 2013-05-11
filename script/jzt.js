@@ -125,13 +125,13 @@ jzt.Game.prototype.onGraphicsLoaded = function() {
 };
 
 /**
- * Moves this Game's Player instance to a specified Door id on a given board name. This will cause
- * a new Board to be loaded as the current board, and the player to be located at the provided Door.
+ * Moves this Game's Player instance to a specified Passage id on a given board name. This will cause
+ * a new Board to be loaded as the current board, and the player to be located at the provided Passage.
  *
- * @param doorId An ID of a door
+ * @param passageId An ID of a Passage
  * @param boardName A name of a Board to be loaded.
  */
-jzt.Game.prototype.movePlayerToDoor = function(doorId, boardName) {
+jzt.Game.prototype.movePlayerToPassage = function(passageId, boardName) {
 
     // Retrieve our new board (or the current board if it's the same)
     var newBoard = (boardName === this.currentBoard.name) ? this.currentBoard : this.getBoard(boardName);
@@ -141,10 +141,10 @@ jzt.Game.prototype.movePlayerToDoor = function(doorId, boardName) {
         return;
     }
 
-    var door = newBoard.getDoor(doorId);
+    var passage = newBoard.getPassage(passageId);
 
-    if(door) {
-        this.setBoard(newBoard, door.point);
+    if(passage) {
+        this.setBoard(newBoard, passage.point);
         this.setState(jzt.GameState.Paused);
     }
 

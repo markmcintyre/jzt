@@ -496,17 +496,17 @@ jzt.Board.prototype.movePlayerOffBoard = function(direction) {
 };
 
 /**
- * Retrieves a Door with a provided ID from this board.
+ * Retrieves a Passage with a provided ID from this board.
  *
- * @param doorId an ID of a door to retrieve
- * @return A Door instance.
+ * @param passageId an ID of a passage to retrieve
+ * @return A Passage instance.
  */
-jzt.Board.prototype.getDoor = function(doorId) {
+jzt.Board.prototype.getPassage = function(passageId) {
 
     for(var row = 0; row < this.height; ++row) {
         for(var column = 0; column < this.width; ++column) {
             var tile = this.getTile(new jzt.Point(column, row));
-            if(tile instanceof jzt.things.Door && tile.doorId === doorId) {
+            if(tile instanceof jzt.things.Passage && tile.passageId === passageId) {
                 return tile;
             }
         }
