@@ -248,7 +248,7 @@ jzt.commands.Restore.prototype.clone = function() {
 };
 
 jzt.commands.Restore.prototype.execute = function(owner) {
-    owner.script.restoreLabel(this.label);
+    owner.scriptContext.restoreLabel(this.label);
     return jzt.commands.CommandResult.CONTINUE;
 };
 
@@ -378,6 +378,6 @@ jzt.commands.Zap.prototype.clone = function() {
 };
 
 jzt.commands.Zap.prototype.execute = function(owner) {
-    owner.script.zapLabel(this.label);
+    owner.scriptContext.zapLabel(this.label);
     return jzt.commands.CommandResult.CONTINUE;
 };

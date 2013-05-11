@@ -334,7 +334,7 @@ jzt.ScriptContext.prototype.zapLabel = function(label) {
     
     if(this.currentLabels.hasOwnProperty(label)) {
         var labelIndex = this.currentLabels[label];
-        if(labelIndex + 1 <= this.script.labelIndicies.length) {
+        if(labelIndex + 1 <= this.script.labelIndicies[label].length) {
             this.currentLabels[label]++;
         }
     }

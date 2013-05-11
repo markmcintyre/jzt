@@ -15,6 +15,9 @@
 				height: 100%;
 				color: white;
 			}
+			textarea {
+				font-family: monospace;
+			}
 		</style>
 	</head>
 	<body>
@@ -57,6 +60,7 @@
 			<label><input type="radio" name="activeTemplate" value="Bear" />Bear</label>
 			<label><input type="radio" name="activeTemplate" value="SpinningGun" />Spinning Gun</label>
 			<label><input type="radio" name="activeTemplate" value="Spider" />Spider</label>
+			<label><input type="radio" name="activeTemplate" value="Scriptable" />Scriptable</labe>
 			<br/>
 
 			<button id="save-game">Save</button>
@@ -70,9 +74,13 @@
 		</div>
 
 		<div id="customizers">
-			<div id="door-customizer">
-				<label>Door ID: <input id="door-id"/></label><br/>
-				<label>Target Board: <select id="door-target"></select></label><br/>
+			<div id="template-customizer">
+				<textarea id="active-template-editor" rows="10" style="width: 100%"></textarea>
+			</div>
+			<div id="script-customizer">
+				<select id="script-selector"></select>
+				<button id="new-script-button">New Script</button>
+				<textarea id="script-editor" rows="20" style="width: 100%"></textarea>
 			</div>
 		</div>
 		
@@ -89,7 +97,12 @@
 		<script type="text/javascript" src="script/editor.js"></script>
 		<script type="text/javascript">
 
+			var templates = {};
 			var boardSelector = document.getElementById('board-selector');
+			var templateEditor = document.getElementById('active-template-editor');
+			var scriptSelector = document.getElementById('script-selector');
+			var newScriptButton = document.getElementById('new-script-button');
+			var scriptEditor = document.getElementById('script-editor');
 			var editor = undefined;
 
 			function onToolSelected(event) {
@@ -98,24 +111,34 @@
 
 				if(toolType) {
 
-					var activeTool = {type: toolType};
+					var activeTemplate;
 
-					switch(toolType) {
-						case 'Door': 
-							activeTool.doorId = document.getElementById('door-id').value;
-							activeTool.targetBoard = document.getElementById('door-target').value;
-							break;
-						case 'Spider':
-							activeTool.under = new jzt.things.SpiderWeb().serialize();
-							break;
+					if(templates.hasOwnProperty(toolType)) {
+						activeTemplate = templates[toolType];
+					}
+					else {
+						activeTemplate = {type: toolType};
+						switch(toolType) {
+							case 'Door': 
+								activeTemplate.doorId = 'default-door';
+								activeTemplate.targetBoard = 'Untitled Board';
+								break;
+							case 'Spider':
+								activeTemplate.under = new jzt.things.SpiderWeb().serialize();
+								break;
+							case 'Scriptable':
+								activeTemplate.script = 'Untitled Script';
+								break;
+						}
+						templates[toolType] = activeTemplate;
 					}
 
-
-					editor.setActiveTool(activeTool);
+					templateEditor.value = JSON.stringify(activeTemplate, undefined, 4);
+					editor.setActiveTemplate(activeTemplate);
 
 				}
 				else {
-					editor.setActiveTool(undefined);
+					editor.setActiveTemplate(undefined);
 				}
 			};
 
@@ -134,8 +157,6 @@
 
 			function onBoardAdded(boardName) {
 				boardSelector.options[boardSelector.options.length] = new Option(boardName, boardName);
-				var doorTarget = document.getElementById('door-target');
-				doorTarget.options[doorTarget.options.length] = new Option(boardName, boardName);
 			};
 
 			function onBoardRemoved(boardName) {
@@ -144,12 +165,55 @@
 
 			function onBoardChanged(boardName) {
 				boardSelector.value = boardName;
+				scriptSelector.options.length = 0;
+				for(var index = 0; index < editor.currentBoard.scripts.length; ++index) {
+					scriptSelector.options[index] = new Option(editor.currentBoard.scripts[index].name);
+				}
+				selectScript(scriptSelector.value);
+			};
+
+			function onTemplateChanged() {
+				if(templateEditor.value !== '') {
+					editor.setActiveTemplate(JSON.parse(templateEditor.value));
+				}
 			};
 
 			function saveGame(event) {
 				editor.save();
 				alert('Game Saved!');
+			};
+
+			function selectScript(scriptName) {
+				var script = editor.currentBoard.getScript(scriptName);
+				if(script) {
+					scriptEditor.value = script.rawScript;
+				}
+				else {
+					scriptEditor.value = '';
+				}
 			}
+
+			function onScriptSelected(event) {
+				selectScript(event.target.value);
+			};
+
+			function onNewScriptClick(event) {
+				var newName = window.prompt('Please enter a script name.', 'Untitled');
+				var script;
+				if(newName) {
+					newName = editor.getUniqueScriptName(newName);
+					script = new jzt.Script({'name': newName, 'rawScript': ''});
+					editor.currentBoard.scripts.push(script);
+					scriptSelector.options[scriptSelector.options.length] = new Option(newName);
+					scriptEditor.value = editor.currentBoard.getScript(newName).rawScript;
+					scriptSelector.value = newName;
+				}
+			};
+
+			function onScriptChanged(event) {
+				var script = editor.currentBoard.getScript(scriptSelector.value);
+				script.rawScript = scriptEditor.value;
+			};
 
 			var tools = document.getElementsByName('activeTemplate');
 			for( var index = 0; index < tools.length; index++ ) {
@@ -168,6 +232,10 @@
 			editor = new jzt.Editor(canvas, callbacks);
 
 			boardSelector.addEventListener('change', onBoardSelected, false);
+			templateEditor.addEventListener('blur', onTemplateChanged, false);
+			scriptSelector.addEventListener('change', onScriptSelected, false);
+			newScriptButton.addEventListener('click', onNewScriptClick, false);
+			scriptEditor.addEventListener('blur', onScriptChanged, false);
 
 
 		</script>

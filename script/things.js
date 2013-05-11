@@ -389,6 +389,7 @@ jzt.things.ScriptableThing = function(board) {
     this.walkDirection = undefined;
     this.locked = false;
     this.orientation = undefined;
+    this.spriteIndex = 1;
 };
 jzt.things.ScriptableThing.prototype = new jzt.things.UpdateableThing();
 jzt.things.ScriptableThing.prototype.constructor = jzt.things.ScriptableThing;
@@ -428,7 +429,9 @@ jzt.things.ScriptableThing.prototype.serialize = function() {
 jzt.things.ScriptableThing.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
     this.name = data.name;
-    this.spriteIndex = data.spriteIndex;
+    if(data.spriteIndex) {
+        this.spriteIndex = data.spriteIndex;
+    }
     this.scriptName = data.script;
     var script = this.board.getScript(this.scriptName);
     if(script) {

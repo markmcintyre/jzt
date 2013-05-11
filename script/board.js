@@ -45,8 +45,8 @@ jzt.Board = function(boardData, game) {
     this.height = boardData.height;
     this.width = boardData.width;
 
-    this.initializeTiles(boardData.tiles);
     this.initializeScripts(boardData.scripts);
+    this.initializeTiles(boardData.tiles);
 
 };
 

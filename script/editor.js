@@ -61,6 +61,18 @@ jzt.Editor.prototype.getUniqueBoardName = function(candidate) {
 
 };
 
+jzt.Editor.prototype.getUniqueScriptName = function(candidate) {
+
+	var index = 2;
+	var currentTry = candidate;
+
+	while(this.currentBoard.getScript(currentTry)) {
+		currentTry = candidate + index++;
+	}
+
+	return currentTry;
+
+};
 
 jzt.Editor.prototype.getBoard = function(boardName) {
 	for(var index = 0; index < this.boards.length; ++index) {
@@ -163,8 +175,8 @@ jzt.Editor.prototype.addBoard = function(boardName, width, height) {
 
 };
 
-jzt.Editor.prototype.setActiveTool = function(template) {
-	this.activeTool = template;
+jzt.Editor.prototype.setActiveTemplate = function(template) {
+	this.activeTemplate = template;
 };
 
 jzt.Editor.prototype.eventToBoardPoint = function(event) {
@@ -191,8 +203,8 @@ jzt.Editor.prototype.onCanvasMouseMoved = function(event) {
 
 		if(this.drawing) {
 
-			if(this.activeTool) {
-				this.currentBoard.addThing(point, jzt.things.ThingFactory.deserialize(this.activeTool, this.currentBoard));
+			if(this.activeTemplate) {
+				this.currentBoard.addThing(point, jzt.things.ThingFactory.deserialize(this.activeTemplate, this.currentBoard));
 			}
 			else {
 				this.currentBoard.addThing(point, undefined);
@@ -214,6 +226,6 @@ jzt.Editor.prototype.onCanvasMouseUp = function(event) {
 jzt.Editor.prototype.drawCursor = function(point, context) {
 	context.fillStyle = 'rgba(255, 255, 255, 0.25)';
 	context.strokeStyle = '#FFFFFF';
-    context.fillRect(point.x * this.game.resources.graphics.TILE_SIZE.x, point.y * this.game.resources.graphics.TILE_SIZE.y,  this.game.resources.graphics.TILE_SIZE.x, this.game.TILE_SIZE.y);
-    context.strokeRect(point.x * this.game.resources.graphics.TILE_SIZE.x, point.y * this.game.resources.graphics.TILE_SIZE.y, this.game.resources.graphics.TILE_SIZE.x, this.game.TILE_SIZE.y);
+    context.fillRect(point.x * this.game.resources.graphics.TILE_SIZE.x, point.y * this.game.resources.graphics.TILE_SIZE.y,  this.game.resources.graphics.TILE_SIZE.x, this.game.resources.graphics.TILE_SIZE.y);
+    context.strokeRect(point.x * this.game.resources.graphics.TILE_SIZE.x, point.y * this.game.resources.graphics.TILE_SIZE.y, this.game.resources.graphics.TILE_SIZE.x, this.game.resources.graphics.TILE_SIZE.y);
 };

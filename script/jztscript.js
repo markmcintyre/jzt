@@ -265,7 +265,7 @@ jztscript.parsers.RestoreParser = function() {
     result.add(new ns.Word());
     result.assembler = {
         assemble: function(assembly) {
-            var command = new jzt.command.Restore();
+            var command = new jzt.commands.Restore();
             command.label = assembly.stack.pop().toUpperCase();
             assembly.target = command;
         }
