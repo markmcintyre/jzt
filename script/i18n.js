@@ -10,6 +10,7 @@ jzt.i18n.Messages.en = {
 
 	keys: {
 		'collect': 'You now have the {0} key.',
+		'toomany': 'You already have a {0} key.',
 		'9': 'blue',
 		'A': 'green',
 		'B': 'cyan',
@@ -45,6 +46,7 @@ jzt.i18n.Messages.fr = {
 
 	keys: {
 		'collect': 'Vous avez maintenant la clé {0}.',
+		'toomany': 'Vous avez déja une clé {0}.',
 		'9': 'bleue',
 		'A': 'verte',
 		'B': 'cyan',
@@ -76,11 +78,26 @@ jzt.i18n.Messages.fr = {
 };
 
 jzt.i18n.getMessage = function(key) {
+
+	var argumentIndex;
 	var result = jzt.i18n.findMessage(jzt.i18n.Messages.currentLanguage, key);
+	var regEx;
+
 	if(result === undefined && jzt.i18n.Messages.currentLanguage !== jzt.i18n.DefaultLanguage) {
 		result = jzt.i18n.findMessage(jzt.i18n.Messages[jzt.i18n.DefaultLanguage], key);
 	}
-	return result === undefined ? key : result;
+
+	if(result === undefined) {
+		return undefined;
+	}
+	
+	for(argumentIndex = 1; argumentIndex < arguments.length; ++argumentIndex) {
+		regEx = new RegExp('\\{' + (argumentIndex - 1) + '\\}', 'g');
+		result = result.replace(regEx, arguments[argumentIndex]);
+	}
+
+	return result;
+
 };
 
 jzt.i18n.findMessage = function(source, key) {

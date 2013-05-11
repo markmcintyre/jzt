@@ -131,6 +131,7 @@ jzt.things.Thing.prototype.sendMessage = function() {};
  * Receives a request to be pushed in a given direction.
  *
  * @param direction A direction in which this Thing is requested to move.
+ * @param pusher A Thing that is requesting the push.
  * @return true if the push resulted in a teleportation, undefined otherwise.
  */
 jzt.things.Thing.prototype.push = function() {};
@@ -1400,6 +1401,41 @@ jzt.things.Key = function(board) {
 jzt.things.Key.prototype = new jzt.things.Thing();
 jzt.things.Key.prototype.constructor = jzt.things.Key;
 jzt.things.Key.serializationType = 'Key';
+
+jzt.things.Key.prototype.sendMessage = function(message) {
+
+    var keyType;
+    var keyCode;
+
+    if(message === 'TOUCH') {
+
+        keyType = jzt.i18n.getMessage('keys.' + this.foreground.code);
+
+        // If the player already has this key type...
+        if(this.getCounterValue('key' + this.foreground.code) > 0) {
+            this.board.setDisplayMessage(jzt.i18n.getMessage('keys.toomany', keyType));
+            this.play('sc-c');
+        }
+        else {
+            this.remove();
+            this.adjustCounter('key' + this.foreground.code, 1);
+            this.board.setDisplayMessage(jzt.i18n.getMessage('keys.collect', keyType));
+            this.play('t+cegcegceg+sc');
+        }
+        
+    }
+};
+
+/**
+ * Receives a request to be pushed in a given direction.
+ *
+ * @param direction A direction in which this Thing is requested to move.
+ */
+jzt.things.Key.prototype.push = function(direction, pusher) {
+    if(!(pusher instanceof jzt.things.Player) && this.move(direction)) {
+        this.play('t--f', false, true);
+    }
+};
 
 //--------------------------------------------------------------------------------
 

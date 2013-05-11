@@ -336,7 +336,7 @@ jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak) {
         if(obstacle) {
 
             // Try to push the obstacle out of the way
-            var teleported = obstacle.push(oldPoint.directionTo(newPoint));
+            var teleported = obstacle.push(oldPoint.directionTo(newPoint), thing);
 
             // If we were teleported, return true
             if(teleported) {
