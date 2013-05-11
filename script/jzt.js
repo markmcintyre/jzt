@@ -395,7 +395,7 @@ jzt.Game.prototype.update = function() {
     // If it's game over, say so!
     else if(this.state === jzt.GameState.GameOver) {
         this.currentBoard.update();
-        this.currentBoard.setDisplayMessage('Game over!');
+        this.currentBoard.setDisplayMessage(jzt.i18n.getMessage('status.gameover'));
     }
 
 };

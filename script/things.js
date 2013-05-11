@@ -1393,6 +1393,15 @@ jzt.things.InvisibleWall.prototype.getSpriteIndex = function() {
 };
 
 //--------------------------------------------------------------------------------
+jzt.things.Key = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.spriteIndex = 12;
+};
+jzt.things.Key.prototype = new jzt.things.Thing();
+jzt.things.Key.prototype.constructor = jzt.things.Key;
+jzt.things.Key.serializationType = 'Key';
+
+//--------------------------------------------------------------------------------
 
 /*
  * LineWall is a Thing representing an immoveable obstacle with line decoration.
@@ -1649,7 +1658,7 @@ jzt.things.Player.prototype.shoot = function(direction) {
         jzt.things.ThingFactory.shoot(this.board, this.point.add(direction), direction, true);
     }
     else {
-        this.board.setDisplayMessage('You don\'t have any ammo!');
+        this.board.setDisplayMessage(jzt.i18n.getMessage('status.noammo'));
     }
 };
 
@@ -1857,7 +1866,7 @@ jzt.things.Player.prototype.sendMessage = function(message) {
 
     if(message === 'SHOT') {
         this.play('t--c+c-c+d#', true);
-        this.board.setDisplayMessage('Ouch!');
+        this.board.setDisplayMessage(jzt.i18n.getMessage('status.hurt'));
         this.adjustCounter('health', -10);
     }
 
@@ -2793,7 +2802,7 @@ jzt.things.Water.prototype.isSurrenderable = function(sender) {
 jzt.things.Water.prototype.sendMessage = function(message) {
     if(message === 'TOUCH') {
         this.play('t+c+c');
-        this.board.setDisplayMessage('Your way is blocked by water.', 1);
+        this.board.setDisplayMessage(jzt.i18n.getMessage('obstacles.water'), 1);
     }
 };
 
