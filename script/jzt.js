@@ -162,7 +162,7 @@ jzt.Game.prototype.setState = function(state) {
     if(state === jzt.GameState.Paused) {
 
         // Blink the player
-        this.player.background = jzt.colors.getBlinkingEquivalent(this.player.background);
+        this.player.background = this.player.background.lighten();
 
         // Cancel all keyboard input
         this.keyboard.cancelInput();
@@ -179,7 +179,7 @@ jzt.Game.prototype.setState = function(state) {
         this.currentBoard.setDisplayMessage(undefined);
 
         // No longer blink the player
-        this.player.background = jzt.colors.getNonBlinkingEquivalent(this.player.background);
+        this.player.background = this.player.background.darken();
 
     }
 

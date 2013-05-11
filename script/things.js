@@ -25,8 +25,8 @@ jzt.things.Thing = function(board) {
     this.spriteIndex = 63;
     this.board = board;
     this.point = new jzt.Point(0,0);
-    this.foreground = jzt.colors.Colors.E;
-    this.background = jzt.colors.Colors['0'];
+    this.foreground = jzt.colors.Yellow;
+    this.background = jzt.colors.Black;
     this.x = 0;
     this.y = 0;
 };
@@ -60,15 +60,15 @@ jzt.things.Thing.prototype.deserialize = function(data) {
         var backgroundCode = data.color.charAt(0);
         var foregroundCode = data.color.charAt(1);
 
-        this.foreground = foregroundCode === '*' ? foregroundCode : jzt.colors.Colors[foregroundCode];
-        this.background = backgroundCode === '*' ? undefined : jzt.colors.Colors[backgroundCode];
+        this.foreground = foregroundCode === '*' ? jzt.colors.Cycle : jzt.colors.getColor(foregroundCode);
+        this.background = backgroundCode === '*' ? undefined : jzt.colors.getColor(backgroundCode);
     }
     else {
         if(!this.foreground) {
-            this.foreground = jzt.colors.Colors.E;
+            this.foreground = jzt.colors.Yellow;
         }
         if(!this.background) {
-            this.background = jzt.colors.Colors['0'];
+            this.background = jzt.colors.Black;
         }
     }
 
@@ -518,7 +518,7 @@ jzt.things.ScriptableThing.prototype.doTick = function() {
 jzt.things.Ammo = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 132;
-    this.foreground = jzt.colors.Colors['3'];
+    this.foreground = jzt.colors.Cyan;
 };
 jzt.things.Ammo.prototype = new jzt.things.Thing();
 jzt.things.Ammo.prototype.constructor = jzt.things.Ammo;
@@ -557,7 +557,7 @@ jzt.things.Ammo.prototype.sendMessage = function(message) {
 jzt.things.Bear = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.spriteIndex = 153;
-    this.foreground = jzt.colors.Colors['6'];
+    this.foreground = jzt.colors.Brown;
     this.sensitivity = 9;
     this.speed = 3;
 };
@@ -684,8 +684,8 @@ jzt.things.Boulder.prototype.push = function(direction) {
 jzt.things.BreakableWall = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 177;
-    this.background = jzt.colors.Colors['0'];
-    this.foreground = jzt.colors.Colors.B;
+    this.background = jzt.colors.Black;
+    this.foreground = jzt.colors.BrightCyan;
 };
 jzt.things.BreakableWall.prototype = new jzt.things.Thing();
 jzt.things.BreakableWall.prototype.constructor = jzt.things.BreakableWall;
@@ -714,7 +714,7 @@ jzt.things.BreakableWall.prototype.sendMessage = function(message) {
 jzt.things.Bullet = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.spriteIndex = 248;
-    this.foreground = jzt.colors.Colors.F;
+    this.foreground = jzt.colors.BrightWhite;
     this.background = undefined;
     this.direction = jzt.Direction.North;
     this.speed = 1;
@@ -827,8 +827,8 @@ jzt.things.Bullet.prototype.push = function() {
 jzt.things.Centipede = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.spriteIndex = 79;
-    this.foreground = jzt.colors.Colors['9'];
-    this.background = jzt.colors.Colors['0'];
+    this.foreground = jzt.colors.BrightBlue;
+    this.background = jzt.colors.Black;
     this.speed = 3;
     this.follower = undefined;
     this.head = false;
@@ -1170,8 +1170,8 @@ jzt.things.Centipede.prototype.doTick = function() {
 jzt.things.Door = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 10;
-    this.foreground = jzt.colors.Colors.F;
-    this.background = jzt.colors.Colors['1'];
+    this.foreground = jzt.colors.BrightWhite;
+    this.background = jzt.colors.Blue;
 };
 jzt.things.Door.prototype = new jzt.things.Thing();
 jzt.things.Door.prototype.constructor = jzt.things.Door;
@@ -1185,7 +1185,7 @@ jzt.things.Door.prototype.sendMessage = function(message) {
     if(message === 'TOUCH') {
 
         doorType = jzt.i18n.getMessage('doors.' + this.background.code);
-        matchingKeyCode = 'key' + jzt.colors.getLightVersion(this.background).code;
+        matchingKeyCode = 'key' + this.background.lighten().code;
 
         // If the player has the corresponding key type...
         if(this.getCounterValue(matchingKeyCode) > 0) {
@@ -1214,8 +1214,8 @@ jzt.things.Door.prototype.sendMessage = function(message) {
 jzt.things.FakeWall = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 178;
-    this.foreground = jzt.colors.Colors.E;
-    this.background = jzt.colors.Colors['0'];
+    this.foreground = jzt.colors.Yellow;
+    this.background = jzt.colors.Black;
 };
 jzt.things.FakeWall.prototype = new jzt.things.Thing();
 jzt.things.FakeWall.prototype.constructor = jzt.things.FakeWall;
@@ -1251,8 +1251,8 @@ jzt.things.FakeWall.prototype.getSpriteIndex = function() {
 jzt.things.Forest = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 176;
-    this.foreground = jzt.colors.Colors['0'];
-    this.background = jzt.colors.Colors['2'];
+    this.foreground = jzt.colors.Black;
+    this.background = jzt.colors.Green;
 };
 jzt.things.Forest.prototype = new jzt.things.Thing();
 jzt.things.Forest.prototype.constructor = jzt.things.Forest;
@@ -1293,7 +1293,7 @@ jzt.things.Forest.prototype.sendMessage = function(message) {
 jzt.things.Gem = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 4;
-    this.foreground = jzt.colors.Colors.D;
+    this.foreground = jzt.colors.BrightMagenta;
 };
 jzt.things.Gem.prototype = new jzt.things.Thing();
 jzt.things.Gem.prototype.constructor = jzt.things.Gem;
@@ -1343,7 +1343,7 @@ jzt.things.Gem.prototype.push = function(direction) {
 jzt.things.InvisibleWall = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 0;
-    this.foreground = jzt.colors.Colors.A;
+    this.foreground = jzt.colors.BrightGreen;
 };
 jzt.things.InvisibleWall.prototype = new jzt.things.Thing();
 jzt.things.InvisibleWall.prototype.constructor = jzt.things.InvisibleWall;
@@ -1379,7 +1379,7 @@ jzt.things.InvisibleWall.prototype.getSpriteIndex = function() {
 jzt.things.Key = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 12;
-    this.foreground = jzt.colors.Colors['9'];
+    this.foreground = jzt.colors.BrightBlue;
 };
 jzt.things.Key.prototype = new jzt.things.Thing();
 jzt.things.Key.prototype.constructor = jzt.things.Key;
@@ -1489,8 +1489,8 @@ jzt.things.Lion = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.intelligence = 3;
     this.spriteIndex = 234;
-    this.foreground = jzt.colors.Colors.C;
-    this.background = jzt.colors.Colors['0'];
+    this.foreground = jzt.colors.BrightRed;
+    this.background = jzt.colors.Black;
     this.speed = 2;
 };
 jzt.things.Lion.prototype = new jzt.things.UpdateableThing();
@@ -1593,8 +1593,8 @@ jzt.things.Lion.prototype.doTick = function() {
 jzt.things.Passage = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 240;
-    this.foreground = jzt.colors.Colors.F;
-    this.background = jzt.colors.Colors['1'];
+    this.foreground = jzt.colors.BrightWhite;
+    this.background = jzt.colors.Blue;
     this.targetBoard = undefined;
     this.passageId = 0;
 };
@@ -1653,8 +1653,8 @@ jzt.things.Player = function(board) {
     this.name = 'Player';
     this.spriteIndex = 2;
     this.point = new jzt.Point(-1,-1);
-    this.foreground = jzt.colors.Colors.F;
-    this.background = jzt.colors.Colors['1'];
+    this.foreground = jzt.colors.BrightWhite;
+    this.background = jzt.colors.Blue;
     this.nextAllowableMove = 0;
 
     this.torch = false;
@@ -2026,7 +2026,7 @@ jzt.things.Pusher.prototype.doTick = function() {
 jzt.things.Ruffian = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.spriteIndex = 5;
-    this.foreground = jzt.colors.Colors.D;
+    this.foreground = jzt.colors.BrightMagenta;
     this.intelligence = 5;
     this.restingTime = 5;
     this.moving = false;
@@ -2229,8 +2229,8 @@ jzt.things.SolidWall.serializationType = 'SolidWall';
 jzt.things.Spider = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.spriteIndex = 15;
-    this.foreground = jzt.colors.Colors.C;
-    this.background = jzt.colors.Colors['0'];
+    this.foreground = jzt.colors.BrightRed;
+    this.background = jzt.colors.Black;
     this.intelligence = 5;
     this.speed = 1;
 };
@@ -2356,8 +2356,8 @@ jzt.things.Spider.prototype.doTick = function() {
 jzt.things.SpiderWeb = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = undefined;
-    this.foreground = jzt.colors.Colors['8'];
-    this.background = jzt.colors.Colors['0'];
+    this.foreground = jzt.colors.Grey;
+    this.background = jzt.colors.Black;
 };
 jzt.things.SpiderWeb.prototype = new jzt.things.Thing();
 jzt.things.SpiderWeb.prototype.constructor = jzt.things.SpiderWeb;
@@ -2709,8 +2709,8 @@ jzt.things.ThrowingStar.prototype.doTick = function() {
 jzt.things.Tiger = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.spriteIndex = 227;
-    this.foreground = jzt.colors.Colors.B;
-    this.background = jzt.colors.Colors['0'];
+    this.foreground = jzt.colors.BrightCyan;
+    this.background = jzt.colors.Black;
     this.intelligence = 5;
     this.firingRate = 5;
     this.speed = 2;
@@ -2847,8 +2847,8 @@ jzt.things.Wall.serializationType = 'Wall';
 jzt.things.Water = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 176;
-    this.background = jzt.colors.Colors.F;
-    this.foreground = jzt.colors.Colors['9'];
+    this.background = jzt.colors.BrightWhite;
+    this.foreground = jzt.colors.BrightBlue;
 };
 jzt.things.Water.prototype = new jzt.things.Thing();
 jzt.things.Water.prototype.constructor = jzt.things.Water;

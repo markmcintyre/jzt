@@ -630,7 +630,7 @@ jzt.Board.prototype.render = function(c) {
             // Our background colour may come from the 'under' tile if no background is defined
             var background = thing.background;
             if(!background && thing.under) {
-                background = jzt.colors.getNonBlinkingEquivalent(thing.under.background);
+                background = thing.under.background.isLight() ? thing.under.background.darken() : thing.under.background;
             }
             sprite.draw(c, thing.point, thing.foreground, background);
         }
@@ -657,7 +657,7 @@ jzt.Board.prototype.renderMessage = function(c) {
     messagePoint.x = Math.floor((this.width - this.displayMessage.length) / 2);
     messagePoint.y = this.height-1;
 
-    this.game.resources.graphics.drawString(c, messagePoint, this.displayMessage, '*', jzt.colors.Colors['0']);
+    this.game.resources.graphics.drawString(c, messagePoint, this.displayMessage, jzt.colors.Cycle, jzt.colors.Black);
 
     if(--this.displayMessageTick <= 0) {
         this.displayMessage = undefined;
