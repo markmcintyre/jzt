@@ -41,7 +41,7 @@ jzt.things.Thing.prototype.serialize = function() {
     if(this.constructor.hasOwnProperty('serializationType')) {
         result.type = this.constructor.serializationType;
     }
-    result.color = (this.background === undefined || this.background === '*' ? '*' : this.background.code) + (this.foreground === undefined || this.foreground === '*' ? '*' : this.foreground.code);
+    result.color = jzt.colors.serialize(this.background, this.foreground);
     if(this.under) {
         result.under = this.under.serialize();
     }
@@ -56,12 +56,9 @@ jzt.things.Thing.prototype.serialize = function() {
  */
 jzt.things.Thing.prototype.deserialize = function(data) {
 
-    if(data.color && data.color.length === 2) {
-        var backgroundCode = data.color.charAt(0);
-        var foregroundCode = data.color.charAt(1);
-
-        this.foreground = foregroundCode === '*' ? jzt.colors.Cycle : jzt.colors.getColor(foregroundCode);
-        this.background = backgroundCode === '*' ? undefined : jzt.colors.getColor(backgroundCode);
+    if(data.color) {
+        this.foreground = jzt.colors.deserializeForeground(data.color);
+        this.background = jzt.colors.deserializeBackground(data.color);
     }
     else {
         if(!this.foreground) {
@@ -1167,6 +1164,11 @@ jzt.things.Centipede.prototype.doTick = function() {
 };
 
 //--------------------------------------------------------------------------------
+
+/**
+ * Door is a Thing that acts as an obstacle unless an associated Key has been 
+ * collected first.
+ */
 jzt.things.Door = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 10;
@@ -1177,6 +1179,12 @@ jzt.things.Door.prototype = new jzt.things.Thing();
 jzt.things.Door.prototype.constructor = jzt.things.Door;
 jzt.things.Door.serializationType = 'Door';
 
+/**
+ * Delivers a provided message to this Thing. If a TOUCH message is received, then
+ * this Door will vanish if an associated Key has been previously collected.
+ *
+ * @param messageName a name of a message to deliver.
+ */
 jzt.things.Door.prototype.sendMessage = function(message) {
 
     var doorType;
@@ -1184,7 +1192,10 @@ jzt.things.Door.prototype.sendMessage = function(message) {
 
     if(message === 'TOUCH') {
 
+        // Get a readable door description
         doorType = jzt.i18n.getMessage('doors.' + this.background.code);
+
+        // Determine a matching key code
         matchingKeyCode = 'key' + this.background.lighten().code;
 
         // If the player has the corresponding key type...
@@ -1194,6 +1205,8 @@ jzt.things.Door.prototype.sendMessage = function(message) {
             this.board.setDisplayMessage(jzt.i18n.getMessage('doors.open', doorType));
             this.play('tcgbcgb+ic');
         }
+
+        // If the player does not have the correct key...
         else {
             this.board.setDisplayMessage(jzt.i18n.getMessage('doors.locked', doorType));
             this.play('t--gc');
@@ -1376,6 +1389,13 @@ jzt.things.InvisibleWall.prototype.getSpriteIndex = function() {
 };
 
 //--------------------------------------------------------------------------------
+
+/**
+ * Key is a Thing representing a collectable key item. One key of a given color
+ * may be collected at a time. Keys are used to unlock Door Things.
+ *
+ * @param board An owner Board for this Key.
+ */
 jzt.things.Key = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 12;
@@ -1385,6 +1405,13 @@ jzt.things.Key.prototype = new jzt.things.Thing();
 jzt.things.Key.prototype.constructor = jzt.things.Key;
 jzt.things.Key.serializationType = 'Key';
 
+/**
+ * Delivers a provided message to this Thing. If a TOUCH message is 
+ * received, then this Key will be collected, if an existing Key of this
+ * type has not already been collected.
+ *
+ * @param messageName a name of a message to deliver.
+ */
 jzt.things.Key.prototype.sendMessage = function(message) {
 
     var keyType;
@@ -1392,6 +1419,7 @@ jzt.things.Key.prototype.sendMessage = function(message) {
 
     if(message === 'TOUCH') {
 
+        // Get a readable description of this key type
         keyType = jzt.i18n.getMessage('keys.' + this.foreground.code);
 
         // If the player already has this key type...
@@ -1399,6 +1427,8 @@ jzt.things.Key.prototype.sendMessage = function(message) {
             this.board.setDisplayMessage(jzt.i18n.getMessage('keys.toomany', keyType));
             this.play('sc-c');
         }
+
+        // If the player does not yet have this key type...
         else {
             this.remove();
             this.adjustCounter('key' + this.foreground.code, 1);
@@ -1460,7 +1490,7 @@ jzt.things.LineWall.lineMap = {
  */
 jzt.things.LineWall.prototype.getSpriteIndex = function() {
 
-    if(this.spriteIndex !== undefined) {
+    if(this.spriteIndex !== undefined && !this.board.game.isDebugRendering) {
         return this.spriteIndex;
     }
 
@@ -2388,7 +2418,7 @@ jzt.things.SpiderWeb.lineMap = {
  */
 jzt.things.SpiderWeb.prototype.getSpriteIndex = function() {
 
-    if(this.spriteIndex !== undefined) {
+    if(this.spriteIndex !== undefined && !this.board.game.isDebugRendering) {
         return this.spriteIndex;
     }
 

@@ -135,7 +135,6 @@
 						templates[toolType] = activeTemplate;
 					}
 
-					templateEditor.value = JSON.stringify(activeTemplate, undefined, 4);
 					editor.setActiveTemplate(activeTemplate);
 
 				}
@@ -174,7 +173,11 @@
 				selectScript(scriptSelector.value);
 			};
 
-			function onTemplateChanged() {
+			function onTemplateChanged(newTemplate) {
+				templateEditor.value = JSON.stringify(newTemplate, undefined, 4);
+			};
+
+			function onTemplateEdited() {
 				if(templateEditor.value !== '') {
 					editor.setActiveTemplate(JSON.parse(templateEditor.value));
 				}
@@ -229,12 +232,13 @@
 			var callbacks = {
 				addBoard: onBoardAdded,
 				removeBoard: onBoardRemoved,
-				changeBoard: onBoardChanged
+				changeBoard: onBoardChanged,
+				changeTemplate: onTemplateChanged
 			};
 			editor = new jzt.Editor(canvas, callbacks);
 
 			boardSelector.addEventListener('change', onBoardSelected, false);
-			templateEditor.addEventListener('blur', onTemplateChanged, false);
+			templateEditor.addEventListener('blur', onTemplateEdited, false);
 			scriptSelector.addEventListener('change', onScriptSelected, false);
 			newScriptButton.addEventListener('click', onNewScriptClick, false);
 			scriptEditor.addEventListener('blur', onScriptChanged, false);

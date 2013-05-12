@@ -7,6 +7,7 @@ jzt.Editor = function(canvasElement, configuration) {
 	this.addBoardCallback = configuration.addBoard;
 	this.removeBoardCallback = configuration.removeBoard;
 	this.changeBoardCallback = configuration.changeBoard;
+	this.templateChangeCallback = configuration.changeTemplate;
 
 	this.canvasElement = canvasElement;
 
@@ -177,6 +178,31 @@ jzt.Editor.prototype.addBoard = function(boardName, width, height) {
 
 jzt.Editor.prototype.setActiveTemplate = function(template) {
 	this.activeTemplate = template;
+	this.templateChangeCallback.call(this, this.activeTemplate);
+};
+
+jzt.Editor.prototype.setTemplateForeground = function(foreground) {
+	var background;
+	if(this.activeTemplate.color) {
+        background = jzt.colors.deserializeBackground(this.activeTemplate.color);
+        this.activeTemplate.color = jzt.colors.serialize(background, foreground);
+    }
+    else {
+    	this.activeTemplate.color = jzt.colors.serialize(jzt.colors.Black, foreground);
+    }
+	this.templateChangeCallback.call(this, this.activeTemplate);
+};
+
+jzt.Editor.prototype.setTemplateBackground = function(background) {
+	var foreground;
+	if(this.activeTemplate.color) {
+		foreground = jzt.colors.deserializeForeground(this.activeTemplate.color);
+		this.activeTemplate.color = jzt.colors.serialize(background, foreground);
+	}
+	else {
+		this.activeTemplate.color = jzt.colors.serialize(background, jzt.colors.Yellow);
+	}
+	this.templateChangeCallback.call(this, this.activeTemplate);
 };
 
 jzt.Editor.prototype.eventToBoardPoint = function(event) {

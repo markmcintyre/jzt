@@ -450,6 +450,37 @@ jzt.colors.getColor = function(hexDigit) {
     return jzt.colors.Colors[parseInt(hexDigit, 16)];
 };
 
+jzt.colors.deserializeForeground = function(colorCode) {
+
+    var foregroundCode;
+
+    if(colorCode.length === 2) {
+        foregroundCode = colorCode.charAt(1);
+        return foregroundCode === '*' ? jzt.colors.Cycle : jzt.colors.getColor(foregroundCode);
+    }
+
+    throw 'Invalid color code: ' + colorCode;
+
+};
+
+jzt.colors.deserializeBackground = function(colorCode) {
+
+    var backgroundCode;
+
+    if(colorCode.length == 2) {
+        backgroundCode = colorCode.charAt(0);
+        return backgroundCode === '*' ? undefined : jzt.colors.getColor(backgroundCode);
+    }
+
+    throw 'Invalid color code: '  + colorCode;
+
+};
+
+jzt.colors.serialize = function(background, foreground) {
+    return (background === undefined || background === '*' ? '*' : background.code) + 
+        (foreground === undefined || foreground === '*' ? '*' : foreground.code);
+};
+
 // Assign convenienec accessors
 for(colorIndex = 0; colorIndex < jzt.colors.Colors.length; ++colorIndex) {
     jzt.colors[jzt.colors.Colors[colorIndex].name] = jzt.colors.Colors[colorIndex];
