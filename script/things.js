@@ -2257,7 +2257,7 @@ jzt.things.Snake.serializationType = 'Snake';
 /**
  * Attempts to push this Snake in a provided direction.
  */
-jzt.things.Snake.push = function(direction) {
+jzt.things.Snake.prototype.push = function(direction) {
     if(!this.move(direction)) {
         this.remove();
         this.play('t+c---c++++c--c');
@@ -2302,7 +2302,7 @@ jzt.things.Snake.prototype.doTick = function() {
             return;
         }
         this.move(direction, true);
-        
+
     }
     else {
         this.foreground = jzt.colors.Green;
