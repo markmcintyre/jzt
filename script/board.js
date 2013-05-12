@@ -25,6 +25,7 @@ jzt.Board = function(boardData, game) {
     this.tiles = [];
     this.scripts = [];
     this.dark = boardData.dark;
+    this.smartPath = [];
 
     this.north = boardData.north;
     this.east = boardData.east;
@@ -562,6 +563,9 @@ jzt.Board.prototype.update = function() {
         }
 
     });
+
+    // Update the smart path
+    this.updateSmartPath(this.player.point);
         
 };
 
@@ -635,6 +639,14 @@ jzt.Board.prototype.render = function(c) {
             sprite.draw(c, thing.point, thing.foreground, background);
         }
 
+        if(jzt.debug.on) {
+            var p = instance.getSmartValue(point);
+            if(p !== Infinity) {
+                c.fillStyle = 'gray';
+                c.fillText(instance.getSmartValue(point).toString(), point.x * 16 + 4, point.y * 32 + 16);
+            }
+        }
+
     });
 
     // If there is a display message, render it
@@ -644,6 +656,86 @@ jzt.Board.prototype.render = function(c) {
     
 };
 
+jzt.Board.prototype.updateSmartPath = function(targetPoint) {
+
+    var me = this;
+
+    function updatePath(currentX, currentY, currentDistance) {
+
+        // If our values are within the grid range...
+        if(currentX >= 0 && currentX < me.width && currentY >= 0 && currentY < me.height) {
+
+            // Calculate our index
+            var index = currentX + currentY * me.width;
+
+            // Get our tile and existing path value
+            var tile = me.tiles[index];
+            var pathValue = me.smartPath[index];
+
+            // If there is neither a tile, nor an existing value then we're good to go
+            if(currentDistance <= 0 || (tile === undefined && (pathValue === undefined || pathValue > currentDistance))) {
+
+                // Assign our path distance at this point
+                me.smartPath[currentX + currentY * me.width] = currentDistance++;
+
+                // Do the same for each of the four surrounding directions
+                updatePath(currentX + 1, currentY, currentDistance);
+                updatePath(currentX - 1, currentY, currentDistance);
+                updatePath(currentX, currentY + 1, currentDistance);
+                updatePath(currentX, currentY - 1, currentDistance);
+
+            }
+
+        }
+
+    }
+
+    // Clear the old path
+    this.smartPath = [];
+    updatePath(targetPoint.x, targetPoint.y, 0);
+
+};
+
+jzt.Board.prototype.getSmartValue = function(point) {
+
+    var result;
+
+    if(point.x >= this.width || point.x < 0 || point.y >= this.height || point.y < 0) {
+        return Infinity;
+    }
+
+    result = this.smartPath[point.x + point.y * this.width];
+    return result === undefined ? Infinity : result;
+
+};
+
+jzt.Board.prototype.getSmartDirection = function(point) {
+
+    var northValue = this.getSmartValue(point.add(jzt.Direction.North));
+    var eastValue = this.getSmartValue(point.add(jzt.Direction.East));
+    var southValue = this.getSmartValue(point.add(jzt.Direction.South));
+    var westValue = this.getSmartValue(point.add(jzt.Direction.West));
+
+    var bestValue = Math.min(northValue, eastValue, southValue, westValue);
+
+    if(bestValue === Infinity) {
+        return undefined;
+    }
+    else if(bestValue === northValue) {
+        return jzt.Direction.North;
+    }
+    else if(bestValue === eastValue) {
+        return jzt.Direction.East;
+    }
+    else if(bestValue === southValue) {
+        return jzt.Direction.South;
+    }
+    else {
+        return jzt.Direction.West;
+    }
+
+};
+ 
 /**
  * Renders a visual message to a provided graphics context representing this Board's current
  * display message. 

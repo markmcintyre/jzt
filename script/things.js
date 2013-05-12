@@ -269,6 +269,10 @@ jzt.things.UpdateableThing.prototype.getPlayerDirection = function(axis) {
     return this.point.directionTo(this.board.player.point, axis);
 };
 
+jzt.things.UpdateableThing.prototype.getSmartDirection = function() {
+    return this.board.getSmartDirection(this.point);
+};
+
 /**
  * Returns whether or not a position in a provided direction is attackable
  * by this UpdateableThing. Attackable positions are defined as free spots
@@ -2232,6 +2236,79 @@ jzt.things.SliderNs.prototype.push = function(direction) {
             this.play('t--f', false, true);
         }
     }
+};
+
+//--------------------------------------------------------------------------------
+
+/**
+ * Snake is a touch baddie that intelligently finds the player along a precomputed
+ * smart path.
+ */
+jzt.things.Snake = function(board) {
+    jzt.things.UpdateableThing.call(this, board);
+    this.spriteIndex = 235;
+    this.foreground = jzt.colors.Green;
+    this.speed = 3;
+};
+jzt.things.Snake.prototype = new jzt.things.UpdateableThing();
+jzt.things.Snake.prototype.constructor = jzt.things.Snake;
+jzt.things.Snake.serializationType = 'Snake';
+
+/**
+ * Attempts to push this Snake in a provided direction.
+ */
+jzt.things.Snake.push = function(direction) {
+    if(!this.move(direction)) {
+        this.remove();
+        this.play('t+c---c++++c--c');
+    }
+};
+
+/**
+ * Sends a provided message to this Ruffian.
+ *
+ * @param message A message to be delivered to this Ruffian.
+ */
+jzt.things.Snake.prototype.sendMessage = function(message) {
+    if(message === 'SHOT') {
+        this.play('t+c---c++++c--c', true);
+        this.remove();
+    }
+    else if(message === 'TOUCH') {
+        this.board.player.sendMessage('SHOT');
+        this.remove();
+    }
+};
+
+/**
+ * Updates this Snake. This Snake will move itself along the board's current
+ * smart path directly toward the player, going around walls and obstacles.
+ * If there is no direct path to the player (including through bullets and
+ * other baddies), then it will rest in place.
+ */
+jzt.things.Snake.prototype.doTick = function() {
+
+    var direction = this.getSmartDirection();
+    var thing;
+
+    if(direction) {
+
+        this.foreground = jzt.colors.BrightGreen;
+
+        thing = this.board.getTile(this.point.add(direction));
+        if(thing && thing instanceof jzt.things.Player) {
+            thing.sendMessage('SHOT');
+            this.remove();
+            return;
+        }
+        this.move(direction, true);
+        
+    }
+    else {
+        this.foreground = jzt.colors.Green;
+    }
+    
+   
 };
 
 //--------------------------------------------------------------------------------
