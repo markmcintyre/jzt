@@ -183,6 +183,9 @@ jzt.Editor.prototype.setActiveTemplate = function(template) {
 
 jzt.Editor.prototype.setTemplateForeground = function(foreground) {
 	var background;
+	if(!this.activeTemplate) {
+		return;
+	}
 	if(this.activeTemplate.color) {
         background = jzt.colors.deserializeBackground(this.activeTemplate.color);
         this.activeTemplate.color = jzt.colors.serialize(background, foreground);
@@ -195,6 +198,9 @@ jzt.Editor.prototype.setTemplateForeground = function(foreground) {
 
 jzt.Editor.prototype.setTemplateBackground = function(background) {
 	var foreground;
+	if(!this.activeTemplate) {
+		return;
+	}
 	if(this.activeTemplate.color) {
 		foreground = jzt.colors.deserializeForeground(this.activeTemplate.color);
 		this.activeTemplate.color = jzt.colors.serialize(background, foreground);

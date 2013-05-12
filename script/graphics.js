@@ -477,8 +477,8 @@ jzt.colors.deserializeBackground = function(colorCode) {
 };
 
 jzt.colors.serialize = function(background, foreground) {
-    return (background === undefined || background === '*' ? '*' : background.code) + 
-        (foreground === undefined || foreground === '*' ? '*' : foreground.code);
+    return (background === undefined ? '*' : background.code) + 
+        (foreground === undefined || foreground instanceof jzt.colors.CyclingColor ? '*' : foreground.code);
 };
 
 // Assign convenienec accessors

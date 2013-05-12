@@ -18,6 +18,29 @@
 			textarea {
 				font-family: monospace;
 			}
+			#color-customizer ol {
+				list-style: none;
+				margin: 5px;
+				padding: 0;
+			}
+			#color-customizer ol li {
+				display: inline-block;
+				width: 0;
+				height: 32px;
+				overflow: hidden;
+				padding-left: 16px;
+				border: 1px solid blue;
+			}
+			#color-customizer ol li.active {
+				border: 2px solid #5555FF;
+			}
+			li.color9 {background-color: #5555FF;}
+			li.colorA {background-color: #55FF55;}
+			li.colorB {background-color: #55FFFF;}
+			li.colorC {background-color: #FF5555;}
+			li.colorD {background-color: #FF55FF;}
+			li.colorE {background-color: #FFFF55;}
+			li.colorF {background-color: #FFFFFF;}
 		</style>
 	</head>
 	<body>
@@ -83,6 +106,17 @@
 				<select id="script-selector"></select>
 				<button id="new-script-button">New Script</button>
 				<textarea id="script-editor" rows="20" style="width: 100%"></textarea>
+			</div>
+			<div id="color-customizer">
+				<ol>
+					<li class="color9" data-color="9">Bright&nbsp;Blue</li>
+					<li class="colorA" data-color="A">Bright&nbsp;Green</li>
+					<li class="colorB" data-color="B">Bright&nbsp;Cyan</li>
+					<li class="colorC" data-color="C">Bright&nbsp;Red</li>
+					<li class="colorD" data-color="D">Bright&nbsp;Magenta</li>
+					<li class="colorE" data-color="E">Yellow</li>
+					<li class="colorF" data-color="F">White</li>
+				</ol>
 			</div>
 		</div>
 		
@@ -220,10 +254,20 @@
 				script.rawScript = scriptEditor.value;
 			};
 
+			function onColorSelected(event) {
+				var color = event.target.dataset['color'];
+				editor.setTemplateForeground(jzt.colors.getColor(color));
+			};
+
 			var tools = document.getElementsByName('activeTemplate');
 			for( var index = 0; index < tools.length; index++ ) {
         		tools[index].addEventListener('change', onToolSelected, false);
     		}	
+
+    		var colors = document.getElementById('color-customizer').getElementsByTagName('li');
+    		for(var index = 0; index < colors.length; ++index) {
+    			colors[index].addEventListener('click', onColorSelected, false);
+    		}
 
     		var saveButton = document.getElementById('save-game');
     		saveButton.addEventListener('click', saveGame, false);
