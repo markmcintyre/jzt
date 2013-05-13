@@ -46,6 +46,7 @@ jzt.commands.DirectionModifier = {
 jzt.commands.Direction = {
     
     SEEK:  {name: 'Toward player',            process: function(o) {return o.getPlayerDirection();}},
+    SMART: {name: 'Smart seek',               process: function(o) {return o.getSmartDirection() || o.getPlayerDirection();}},
     FLOW:  {name: 'Current orientation',      process: function(o) {return o.orientation;}},
     RAND:  {name: 'Random direction',         process: function()  {return jzt.Direction.random();}},
     RANDF: {name: 'Random free direction',    process: function(o) {return jzt.Direction.random(o.getFreeDirections());}},

@@ -28,7 +28,7 @@
 			var data = localStorage['currentGame'];
 			data = JSON.parse(data);
 		
-			jzt.debug.on = true;
+			//jzt.debug.on = true;
 			var canvas = document.getElementById('jzt');
 			var game = new jzt.Game(canvas, data, function() {
 				this.run();

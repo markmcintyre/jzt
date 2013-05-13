@@ -65,7 +65,7 @@ jztscript.parsers = jztscript.parsers || {};
  *
  * command   = '#' [nameToken] modifier* direction (Empty | Number)
  * modifier  = 'cw' | 'ccw' | 'opp' | 'rndp';
- * direction = 'n' | 's' | 'e' | 'w' | 'north' | 'south' | 'east' | 'west' | 'seek'
+ * direction = 'n' | 's' | 'e' | 'w' | 'north' | 'south' | 'east' | 'west' | 'seek' | 'smartseek'
  *              | 'flow' | 'rand' | 'randf' | 'randb' | 'rndns' | 'rndew' | 'rndne';
  */
 jztscript.parserhelper.MovementParser = function(command, nameToken, noCount) {
@@ -198,7 +198,7 @@ jztscript.parsers.EndParser = function() {
  * Go Parser
  * command   = '#' 'go' modifier* direction (Empty | Number)
  * modifier  = 'cw' | 'ccw' | 'opp' | 'rndp';
- * direction = 'n' | 's' | 'e' | 'w' | 'north' | 'south' | 'east' | 'west' | 'seek'
+ * direction = 'n' | 's' | 'e' | 'w' | 'north' | 'south' | 'east' | 'west' | 'seek' | 'smartseek'
  *              | 'flow' | 'rand' | 'randf' | 'randb' | 'rndns' | 'rndew' | 'rndne';
  */
 jztscript.parsers.GoParser = function() {
@@ -246,7 +246,7 @@ jztscript.parsers.LockParser = function() {
  *
  * command   = 'move' modifier* direction (Empty | Number);
  * modifier  = 'cw' | 'ccw' | 'opp' | 'rndp';
- * direction = 'n' | 's' | 'e' | 'w' | 'north' | 'south' | 'east' | 'west' | 'seek'
+ * direction = 'n' | 's' | 'e' | 'w' | 'north' | 'south' | 'east' | 'west' | 'seek' | 'smartseek'
  *             | 'flow' | 'rand' | 'randf' | 'randb' | 'rndns' | 'rndew' | 'rndne';       
  */
 jztscript.parsers.MoveParser = function() {

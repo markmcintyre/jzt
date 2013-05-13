@@ -656,6 +656,12 @@ jzt.Board.prototype.render = function(c) {
     
 };
 
+/**
+ * Precomputes a "smart path" toward a provided target point. This will add path-finding information
+ * that can be queried to find a most efficient path from any point on the grid toward this target.
+ *
+ * @param targetPoint A target point to which the smart path should be computed.
+ */
 jzt.Board.prototype.updateSmartPath = function(targetPoint) {
 
     var me = this;
@@ -696,6 +702,13 @@ jzt.Board.prototype.updateSmartPath = function(targetPoint) {
 
 };
 
+/**
+ * Retrieves a precomputed weighted value indicating the number of steps toward a pre-specified target
+ * in our smart path for a specified Point.
+ *
+ * @param point A Point for which to retrieve a smart value.
+ * @return A weighted value indicating the number of steps toward a target.
+ */
 jzt.Board.prototype.getSmartValue = function(point) {
 
     var result;
@@ -709,30 +722,62 @@ jzt.Board.prototype.getSmartValue = function(point) {
 
 };
 
+/**
+ * Retrieves a direction toward the currently computed smart path target from a specified
+ * Point.
+ *
+ * @param point A point from which to determine a direction toward our current smart target.
+ * @return A Direction Point.
+ */
 jzt.Board.prototype.getSmartDirection = function(point) {
 
-    var northValue = this.getSmartValue(point.add(jzt.Direction.North));
-    var eastValue = this.getSmartValue(point.add(jzt.Direction.East));
-    var southValue = this.getSmartValue(point.add(jzt.Direction.South));
-    var westValue = this.getSmartValue(point.add(jzt.Direction.West));
+    var directions = [];
+    var me = this;
+    var currentMin = Infinity;
+    var value;
 
-    var bestValue = Math.min(northValue, eastValue, southValue, westValue);
+    // For each direction...
+    jzt.Direction.each(function(direction){
 
-    if(bestValue === Infinity) {
+        // Get our smart path value
+        value = me.getSmartValue(point.add(direction));
+
+        // If it's the best one we've encountered...
+        if(value < currentMin) {
+
+            // Forget our previous directions
+            directions = [];
+
+            // Add this direction as our new favourite
+            directions.push(direction);
+
+            // Update our current minimum value
+            currentMin = value;
+
+        }
+
+        // If it's the same as another value...
+        else if(value === currentMin) {
+
+            // Add this direction too
+            directions.push(direction);
+
+        }
+
+    });
+
+    // If no good directions were found, return undefined
+    if(currentMin === Infinity) {
         return undefined;
     }
-    else if(bestValue === northValue) {
-        return jzt.Direction.North;
+
+    // If we only found one direction, return it immediately
+    if(directions.length <= 1) {
+        return directions[0];
     }
-    else if(bestValue === eastValue) {
-        return jzt.Direction.East;
-    }
-    else if(bestValue === southValue) {
-        return jzt.Direction.South;
-    }
-    else {
-        return jzt.Direction.West;
-    }
+
+    // Otherwise pick one of our equal values randomly
+    return jzt.Direction.random(directions);
 
 };
  
