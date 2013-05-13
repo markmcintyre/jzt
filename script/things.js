@@ -3068,6 +3068,9 @@ jzt.things.ThingFactory.shoot = function(board, point, direction, fromPlayer, th
     // Otherwise, if the bullet is from the player, or the tile is a Player or ScriptableThing
     else if(fromPlayer ||
         tile instanceof jzt.things.Player || tile instanceof jzt.things.ScriptableThing || tile instanceof jzt.things.BreakableWall) {
+        if(fromPlayer) {
+            board.game.resources.audio.play('t+c-c-c');
+        }
         tile.sendMessage('SHOT');
     } 
 
