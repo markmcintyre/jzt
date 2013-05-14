@@ -254,6 +254,31 @@ jztscript.parsers.MoveParser = function() {
 };
 
 /*
+ * Scroll Parser
+ *
+ * command = '#' 'scroll' String (Empty | Word)
+ */
+jztscript.parsers.ScrollParser = function() {
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+    result.add(ns.discard(new ns.Literal('#')));
+    result.add(ns.discard(new ns.Literal('scroll')));
+    result.add(new ns.String());
+    result.add(ns.optional(new ns.Word()));
+    result.assembler = {
+        assemble: function(assembly) {
+            var command = new jzt.commands.Scroll();
+            if(assembly.stack.length >= 2) {
+                command.label = assembly.stack.pop().toUpperCase();
+            }
+            command.text = ns.processString(assembly.stack.pop());
+            assembly.target = command;
+        }
+    };
+    return result;
+};
+
+/*
  * Restore Parser
  */
 jztscript.parsers.RestoreParser = function() {

@@ -98,8 +98,13 @@ jzt.Scroll.prototype.scrollUp = function() {
  * the scroll's window.
  */
 jzt.Scroll.prototype.setTitle = function(title) {
-	this.title = this.graphics.textToSprites(title);
-	this.title.center = true;
+	if(title) {
+		this.title = this.graphics.textToSprites(title);
+		this.title.center = true;
+	}
+	else {
+		this.title = undefined;
+	}
 };
 
 /**
@@ -129,7 +134,8 @@ jzt.Scroll.prototype.getCurrentLabel = function() {
 jzt.Scroll.prototype.setHeight = function(height) {
 	this.height = height;
 	
-	this.textAreaHeight = this.height - 4;
+	this.textAreaHeight = this.title ? this.height - 4 : this.height - 2;
+
 	if(this.textAreaHeight < 0) {
 		this.textAreaHeight = 0;
 	}
@@ -236,13 +242,14 @@ jzt.Scroll.prototype.drawLine = function(scrollIndex) {
 
 	var lineIndex = this.position + scrollIndex - this.middlePosition;
 	var line = this.lines[lineIndex];
+	var offset = this.title ? 3 : 1;
 	var point;
 
 	// If there is text to be rendered...
 	if(line) {
 		point = this.origin.clone();
 		point.x += 4;
-		point.y += 3 + scrollIndex;
+		point.y += offset + scrollIndex;
 		this.drawText(line, point);
 	}
 
@@ -250,7 +257,7 @@ jzt.Scroll.prototype.drawLine = function(scrollIndex) {
 	else if(lineIndex === -1 || lineIndex === this.lines.length) {
 		point = this.origin.clone();
 		point.x += 4;
-		point.y += 3 + scrollIndex;
+		point.y += offset + scrollIndex;
 		this.drawText(this.dots, point);
 	}
 
@@ -263,12 +270,12 @@ jzt.Scroll.prototype.drawLine = function(scrollIndex) {
  * @param point A Point at which to draw the sprites.
  */
 jzt.Scroll.prototype.drawText = function(sprites, point) {
-	var color = jzt.colors.Colors.E;
+	var color = jzt.colors.Yellow;
 	if(sprites.center) {
-		color = jzt.colors.Colors.F;
+		color = jzt.colors.BrightWhite
 		point.x += Math.floor((this.textAreaWidth - sprites.length) / 2);
 	}
-	this.graphics.drawSprites(this.game.context, point, sprites, color, '*');
+	this.graphics.drawSprites(this.game.context, point, sprites, color, undefined);
 };
 
 /**
@@ -286,8 +293,8 @@ jzt.Scroll.prototype.render = function(context) {
 	var x = this.origin.x;
 	var y = this.origin.y;
 	
-	context.fillStyle = jzt.colors.Colors['1'].rgbValue;
-	context.fillRect(x * this.graphics.TILE_SIZE, y * this.graphics.TILE_SIZE, this.width * this.graphics.TILE_SIZE.x, this.height * this.graphics.TILE_SIZE.y);
+	context.fillStyle = jzt.colors.Blue.rgbValue;
+	context.fillRect(x * this.graphics.TILE_SIZE.x, y * this.graphics.TILE_SIZE.y, this.width * this.graphics.TILE_SIZE.x, this.height * this.graphics.TILE_SIZE.y);
 
 	// Draw top
 	sprites.push(this.graphics.getSprite(198));
@@ -299,9 +306,9 @@ jzt.Scroll.prototype.render = function(context) {
 	}
 	sprites.push(this.graphics.getSprite(209));
 	sprites.push(this.graphics.getSprite(181));
-	this.graphics.drawSprites(context, new jzt.Point(x,y), sprites, jzt.colors.Colors.F);
+	this.graphics.drawSprites(context, new jzt.Point(x,y), sprites, jzt.colors.BrightWhite);
 
-	if(this.height > 3) {
+	if(this.title && this.height > 3) {
 
 		// Draw Title Area
 		sprites = [];
@@ -315,7 +322,7 @@ jzt.Scroll.prototype.render = function(context) {
 		sprites.push(this.graphics.getSprite(179));
 		sprites.push(sprite);
 		point = new jzt.Point(x,++y);
-		this.graphics.drawSprites(context, point, sprites, jzt.colors.Colors.F);
+		this.graphics.drawSprites(context, point, sprites, jzt.colors.BrightWhite);
 		if(this.title) {
 			point.x += 4;
 			this.drawText(this.title, point);
@@ -323,7 +330,7 @@ jzt.Scroll.prototype.render = function(context) {
 
 	}
 
-	if( this.height > 2) {
+	if(this.title && this.height > 2) {
 		// Draw Title Separator
 		sprites = [];
 		sprites.push(sprite);
@@ -335,10 +342,10 @@ jzt.Scroll.prototype.render = function(context) {
 		}
 		sprites.push(this.graphics.getSprite(180));
 		sprites.push(this.graphics.getSprite(32));
-		this.graphics.drawSprites(context, new jzt.Point(x,++y), sprites, jzt.colors.Colors.F);
+		this.graphics.drawSprites(context, new jzt.Point(x,++y), sprites, jzt.colors.BrightWhite);
 	}
 
-	if(this.height > 5) {
+	if(!this.title || this.height > 5) {
 
 		// Draw Lines
 		for(lineIndex = 0; lineIndex < this.textAreaHeight; ++lineIndex) {
@@ -353,15 +360,15 @@ jzt.Scroll.prototype.render = function(context) {
 			}
 			sprites.push(this.graphics.getSprite(179));
 			sprites.push(sprite);
-			this.graphics.drawSprites(context, new jzt.Point(x,++y), sprites, jzt.colors.Colors.F);
+			this.graphics.drawSprites(context, new jzt.Point(x,++y), sprites, jzt.colors.BrightWhite);
 			this.drawLine(lineIndex);
 
 			// Draw the cursor
 			if(lineIndex === this.middlePosition) {
 				sprite = this.graphics.getSprite(175);
-				sprite.draw(context, new jzt.Point(x+2,y), jzt.colors.Colors.C);
+				sprite.draw(context, new jzt.Point(x+2,y), jzt.colors.BrightRed);
 				sprite = this.graphics.getSprite(174);
-				sprite.draw(context, new jzt.Point(x+this.width-3,y), jzt.colors.Colors.C);
+				sprite.draw(context, new jzt.Point(x+this.width-3,y), jzt.colors.BrightRed);
 			}
 
 		}
@@ -380,7 +387,7 @@ jzt.Scroll.prototype.render = function(context) {
 		}
 		sprites.push(this.graphics.getSprite(207));
 		sprites.push(this.graphics.getSprite(181));
-		this.graphics.drawSprites(context, new jzt.Point(x,++y), sprites, jzt.colors.Colors.F);
+		this.graphics.drawSprites(context, new jzt.Point(x,++y), sprites, jzt.colors.BrightWhite);
 	}
 	
 };

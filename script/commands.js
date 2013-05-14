@@ -272,6 +272,28 @@ jzt.commands.Say.prototype.execute = function(owner) {
 };
 
 /*
+ * Scroll Command
+ */
+jzt.commands.Scroll = function() {
+    this.text = undefined;
+    this.label = undefined;
+};
+
+jzt.commands.Scroll.prototype.clone = function() {
+    var clone = new jzt.commands.Scroll();
+    clone.text = this.text;
+    clone.label = this.label;
+    return clone;
+};
+
+jzt.commands.Scroll.prototype.execute = function(owner) {
+    owner.board.game.scroll.setTitle(owner.name);
+    owner.board.game.scroll.clearLines();
+    owner.board.game.scroll.addLine(this.text);
+    owner.board.game.setState(jzt.GameState.Reading);
+};
+
+/*
  * Shoot Command
  */
 jzt.commands.Shoot = function() {
