@@ -156,6 +156,7 @@ jzt.ScriptContext = function(script, owner) {
     this.currentLabels = {};
     this.storedCommand = undefined;
     this.initializeLabels(script);
+    this.scrollContent = [];
 };
 
 /**
@@ -230,6 +231,29 @@ jzt.ScriptContext.prototype.stop = function() {
     this.commandIndex = -1;
 };
 
+jzt.ScriptContext.prototype.addScrollContent = function(line, center, lineLabel) {
+    line.center = center;
+    line.lineLabel = lineLabel;
+    this.scrollContent.push(line);
+};
+
+jzt.ScriptContext.prototype.displayScroll = function() {
+    var index;
+    var line;
+
+    this.owner.board.game.scroll.setTitle(this.owner.name);
+    this.owner.board.game.scroll.clearLines();
+
+    for(index = 0; index < this.scrollContent.length; ++index) {
+        line = this.scrollContent[index];
+        this.owner.board.game.scroll.addLine(line, line.center, line.lineLabel);
+    }
+
+    this.scrollContent = [];
+    this.owner.board.game.setState(jzt.GameState.Reading);
+
+};
+
 /**
  * Executes a single tick of this ScriptContext, taking a command from its associated
  * Script and executing it.
@@ -250,6 +274,7 @@ jzt.ScriptContext.prototype.executeTick = function() {
     if(this.isRunning()) {
         
         var command;
+        var result;
         
         // If we have a stored command...
         if(this.storedCommand) {
@@ -262,8 +287,16 @@ jzt.ScriptContext.prototype.executeTick = function() {
         }
         
         if(command) {
-    
-            var result = command.execute(this.owner);
+
+            result = command.execute(this.owner);
+
+            // If the command doesn't modify the scroll, and there's scroll content... 
+            if(this.scrollContent.length > 0 && ! command.modifiesScroll) {
+
+                // It's time to show the scroll content
+                this.displayScroll();
+
+            }
     
             switch(result) {
         

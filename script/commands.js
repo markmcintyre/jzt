@@ -277,6 +277,7 @@ jzt.commands.Say.prototype.execute = function(owner) {
 jzt.commands.Scroll = function() {
     this.text = undefined;
     this.label = undefined;
+    this.modifiesScroll = true;
 };
 
 jzt.commands.Scroll.prototype.clone = function() {
@@ -287,10 +288,8 @@ jzt.commands.Scroll.prototype.clone = function() {
 };
 
 jzt.commands.Scroll.prototype.execute = function(owner) {
-    owner.board.game.scroll.setTitle(owner.name);
-    owner.board.game.scroll.clearLines();
-    owner.board.game.scroll.addLine(this.text);
-    owner.board.game.setState(jzt.GameState.Reading);
+    owner.scriptContext.addScrollContent(this.text);
+    return jzt.commands.CommandResult.CONTINUE;
 };
 
 /*
