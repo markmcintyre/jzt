@@ -6,7 +6,7 @@ jzt.parser = jzt.parser || {};
  */
 jzt.parser.Assembly = function(text) {
     
-    this.tokens = text != undefined ? text.match(/\w+|"(?:\\"|[^"])+"|[^\s]|\n/g) : [];
+    this.tokens = text != undefined ? text.match(/\w+|"(?:\\"|[^"])+"|""|[^\s]|\n/g) : [];
     
     // If the regex doesn't match, it returns null
     if(this.tokens == null) {

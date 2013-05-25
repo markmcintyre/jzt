@@ -163,6 +163,7 @@ jzt.Scroll.prototype.setHeight = function(height) {
 jzt.Scroll.prototype.doTick = function() {
 
 	var event = this.eventScheduler.takeEvent();
+	var currentLabel;
 
 	if(event === jzt.Scroll.ScrollAction.Up) {
 		this.scrollUp();
@@ -175,9 +176,11 @@ jzt.Scroll.prototype.doTick = function() {
 		// Update our state to Closing.
 		this.state = jzt.Scroll.ScrollState.Closing;
 
+		currentLabel = this.getCurrentLabel();
+
 		// Deliver our label to a registered listnere
-		if(this.getCurrentLabel()) {
-			this.listener.sendMessage();
+		if(currentLabel && this.listener) {
+			this.listener.sendMessage(currentLabel);
 		}
 
 	}
@@ -315,8 +318,13 @@ jzt.Scroll.prototype.drawLine = function(scrollIndex) {
 jzt.Scroll.prototype.drawText = function(sprites, point) {
 	var color = jzt.colors.Yellow;
 	if(sprites.center) {
-		color = jzt.colors.BrightWhite
+		color = jzt.colors.BrightWhite;
 		point.x += Math.floor((this.textAreaWidth - sprites.length) / 2);
+	}
+	if(sprites.label) {
+		color = jzt.colors.BrightWhite;
+		this.graphics.getSprite(16).draw(this.game.context, point, jzt.colors.BrightMagenta);
+		point.x += 2;
 	}
 	this.graphics.drawSprites(this.game.context, point, sprites, color, undefined);
 };

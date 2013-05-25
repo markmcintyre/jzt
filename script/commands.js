@@ -288,7 +288,7 @@ jzt.commands.Scroll.prototype.clone = function() {
 };
 
 jzt.commands.Scroll.prototype.execute = function(owner) {
-    owner.scriptContext.addScrollContent(this.text);
+    owner.scriptContext.addScrollContent(this.text, false, this.label);
     return jzt.commands.CommandResult.CONTINUE;
 };
 

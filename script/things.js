@@ -1689,7 +1689,10 @@ jzt.things.Player = function(board) {
     this.point = new jzt.Point(-1,-1);
     this.foreground = jzt.colors.BrightWhite;
     this.background = jzt.colors.Blue;
-    this.eventScheduler = new jzt.DelayedEventScheduler(board.game.CYCLE_TICKS * 2, board.game.CYCLE_TICKS);
+
+    if(board) {
+        this.eventScheduler = new jzt.DelayedEventScheduler(board.game.CYCLE_TICKS * 2, board.game.CYCLE_TICKS);
+    }
 
     this.torch = false;
     this.torchStrength = 0;

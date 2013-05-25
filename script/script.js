@@ -232,9 +232,12 @@ jzt.ScriptContext.prototype.stop = function() {
 };
 
 jzt.ScriptContext.prototype.addScrollContent = function(line, center, lineLabel) {
-    line.center = center;
-    line.lineLabel = lineLabel;
-    this.scrollContent.push(line);
+    var newLine = {
+        'text': line,
+        'center': center,
+        'label': lineLabel
+    }
+    this.scrollContent.push(newLine);
 };
 
 jzt.ScriptContext.prototype.displayScroll = function() {
@@ -243,10 +246,11 @@ jzt.ScriptContext.prototype.displayScroll = function() {
 
     this.owner.board.game.scroll.setTitle(this.owner.name);
     this.owner.board.game.scroll.clearLines();
+    this.owner.board.game.scroll.listener = this.owner;
 
     for(index = 0; index < this.scrollContent.length; ++index) {
         line = this.scrollContent[index];
-        this.owner.board.game.scroll.addLine(line, line.center, line.lineLabel);
+        this.owner.board.game.scroll.addLine(line.text, line.center, line.label);
     }
 
     this.scrollContent = [];
@@ -267,7 +271,9 @@ jzt.ScriptContext.prototype.executeTick = function() {
         var message = this.owner.messageQueue.shift();
         
         // If we were able to receive this message
-        this.jumpToLabel(message);
+        if(!this.owner.locked) {
+            this.jumpToLabel(message);
+        }
         
     }
     
