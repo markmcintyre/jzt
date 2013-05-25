@@ -34,6 +34,8 @@ jzt.Scroll = function(owner) {
 	this.state = jzt.Scroll.ScrollState.Opening;
 	this.origin = new jzt.Point(0,0);
 	this.dots = [];
+	this.cycleCount = 0;
+	this.eventScheduler = new jzt.DelayedEventScheduler(this.game.CYCLE_TICKS * 2, this.game.CYCLE_TICKS);
 	spaceSprite = this.graphics.getSprite(32);
 	dotSprite = this.graphics.getSprite(7);
 	for(index = 0; index < this.textAreaWidth; ++index) {
@@ -56,6 +58,17 @@ jzt.Scroll.ScrollState = {
 	Closing: 2,
 	Closed: 3
 };
+
+/**
+ * ScrollAction is an enumerated type representing a performable action for
+ * this Scroll.
+ */
+jzt.Scroll.ScrollAction = {
+	Up: 0,
+	Down: 1,
+	Select: 2,
+	Exit: 3
+}
 
 /**
  * Opens this scroll, readying it for reading by a player.
@@ -147,6 +160,33 @@ jzt.Scroll.prototype.setHeight = function(height) {
 
 };
 
+jzt.Scroll.prototype.doTick = function() {
+
+	var event = this.eventScheduler.takeEvent();
+
+	if(event === jzt.Scroll.ScrollAction.Up) {
+		this.scrollUp();
+	}
+	else if(event === jzt.Scroll.ScrollAction.Down) {
+		this.scrollDown();
+	}
+	else if(event === jzt.Scroll.ScrollAction.Select) {
+
+		// Update our state to Closing.
+		this.state = jzt.Scroll.ScrollState.Closing;
+
+		// Deliver our label to a registered listnere
+		if(this.getCurrentLabel()) {
+			this.listener.sendMessage();
+		}
+
+	}
+	else if(event === jzt.Scroll.ScrollAction.Exit) {
+		this.state = jzt.Scroll.ScrollState.Closing;
+	}
+
+};
+
 /**
  * Updates this Scroll instance.
  */
@@ -172,31 +212,34 @@ jzt.Scroll.prototype.update = function() {
 
 		// If the up key is pressed, scroll up one block
 		if(k.isPressed(k.UP)) {
-			this.scrollUp();
+			this.eventScheduler.scheduleEvent(k.isPressed(k.UP), jzt.Scroll.ScrollAction.Up);
 		}
 
 		// If the down key is pressed, scroll down one block
 		else if(k.isPressed(k.DOWN)) {
-			this.scrollDown();
+			this.eventScheduler.scheduleEvent(k.isPressed(k.DOWN), jzt.Scroll.ScrollAction.Down);
 		}
 
 		// If Enter is pressed...
 		else if(k.isPressed(k.ENTER)) {
-
-			// Update our state to Closing.
-			this.state = jzt.Scroll.ScrollState.Closing;
-
-			// Deliver our label to a registered listnere
-			if(this.getCurrentLabel()) {
-				this.listener.sendMessage();
-			}
-
+			this.eventScheduler.scheduleEvent(k.isPressed(k.ENTER), jzt.Scroll.ScrollAction.Select);
 		}
 
 		// If Escape was pressed, close the scroll
 		else if(k.isPressed(k.ESCAPE)) {
-			this.state = jzt.Scroll.ScrollState.Closing;
+			this.eventScheduler.scheduleEvent(k.isPressed(k.ESCAPE), jzt.Scroll.ScrollAction.Exit);
 		}
+
+		// If nothing was currently down, cancel any previously scheduled event
+		else {
+			this.eventScheduler.cancelEvent();
+		}
+
+		// Update the cycle and do a tick if necessary
+		if(++this.cycleCount >= this.game.CYCLE_RATE) {
+	        this.cycleCount = 0;
+	        this.doTick();
+	    }
 
 	}
 

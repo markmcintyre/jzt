@@ -1689,17 +1689,13 @@ jzt.things.Player = function(board) {
     this.point = new jzt.Point(-1,-1);
     this.foreground = jzt.colors.BrightWhite;
     this.background = jzt.colors.Blue;
-    this.nextAllowableMove = 0;
+    this.eventScheduler = new jzt.DelayedEventScheduler(board.game.CYCLE_TICKS * 2, board.game.CYCLE_TICKS);
 
     this.torch = false;
     this.torchStrength = 0;
     this.torchExpiry = 0;
     this.game = undefined;
     this.speed = 1;
-    this.nextAction = {
-        type: undefined,
-        direction: undefined
-    };
     this.MOVE_ACTION = 0;
     this.SHOOT_ACTION = 1;
     
@@ -1775,43 +1771,19 @@ jzt.things.Player.prototype.shoot = function(direction) {
  */
 jzt.things.Player.prototype.doTick = function() {
 
-    if(this.nextAction.type === this.MOVE_ACTION) {
-        this.move(this.nextAction.direction);
-    }
-    else if(this.nextAction.type === this.SHOOT_ACTION) {
-        this.shoot(this.nextAction.direction);
-    }
+    var event = this.eventScheduler.takeEvent();
 
-    this.nextAction.type = undefined;
+    if(event) {
+        if(event.type === this.MOVE_ACTION) {
+            this.move(event.direction);
+        }
+        else if(event.type === this.SHOOT_ACTION) {
+            this.shoot(event.direction);
+        }
+    }
 
 };
 
-/**
- * Schedules a provided event for this Player instance to be performed at its
- * next tick update. 
- *
- * @param pressTime a timestamp at which time a press event occurred
- * @param eventType a type of event to schedule (MOVE_ACTION or SHOOT_ACTION)
- * @param direction A direction in which the movement or shooting should occur
- */
-jzt.things.Player.prototype.scheduleEvent = function(pressTime, eventType, direction) {
-
-    var now = Date.now();
-
-    if(now > this.nextAllowableMove) {
-        
-        if(pressTime + this.game.CYCLE_TICKS *2 < now) {
-            this.nextAllowableMove = now + this.game.CYCLE_TICKS;
-        }
-        else {
-            this.nextAllowableMove = now + this.game.CYCLE_TICKS * 2;
-        }
-
-        this.nextAction.type = eventType;
-        this.nextAction.direction = direction;
-    }
-
-};
 
 /**
  * Updates this Player for a single execution cycle. During its update,
@@ -1824,36 +1796,36 @@ jzt.things.Player.prototype.update = function() {
     if(k.isPressed(k.SHIFT)) {
 
         if(k.isPressed(k.UP)) {
-            this.scheduleEvent(k.isPressed(k.UP), this.SHOOT_ACTION, jzt.Direction.North);
+            this.eventScheduler.scheduleEvent(k.isPressed(k.UP), {'type': this.SHOOT_ACTION,  'direction': jzt.Direction.North});
         }
         else if(k.isPressed(k.RIGHT)) {
-            this.scheduleEvent(k.isPressed(k.RIGHT), this.SHOOT_ACTION, jzt.Direction.East);
+            this.eventScheduler.scheduleEvent(k.isPressed(k.RIGHT), {'type': this.SHOOT_ACTION, 'direction': jzt.Direction.East});
         }
         else if(k.isPressed(k.DOWN)) {
-            this.scheduleEvent(k.isPressed(k.DOWN), this.SHOOT_ACTION, jzt.Direction.South);
+            this.eventScheduler.scheduleEvent(k.isPressed(k.DOWN), {'type': this.SHOOT_ACTION, 'direction': jzt.Direction.South});
         } 
         else if(k.isPressed(k.LEFT)) {
-            this.scheduleEvent(k.isPressed(k.LEFT), this.SHOOT_ACTION, jzt.Direction.West);
+            this.eventScheduler.scheduleEvent(k.isPressed(k.LEFT), {'type': this.SHOOT_ACTION, 'direction': jzt.Direction.West});
         }
         else {
-            this.nextAllowableMove = 0;
+            this.eventScheduler.cancelEvent();
         }
     }
     else {
         if(k.isPressed(k.UP)) {
-            this.scheduleEvent(k.isPressed(k.UP), this.MOVE_ACTION, jzt.Direction.North);
+            this.eventScheduler.scheduleEvent(k.isPressed(k.UP), {'type': this.MOVE_ACTION, 'direction': jzt.Direction.North});
         }
         else if(k.isPressed(k.RIGHT)) {
-            this.scheduleEvent(k.isPressed(k.RIGHT), this.MOVE_ACTION, jzt.Direction.East);
+            this.eventScheduler.scheduleEvent(k.isPressed(k.RIGHT), {'type': this.MOVE_ACTION, 'direction': jzt.Direction.East});
         }
         else if(k.isPressed(k.DOWN)) {
-            this.scheduleEvent(k.isPressed(k.DOWN), this.MOVE_ACTION, jzt.Direction.South);
+            this.eventScheduler.scheduleEvent(k.isPressed(k.DOWN), {'type': this.MOVE_ACTION, 'direction': jzt.Direction.South});
         }
         else if(k.isPressed(k.LEFT)) {
-            this.scheduleEvent(k.isPressed(k.LEFT), this.MOVE_ACTION, jzt.Direction.West);
+            this.eventScheduler.scheduleEvent(k.isPressed(k.LEFT), {'type': this.MOVE_ACTION, 'direction': jzt.Direction.West});
         }
         else {
-            this.nextAllowableMove = 0;
+            this.eventScheduler.cancelEvent();
         }
         if(k.isPressed([k.T])) {
             this.useTorch();

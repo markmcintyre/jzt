@@ -329,6 +329,41 @@ jzt.Direction.opposite = function(direction) {
     return undefined;
 
  };
+
+ jzt.DelayedEventScheduler = function(initialDelay, subsequentDelay) {
+    this.initialDelay = initialDelay;
+    this.subsequentDelay = subsequentDelay;
+    this.event = undefined;
+    this.nextAllowableEvent = 0;
+ };
+
+ jzt.DelayedEventScheduler.prototype.scheduleEvent = function(eventTime, event) {
+
+    var now = Date.now();
+
+    if(now > this.nextAllowableEvent) {
+        
+        if(eventTime + this.initialDelay < now) {
+            this.nextAllowableEvent = now + this.subsequentDelay;
+        }
+        else {
+            this.nextAllowableEvent = now + this.initialDelay;
+        }
+
+        this.event = event;
+    }
+
+ };
+
+ jzt.DelayedEventScheduler.prototype.cancelEvent = function() {
+    this.nextAllowableEvent = 0;
+ };
+
+ jzt.DelayedEventScheduler.prototype.takeEvent = function() {
+    var result = this.event;
+    this.event = undefined;
+    return result;
+ };
  
  /**
   * If Debug mode is on, logs all provided arguments to a console.
