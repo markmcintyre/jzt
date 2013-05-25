@@ -44,6 +44,16 @@ jzt.Point.prototype.add = function(other) {
 };
 
 /**
+ * Subtracts a provided point from this point and returns the result.
+ *
+ * @param other Another point to subtract from this one.
+ * @return A new point with the subtracted value.
+ */
+jzt.Point.prototype.subtract = function(other) {
+    return new jzt.Point(this.x - other.x, this.y - other.y);
+};
+
+/**
  * Retrieves whether or not a provided point is aligned with this one, within a given
  * spread threshold.
  *

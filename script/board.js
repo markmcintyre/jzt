@@ -48,6 +48,7 @@ jzt.Board = function(boardData, game) {
 
     this.initializeScripts(boardData.scripts);
     this.initializeTiles(boardData.tiles);
+    this.initializeWindow();
 
 };
 
@@ -202,6 +203,49 @@ jzt.Board.prototype.initializeTiles = function(tileDataCollection) {
     
 };
 
+jzt.Board.prototype.initializeWindow = function() {
+
+    var canvasWidth = this.game.context.canvas.width;
+    var canvasHeight = this.game.context.canvas.height;
+
+    this.windowSize = new jzt.Point(0,0);
+    this.windowOrigin = new jzt.Point(0,0);
+
+    this.windowSize.x = Math.floor(canvasWidth / this.game.resources.graphics.TILE_SIZE.x);
+    this.windowSize.y = Math.floor(canvasHeight / this.game.resources.graphics.TILE_SIZE.y);
+    this.windowLimit = new jzt.Point(this.width - this.windowSize.x, this.height - this.windowSize.y);
+
+    this.updateWindowPosition();
+    
+    if(this.windowSize.x > this.width) {
+        this.windowOrigin.x = -Math.round((this.windowSize.x - this.width) / 2);
+    }
+
+    if(this.windowSize.y > this.height) {
+        this.windowOrigin.y = -Math.round((this.windowSize.y - this.height) / 2);
+    }
+
+
+};
+
+jzt.Board.prototype.updateWindowPosition = function() {
+
+    if(this.player) {
+
+        if(this.width > this.windowSize.x) {
+            this.windowOrigin.x = this.player.point.x - Math.round(this.windowSize.x / 2);
+            this.windowOrigin.x = this.windowOrigin.x < 0 ? 0 : this.windowOrigin.x > this.windowLimit.x ? this.windowLimit.x : this.windowOrigin.x;
+        }
+
+        if(this.height > this.windowSize.y) {
+            this.windowOrigin.y = this.player.point.y - Math.round(this.windowSize.y / 2);
+            this.windowOrigin.y = this.windowOrigin.y < 0 ? 0 : this.windowOrigin.y > this.windowLimit.y ? this.windowLimit.y : this.windowOrigin.y;
+        }
+        
+    }
+
+};
+
 /**
  * Retrieves a Script instance by its name for this Board.
  *
@@ -260,6 +304,36 @@ jzt.Board.prototype.eachBackwards = function(callback) {
 
     for(point.y = this.height-1; point.y >= 0; point.y--) {
         for(point.x = this.width-1; point.x >= 0; point.x--) {
+            callback(values[point.x+point.y*this.width], point);
+        }
+    }
+
+};
+
+/**
+ * Executes a provided callback function for each tile on this Board that falls within
+ * this board's displayable window. The callback function will be provided with a Thing
+ * instance and the point at which it occurs. If no Thing instance is available at a location
+ * undefined is returned.
+ *
+ * @param callback A callback function to be executed for each tile.
+ */
+jzt.Board.prototype.eachDisplayable = function(callback) {
+
+    var values = this.tiles.slice(0);
+    var point = new jzt.Point(0,0);
+    var startY = this.windowOrigin.y;
+    var endY = startY + this.windowSize.y;
+    var startX = this.windowOrigin.x;
+    var endX = startX + this.windowSize.x;
+
+    startX = startX < 0 ? 0 : startX;
+    startY = startY < 0 ? 0 : startY;
+    endX = endX > this.width ? this.width : endX;
+    endY = endY > this.height ? this.height : endY;
+
+    for(point.y = startY; point.y < endY; point.y++) {
+        for(point.x = startX; point.x < endX; point.x++) {
             callback(values[point.x+point.y*this.width], point);
         }
     }
@@ -611,40 +685,34 @@ jzt.Board.prototype.setDisplayMessage = function(message, duration) {
  */
 jzt.Board.prototype.render = function(c) {
         
-    var instance = this;
+    var me = this;
     var canvasWidth = this.game.context.canvas.width;
     var canvasHeight = this.game.context.canvas.height;
+
+    this.updateWindowPosition();
 
     c.fillStyle = '#000000';
     c.fillRect(0, 0, canvasWidth, canvasHeight);
     
-    this.each( function(thing, point) {
+    this.eachDisplayable( function(thing, point) {
 
         // If this board is dark, we should only render the tiles in a visible range
-        if(instance.dark && !instance.game.player.inTorchRange(point)) {
-            instance.DARK_SPRITE.draw(c, point, instance.DARK_SPRITE_COLOR, jzt.colors.Colors['0']);
+        if(me.dark && !me.game.player.inTorchRange(point)) {
+            me.DARK_SPRITE.draw(c, point.subtract(me.windowOrigin), me.DARK_SPRITE_COLOR, jzt.colors.Colors['0']);
         }
 
         // If this board is not dark, and there's a thing to render...
         else if(thing) {
 
             // Grab our sprite
-            var sprite = instance.game.resources.graphics.getSprite(thing.getSpriteIndex());
+            var sprite = me.game.resources.graphics.getSprite(thing.getSpriteIndex());
 
             // Our background colour may come from the 'under' tile if no background is defined
             var background = thing.background;
             if(!background && thing.under) {
                 background = thing.under.background.isLight() ? thing.under.background.darken() : thing.under.background;
             }
-            sprite.draw(c, thing.point, thing.foreground, background);
-        }
-
-        if(jzt.debug.on) {
-            var p = instance.getSmartValue(point);
-            if(p !== Infinity) {
-                c.fillStyle = 'gray';
-                c.fillText(instance.getSmartValue(point).toString(), point.x * 16 + 4, point.y * 32 + 16);
-            }
+            sprite.draw(c, thing.point.subtract(me.windowOrigin), thing.foreground, background);
         }
 
     });
@@ -791,8 +859,8 @@ jzt.Board.prototype.renderMessage = function(c) {
     
     var messagePoint = new jzt.Point();
 
-    messagePoint.x = Math.floor((this.width - this.displayMessage.length) / 2);
-    messagePoint.y = this.height-1;
+    messagePoint.x = Math.floor((this.windowSize.x - this.displayMessage.length) / 2);
+    messagePoint.y = this.windowSize.y - 1;
 
     this.game.resources.graphics.drawString(c, messagePoint, this.displayMessage, jzt.colors.Cycle, jzt.colors.Black);
 
