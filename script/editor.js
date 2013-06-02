@@ -229,17 +229,18 @@ jzt.Editor.prototype.onCanvasMouseDown = function(event) {
 jzt.Editor.prototype.onCanvasMouseMoved = function(event) {
 
 	var point = this.eventToBoardPoint(event);
+	var convertedPoint = point.add(this.currentBoard.windowOrigin);
 
 	if(!this.previousPlot || !this.previousPlot.equals(point)) {
 		this.previousPlot = point;
 
-		if(this.drawing) {
+		if(this.drawing && !this.currentBoard.isOutside(convertedPoint)) {
 
 			if(this.activeTemplate) {
-				this.currentBoard.addThing(point, jzt.things.ThingFactory.deserialize(this.activeTemplate, this.currentBoard));
+				this.currentBoard.addThing(convertedPoint, jzt.things.ThingFactory.deserialize(this.activeTemplate, this.currentBoard));
 			}
 			else {
-				this.currentBoard.addThing(point, undefined);
+				this.currentBoard.addThing(convertedPoint, undefined);
 			}
 			
 		}

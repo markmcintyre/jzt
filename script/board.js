@@ -438,12 +438,15 @@ jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak) {
  */
 jzt.Board.prototype.setTile = function(point, tile) {
     
-    if(tile) {
-        tile.point = point.clone();
+    if(!this.isOutside(point)) {
+
+        if(tile) {
+            tile.point = point.clone();
+        }
+        
+        this.tiles[point.x + point.y * this.width] = tile;
+    
     }
-    
-    this.tiles[point.x + point.y * this.width] = tile;
-    
 };
 
 /**
@@ -605,6 +608,9 @@ jzt.Board.prototype.addMessage = function(message) {
  */
 jzt.Board.prototype.update = function() {
 
+    // Update the smart path
+    this.updateSmartPath(this.player.point);
+
     /*
      * This function works as follows: Each tile is looped through in sequential
      * order, and once again in reverse order. A tile may opt to be sent its
@@ -637,10 +643,7 @@ jzt.Board.prototype.update = function() {
         }
 
     });
-
-    // Update the smart path
-    this.updateSmartPath(this.player.point);
-        
+    
 };
 
 /**
@@ -715,6 +718,17 @@ jzt.Board.prototype.render = function(c) {
             sprite.draw(c, thing.point.subtract(me.windowOrigin), thing.foreground, background);
         }
 
+  
+            // Debug rendering...
+            /*
+            var p = me.getSmartValue(point);
+            if(p !== Infinity) {
+                c.fillStyle = 'gray';
+                var drawpoint = point.subtract(me.windowOrigin);
+                c.fillText(me.getSmartValue(point).toString(), drawpoint.x * 16 + 4, drawpoint.y * 32 + 16);
+            }
+            */
+
     });
 
     // If there is a display message, render it
@@ -722,6 +736,19 @@ jzt.Board.prototype.render = function(c) {
         this.renderMessage(c);
     }
     
+};
+
+/**
+ * Sets a point on the "smart path" to be weighted differently, creating either an aversion
+ * point or an attraction point.
+ */
+jzt.Board.prototype.adjustSmartPathWeight = function(point, strengthDelta) {
+
+    var pathIndex = point.x + point.y * this.width;
+    if(!this.isOutside(point) && this.smartPath[pathIndex] !== undefined) {
+        this.smartPath[pathIndex] += strengthDelta;
+    }
+
 };
 
 /**
@@ -737,7 +764,7 @@ jzt.Board.prototype.updateSmartPath = function(targetPoint) {
     function updatePath(currentX, currentY, currentDistance) {
 
         // If our values are within the grid range...
-        if(currentX >= 0 && currentX < me.width && currentY >= 0 && currentY < me.height) {
+        if(currentDistance < 50 && currentX >= 0 && currentX < me.width && currentY >= 0 && currentY < me.height) {
 
             // Calculate our index
             var index = currentX + currentY * me.width;
@@ -767,6 +794,17 @@ jzt.Board.prototype.updateSmartPath = function(targetPoint) {
     // Clear the old path
     this.smartPath = [];
     updatePath(targetPoint.x, targetPoint.y, 0);
+    this.updatePathWeights();
+
+};
+
+jzt.Board.prototype.updatePathWeights = function() {
+
+    this.each(function(tile, point) {
+        if(tile instanceof jzt.things.UpdateableThing) {
+            tile.influenceSmartPath();
+        }
+    });
 
 };
 

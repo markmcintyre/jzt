@@ -273,6 +273,8 @@ jzt.things.UpdateableThing.prototype.getSmartDirection = function() {
     return this.board.getSmartDirection(this.point);
 };
 
+jzt.things.UpdateableThing.prototype.influenceSmartPath = function() {};
+
 /**
  * Returns whether or not a position in a provided direction is attackable
  * by this UpdateableThing. Attackable positions are defined as free spots
@@ -774,12 +776,33 @@ jzt.things.Bullet.prototype.updateOnReverse = function() {
     return this.direction === jzt.Direction.South || this.direction === jzt.Direction.East;
 };
 
+jzt.things.Bullet.prototype.influenceSmartPath = function() {
+    
+    var point;
+    var index;
+
+    // If we are a player bullet...
+    if(this.fromPlayer) {
+
+        point = this.point;
+
+        // Weight the ten spaces in front of our bullet as aversion points
+        for(index = 0; index < 10; ++index) {
+            point = point.add(this.direction);
+            this.board.adjustSmartPathWeight(point, 10);
+        }
+
+    }
+
+};
+
 /**
  * Updates this bullet, moving it one tile in its associated
  * direction.
  */
 jzt.things.Bullet.prototype.doTick = function() {
 
+    // If we are unable to move, attack our obstacle
     if(!this.move(this.direction, true)) {
         this.attack();
     }

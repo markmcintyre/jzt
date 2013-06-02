@@ -11,12 +11,17 @@
 				top: 0;
 				right: 0;
 				background-color: blue;
-				width: 300px;
+				width: 25%;
 				height: 100%;
 				color: white;
 			}
 			textarea {
 				font-family: monospace;
+			}
+			#edit-area {
+				overflow: scroll;
+				width: 640px;
+				height: 480px;
 			}
 			#color-customizer ol {
 				list-style: none;
@@ -49,7 +54,9 @@
 			<!--<h1>Mark's Test Thing</h1>-->
 		</header>
 		
-		<canvas id="jzt" width="640" height="480"></canvas>
+		<div id="edit-area">
+			<canvas id="jzt" width="1600" height="3200"></canvas>
+		</div>
 
 		<div id="toolbox">
 
@@ -179,11 +186,17 @@
 			};
 
 			function onBoardSelected(event) {
+				var newName;
+				var width;
+				var height;
+
 				if(event.target.value === 'jzt.newboard') {
-					var newName = window.prompt('Please enter a board name.', 'Untitled');
-					if(newName) {
+					newName = window.prompt('Please enter a board name.', 'Untitled');
+					width = parseInt(window.prompt('Please enter a board width.', '40'));
+					height = parseInt(window.prompt('Please enter a board height.', '20'));
+					if(newName && width && height) {
 						newName = editor.getUniqueBoardName(newName);
-						editor.addBoard(newName, 40, 15);
+						editor.addBoard(newName, width, height);
 					}
 				}
 				else {
