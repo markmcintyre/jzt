@@ -11,7 +11,7 @@
 var jztscript = jztscript || {};
   
 jztscript.CommandFactory = function() {
-    this.commandParser = jztscript._createCommandParser();
+    this.commandParser = jztscript.createCommandParser();
 };
 
 jztscript.CommandFactory.prototype.parseLine = function(line) {
@@ -35,7 +35,7 @@ jztscript.CommandFactory.prototype.parseLine = function(line) {
     
 };
   
-jztscript._createCommandParser = function() {
+jztscript.createCommandParser = function() {
   
     var result = new jzt.parser.Alternation();
     
@@ -195,6 +195,29 @@ jztscript.parsers.EndParser = function() {
 };
 
 /*
+ * Give Parser
+ *
+ * command = '#' 'give' Number Word
+ */
+jztscript.parsers.GiveParser = function() {
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+    result.add(ns.discard(new ns.Literal('#')));
+    result.add(ns.discard(new ns.Literal('give')));
+    result.add(new ns.Number());
+    result.add(new ns.Word());
+    result.assembler = {
+        assemble: function(assembly) {
+            var command = new jzt.commands.Give();
+            command.counter = assembly.stack.pop();
+            command.amount = parseInt(assembly.stack.pop());
+            assembly.target = command;
+        }
+    };
+    return result;
+};
+
+/*
  * Go Parser
  * command   = '#' 'go' modifier* direction (Empty | Number)
  * modifier  = 'cw' | 'ccw' | 'opp' | 'rndp';
@@ -277,6 +300,33 @@ jztscript.parsers.ScrollParser = function() {
     };
     return result;
 };
+
+/*
+ * Take Parser
+ *
+ * command = '#' 'take' Number Word (Empty | Word)
+ */
+ jztscript.parsers.TakeParser = function() {
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+    result.add(ns.discard(new ns.Literal('#')));
+    result.add(ns.discard(new ns.Literal('take')));
+    result.add(new ns.Number());
+    result.add(new ns.Word());
+    result.add(ns.optional(new ns.Word()));
+    result.assembler = {
+        assemble: function(assembly) {
+            var command = new jzt.commands.Take();
+            if(assembly.stack.length >= 3) {
+                command.label = assembly.stack.pop().toUpperCase();
+            }
+            command.counter = assembly.stack.pop();
+            command.amount = parseInt(assembly.stack.pop());
+            assembly.target = command;
+        }
+    };
+    return result;
+ };
 
 /*
  * Restore Parser

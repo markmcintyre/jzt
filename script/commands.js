@@ -103,6 +103,27 @@ jzt.commands.End.prototype.execute = function(owner) {
 };
 
 /*
+ * Give Command
+ */
+jzt.commands.Give = function() {
+    this.counter = undefined;
+    this.amount = 0;
+};
+
+jzt.commands.Give.prototype.clone = function() {
+    var clone = new jzt.commands.Give();
+    clone.counter = this.counter;
+    clone.amount = this.amount;
+    return clone;
+};
+
+jzt.commands.Give.prototype.execute = function(owner) {
+
+    owner.board.game.adjustCounter(this.counter, this.amount);
+
+};
+
+/*
  * Go Command
  */
 jzt.commands.Go = function() {
@@ -335,6 +356,48 @@ jzt.commands.Stand = function() {};
 jzt.commands.Stand.prototype.clone = function(){return this;};
 jzt.commands.Stand.prototype.execute = function(owner) {
     owner.walkDirection = undefined;
+};
+
+/*
+ * Take Command
+ */
+jzt.commands.Take = function() {
+    this.amount = 0;
+    this.label = undefined;
+    this.counter = undefined;
+};
+
+jzt.commands.Take.prototype.clone = function() {
+    var clone = new jzt.commands.Take();
+    clone.amount = this.amount;
+    clone.label = this.label;
+    clone.counter = this.counter;
+    return clone;
+};
+
+jzt.commands.Take.prototype.execute = function(owner) {
+
+    // If we can't take an amount...
+    if(owner.board.game.getCounterValue(this.counter) < this.amount) {
+
+        // If we have a label, jump to it
+        if(this.label) {
+            owner.scriptContext.jumpToLabel(this.label);
+        }
+
+    }
+
+    // If there is enough of the counter to take...
+    else {
+
+        // Take that amount
+        owner.board.game.adjustCounter(this.counter, -1 * this.amount);
+
+    }
+
+    // Continue execution
+    return jzt.commands.CommandResult.CONTINUE;
+
 };
 
 /*
