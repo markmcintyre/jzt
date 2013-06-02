@@ -877,6 +877,9 @@ jzt.things.Centipede.prototype.serialize = function() {
     result.head = this.head;
     result.deviance = this.deviance;
     result.intelligence = this.intelligence;
+    if(this.follower) {
+        result.nextSegment = jzt.Direction.getShortName(this.point.directionTo(this.follower.point));
+    }
     return result;
 };
 
@@ -891,6 +894,9 @@ jzt.things.Centipede.prototype.deserialize = function(data) {
     this.head = data.head;
     this.intelligence = data.intelligence;
     this.deviance = data.deviance;
+    if(data.nextSegment) {
+        this.nextSegment = jzt.Direction.fromName(data.nextSegment);
+    }
     if(this.deviance > 10) {
         this.deviance = 10;
     }
@@ -919,6 +925,13 @@ jzt.things.Centipede.prototype.getAdjacentSegment = function() {
     }
 
     var result;
+
+    // If a next segment direction was explicitly defined...
+    if(this.nextSegment) {
+        result = this.board.getTile(this.point.add(this.nextSegment));
+        this.nextSegment = undefined;
+        return result;
+    }
 
     // Try North
     result = this.board.getTile(this.point.add(jzt.Direction.North));

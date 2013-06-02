@@ -204,6 +204,20 @@ jzt.Direction.getName = function(direction) {
     
 };
 
+jzt.Direction.getShortName = function(direction) {
+    switch(direction) {
+        case jzt.Direction.North:
+            return 'N';
+        case jzt.Direction.East:
+            return 'E';
+        case jzt.Direction.South:
+            return 'S';
+        case jzt.Direction.West:
+            return 'W';
+    }
+    return undefined;
+};
+
 /**
  * Given a direction from our Direction enumerated type, returns another
  * direction representing a clockwise rotation on 90 degrees.
