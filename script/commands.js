@@ -21,7 +21,8 @@ jzt.commands = jzt.commands || {};
 jzt.commands.CommandResult = {
     NORMAL: 0,
     CONTINUE: 1,
-    REPEAT: 2
+    CONTINUE_AFTER_JUMP: 2,
+    REPEAT: 3
 };
 
 /**
@@ -162,6 +163,49 @@ jzt.commands.Go.prototype.execute = function(owner) {
         }
 
     }
+
+};
+
+/*
+ * If
+ */
+jzt.commands.If = function() {
+    this.counter = undefined;
+    this.amount = 0;
+    this.label = undefined;
+    this.test = 'eq';
+};
+
+jzt.commands.If.prototype.clone = function() {
+    var clone = new jzt.commands.If();
+    clone.counter = this.counter;
+    clone.amount = this.amount;
+    clone.label = this.label;
+    clone.test = this.test;
+    return clone;
+};
+
+jzt.commands.If.prototype.execute = function(owner) {
+
+    function isConditionMet(condition, firstValue, secondValue) {
+        switch(condition) {
+            case 'GT': return firstValue > secondValue;
+            case 'LT': return firstValue < secondValue;
+            case 'GTE': return firstValue >= secondValue;
+            case 'LTE': return firstValue <= secondValue;
+            case 'EQ': return firstValue === secondValue;
+            case 'NEQ': return firstValue !== secondValue;
+        }
+        return undefined;
+    }
+
+    var counterValue = owner.board.game.getCounterValue(this.counter);
+    if(isConditionMet(this.test, counterValue, this.amount)) {
+        owner.scriptContext.jumpToLabel(this.label);
+        return jzt.commands.CommandResult.CONTINUE_AFTER_JUMP;
+    }
+
+    return jzt.commands.CommandResult.CONTINUE;
 
 };
 
@@ -383,6 +427,7 @@ jzt.commands.Take.prototype.execute = function(owner) {
         // If we have a label, jump to it
         if(this.label) {
             owner.scriptContext.jumpToLabel(this.label);
+            return jzt.commands.CommandResult.CONTINUE_AFTER_JUMP;
         }
 
     }
@@ -392,11 +437,9 @@ jzt.commands.Take.prototype.execute = function(owner) {
 
         // Take that amount
         owner.board.game.adjustCounter(this.counter, -1 * this.amount);
+        return jzt.commands.CommandResult.CONTINUE;
 
     }
-
-    // Continue execution
-    return jzt.commands.CommandResult.CONTINUE;
 
 };
 

@@ -209,7 +209,7 @@ jztscript.parsers.GiveParser = function() {
     result.assembler = {
         assemble: function(assembly) {
             var command = new jzt.commands.Give();
-            command.counter = assembly.stack.pop();
+            command.counter = assembly.stack.pop().toLowerCase();
             command.amount = parseInt(assembly.stack.pop());
             assembly.target = command;
         }
@@ -228,6 +228,39 @@ jztscript.parsers.GoParser = function() {
     return jztscript.parserhelper.MovementParser(jzt.commands.Go, 'go');
 };
   
+/*
+ * If Parser
+ * command = '#' 'if' Word ('gt' | 'gte' | 'lt' | 'lte' | 'eq' | 'neq') Number Word
+ */
+ jztscript.parsers.IfParser = function() {
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+    var test = new ns.Alternation();
+    result.add(ns.discard(new ns.Literal('#')));
+    result.add(ns.discard(new ns.Literal('if')));
+    result.add(new ns.Word());
+    test.add(new ns.Literal('gt'));
+    test.add(new ns.Literal('gte'));
+    test.add(new ns.Literal('lt'));
+    test.add(new ns.Literal('lte'));
+    test.add(new ns.Literal('eq'));
+    test.add(new ns.Literal('neq'));
+    result.add(test);
+    result.add(new ns.Number());
+    result.add(new ns.Word());
+    result.assembler = {
+        assemble: function(assembly) {
+            var command = new jzt.commands.If();
+            command.label = assembly.stack.pop().toUpperCase();
+            command.amount = parseInt(assembly.stack.pop());
+            command.test = assembly.stack.pop().toUpperCase();
+            command.counter = assembly.stack.pop().toLowerCase();
+            assembly.target = command;
+        }
+    };
+    return result;
+ };
+
 /*
  * Label Parser
  * label = ':' id;
@@ -320,7 +353,7 @@ jztscript.parsers.ScrollParser = function() {
             if(assembly.stack.length >= 3) {
                 command.label = assembly.stack.pop().toUpperCase();
             }
-            command.counter = assembly.stack.pop();
+            command.counter = assembly.stack.pop().toLowerCase();
             command.amount = parseInt(assembly.stack.pop());
             assembly.target = command;
         }

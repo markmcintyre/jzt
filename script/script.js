@@ -102,9 +102,15 @@ jzt.Script.prototype.assemble = function() {
  */
 jzt.Script.prototype.addLabel = function(label, commandIndex) {
   
+    // Labels aren't stored, so we point to their next location
+    commandIndex++;
+
+    // If the label already exists, push the new label to the stack
     if(this.labelIndicies.hasOwnProperty(label.id)) {
         this.labelIndicies[label.id].push(commandIndex);
     }
+
+    // Otherwise we've got a new label
     else {
         this.labelIndicies[label.id] = [commandIndex];
     }
@@ -317,6 +323,11 @@ jzt.ScriptContext.prototype.executeTick = function() {
                     this.advanceLine();
                     this.executeTick();
                     break;
+
+                // Execute a second tick, assuming the counter is at the right location
+                case jzt.commands.CommandResult.CONTINUE_AFTER_JUMP:
+                    this.executeTick();
+                    break;
             
                 // Execute the same command next tick
                 case jzt.commands.CommandResult.REPEAT:
@@ -351,10 +362,11 @@ jzt.ScriptContext.prototype.jumpToLabel = function(label) {
             
             // Set our current line to the active label index
             this.commandIndex = labelIndicies[labelIndex];
-        
-            /* We wish to start at the line after the label, as well as
-               clear any stored commands. */
-            this.advanceLine();
+    
+            // If we have a stored command, clear it
+            if(this.storedCommand) {
+                this.storedCommand = undefined;
+            }
             
         }
 
