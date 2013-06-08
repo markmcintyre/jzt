@@ -335,6 +335,31 @@ jztscript.parsers.ScrollParser = function() {
 };
 
 /*
+ * Set Parser
+ * 
+ * command = '#' 'set' (Empty | Number) Word
+ */
+jztscript.parsers.SetParser = function() {
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+    result.add(ns.discard(new ns.Literal('#')));
+    result.add(ns.discard(new ns.Literal('set')));
+    result.add(ns.optional(new ns.Number()));
+    result.add(new ns.Word());
+    result.assembler = {
+        assemble: function(assembly) {
+            var command = new jzt.commands.Set();
+            command.counter = assembly.stack.pop().toLowerCase();
+            if(assembly.stack.length) {
+                command.value = parseInt(assembly.stack.pop());
+            }
+            assembly.target = command;
+        }
+    }
+    return result;
+};
+
+/*
  * Take Parser
  *
  * command = '#' 'take' Number Word (Empty | Word)

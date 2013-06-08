@@ -358,6 +358,27 @@ jzt.commands.Scroll.prototype.execute = function(owner) {
 };
 
 /*
+ * Set Command
+ */
+jzt.commands.Set = function() {
+    this.counter = undefined;
+    this.value = 1;
+};
+
+jzt.commands.Set.prototype.clone = function() {
+    var clone = new jzt.commands.Set();
+    clone.counter = this.counter;
+    clone.value = this.value;
+    return clone;
+};
+
+jzt.commands.Set.prototype.execute = function(owner) {
+
+    owner.board.game.setCounterValue(this.counter, this.value);
+
+};
+
+/*
  * Shoot Command
  */
 jzt.commands.Shoot = function() {
