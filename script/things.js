@@ -26,7 +26,7 @@ jzt.things.Thing = function(board) {
     this.board = board;
     this.point = new jzt.Point(0,0);
     this.foreground = jzt.colors.Yellow;
-    this.background = jzt.colors.Black;
+    this.background = undefined;
     this.x = 0;
     this.y = 0;
 };
@@ -670,7 +670,7 @@ jzt.things.Boulder.serializationType = 'Boulder';
  *
  * @param direction A direction in which this Thing is requested to move.
  */
-jzt.things.Boulder.prototype.push = function(direction) {
+jzt.things.Boulder.prototype.push = function(direction, pusher) {
     if(this.move(direction)) {
         this.play('t--f', false, true);
     }
@@ -836,7 +836,7 @@ jzt.things.Bullet.prototype.attack = function() {
 /**
  * Attempts to push this Bullet.
  */
-jzt.things.Bullet.prototype.push = function() {
+jzt.things.Bullet.prototype.push = function(direction, pusher) {
     this.remove();
 };
 
@@ -1203,6 +1203,52 @@ jzt.things.Centipede.prototype.doTick = function() {
     
 };
 
+//--------------------------------------------------------------------------------
+jzt.things.River = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.direction = jzt.Direction.North;
+    this.background = jzt.colors.Blue;
+    this.foreground = jzt.colors.BrightBlue;
+    this.speed = 1;
+    this.initialize();
+};
+jzt.things.River.prototype = new jzt.things.Thing();
+jzt.things.River.prototype.constructor = jzt.things.River;
+jzt.things.River.serializationType = 'River';
+
+jzt.things.River.prototype.initialize = function() {
+    switch(jzt.Direction.getShortName(this.direction)) {
+        case 'N': 
+            this.spriteIndex = 30;
+            break;
+        case 'E': 
+            this.spriteIndex = 16;
+            break;
+        case 'S': 
+            this.spriteIndex = 31;
+            break;
+        case 'W': 
+            this.spriteIndex = 17;
+            break;
+    }
+};
+
+jzt.things.River.prototype.isSurrenderable = function(thing) {
+    return true;
+};
+
+jzt.things.River.prototype.serialize = function() {
+    var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    result.direction = jzt.Direction.getShortName(this.direction);
+    return result;
+};
+
+jzt.things.River.prototype.deserialize = function(data) {
+    jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.direction = jzt.Direction.fromName(data.direction);
+    this.initialize();
+};
+ 
 //--------------------------------------------------------------------------------
 
 /**
@@ -1812,6 +1858,10 @@ jzt.things.Player.prototype.doTick = function() {
 
     var event = this.eventScheduler.takeEvent();
 
+    if(this.under instanceof jzt.things.River) {
+        this.push(this.under.direction, this.under);
+    }
+
     if(event) {
         if(event.type === this.MOVE_ACTION) {
             this.move(event.direction);
@@ -2203,6 +2253,7 @@ jzt.things.Ruffian.prototype.doTick = function() {
 jzt.things.SliderEw = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 29;
+    this.background = undefined;
 };
 jzt.things.SliderEw.prototype = new jzt.things.Thing();
 jzt.things.SliderEw.prototype.constructor = jzt.things.SliderEw;
@@ -2213,7 +2264,7 @@ jzt.things.SliderEw.serializationType = 'SliderEw';
  *
  * @param direction A direction in which this Thing is requested to move.
  */
-jzt.things.SliderEw.prototype.push = function(direction) {
+jzt.things.SliderEw.prototype.push = function(direction, pusher) {
     if(direction.equals(jzt.Direction.East) || direction.equals(jzt.Direction.West)) {
         if(this.move(direction)) {
             this.play('t--f', false, true);
@@ -2231,6 +2282,7 @@ jzt.things.SliderEw.prototype.push = function(direction) {
 jzt.things.SliderNs = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 18;
+    this.background = undefined;
 };
 jzt.things.SliderNs.prototype = new jzt.things.Thing();
 jzt.things.SliderNs.prototype.constructor = jzt.things.SliderNs;
@@ -2241,7 +2293,7 @@ jzt.things.SliderNs.serializationType = 'SliderNs';
  *
  * @param direction A direction in which this Thing is requested to move.
  */
-jzt.things.SliderNs.prototype.push = function(direction) {
+jzt.things.SliderNs.prototype.push = function(direction, pusher) {
     if(direction.equals(jzt.Direction.North) || direction.equals(jzt.Direction.South)) {
         if(this.move(direction)) {
             this.play('t--f', false, true);

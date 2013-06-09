@@ -79,6 +79,7 @@
 			<br/>
 			<label><input type="radio" name="activeTemplate" value="Teleporter" />Teleporter</label>
 			<label><input type="radio" name="activeTemplate" value="Passage" />Passage</label>
+			<label><input type="radio" name="activeTemplate" value="River" />River</label>
 			<br/>
 			<label><input type="radio" name="activeTemplate" value="Gem" />Gem</label>
 			<label><input type="radio" name="activeTemplate" value="Ammo" />Ammo</label>
@@ -172,6 +173,9 @@
 								break;
 							case 'Scriptable':
 								activeTemplate.script = 'Untitled Script';
+								break;
+							case 'River':
+								activeTemplate.direction = 'N';
 								break;
 						}
 						templates[toolType] = activeTemplate;

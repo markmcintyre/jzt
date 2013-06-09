@@ -456,6 +456,12 @@ jzt.colors.deserializeForeground = function(colorCode) {
 
     if(colorCode.length === 2) {
         foregroundCode = colorCode.charAt(1);
+    }
+    else if(colorCode.length === 1) {
+        foregroundCode = colorCode.charAt(0);
+    }
+        
+    if(foregroundCode) {
         return foregroundCode === '*' ? jzt.colors.Cycle : jzt.colors.getColor(foregroundCode);
     }
 
@@ -467,12 +473,12 @@ jzt.colors.deserializeBackground = function(colorCode) {
 
     var backgroundCode;
 
-    if(colorCode.length == 2) {
+    if(colorCode.length === 2) {
         backgroundCode = colorCode.charAt(0);
         return backgroundCode === '*' ? undefined : jzt.colors.getColor(backgroundCode);
     }
 
-    throw 'Invalid color code: '  + colorCode;
+    return undefined;
 
 };
 
