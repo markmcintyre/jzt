@@ -39,11 +39,11 @@ jzt.things.Thing = function(board) {
 jzt.things.Thing.prototype.serialize = function() {
     var result = {};
     if(this.constructor.hasOwnProperty('serializationType')) {
-        result.type = this.constructor.serializationType;
+        result[jzt.ST.serializationType] = this.constructor.serializationType;
     }
-    result.color = jzt.colors.serialize(this.background, this.foreground);
+    result[jzt.ST.color] = jzt.colors.serialize(this.background, this.foreground);
     if(this.under) {
-        result.under = this.under.serialize();
+        result[jzt.ST.under] = this.under.serialize();
     }
     return result;
 };
@@ -56,9 +56,9 @@ jzt.things.Thing.prototype.serialize = function() {
  */
 jzt.things.Thing.prototype.deserialize = function(data) {
 
-    if(data.color) {
-        this.foreground = jzt.colors.deserializeForeground(data.color);
-        this.background = jzt.colors.deserializeBackground(data.color);
+    if(data[jzt.ST.color]) {
+        this.foreground = jzt.colors.deserializeForeground(data[jzt.ST.color]);
+        this.background = jzt.colors.deserializeBackground(data[jzt.ST.color]);
     }
     else {
         if(!this.foreground) {
@@ -69,8 +69,8 @@ jzt.things.Thing.prototype.deserialize = function(data) {
         }
     }
 
-    if(data.under) {
-        this.under = jzt.things.ThingFactory.deserialize(data.under, this.board);
+    if(data[jzt.ST.under]) {
+        this.under = jzt.things.ThingFactory.deserialize(data[jzt.ST.under], this.board);
     }
     
 };
@@ -242,7 +242,7 @@ jzt.things.UpdateableThing.prototype.constructor = jzt.things.UpdateableThing;
  */
 jzt.things.UpdateableThing.prototype.serialize = function() {
     var result = jzt.things.Thing.prototype.serialize.call(this) || {};
-    result.speed = this.speed;
+    result[jzt.ST.speed] = this.speed;
     return result;
 };
 
@@ -254,8 +254,8 @@ jzt.things.UpdateableThing.prototype.serialize = function() {
  */
 jzt.things.UpdateableThing.prototype.deserialize = function(data) {
     jzt.things.Thing.prototype.deserialize.call(this, data);
-    if(data.speed) {
-        this.speed = data.speed;
+    if(data[jzt.ST.speed]) {
+        this.speed = data[jzt.ST.speed];
     }
     this.cycleCount = Math.floor(Math.random() * this.speed);
 };
@@ -397,7 +397,7 @@ jzt.things.ScriptableThing = function(board) {
 };
 jzt.things.ScriptableThing.prototype = new jzt.things.UpdateableThing();
 jzt.things.ScriptableThing.prototype.constructor = jzt.things.ScriptableThing;
-jzt.things.ScriptableThing.serializationType = 'Scriptable';
+jzt.things.ScriptableThing.serializationType = jzt.ST.Scriptable;
 
 /**
  * Serializes this Thing to an object and returns it.
@@ -407,17 +407,17 @@ jzt.things.ScriptableThing.serializationType = 'Scriptable';
 jzt.things.ScriptableThing.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this) || {};
 
-    result.serializationType = jzt.things.ScriptableThing.serializationType;
-    result.name = this.name;
-    result.spriteIndex = this.spriteIndex;
-    result.script = this.scriptName;
+    result[jzt.ST.serializationType] = jzt.things.ScriptableThing.serializationType;
+    result[jzt.ST.name] = this.name;
+    result[jzt.ST.spriteIndex] = this.spriteIndex;
+    result[jzt.ST.scriptName] = this.scriptName;
 
     if(this.scriptContext) {
-        result.scriptContext = this.scriptContext.serialize();
-        result.messageQueue = this.messageQueue.slice(0);
-        jzt.util.storeOption(result, 'walkDirection', jzt.Direction.getName(this.walkDirection));
-        jzt.util.storeOption(result, 'locked', this.locked);
-        jzt.util.storeOption(result, 'orientation', jzt.Direction.getName(this.orientation));
+        result[jzt.ST.scriptContext] = this.scriptContext.serialize();
+        result[jzt.ST.messageQueue] = this.messageQueue.slice(0);
+        jzt.util.storeOption(result, jzt.ST.walkDirection, jzt.Direction.getName(this.walkDirection));
+        jzt.util.storeOption(result, jzt.ST.locked, this.locked);
+        jzt.util.storeOption(result, jzt.ST.orientation, jzt.Direction.getName(this.orientation));
     }
 
     return result;
@@ -432,16 +432,16 @@ jzt.things.ScriptableThing.prototype.serialize = function() {
  */
 jzt.things.ScriptableThing.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
-    this.name = data.name;
-    if(data.spriteIndex) {
-        this.spriteIndex = data.spriteIndex;
+    this.name = data[jzt.ST.name];
+    if(data[jzt.ST.spriteIndex]) {
+        this.spriteIndex = data[jzt.ST.spriteIndex];
     }
-    this.scriptName = data.script;
+    this.scriptName = data[jzt.ST.scriptName];
     var script = this.board.getScript(this.scriptName);
     if(script) {
         this.scriptContext = script.newContext(this);
-        if(data.scriptContext) {
-            this.scriptContext.deserialize(data.scriptContext);
+        if(data[jzt.ST.scriptContext]) {
+            this.scriptContext.deserialize(data[jzt.ST.scriptContext]);
         }
     }
 };
@@ -525,7 +525,7 @@ jzt.things.Ammo = function(board) {
 };
 jzt.things.Ammo.prototype = new jzt.things.Thing();
 jzt.things.Ammo.prototype.constructor = jzt.things.Ammo;
-jzt.things.Ammo.serializationType = 'Ammo';
+jzt.things.Ammo.serializationType = jzt.ST.Ammo;
 
 /**
  * Pushes this Ammo in a provided direction on its owner Board.
@@ -566,7 +566,7 @@ jzt.things.Bear = function(board) {
 };
 jzt.things.Bear.prototype = new jzt.things.UpdateableThing();
 jzt.things.Bear.prototype.constructor = jzt.things.Bear;
-jzt.things.Bear.serializationType = 'Bear';
+jzt.things.Bear.serializationType = jzt.ST.Bear;
 
 /**
  * Serializes this Bear to an Object.
@@ -575,7 +575,7 @@ jzt.things.Bear.serializationType = 'Bear';
  */
 jzt.things.Bear.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
-    result.sensitivity = this.sensitivity;
+    result[jzt.ST.sensitivity] = this.sensitivity;
     return result;
 };
 
@@ -586,7 +586,7 @@ jzt.things.Bear.prototype.serialize = function() {
  */
 jzt.things.Bear.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
-    this.sensitivity = jzt.util.getOption(data, 'sensitivity', 9);
+    this.sensitivity = jzt.util.getOption(data, jzt.ST.sensitivity, 9);
 };
 
 /**
@@ -663,7 +663,7 @@ jzt.things.Boulder = function(board) {
 };
 jzt.things.Boulder.prototype = new jzt.things.Thing();
 jzt.things.Boulder.prototype.constructor = jzt.things.Boulder;
-jzt.things.Boulder.serializationType = 'Boulder';
+jzt.things.Boulder.serializationType = jzt.ST.Boulder;
 
 /**
  * Receives a request to be pushed in a given direction.
@@ -692,7 +692,7 @@ jzt.things.BreakableWall = function(board) {
 };
 jzt.things.BreakableWall.prototype = new jzt.things.Thing();
 jzt.things.BreakableWall.prototype.constructor = jzt.things.BreakableWall;
-jzt.things.BreakableWall.serializationType = 'BreakableWall';
+jzt.things.BreakableWall.serializationType = jzt.ST.BreakableWall;
 
 /**
  * Sends a provided message to this BreakableWall. If a SHOT message
@@ -724,7 +724,7 @@ jzt.things.Bullet = function(board) {
 };
 jzt.things.Bullet.prototype = new jzt.things.UpdateableThing();
 jzt.things.Bullet.prototype.constructor = jzt.things.Bullet;
-jzt.things.Bullet.serializationType = 'Bullet';
+jzt.things.Bullet.serializationType = jzt.ST.Bullet;
 
 /**
  * Serializes this Thing to an object and returns it.
@@ -733,9 +733,9 @@ jzt.things.Bullet.serializationType = 'Bullet';
  */
 jzt.things.Bullet.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this) || {};
-    result.direction = this.direction;
+    result[jzt.ST.direction] = this.direction;
     if(this.fromPlayer) {
-        result.fromPlayer = true;
+        result[jzt.ST.fromPlayer] = true;
     }
     return result;
 };
@@ -748,9 +748,9 @@ jzt.things.Bullet.prototype.serialize = function() {
  */
  jzt.things.Bullet.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
-    this.direction = data.direction;
-    if(data.fromPlayer) {
-        this.fromPlayer = data.fromPlayer;
+    this.direction = data[jzt.ST.direction];
+    if(data[jzt.ST.fromPlayer]) {
+        this.fromPlayer = data[jzt.ST.fromPlayer];
     }
  };
 
@@ -865,7 +865,7 @@ jzt.things.Centipede = function(board) {
 };
 jzt.things.Centipede.prototype = new jzt.things.UpdateableThing();
 jzt.things.Centipede.prototype.constructor = jzt.things.Centipede;
-jzt.things.Centipede.serializationType = 'Centipede';
+jzt.things.Centipede.serializationType = jzt.ST.Centipede;
 
 /**
  * Serializes this Thing to an object and returns it.
@@ -874,11 +874,11 @@ jzt.things.Centipede.serializationType = 'Centipede';
  */
 jzt.things.Centipede.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
-    result.head = this.head;
-    result.deviance = this.deviance;
-    result.intelligence = this.intelligence;
+    result[jzt.ST.head] = this.head;
+    result[jzt.ST.deviance] = this.deviance;
+    result[jzt.ST.intelligence] = this.intelligence;
     if(this.follower) {
-        result.nextSegment = jzt.Direction.getShortName(this.point.directionTo(this.follower.point));
+        result[jzt.ST.nextSegment] = jzt.Direction.getShortName(this.point.directionTo(this.follower.point));
     }
     return result;
 };
@@ -891,11 +891,11 @@ jzt.things.Centipede.prototype.serialize = function() {
  */
 jzt.things.Centipede.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
-    this.head = data.head;
-    this.intelligence = data.intelligence;
-    this.deviance = data.deviance;
-    if(data.nextSegment) {
-        this.nextSegment = jzt.Direction.fromName(data.nextSegment);
+    this.head = data[jzt.ST.head];
+    this.intelligence = data[jzt.ST.intelligence];
+    this.deviance = data[jzt.ST.deviance];
+    if(data[jzt.ST.nextSegment]) {
+        this.nextSegment = jzt.Direction.fromName(data[jzt.ST.nextSegment]);
     }
     if(this.deviance > 10) {
         this.deviance = 10;
@@ -1202,52 +1202,6 @@ jzt.things.Centipede.prototype.doTick = function() {
 
     
 };
-
-//--------------------------------------------------------------------------------
-jzt.things.River = function(board) {
-    jzt.things.Thing.call(this, board);
-    this.direction = jzt.Direction.North;
-    this.background = jzt.colors.Blue;
-    this.foreground = jzt.colors.BrightBlue;
-    this.speed = 1;
-    this.initialize();
-};
-jzt.things.River.prototype = new jzt.things.Thing();
-jzt.things.River.prototype.constructor = jzt.things.River;
-jzt.things.River.serializationType = 'River';
-
-jzt.things.River.prototype.initialize = function() {
-    switch(jzt.Direction.getShortName(this.direction)) {
-        case 'N': 
-            this.spriteIndex = 30;
-            break;
-        case 'E': 
-            this.spriteIndex = 16;
-            break;
-        case 'S': 
-            this.spriteIndex = 31;
-            break;
-        case 'W': 
-            this.spriteIndex = 17;
-            break;
-    }
-};
-
-jzt.things.River.prototype.isSurrenderable = function(thing) {
-    return true;
-};
-
-jzt.things.River.prototype.serialize = function() {
-    var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
-    result.direction = jzt.Direction.getShortName(this.direction);
-    return result;
-};
-
-jzt.things.River.prototype.deserialize = function(data) {
-    jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
-    this.direction = jzt.Direction.fromName(data.direction);
-    this.initialize();
-};
  
 //--------------------------------------------------------------------------------
 
@@ -1263,7 +1217,7 @@ jzt.things.Door = function(board) {
 };
 jzt.things.Door.prototype = new jzt.things.Thing();
 jzt.things.Door.prototype.constructor = jzt.things.Door;
-jzt.things.Door.serializationType = 'Door';
+jzt.things.Door.serializationType = jzt.ST.Door;
 
 /**
  * Delivers a provided message to this Thing. If a TOUCH message is received, then
@@ -1318,7 +1272,7 @@ jzt.things.FakeWall = function(board) {
 };
 jzt.things.FakeWall.prototype = new jzt.things.Thing();
 jzt.things.FakeWall.prototype.constructor = jzt.things.FakeWall;
-jzt.things.FakeWall.serializationType = 'FakeWall';
+jzt.things.FakeWall.serializationType = jzt.ST.FakeWall;
 
 /**
  * Returns whether or not this FakeWall is surrenderable to another thing.
@@ -1357,16 +1311,7 @@ jzt.things.Forest.prototype = new jzt.things.Thing();
 jzt.things.Forest.prototype.constructor = jzt.things.Forest;
 jzt.things.Forest.noteCycle = ['e','-b','f#','b','f','c','g','+c'];
 jzt.things.Forest.noteIndex = 0;
-jzt.things.Forest.serializationType = 'Forest';
-
-/**
- * Deserializes a provided data Object into Forest.
- *
- * @param data A data object to be deserialized into Forest.
- */
-jzt.things.Forest.prototype.deserialize = function(data) {
-    jzt.things.Thing.prototype.deserialize.call(this, data);
-};
+jzt.things.Forest.serializationType = jzt.ST.Forest;
 
 /**
  * Delivers a provided message to this Thing. If a TOUCH message is received,
@@ -1396,7 +1341,7 @@ jzt.things.Gem = function(board) {
 };
 jzt.things.Gem.prototype = new jzt.things.Thing();
 jzt.things.Gem.prototype.constructor = jzt.things.Gem;
-jzt.things.Gem.serializationType = 'Gem';
+jzt.things.Gem.serializationType = jzt.ST.Gem;
 
 /**
  * Delivers a provided message to this Thing. If a TOUCH message is received,
@@ -1446,7 +1391,7 @@ jzt.things.InvisibleWall = function(board) {
 };
 jzt.things.InvisibleWall.prototype = new jzt.things.Thing();
 jzt.things.InvisibleWall.prototype.constructor = jzt.things.InvisibleWall;
-jzt.things.InvisibleWall.serializationType = 'InvisibleWall';
+jzt.things.InvisibleWall.serializationType = jzt.ST.InvisibleWall;
 
 /**
  * Delivers a provided message to this Thing. If a TOUCH message is received,
@@ -1489,7 +1434,7 @@ jzt.things.Key = function(board) {
 };
 jzt.things.Key.prototype = new jzt.things.Thing();
 jzt.things.Key.prototype.constructor = jzt.things.Key;
-jzt.things.Key.serializationType = 'Key';
+jzt.things.Key.serializationType = jzt.ST.Key;
 
 /**
  * Delivers a provided message to this Thing. If a TOUCH message is 
@@ -1549,7 +1494,7 @@ jzt.things.LineWall = function(board) {
 };
 jzt.things.LineWall.prototype = new jzt.things.Thing();
 jzt.things.LineWall.prototype.constructor = jzt.things.LineWall;
-jzt.things.LineWall.serializationType = 'LineWall';
+jzt.things.LineWall.serializationType = jzt.ST.LineWall;
 jzt.things.LineWall.lineMap = {
     '': 249,
     'N': 208,
@@ -1611,7 +1556,7 @@ jzt.things.Lion = function(board) {
 };
 jzt.things.Lion.prototype = new jzt.things.UpdateableThing();
 jzt.things.Lion.prototype.constructor = jzt.things.Lion;
-jzt.things.Lion.serializationType = 'Lion';
+jzt.things.Lion.serializationType = jzt.ST.Lion;
 
 /**
  * Serializes this Lion to an Object.
@@ -1620,7 +1565,7 @@ jzt.things.Lion.serializationType = 'Lion';
  */
 jzt.things.Lion.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
-    result.intelligence = this.intelligence;
+    result[jzt.ST.intelligence] = this.intelligence;
     return result;
 };
 
@@ -1631,7 +1576,7 @@ jzt.things.Lion.prototype.serialize = function() {
  */
 jzt.things.Lion.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
-    this.intelligence = data.intelligence;
+    this.intelligence = data[jzt.ST.intelligence];
 };
 
 /**
@@ -1716,7 +1661,7 @@ jzt.things.Passage = function(board) {
 };
 jzt.things.Passage.prototype = new jzt.things.Thing();
 jzt.things.Passage.prototype.constructor = jzt.things.Passage;
-jzt.things.Passage.serializationType = 'Passage';
+jzt.things.Passage.serializationType = jzt.ST.Passage;
 
 /**
  * Delivers a provided message to this Thing. If a TOUCH message is received,
@@ -1738,8 +1683,8 @@ jzt.things.Passage.prototype.sendMessage = function(message) {
  */
 jzt.things.Passage.prototype.serialize = function() {
     var result = jzt.things.Thing.prototype.serialize.call(this);
-    result.passageId = this.passageId;
-    result.targetBoard = this.targetBoard;
+    result[jzt.ST.passageId] = this.passageId;
+    result[jzt.ST.targetBoard] = this.targetBoard;
     return result;
 };
 
@@ -1750,8 +1695,8 @@ jzt.things.Passage.prototype.serialize = function() {
  */
 jzt.things.Passage.prototype.deserialize = function(data) {
     jzt.things.Thing.prototype.deserialize.call(this, data);
-    this.targetBoard = data.targetBoard;
-    this.passageId = data.passageId;
+    this.targetBoard = data[jzt.ST.targetBoard];
+    this.passageId = data[jzt.ST.passageId];
 };
 
  
@@ -2056,7 +2001,7 @@ jzt.things.Pusher = function(board) {
 };
 jzt.things.Pusher.prototype = new jzt.things.UpdateableThing();
 jzt.things.Pusher.prototype.constructor = jzt.things.Pusher;
-jzt.things.Pusher.serializationType = 'Pusher';
+jzt.things.Pusher.serializationType = jzt.ST.Pusher;
 
 /**
  * Initializes a spriteIndex for this Pusher based on its defined
@@ -2084,7 +2029,7 @@ jzt.things.Pusher.prototype.initializeSprite = function() {
  */
 jzt.things.Pusher.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
-    result.orientation = jzt.Direction.getName(this.orientation);
+    result[jzt.ST.orientation] = jzt.Direction.getName(this.orientation);
     return result;
 };
 
@@ -2095,8 +2040,8 @@ jzt.things.Pusher.prototype.serialize = function() {
  */
 jzt.things.Pusher.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
-    if(data.orientation) {
-        this.orientation = jzt.Direction.fromName(data.orientation);
+    if(data[jzt.ST.orientation]) {
+        this.orientation = jzt.Direction.fromName(data[jzt.ST.orientation]);
     }
     this.initializeSprite();
 };
@@ -2108,6 +2053,52 @@ jzt.things.Pusher.prototype.doTick = function() {
     if(this.move(this.orientation)) {
         this.play('t--f', false, true);
     }
+};
+
+//--------------------------------------------------------------------------------
+jzt.things.River = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.direction = jzt.Direction.North;
+    this.background = jzt.colors.Blue;
+    this.foreground = jzt.colors.BrightBlue;
+    this.speed = 1;
+    this.initialize();
+};
+jzt.things.River.prototype = new jzt.things.Thing();
+jzt.things.River.prototype.constructor = jzt.things.River;
+jzt.things.River.serializationType = jzt.ST.River;
+
+jzt.things.River.prototype.initialize = function() {
+    switch(jzt.Direction.getShortName(this.direction)) {
+        case 'N': 
+            this.spriteIndex = 30;
+            break;
+        case 'E': 
+            this.spriteIndex = 16;
+            break;
+        case 'S': 
+            this.spriteIndex = 31;
+            break;
+        case 'W': 
+            this.spriteIndex = 17;
+            break;
+    }
+};
+
+jzt.things.River.prototype.isSurrenderable = function(thing) {
+    return true;
+};
+
+jzt.things.River.prototype.serialize = function() {
+    var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    result[jzt.ST.direction] = jzt.Direction.getShortName(this.direction);
+    return result;
+};
+
+jzt.things.River.prototype.deserialize = function(data) {
+    jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.direction = jzt.Direction.fromName(data[jzt.ST.direction]);
+    this.initialize();
 };
 
 //--------------------------------------------------------------------------------
@@ -2131,7 +2122,7 @@ jzt.things.Ruffian = function(board) {
 };
 jzt.things.Ruffian.prototype = new jzt.things.UpdateableThing();
 jzt.things.Ruffian.prototype.constructor = jzt.things.Ruffian;
-jzt.things.Ruffian.serializationType = 'Ruffian';
+jzt.things.Ruffian.serializationType = jzt.ST.Ruffian;
 
 /**
  * Serializes this Ruffian to a data object.
@@ -2140,8 +2131,8 @@ jzt.things.Ruffian.serializationType = 'Ruffian';
  */
 jzt.things.Ruffian.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
-    result.intelligence = this.intelligence;
-    result.restingTime = this.restingTime;
+    result[jzt.ST.intelligence] = this.intelligence;
+    result[jzt.ST.restingTime] = this.restingTime;
     return result;
 };
 
@@ -2152,8 +2143,8 @@ jzt.things.Ruffian.prototype.serialize = function() {
  */
 jzt.things.Ruffian.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
-    this.intelligence = jzt.util.getOption(data, 'intelligence', 5);
-    this.restingTime = jzt.util.getOption(data, 'restingTime', 5);
+    this.intelligence = jzt.util.getOption(data, jzt.ST.intelligence, 5);
+    this.restingTime = jzt.util.getOption(data, jzt.ST.restingTime, 5);
 };
 
 /** 
@@ -2257,7 +2248,7 @@ jzt.things.SliderEw = function(board) {
 };
 jzt.things.SliderEw.prototype = new jzt.things.Thing();
 jzt.things.SliderEw.prototype.constructor = jzt.things.SliderEw;
-jzt.things.SliderEw.serializationType = 'SliderEw';
+jzt.things.SliderEw.serializationType = jzt.ST.SliderEw;
 
 /**
  * Receives a request to be pushed in a given direction.
@@ -2286,7 +2277,7 @@ jzt.things.SliderNs = function(board) {
 };
 jzt.things.SliderNs.prototype = new jzt.things.Thing();
 jzt.things.SliderNs.prototype.constructor = jzt.things.SliderNs;
-jzt.things.SliderNs.serializationType = 'SliderNs';
+jzt.things.SliderNs.serializationType = jzt.ST.SliderNs;
 
 /**
  * Receives a request to be pushed in a given direction.
@@ -2304,7 +2295,7 @@ jzt.things.SliderNs.prototype.push = function(direction, pusher) {
 //--------------------------------------------------------------------------------
 
 /**
- * Snake is a touch baddie that intelligently finds the player along a precomputed
+ * Snake is a tough baddie that intelligently finds the player along a precomputed
  * smart path.
  */
 jzt.things.Snake = function(board) {
@@ -2315,7 +2306,7 @@ jzt.things.Snake = function(board) {
 };
 jzt.things.Snake.prototype = new jzt.things.UpdateableThing();
 jzt.things.Snake.prototype.constructor = jzt.things.Snake;
-jzt.things.Snake.serializationType = 'Snake';
+jzt.things.Snake.serializationType = jzt.ST.Snake;
 
 /**
  * Attempts to push this Snake in a provided direction.
@@ -2387,7 +2378,7 @@ jzt.things.SolidWall = function(board) {
 };
 jzt.things.SolidWall.prototype = new jzt.things.Thing();
 jzt.things.SolidWall.prototype.constructor = jzt.things.SolidWall;
-jzt.things.SolidWall.serializationType = 'SolidWall';
+jzt.things.SolidWall.serializationType = jzt.ST.SolidWall;
 
 //--------------------------------------------------------------------------------
 
@@ -2406,7 +2397,7 @@ jzt.things.Spider = function(board) {
 };
 jzt.things.Spider.prototype = new jzt.things.UpdateableThing();
 jzt.things.Spider.prototype.constructor = jzt.things.Spider;
-jzt.things.Spider.serializationType = 'Spider';
+jzt.things.Spider.serializationType = jzt.ST.Spider;
 
 /**
  * Serializes this Spider instance into a data object.
@@ -2415,7 +2406,7 @@ jzt.things.Spider.serializationType = 'Spider';
  */
 jzt.things.Spider.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
-    result.intelligence = this.intelligence;
+    result[jzt.ST.intelligence] = this.intelligence;
     return result;
 };
 
@@ -2426,7 +2417,7 @@ jzt.things.Spider.prototype.serialize = function() {
  */
 jzt.things.Spider.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
-    this.intelligence = data.intelligence;
+    this.intelligence = data[jzt.ST.intelligence];
 };
 
 /**
@@ -2531,7 +2522,7 @@ jzt.things.SpiderWeb = function(board) {
 };
 jzt.things.SpiderWeb.prototype = new jzt.things.Thing();
 jzt.things.SpiderWeb.prototype.constructor = jzt.things.SpiderWeb;
-jzt.things.SpiderWeb.serializationType = 'SpiderWeb';
+jzt.things.SpiderWeb.serializationType = jzt.ST.SpiderWeb;
 jzt.things.SpiderWeb.lineMap = {
     '': 249,
     'N': 179,
@@ -2607,7 +2598,7 @@ jzt.things.SpinningGun = function(board) {
 };
 jzt.things.SpinningGun.prototype = new jzt.things.UpdateableThing();
 jzt.things.SpinningGun.prototype.constructor = jzt.things.SpinningGun;
-jzt.things.SpinningGun.serializationType = 'SpinningGun';
+jzt.things.SpinningGun.serializationType = jzt.ST.SpinningGun;
 jzt.things.SpinningGun.animationFrames = [24, 26, 25, 27];
 
 /**
@@ -2617,8 +2608,8 @@ jzt.things.SpinningGun.animationFrames = [24, 26, 25, 27];
  */
 jzt.things.SpinningGun.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
-    result.intelligence = this.intelligence;
-    result.firingRate = this.firingRate;
+    result[jzt.ST.intelligence] = this.intelligence;
+    result[jzt.ST.firingRate] = this.firingRate;
     return result;
 };
 
@@ -2629,8 +2620,8 @@ jzt.things.SpinningGun.prototype.serialize = function() {
  */
 jzt.things.SpinningGun.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
-    this.intelligence = jzt.util.getOption(data, 'intelligence', 5);
-    this.firingRate = jzt.util.getOption(data, 'firingRate', 5);
+    this.intelligence = jzt.util.getOption(data, jzt.ST.intelligence, 5);
+    this.firingRate = jzt.util.getOption(data, jzt.ST.firingRate, 5);
 };
 
 /**
@@ -2678,7 +2669,7 @@ jzt.things.SpinningGun.prototype.doTick = function() {
  };
 jzt.things.Teleporter.prototype = new jzt.things.UpdateableThing();
 jzt.things.Teleporter.prototype.constructor = jzt.things.Teleporter;
-jzt.things.Teleporter.serializationType = 'Teleporter';
+jzt.things.Teleporter.serializationType = jzt.ST.Teleporter;
 jzt.things.Teleporter.animationFrames = {
     'North': [196, 126, 94, 126],
     'East': [179, 41, 62, 41],
@@ -2693,7 +2684,7 @@ jzt.things.Teleporter.animationFrames = {
  */
 jzt.things.Teleporter.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
-    result.orientation = jzt.Direction.getName(this.orientation);
+    result[jzt.ST.orientation] = jzt.Direction.getName(this.orientation);
     return result;
 };
 
@@ -2704,8 +2695,8 @@ jzt.things.Teleporter.prototype.serialize = function() {
  */
 jzt.things.Teleporter.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
-    if(data.orientation) {
-        this.orientation = jzt.Direction.fromName(data.orientation);
+    if(data[jzt.ST.orientation]) {
+        this.orientation = jzt.Direction.fromName(data[jzt.ST.orientation]);
     }
 };
 
@@ -2801,7 +2792,7 @@ jzt.things.ThrowingStar = function(board) {
 };
 jzt.things.ThrowingStar.prototype = new jzt.things.UpdateableThing();
 jzt.things.ThrowingStar.prototype.constructor = jzt.things.ThrowingStar;
-jzt.things.ThrowingStar.serializationType = 'ThrowingStar';
+jzt.things.ThrowingStar.serializationType = jzt.ST.ThrowingStar;
 jzt.things.ThrowingStar.animationFrames = [179, 47, 196, 92];
 
 /**
@@ -2811,7 +2802,7 @@ jzt.things.ThrowingStar.animationFrames = [179, 47, 196, 92];
  */
 jzt.things.ThrowingStar.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
-    result.timeToLive = this.timeToLive;
+    result[jzt.ST.timeToLive] = this.timeToLive;
     return result;
 };
 
@@ -2822,7 +2813,7 @@ jzt.things.ThrowingStar.prototype.serialize = function() {
  */
 jzt.things.ThrowingStar.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
-    this.timeToLove = jzt.util.getOption(data, 'timeToLive', 100);
+    this.timeToLove = jzt.util.getOption(data, jzt.ST.timeToLive, 100);
 };
 
 /**
@@ -2887,7 +2878,7 @@ jzt.things.Tiger = function(board) {
 };
 jzt.things.Tiger.prototype = new jzt.things.UpdateableThing();
 jzt.things.Tiger.prototype.constructor = jzt.things.Tiger;
-jzt.things.Tiger.serializationType = 'Tiger';
+jzt.things.Tiger.serializationType = jzt.ST.Tiger;
 
 /**
  * Serializes this Tiger into a data object.
@@ -2896,8 +2887,8 @@ jzt.things.Tiger.serializationType = 'Tiger';
  */
 jzt.things.Tiger.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
-    result.intelligence = this.intelligence;
-    result.firingRate = this.firingRate;
+    result[jzt.ST.intelligence] = this.intelligence;
+    result[jzt.ST.firingRate] = this.firingRate;
     return result;
 };
 
@@ -2908,8 +2899,8 @@ jzt.things.Tiger.prototype.serialize = function() {
  */
 jzt.things.Tiger.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize(this, data);
-    this.intelligence = data.intelligence === undefined ? 5 : data.intelligence;
-    this.firingRate = data.firingRate === undefined ? 5 : data.firingRate;
+    this.intelligence = data[jzt.ST.intelligence] === undefined ? 5 : data[jzt.ST.intelligence];
+    this.firingRate = data[jzt.ST.firingRate] === undefined ? 5 : data[jzt.ST.firingRate];
 };
 
 /**
@@ -3006,7 +2997,7 @@ jzt.things.Wall = function(board) {
 };
 jzt.things.Wall.prototype = new jzt.things.Thing();
 jzt.things.Wall.prototype.constructor = jzt.things.Wall;
-jzt.things.Wall.serializationType = 'Wall';
+jzt.things.Wall.serializationType = jzt.ST.Wall;
 
 //--------------------------------------------------------------------------------
 
@@ -3022,7 +3013,7 @@ jzt.things.Water = function(board) {
 };
 jzt.things.Water.prototype = new jzt.things.Thing();
 jzt.things.Water.prototype.constructor = jzt.things.Water;
-jzt.things.Water.serializationType = 'Water';
+jzt.things.Water.serializationType = jzt.ST.Water;
 
 /**
  * Returns whether or not this Water is surrenderable to a provided
@@ -3064,7 +3055,7 @@ jzt.things.ThingFactory.deserialize = function(data, board) {
 
     var thingMap = jzt.things.ThingFactory.getThingMap();
 
-    var ThingFunction = thingMap[data.type];
+    var ThingFunction = thingMap[data[jzt.ST.serializationType]];
     if(ThingFunction) {
         var result = new ThingFunction(board);
         result.deserialize(data);

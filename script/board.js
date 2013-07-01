@@ -20,20 +20,20 @@ jzt.Board = function(boardData, game) {
 
     this.validateData(boardData);
 
-    this.name = boardData.name;
+    this.name = boardData[jzt.ST.name];
     this.game = game;
     this.tiles = [];
     this.scripts = [];
-    this.dark = boardData.dark;
+    this.dark = boardData[jzt.ST.dark];
     this.smartPath = [];
 
-    this.north = boardData.north;
-    this.east = boardData.east;
-    this.south = boardData.south;
-    this.west = boardData.west;
+    this.north = boardData[jzt.ST.north];
+    this.east = boardData[jzt.ST.east];
+    this.south = boardData[jzt.ST.south];
+    this.west = boardData[jzt.ST.west];
 
-    this.defaultPlayerX = boardData.playerX;
-    this.defaultPlayerY = boardData.playerY;
+    this.defaultPlayerX = boardData[jzt.ST.playerX];
+    this.defaultPlayerY = boardData[jzt.ST.playerY];
 
     this.displayMessage = undefined;
     this.displayMessageTick = 0;
@@ -43,11 +43,11 @@ jzt.Board = function(boardData, game) {
     this.DARK_SPRITE_COLOR = jzt.colors.Colors['8'];
     this.BOARD_DATA_WORD_LENGTH = 4;
 
-    this.height = boardData.height;
-    this.width = boardData.width;
+    this.height = boardData[jzt.ST.height];
+    this.width = boardData[jzt.ST.width];
 
-    this.initializeScripts(boardData.scripts);
-    this.initializeTiles(boardData.tiles);
+    this.initializeScripts(boardData[jzt.ST.scripts]);
+    this.initializeTiles(boardData[jzt.ST.tiles]);
     this.initializeWindow();
 
 };
@@ -63,11 +63,11 @@ jzt.Board.prototype.validateData = function(data) {
     // Let's hope for the best...
     var valid = true;
 
-    if(!data.height || !data.width) {valid = false;}
-    if(typeof data.height !== 'number') {valid = false;}
-    if(typeof data.width !== 'number') {valid = false;}
-    if(!data.tiles || !data.tiles instanceof Array) {valid = false;}
-    if(!data.scripts || !data.script instanceof Array) {valid = false;}
+    if(!data[jzt.ST.height] || !data[jzt.ST.width]) {valid = false;}
+    if(typeof data[jzt.ST.height] !== 'number') {valid = false;}
+    if(typeof data[jzt.ST.width] !== 'number') {valid = false;}
+    if(!data[jzt.ST.tiles] || !data[jzt.ST.tiles] instanceof Array) {valid = false;}
+    if(!data[jzt.ST.scripts] || !data[jzt.ST.scripts] instanceof Array) {valid = false;}
 
     if(!valid) {
         throw 'Invalid board data.';
@@ -86,43 +86,43 @@ jzt.Board.prototype.serialize = function() {
     var index;
     var script;
 
-    result.name = this.name;
+    result[jzt.ST.name] = this.name;
 
-    jzt.util.storeOption(result, 'dark', this.dark);
-    jzt.util.storeOption(result, 'displayMessage', this.displayMessage);
-    jzt.util.storeOption(result, 'north', this.north);
-    jzt.util.storeOption(result, 'east', this.east);
-    jzt.util.storeOption(result, 'south', this.south);
-    jzt.util.storeOption(result, 'west', this.west);
+    jzt.util.storeOption(result, jzt.ST.dark, this.dark);
+    jzt.util.storeOption(result, jzt.ST.displayMessage, this.displayMessage);
+    jzt.util.storeOption(result, jzt.ST.north, this.north);
+    jzt.util.storeOption(result, jzt.ST.east, this.east);
+    jzt.util.storeOption(result, jzt.ST.south, this.south);
+    jzt.util.storeOption(result, jzt.ST.west, this.west);
 
     if(this.player) {
-        result.playerX = this.player.point.x;
-        result.playerY = this.player.point.y;
+        result[jzt.ST.playerX] = this.player.point.x;
+        result[jzt.ST.playerY] = this.player.point.y;
     }
     else {
-        result.playerX = this.defaultPlayerX;
-        result.playerY = this.defaultPlayerY;
+        result[jzt.ST.playerX] = this.defaultPlayerX;
+        result[jzt.ST.playerY] = this.defaultPlayerY;
     }
 
-    result.width = this.width;
-    result.height = this.height;
-    result.tiles = [];
-    result.scripts = [];
+    result[jzt.ST.width] = this.width;
+    result[jzt.ST.height] = this.height;
+    result[jzt.ST.tiles] = [];
+    result[jzt.ST.scripts] = [];
 
     // Store tiles
     this.each(function(tile) {
         if(tile) {
-            result.tiles.push(tile.serialize());
+            result[jzt.ST.tiles].push(tile.serialize());
         }
         else {
-            result.tiles.push({});
+            result[jzt.ST.tiles].push({});
         }
     });
 
     // Store scripts
     for(index = 0; index < this.scripts.length; ++index) {
         script = this.scripts[index];
-        result.scripts.push( script.serialize() );
+        result[jzt.ST.scripts].push( script.serialize() );
     }
 
     return result;

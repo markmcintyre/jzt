@@ -19,10 +19,10 @@ var jzt = jzt || {};
  */
 jzt.Script = function(scriptData) {
     
-    this.name = scriptData.name;
+    this.name = scriptData[jzt.ST.name];
     this.commands = [];
     this.labelIndicies = {};
-    this.rawScript = scriptData.script;
+    this.rawScript = scriptData[jzt.ST.script];
     this.assemble();
     
 };
@@ -142,8 +142,8 @@ jzt.Script.prototype.getCommand = function(commandIndex) {
 jzt.Script.prototype.serialize = function() {
     
     var result = {};
-    result.name = this.name;
-    result.script = this.rawScript;
+    result[jzt.ST.name] = this.name;
+    result[jzt.ST.script] = this.rawScript;
     return result;
 
 };
@@ -174,11 +174,11 @@ jzt.ScriptContext.prototype.serialize = function() {
 
     var result = {};
     var label;
-    result.commandIndex = this.commandIndex;
-    result.currentLabels = {};
+    result[jzt.ST.commandIndex] = this.commandIndex;
+    result[jzt.ST.currentLabels] = {};
     for(label in this.currentLabels) {
         if(this.currentLabels.hasOwnProperty(label) && this.currentLabels[label]) {
-            result.currentLabels[label] = this.currentLabels[label];
+            result[jzt.ST.currentLabels][label] = this.currentLabels[label];
         }
     }
 
@@ -196,10 +196,10 @@ jzt.ScriptContext.prototype.deserialize = function(data) {
 
     var label;
 
-    this.commandIndex = data.commandIndex;
-    for(label in data.currentLabels) {
-        if(data.currentLabels.hasOwnProperty(label)) {
-            this.currentLabels[label] = data.currentLabels[label];
+    this.commandIndex = data[jzt.ST.commandIndex];
+    for(label in data[jzt.ST.currentLabels]) {
+        if(data[jzt.ST.currentLabels].hasOwnProperty(label)) {
+            this.currentLabels[label] = data[jzt.ST.currentLabels][label];
         }
     }
 

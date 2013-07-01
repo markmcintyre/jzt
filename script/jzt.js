@@ -57,13 +57,13 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     };
 
     this.currentBoard = undefined;
-    this.startingBoard = data.startingBoard;
+    this.startingBoard = data[jzt.ST.startingBoard];
     this.boards = {};
 
     // Store our boards
-    for(var index = 0; index < data.boards.length; ++index) {
-        var board = data.boards[index];
-        this.boards[board.name] = board;
+    for(var index = 0; index < data[jzt.ST.boards].length; ++index) {
+        var board = data[jzt.ST.boards][index];
+        this.boards[board[jzt.ST.name]] = board;
     }
     
     var graphicsLoadedCallback = this.onGraphicsLoaded.bind(this);
