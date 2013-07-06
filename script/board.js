@@ -115,7 +115,7 @@ jzt.Board.prototype.serialize = function() {
             result[jzt.ST.tiles].push(tile.serialize());
         }
         else {
-            result[jzt.ST.tiles].push(0);
+            result[jzt.ST.tiles].push({});
         }
     });
 
