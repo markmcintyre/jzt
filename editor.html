@@ -148,6 +148,8 @@
 			var scriptSelector = document.getElementById('script-selector');
 			var newScriptButton = document.getElementById('new-script-button');
 			var scriptEditor = document.getElementById('script-editor');
+			var editArea = document.getElementById('edit-area');
+			var canvas = document.getElementById('jzt');
 			var editor = undefined;
 
 			function onToolSelected(event) {
@@ -206,6 +208,7 @@
 				else {
 					editor.switchBoard(event.target.value);
 				}
+
 			};
 
 			function onBoardAdded(boardName) {
@@ -223,6 +226,10 @@
 					scriptSelector.options[index] = new Option(editor.currentBoard.scripts[index].name);
 				}
 				selectScript(scriptSelector.value);
+
+				editArea.scrollTop = (canvas.height - editArea.clientHeight) / 2;
+				editArea.scrollLeft = (canvas.width - editArea.clientWidth) / 2;
+				
 			};
 
 			function onTemplateChanged(newTemplate) {
@@ -290,7 +297,6 @@
     		var saveButton = document.getElementById('save-game');
     		saveButton.addEventListener('click', saveGame, false);
 
-			var canvas = document.getElementById('jzt');
 			var callbacks = {
 				addBoard: onBoardAdded,
 				removeBoard: onBoardRemoved,
