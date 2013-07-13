@@ -335,6 +335,31 @@ jztscript.parsers.ScrollParser = function() {
 };
 
 /*
+ * Send Parser
+ *
+ * command = '#' 'send' Word Word
+ */
+ jztscript.parsers.SendParser = function() {
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+    result.add(ns.discard(new ns.Literal('#')));
+    result.add(ns.discard(new ns.Literal('send')));
+    result.add(ns.optional(new ns.Word()));
+    result.add(new ns.Word());
+    result.assembler = {
+        assemble: function(assembly) {
+            var command = new jzt.commands.Send();
+            command.message = assembly.stack.pop().toUpperCase();
+            if(assembly.stack.length > 0) {
+                command.recipient = assembly.stack.pop().toUpperCase();
+            }
+            assembly.target = command;
+        }
+    };
+    return result;
+ };
+
+/*
  * Set Parser
  * 
  * command = '#' 'set' (Empty | Number) Word

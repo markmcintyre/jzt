@@ -358,6 +358,45 @@ jzt.commands.Scroll.prototype.execute = function(owner) {
 };
 
 /*
+ * Send Command
+ */
+ jzt.commands.Send = function() {
+    this.message = undefined;
+    this.recipient = undefined;
+ };
+
+ jzt.commands.Send.prototype.clone = function() {
+    var clone = new jzt.commands.Send();
+    clone.message = this.message;
+    clone.recipient = this.recipient;
+    return clone;
+ };
+
+ jzt.commands.Send.prototype.execute = function(owner) {
+
+    var recipients;
+    var index;
+
+    if(this.recipient === undefined) {
+        owner.scriptContext.jumpToLabel(this.message);
+        return jzt.commands.CommandResult.CONTINUE_AFTER_JUMP;
+    }
+    else if(this.recipient === 'all') {
+        recipients = owner.board.getScripables();
+    }
+    else {
+        recipients = owner.board.getScriptables(this.recipient);
+    }
+
+    for(index = 0; index < recipients.length; ++index) {
+        recipients[index].sendMessage(this.message);
+    }
+
+    return jzt.commands.CommandResult.CONTINUE;
+
+ };
+
+/*
  * Set Command
  */
 jzt.commands.Set = function() {

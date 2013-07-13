@@ -504,7 +504,9 @@ jzt.things.ScriptableThing.prototype.walk = function() {
 jzt.things.ScriptableThing.prototype.doTick = function() {
 
     this.walk();
-    this.scriptContext.executeTick();
+    if(this.scriptContext) {
+        this.scriptContext.executeTick();
+    }
     
 };
 

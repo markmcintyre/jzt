@@ -146,6 +146,20 @@ jzt.Board.prototype.initializeScripts = function(scriptData) {
     
 };
 
+jzt.Board.prototype.getScriptables = function(name) {
+
+    var result = [];
+
+    this.each(function(tile) {
+        if(tile && tile instanceof jzt.things.ScriptableThing && (tile.name && tile.name.toUpperCase() === name)) {
+            result.push(tile);
+        }
+    });
+
+    return result;
+
+};
+
 /**
  * Takes a provided player an initializes it for use on this board.
  * 
