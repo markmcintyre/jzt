@@ -521,11 +521,24 @@ jzt.things.ScriptableThing.prototype.doTick = function() {
 jzt.things.Ammo = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 132;
+    this.background = undefined;
     this.foreground = jzt.colors.Cyan;
 };
 jzt.things.Ammo.prototype = new jzt.things.Thing();
 jzt.things.Ammo.prototype.constructor = jzt.things.Ammo;
 jzt.things.Ammo.serializationType = 'Ammo';
+
+jzt.things.Ammo.prototype.serialize = function() {
+    var result = jzt.things.Thing.prototype.serialize.call(this);
+    delete result.color;
+    return result;
+};
+
+jzt.things.Ammo.prototype.deserialize = function(data) {
+    jzt.things.Thing.prototype.deserialize.call(this, data);
+    this.background = undefined;
+    this.foreground = jzt.colors.Cyan;
+};
 
 /**
  * Pushes this Ammo in a provided direction on its owner Board.
@@ -560,6 +573,7 @@ jzt.things.Ammo.prototype.sendMessage = function(message) {
 jzt.things.Bear = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.spriteIndex = 153;
+    this.background = undefined;
     this.foreground = jzt.colors.Brown;
     this.sensitivity = 9;
     this.speed = 3;
@@ -575,6 +589,7 @@ jzt.things.Bear.serializationType = 'Bear';
  */
 jzt.things.Bear.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    delete result.color;
     result.sensitivity = this.sensitivity;
     return result;
 };
@@ -586,6 +601,8 @@ jzt.things.Bear.prototype.serialize = function() {
  */
 jzt.things.Bear.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.background = undefined;
+    this.foreground = jzt.colors.Brown;
     this.sensitivity = jzt.util.getOption(data, 'sensitivity', 9);
 };
 
@@ -733,6 +750,7 @@ jzt.things.Bullet.serializationType = 'Bullet';
  */
 jzt.things.Bullet.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this) || {};
+    delete result.color;
     result.direction = this.direction;
     if(this.fromPlayer) {
         result.fromPlayer = true;
@@ -748,6 +766,8 @@ jzt.things.Bullet.prototype.serialize = function() {
  */
  jzt.things.Bullet.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.background = undefined;
+    this.foreground = jzt.colors.BrightWhite;
     this.direction = data.direction;
     if(data.fromPlayer) {
         this.fromPlayer = data.fromPlayer;
@@ -1239,12 +1259,15 @@ jzt.things.River.prototype.isSurrenderable = function(thing) {
 
 jzt.things.River.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    delete result.color;
     result.direction = jzt.Direction.getShortName(this.direction);
     return result;
 };
 
 jzt.things.River.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.background = jzt.colors.Blue;
+    this.foreground = jzt.colors.BrightBlue;
     this.direction = jzt.Direction.fromName(data.direction);
     this.initialize();
 };
@@ -1360,12 +1383,23 @@ jzt.things.Forest.noteIndex = 0;
 jzt.things.Forest.serializationType = 'Forest';
 
 /**
+ * Serializes this Forest into a data object.
+ */
+jzt.things.Forest.prototype.serialize = function() {
+    var result = jzt.things.Thing.prototype.serialize.call(this);
+    delete result.color;
+    return result;
+};
+
+/**
  * Deserializes a provided data Object into Forest.
  *
  * @param data A data object to be deserialized into Forest.
  */
 jzt.things.Forest.prototype.deserialize = function(data) {
     jzt.things.Thing.prototype.deserialize.call(this, data);
+    this.background = jzt.colors.Green;
+    this.foreground = jzt.colors.Black;
 };
 
 /**
@@ -1392,6 +1426,7 @@ jzt.things.Forest.prototype.sendMessage = function(message) {
 jzt.things.Gem = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 4;
+    this.background = undefined;
     this.foreground = jzt.colors.BrightMagenta;
 };
 jzt.things.Gem.prototype = new jzt.things.Thing();
@@ -1485,6 +1520,7 @@ jzt.things.InvisibleWall.prototype.getSpriteIndex = function() {
 jzt.things.Key = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 12;
+    this.background = undefined;
     this.foreground = jzt.colors.BrightBlue;
 };
 jzt.things.Key.prototype = new jzt.things.Thing();
@@ -1606,7 +1642,7 @@ jzt.things.Lion = function(board) {
     this.intelligence = 3;
     this.spriteIndex = 234;
     this.foreground = jzt.colors.BrightRed;
-    this.background = jzt.colors.Black;
+    this.background = undefined;
     this.speed = 2;
 };
 jzt.things.Lion.prototype = new jzt.things.UpdateableThing();
@@ -1620,6 +1656,7 @@ jzt.things.Lion.serializationType = 'Lion';
  */
 jzt.things.Lion.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    delete result.color;
     result.intelligence = this.intelligence;
     return result;
 };
@@ -1631,6 +1668,8 @@ jzt.things.Lion.prototype.serialize = function() {
  */
 jzt.things.Lion.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.background = undefined;
+    this.foreground = jzt.colors.BrightRed;
     this.intelligence = data.intelligence;
 };
 
@@ -1882,7 +1921,7 @@ jzt.things.Player.prototype.update = function() {
 
     var k = this.game.keyboard;
 
-    if(k.isPressed(k.SHIFT)) {
+    if(k.isPressed(k.SHIFT) || k.isPressed(k.SPACE)) {
 
         if(k.isPressed(k.UP)) {
             this.eventScheduler.scheduleEvent(k.isPressed(k.UP), {'type': this.SHOOT_ACTION,  'direction': jzt.Direction.North});
@@ -2121,6 +2160,7 @@ jzt.things.Pusher.prototype.doTick = function() {
 jzt.things.Ruffian = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.spriteIndex = 5;
+    this.background = undefined;
     this.foreground = jzt.colors.BrightMagenta;
     this.intelligence = 5;
     this.restingTime = 5;
@@ -2140,6 +2180,7 @@ jzt.things.Ruffian.serializationType = 'Ruffian';
  */
 jzt.things.Ruffian.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    delete result.color;
     result.intelligence = this.intelligence;
     result.restingTime = this.restingTime;
     return result;
@@ -2152,6 +2193,8 @@ jzt.things.Ruffian.prototype.serialize = function() {
  */
 jzt.things.Ruffian.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.background = undefined;
+    this.foreground = jzt.colors.BrightMagenta;
     this.intelligence = jzt.util.getOption(data, 'intelligence', 5);
     this.restingTime = jzt.util.getOption(data, 'restingTime', 5);
 };
@@ -2310,12 +2353,19 @@ jzt.things.SliderNs.prototype.push = function(direction, pusher) {
 jzt.things.Snake = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.spriteIndex = 235;
+    this.background = undefined;
     this.foreground = jzt.colors.Green;
     this.speed = 3;
 };
 jzt.things.Snake.prototype = new jzt.things.UpdateableThing();
 jzt.things.Snake.prototype.constructor = jzt.things.Snake;
 jzt.things.Snake.serializationType = 'Snake';
+
+jzt.things.Snake.prototype.serialize = function() {
+    var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    delete result.color;
+    return result;
+};
 
 /**
  * Attempts to push this Snake in a provided direction.
@@ -2400,7 +2450,7 @@ jzt.things.Spider = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.spriteIndex = 15;
     this.foreground = jzt.colors.BrightRed;
-    this.background = jzt.colors.Black;
+    this.background = undefined;
     this.intelligence = 5;
     this.speed = 1;
 };
@@ -2527,7 +2577,7 @@ jzt.things.SpiderWeb = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = undefined;
     this.foreground = jzt.colors.Grey;
-    this.background = jzt.colors.Black;
+    this.background = undefined;
 };
 jzt.things.SpiderWeb.prototype = new jzt.things.Thing();
 jzt.things.SpiderWeb.prototype.constructor = jzt.things.SpiderWeb;
@@ -2880,7 +2930,7 @@ jzt.things.Tiger = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.spriteIndex = 227;
     this.foreground = jzt.colors.BrightCyan;
-    this.background = jzt.colors.Black;
+    this.background = undefined;
     this.intelligence = 5;
     this.firingRate = 5;
     this.speed = 2;
@@ -2896,6 +2946,7 @@ jzt.things.Tiger.serializationType = 'Tiger';
  */
 jzt.things.Tiger.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    delete result.color;
     result.intelligence = this.intelligence;
     result.firingRate = this.firingRate;
     return result;
@@ -2908,6 +2959,8 @@ jzt.things.Tiger.prototype.serialize = function() {
  */
 jzt.things.Tiger.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize(this, data);
+    this.background = undefined;
+    this.foreground = jzt.colors.BrightCyan;
     this.intelligence = data.intelligence === undefined ? 5 : data.intelligence;
     this.firingRate = data.firingRate === undefined ? 5 : data.firingRate;
 };
@@ -3023,6 +3076,18 @@ jzt.things.Water = function(board) {
 jzt.things.Water.prototype = new jzt.things.Thing();
 jzt.things.Water.prototype.constructor = jzt.things.Water;
 jzt.things.Water.serializationType = 'Water';
+
+jzt.things.Water.prototype.serialize = function() {
+    var result = jzt.things.Thing.prototype.serialize.call(this);
+    delete result.color;
+    return result;
+};
+
+jzt.things.Water.prototype.deserialize = function(data) {
+    jzt.things.Thing.prototype.deserialize.call(this, data);
+    this.background = jzt.colors.BrightWhite;
+    this.foreground = jzt.colors.BrightBlue;
+};
 
 /**
  * Returns whether or not this Water is surrenderable to a provided

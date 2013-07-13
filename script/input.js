@@ -1,5 +1,5 @@
 /**
- * JZT Basic
+ * JZT Input
  * Copyright © 2013 Orangeline Interactive, Inc.
  * @author Mark McIntyre
  */
@@ -21,6 +21,7 @@ jzt.KeyboardInput = function() {
     this.RIGHT = 39;
     this.DOWN = 40;
     this.SHIFT = 16;
+    this.SPACE = 32;
     this.ENTER = 13;
     this.ESCAPE = 27;
     this.T = 84;
@@ -29,7 +30,7 @@ jzt.KeyboardInput = function() {
     this.pressedKeys = 0;
 
     this.pressed = {};
-    this.capturableKeys = [this.LEFT, this.UP, this.RIGHT, this.DOWN, this.SHIFT, this.T, this.P, this.ENTER, this.ESCAPE];
+    this.capturableKeys = [this.LEFT, this.UP, this.RIGHT, this.DOWN, this.SHIFT, this.SPACE, this.T, this.P, this.ENTER, this.ESCAPE];
     
 };
 
