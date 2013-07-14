@@ -283,16 +283,13 @@ jzt.Game.prototype.getBoard = function(name) {
  */
 jzt.Game.prototype.setBoard = function(board, playerPoint) {
 
-    // If we are setting to the same board...
-    if(this.currentBoard && this.currentBoard.equals(board)) {
-
-        // We need to erase the old player position
+    // First, erase the old player position if applicable
+    if(this.currentBoard) {
         this.currentBoard.setTile(this.player.point, this.player.under);
-
     }
 
-    // If we are not setting to the same board...
-    else {
+    // If we aren't moving to the same board as before...
+    if(!(this.currentBoard && this.currentBoard.equals(board))) {
 
         // Serialize the old board, if applicable
         if(this.currentBoard !== undefined) {
