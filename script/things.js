@@ -514,6 +514,54 @@ jzt.things.ScriptableThing.prototype.doTick = function() {
  * BUILT-IN THINGS
  *=================================================================================*/
  
+ /**
+  * ActiveBomb is an UpdateableThing that counts down from 9 to 0 before exploding.
+  *
+  * @param board A board to own this ActiveBomb
+  */
+jzt.things.ActiveBomb = function(board) {
+    jzt.things.UpdateableThing.call(this, board);
+    this.timeToLive = 9;
+    this.speed = 6;
+    this.spriteIndex = 57;
+};
+jzt.things.ActiveBomb.prototype = new jzt.things.UpdateableThing();
+jzt.things.ActiveBomb.prototype.constructor = jzt.things.ActiveBomb;
+jzt.things.ActiveBomb.serializationType = 'ActiveBomb';
+
+jzt.things.ActiveBomb.prototype.serialize = function() {
+    var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    result.timeToLive = this.timeToLive;
+    return result;
+};
+
+jzt.things.ActiveBomb.prototype.deserialize = function(data) {
+    jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.timeToLive = data.timeToLive;
+};
+
+jzt.things.ActiveBomb.prototype.push = function(direction, pusher) {
+    this.move(direction);
+};
+
+jzt.things.ActiveBomb.prototype.doTick = function() {
+
+    this.play(this.timeToLive % 2 ? '8' : '5');
+    
+    if(--this.timeToLive < 0) {
+        this.play('t+++c-c-c-c-c-c');
+        this.board.deleteTile(this.point);
+    }
+    else {
+        this.spriteIndex--;
+    }
+
+};
+
+
+//--------------------------------------------------------------------------------
+
+
 /**
  * Ammo is a Thing that acts as an item capable of increasing a Game's 'ammo' counter
  * by five units when collected.
@@ -667,6 +715,32 @@ jzt.things.Bear.prototype.doTick = function() {
         this.move(direction, true);
     }
    
+};
+
+//--------------------------------------------------------------------------------
+
+/**
+ * A Bomb is a Thing that becomes an ActiveBomb when touched.
+ *
+ * @param board An owner board for this Bomb
+ */
+jzt.things.Bomb = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.spriteIndex = 11;
+}
+jzt.things.Bomb.prototype = new jzt.things.Thing();
+jzt.things.Bomb.prototype.constructor = jzt.things.Bomb;
+jzt.things.Bomb.serializationType = 'Bomb';
+
+jzt.things.Bomb.prototype.push = function(direction, pusher) {
+    this.move(direction);
+};
+
+jzt.things.Bomb.prototype.sendMessage = function(message) {
+    if(message === 'TOUCH') {
+        this.play('tcf+cf+c');
+        this.board.replaceTile(this.point, new jzt.things.ActiveBomb(this.board));
+    }
 };
 
 //--------------------------------------------------------------------------------
@@ -1826,7 +1900,7 @@ jzt.things.Player = function(board) {
     this.SHOOT_ACTION = 1;
     
     this.TORCH_TTL = 60000; // One Minute
-    this.MAX_TORCH_STRENGTH = 4;
+    this.MAX_TORCH_STRENGTH = 5;
     
 };
 jzt.things.Player.prototype = new jzt.things.UpdateableThing();
@@ -1988,6 +2062,9 @@ jzt.things.Player.prototype.useTorch = function() {
  */
 jzt.things.Player.prototype.updateTorch = function(timeStamp) {
     
+    var torchLife;
+    var newStrength;
+
     // If we've already past our torch expiry date
     if(timeStamp > this.torchExpiry) {
         this.torch = false;
@@ -1997,73 +2074,14 @@ jzt.things.Player.prototype.updateTorch = function(timeStamp) {
     else {
         
         // Calculate our torche's life remaining
-        var torchLife = this.torchExpiry - timeStamp;
-        
-        // If there are 20 seconds left...
-        if(torchLife > 20000) {
-            this.torchStrength = 4;
-        }
-        
-        // If there are 10 seconds left...
-        else if(torchLife > 10000) {
-            this.torchStrength = 3;
-        }
-        
-        // If there are 5 seconds left...
-        else if(torchLife > 5000) {
-            this.torchStrength = 2;
-        }
-        
-        // Otherwise...
-        else {
-            this.torchStrength = 1;
+        torchLife = this.torchExpiry - timeStamp;
+
+        if(torchLife < 20000) {
+            this.torchStrength = Math.round((torchLife * this.MAX_TORCH_STRENGTH) / 20000);
         }
         
     }
     
-};
-
-/**
- * Retrieves whether or not a given point is within range of this Player's
- * torch.
- *
- * @param point A point to test if it is within this Player's torch range
- * @return true if a point is within torch range, false otherwise.
- */
-jzt.things.Player.prototype.inTorchRange = function(point) {
-    
-    // If we don't have a torch, we can only see ourselves
-    if(!this.torch) {
-        return point.x === this.point.x && point.y === this.point.y;
-    }
-    
-    // Otherwise...
-    else {
-
-        // Calculate the distance between us and the point
-        var xDiff = Math.abs(point.x - this.point.x);
-        var yDiff = Math.abs(point.y - this.point.y);
-
-        // Calculate a torch modifier based on its strength
-        var torchModifier = this.MAX_TORCH_STRENGTH - this.torchStrength;
-        yDiff = yDiff + torchModifier;
-
-        // Our radius depends on the distance
-        switch(yDiff) {
-          case 0:
-                return xDiff <= 7 - torchModifier;
-          case 1:
-          case 2:
-                return xDiff <= 6 - torchModifier;
-          case 3:
-                return xDiff <= 5 - torchModifier;
-          case 4:
-                return xDiff <= 4 - torchModifier;
-          default:
-                return false;
-        }
-
-    }  
 };
 
 /**

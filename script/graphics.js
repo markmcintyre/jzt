@@ -158,6 +158,19 @@ jzt.Graphics.prototype.update = function() {
 
 };
 
+jzt.Graphics.prototype.fillTile = function(c, point, color) {
+
+    var destinationX = point.x * this.TILE_SIZE.x;
+    var destinationY = point.y * this.TILE_SIZE.y;
+
+    // Draw the tile
+    if(color) {
+        c.fillStyle = color.rgbValue;
+        c.fillRect(destinationX, destinationY, this.TILE_SIZE.x, this.TILE_SIZE.y);
+    }
+
+};
+
 /**
  * Gets a Sprite instance for a provided CodePage-437 character index.
  *

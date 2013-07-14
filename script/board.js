@@ -40,7 +40,7 @@ jzt.Board = function(boardData, game) {
 
     this.DISPLAY_MESSAGE_TTL = game.FPS * 3; // 3 seconds
     this.DARK_SPRITE = game.resources.graphics.getSprite(176);
-    this.DARK_SPRITE_COLOR = jzt.colors.Colors['8'];
+    this.DARK_SPRITE_COLOR = jzt.colors.Grey;
     this.BOARD_DATA_WORD_LENGTH = 4;
 
     this.height = boardData.height;
@@ -368,6 +368,12 @@ jzt.Board.prototype.deleteTile = function(point) {
     // Delete the tile
     this.setTile(point, thing.under);
     
+};
+
+jzt.Board.prototype.explode = function(point, radius) {
+
+
+
 };
 
 /**
@@ -705,20 +711,26 @@ jzt.Board.prototype.render = function(c) {
     var me = this;
     var canvasWidth = this.game.context.canvas.width;
     var canvasHeight = this.game.context.canvas.height;
+    var lightPoints;
 
     this.updateWindowPosition();
 
-    c.fillStyle = '#000000';
+    c.fillStyle = jzt.colors.Black.rgbValue;
     c.fillRect(0, 0, canvasWidth, canvasHeight);
     
+    // If the board is dark, we need to calculate our light points
+    if(me.dark) {
+        lightPoints = jzt.util.pointsInCircle(me.game.player.point, me.game.player.torchStrength);
+    }
+
     this.eachDisplayable( function(thing, point) {
 
         // If this board is dark, we should only render the tiles in a visible range
-        if(me.dark && !me.game.player.inTorchRange(point)) {
-            me.DARK_SPRITE.draw(c, point.subtract(me.windowOrigin), me.DARK_SPRITE_COLOR, jzt.colors.Colors['0']);
+        if(me.dark && !lightPoints.contains(point)) {
+            me.DARK_SPRITE.draw(c, point.subtract(me.windowOrigin), me.DARK_SPRITE_COLOR, jzt.colors.Black);
         }
 
-        // If this board is not dark, and there's a thing to render...
+        // If this board is not dark, or there's a thing to render...
         else if(thing) {
 
             // Grab our sprite
@@ -729,8 +741,11 @@ jzt.Board.prototype.render = function(c) {
             if(!background && thing.under) {
                 background = thing.under.background.isLight() ? thing.under.background.darken() : thing.under.background;
             }
-            sprite.draw(c, thing.point.subtract(me.windowOrigin), thing.foreground, background);
+            sprite.draw(c, point.subtract(me.windowOrigin), thing.foreground, background);
         }
+        //else {
+        //    me.game.resources.graphics.fillTile(c, point.subtract(me.windowOrigin), jzt.colors.Black);
+        //}
 
   
             // Debug rendering...

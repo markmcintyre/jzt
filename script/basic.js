@@ -112,6 +112,24 @@ jzt.Point.prototype.directionTo = function(other, axis) {
     
 };
 
+jzt.Point.prototype.compareTo = function(other) {
+    if(this.x < other.x) {
+        return -1;
+    }
+    else if(this.x > other.x) {
+        return 1;
+    }
+    else {
+        if(this.y < other.y) {
+            return -1;
+        }
+        else if(this.y > other.y) {
+            return 1;
+        }
+    }
+    return 0;
+};
+
 /**
  * Returns whether or not this Point is equal in value to another point.
  *
@@ -129,6 +147,58 @@ jzt.Point.prototype.equals = function(other) {
  */
 jzt.Point.prototype.toString = function() {
     return '(' + this.x + ', ' + this.y + ')';
+};
+
+jzt.PointSet = function() {
+    this.points = [];
+    this.sorted = false;
+};
+
+jzt.PointSet.prototype.add = function(point) {
+    if(!this.contains(point)) {
+        this.points.push(point);
+        this.sorted = false;
+    }
+};
+
+jzt.PointSet.prototype.sortPoints = function() {
+    this.points.sort(function(a, b) {
+        return a.compareTo(b);
+    });
+    this.sorted = true;
+};
+
+jzt.PointSet.prototype.contains = function(point) {
+    return this.indexOf(point) >= 0;
+};
+
+jzt.PointSet.prototype.indexOf = function(point) {
+
+    var minIndex = 0;
+    var maxIndex = this.points.length - 1;
+    var middle;
+
+    if(! this.sorted) {
+        this.sortPoints();
+    }
+
+    while(maxIndex >= minIndex) {
+        middle = minIndex + (Math.round((maxIndex - minIndex) / 2));
+
+        if (this.points[middle].compareTo(point) < 0) {
+            minIndex = middle + 1;
+        }
+        else if(this.points[middle].compareTo(point) > 0) {
+            maxIndex = middle - 1;
+        }
+        else {
+            return middle;
+        }
+
+    }
+
+    return -1;
+
 };
 
 /**
@@ -411,6 +481,123 @@ jzt.util.storeOption = function(destination, name, value) {
         destination[name] = value;
     }
 };
+
+jzt.util.pointsInCircle = function(point, radius) {
+    return jzt.util.pointsInEllipse(point, radius * 2, radius);
+};
+
+jzt.util.pointsInEllipse = function(point, rx, ry) {
+
+    var rx2 = rx * rx;
+    var ry2 = ry * ry;
+    var twoRx2 = 2 * rx2;
+    var twoRy2 = 2 * ry2;
+    var p;
+    var x = 0;
+    var y = ry;
+    var px = 0;
+    var py = twoRx2 * y;
+    var result = new jzt.PointSet();
+
+    function horizontalLine(x1, y1, x2, y2) {
+        var index = 0;
+        for(index = x1; index <= x2; index++) {
+            result.add(new jzt.Point(index, y1));
+        }
+    };
+
+    // Our results always contain the center point
+    result.add(point);
+
+    // If there is no radius, we can quit now
+    if(rx === 0 && ry === 0) {
+        return result;
+    }
+
+    // Upper Region
+    p = Math.round (ry2 - (rx2 * ry) + (0.25 * rx2));
+    while (px < py) {
+        x++;
+        px += twoRy2;
+        if (p < 0)
+        p += ry2 + px;
+        else {
+        y--;
+        py -= twoRx2;
+        p += ry2 + px - py;
+        }
+        horizontalLine(point.x - x, point.y + y, point.x + x, point.y + y);
+        horizontalLine(point.x - x, point.y - y, point.x + x, point.y - y);
+    }
+
+    // Lower Region
+    p = Math.round (ry2 * (x+0.5) * (x+0.5) + rx2 * (y-1) * (y-1) - rx2 * ry2);
+    while (y > 0) {
+        y--;
+        py -= twoRx2;
+        if (p > 0)
+        p += rx2 - py;
+        else {
+        x++;
+        px += twoRy2;
+        p += rx2 - py + px;
+        }
+        horizontalLine(point.x - x, point.y + y, point.x + x, point.y + y);
+        horizontalLine(point.x - x, point.y - y, point.x + x, point.y - y);
+    }
+
+    return result;
+
+};
+
+/*jzt.util.pointsInCircle = function(point, radius) {
+    
+    var error = -radius;
+    var x = radius;
+    var y = 0;
+    var result = {};
+
+
+    function plot8Points(point, x, y) {
+        plot4Points(point, x, y);
+        if(x != y) {
+            plot4Points(point, y, x);
+        }
+    }
+
+    function plot4Points(point, x, y) {
+        
+        horizontalLine(point.x - x, point.y + y, point.x + x, point.y + y);
+        if(x!=0 && y!=0){
+            horizontalLine(point.x - x, point.y -y, point.x+x, point.y - y);
+        }
+
+    }
+
+    function horizontalLine(x1, y1, x2, y2) {
+        var index = 0;
+        for(index = x1; index <= x2; index++) {
+            result[(new jzt.Point(index, y1)).toString()] = true;
+        }
+    };
+
+    while(x >= y) {
+        plot8Points(point, x, y);
+        error += y;
+        y++;
+        error += y;
+
+        if(error >= 0) {
+            error -= x;
+            x--;
+            error -= x;
+        }
+
+    }
+
+    return result;
+
+};*/
 
 /**
  * Retrieves a property value from a provided data object with a provided name.
