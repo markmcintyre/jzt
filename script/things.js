@@ -524,6 +524,7 @@ jzt.things.ActiveBomb = function(board) {
     this.timeToLive = 9;
     this.speed = 6;
     this.spriteIndex = 57;
+    this.radius = 4;
 };
 jzt.things.ActiveBomb.prototype = new jzt.things.UpdateableThing();
 jzt.things.ActiveBomb.prototype.constructor = jzt.things.ActiveBomb;
@@ -546,11 +547,13 @@ jzt.things.ActiveBomb.prototype.push = function(direction, pusher) {
 
 jzt.things.ActiveBomb.prototype.doTick = function() {
 
+    var explosion;
     this.play(this.timeToLive % 2 ? '8' : '5');
     
     if(--this.timeToLive < 0) {
-        this.play('t+++c-c-c-c-c-c');
-        this.board.deleteTile(this.point);
+        explosion = new jzt.things.Explosion(this.board);
+        explosion.radius = this.radius;
+        this.board.replaceTile(this.point, explosion);
     }
     else {
         this.spriteIndex--;
@@ -678,7 +681,7 @@ jzt.things.Bear.prototype.push = function(direction) {
  */
 jzt.things.Bear.prototype.sendMessage = function(message) {
 
-    if(message === 'SHOT') {
+    if(message === 'SHOT' || message === 'BOMBED') {
         this.play('t+c---c++++c--c', true);
         this.remove();
     }
@@ -726,6 +729,7 @@ jzt.things.Bear.prototype.doTick = function() {
  */
 jzt.things.Bomb = function(board) {
     jzt.things.Thing.call(this, board);
+    this.radius = 4;
     this.spriteIndex = 11;
 }
 jzt.things.Bomb.prototype = new jzt.things.Thing();
@@ -737,9 +741,12 @@ jzt.things.Bomb.prototype.push = function(direction, pusher) {
 };
 
 jzt.things.Bomb.prototype.sendMessage = function(message) {
+    var bomb;
     if(message === 'TOUCH') {
         this.play('tcf+cf+c');
-        this.board.replaceTile(this.point, new jzt.things.ActiveBomb(this.board));
+        bomb = new jzt.things.ActiveBomb(this.board);
+        bomb.radius = this.radius;
+        this.board.replaceTile(this.point, bomb);
     }
 };
 
@@ -794,7 +801,7 @@ jzt.things.BreakableWall.serializationType = 'BreakableWall';
  * @param message A message to receive.
  */
 jzt.things.BreakableWall.prototype.sendMessage = function(message) {
-    if(message === 'SHOT') {
+    if(message === 'SHOT' || message === 'BOMBED') {
         this.play('t-c');
         this.remove();
     }
@@ -1184,7 +1191,7 @@ jzt.things.Centipede.prototype.remove = function() {
  * @param message A message to be sent to this Centipede.
  */
 jzt.things.Centipede.prototype.sendMessage = function(message) {
-    if(message === 'SHOT') {
+    if(message === 'SHOT' || message === 'BOMBED') {
         this.play('t+c---c++++c--c', true);
         this.remove();
     }
@@ -1403,6 +1410,69 @@ jzt.things.Door.prototype.sendMessage = function(message) {
 
 //--------------------------------------------------------------------------------
 
+jzt.things.Explosion = function(board) {
+    jzt.things.UpdateableThing.call(this, board);
+    this.radius = 4;
+    this.timeToLive = jzt.things.Explosion.MAX_TTL;
+    this.speed = 1;
+};
+jzt.things.Explosion.prototype = new jzt.things.UpdateableThing();
+jzt.things.Explosion.prototype.constructor = jzt.things.Explosion;
+jzt.things.Explosion.serializationType = 'Explosion';
+jzt.things.Explosion.MAX_TTL = 5;
+
+jzt.things.Explosion.prototype.doTick = function() {
+
+    var points;
+    var index;
+    var tile;
+
+    // If we're at the start of our explosion, send a BOMBED message to all affected Things
+    if(this.timeToLive === jzt.things.Explosion.MAX_TTL) {
+
+        this.play('t+++c-c-c-c-c-c', true);
+
+        points = jzt.util.pointsInCircle(this.point, this.radius);
+
+        for(index = 0; index < points.length; ++index) {
+            tile = this.board.getTile(points[index]);
+            if(tile) {
+                tile.sendMessage('BOMBED');
+            }
+        }
+    }
+
+    // After our time to live, remove ourselves
+    if(--this.timeToLive <= 0) {
+        this.remove();
+    }
+
+};
+
+jzt.things.Explosion.prototype.render = function(context) {
+
+    var points;
+    var index;
+    var sprite = this.board.game.resources.graphics.getSprite(176 + Math.round((2 * this.timeToLive) / jzt.things.Explosion.MAX_TTL));
+    var radius;
+
+    if(this.timeToLive === jzt.things.Explosion.MAX_TTL) {
+        radius = Math.round(this.radius / 2); 
+    }
+    else {
+        radius = Math.round((this.radius * this.timeToLive) / (jzt.things.Explosion.MAX_TTL - 1));
+    }
+
+    points = jzt.util.pointsInCircle(this.point, radius);
+
+    for(index = 0; index < points.length; ++index) {
+        sprite.draw(context, points[index].subtract(this.board.windowOrigin), jzt.colors.Yellow, jzt.colors.Red);
+    }
+
+};
+
+//--------------------------------------------------------------------------------
+
 /**
  * FakeWall looks like a normal Wall, but is surrenderable to whatever Thing wishes
  * to move there.
@@ -1524,7 +1594,7 @@ jzt.things.Gem.prototype.sendMessage = function(message) {
         this.adjustCounter('score', 10);
         this.play('t+c-gec');
     }
-    else if(message === 'SHOT') {
+    else if(message === 'SHOT' || message === 'BOMBED') {
         this.remove();
         this.play('t-c');
     }
@@ -1758,7 +1828,7 @@ jzt.things.Lion.prototype.deserialize = function(data) {
  */
 jzt.things.Lion.prototype.sendMessage = function(message) {
 
-    if(message === 'SHOT') {
+    if(message === 'SHOT' || message === 'BOMBED') {
         this.play('t+c---c++++c--c', true);
         this.remove();
     }
@@ -2091,7 +2161,7 @@ jzt.things.Player.prototype.updateTorch = function(timeStamp) {
  */
 jzt.things.Player.prototype.sendMessage = function(message) {
 
-    if(message === 'SHOT') {
+    if(message === 'SHOT' || message === 'BOMBED') {
         this.play('t--c+c-c+d#', true);
         this.board.setDisplayMessage(jzt.i18n.getMessage('status.hurt'));
         this.adjustCounter('health', -10);
@@ -2238,7 +2308,7 @@ jzt.things.Ruffian.prototype.push = function(direction) {
  * @param message A message to be delivered to this Ruffian.
  */
 jzt.things.Ruffian.prototype.sendMessage = function(message) {
-    if(message === 'SHOT') {
+    if(message === 'SHOT' || message === 'BOMBED') {
         this.play('t+c---c++++c--c', true);
         this.remove();
     }
@@ -2403,7 +2473,7 @@ jzt.things.Snake.prototype.push = function(direction) {
  * @param message A message to be delivered to this Ruffian.
  */
 jzt.things.Snake.prototype.sendMessage = function(message) {
-    if(message === 'SHOT') {
+    if(message === 'SHOT' || message === 'BOMBED') {
         this.play('t+c---c++++c--c', true);
         this.remove();
     }
@@ -2534,7 +2604,7 @@ jzt.things.Spider.prototype.isAttackable = function(direction) {
  */
 jzt.things.Spider.prototype.sendMessage = function(message) {
 
-    if(message === 'SHOT') {
+    if(message === 'SHOT' || message === 'BOMBED') {
         this.play('t+c---c++++c--c', true);
         this.remove();
     }
@@ -2994,7 +3064,7 @@ jzt.things.Tiger.prototype.deserialize = function(data) {
  */
 jzt.things.Tiger.prototype.sendMessage = function(message) {
 
-    if(message === 'SHOT') {
+    if(message === 'SHOT' || message === 'BOMBED') {
         this.play('t+c---c++++c--c', true);
         this.remove();
     }

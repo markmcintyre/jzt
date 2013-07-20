@@ -26,6 +26,7 @@ jzt.Board = function(boardData, game) {
     this.scripts = [];
     this.dark = boardData.dark;
     this.smartPath = [];
+    this.customRenderSet = [];
 
     this.north = boardData.north;
     this.east = boardData.east;
@@ -370,12 +371,6 @@ jzt.Board.prototype.deleteTile = function(point) {
     
 };
 
-jzt.Board.prototype.explode = function(point, radius) {
-
-
-
-};
-
 /**
  * Moves a tile on this Board from a specified Point to another Point.
  * If the move was successful, true is returned, otherwise false. We can
@@ -628,8 +623,13 @@ jzt.Board.prototype.addMessage = function(message) {
  */
 jzt.Board.prototype.update = function() {
 
+    var me = this;
+
     // Update the smart path
     this.updateSmartPath(this.player.point);
+
+    // Initialize our custom renderable list
+    this.customRenderSet = [];
 
     /*
      * This function works as follows: Each tile is looped through in sequential
@@ -643,13 +643,22 @@ jzt.Board.prototype.update = function() {
     // For each tile on our board...
     this.each(function(tile) {
 
-        // If we got a tile, and it's updateable
-        if(tile && tile instanceof jzt.things.UpdateableThing && ! (tile instanceof jzt.things.Player)) {
+        if(tile) {
 
-            // If we aren't updating backwards...
-            if(!tile.updateOnReverse()) {
-                tile.update();
+            // If we got an updateable tile...
+            if(tile instanceof jzt.things.UpdateableThing && ! (tile instanceof jzt.things.Player)) {
+
+                // If we aren't updating backwards...
+                if(!tile.updateOnReverse()) {
+                    tile.update();
+                }
             }
+
+            // If we've got a tile with a custom renderer...
+            if(tile.render) {
+                me.customRenderSet.push(tile);
+            }
+
         }
 
     });
@@ -712,6 +721,7 @@ jzt.Board.prototype.render = function(c) {
     var canvasWidth = this.game.context.canvas.width;
     var canvasHeight = this.game.context.canvas.height;
     var torchCircle;
+    var index;
 
     this.updateWindowPosition();
 
@@ -768,6 +778,11 @@ jzt.Board.prototype.render = function(c) {
             */
 
     });
+
+    // For each item in our custom render set
+    for(index = 0; index < this.customRenderSet.length; ++index) {
+        this.customRenderSet[index].render(c);
+    }
 
     // If there is a display message, render it
     if(this.displayMessage !== undefined) {
