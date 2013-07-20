@@ -28,6 +28,8 @@ jzt.Graphics = function(onLoadCallback) {
     this.SPRITE_DATA_WIDTH = 128;
     this.SPRITE_DATA_HEIGHT = 256;
 
+    this.DARK_IMAGE = undefined;
+
     this.SPRITE_DATA = 'data:image/png;base64,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';
     
     this.blinkCycle = 0;
@@ -127,6 +129,18 @@ jzt.Graphics = function(onLoadCallback) {
             
             }
         }
+
+        // Create our darkness image
+        buffer = document.createElement('canvas');
+        buffer.width = me.TILE_SIZE.x;
+        buffer.height = me.TILE_SIZE.y;
+        context = buffer.getContext('2d');
+        context.imageSmoothingEnabled = false;
+        context.webkitImageSmoothingEnabled = false;
+        context.mozImageSmoothingEnabled = false;
+        sprite = me.getSprite(176);
+        sprite.draw(context, new jzt.Point(0,0), jzt.colors.Grey, jzt.colors.Black);
+        me.DARK_IMAGE = buffer;
         
         // Now that everything is initialized, trigger our load callback
         me.onLoadCallback();

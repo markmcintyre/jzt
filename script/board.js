@@ -715,7 +715,7 @@ jzt.Board.prototype.render = function(c) {
 
     this.updateWindowPosition();
 
-    c.fillStyle = me.dark ? jzt.colors.Grey.rgbValue : jzt.colors.Black.rgbValue;
+    c.fillStyle = me.dark ? this.game.DARK_PATTERN : jzt.colors.Black.rgbValue;
     c.fillRect(0, 0, canvasWidth, canvasHeight);
     
     // If the board is dark, calculate our light circle

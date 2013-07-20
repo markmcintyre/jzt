@@ -121,6 +121,7 @@ jzt.Game.prototype.setCounterValue = function(counter, value) {
  */
 jzt.Game.prototype.onGraphicsLoaded = function() {
     this.scroll = new jzt.Scroll(this);
+    this.DARK_PATTERN = this.context.createPattern(this.resources.graphics.DARK_IMAGE, 'repeat');
     this.onLoadCallback();
 };
 
