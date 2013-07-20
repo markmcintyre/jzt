@@ -746,6 +746,8 @@ jzt.things.Bomb.prototype.sendMessage = function(message) {
         this.play('tcf+cf+c');
         bomb = new jzt.things.ActiveBomb(this.board);
         bomb.radius = this.radius;
+        bomb.foreground = this.foreground;
+        bomb.background = this.background;
         this.board.replaceTile(this.point, bomb);
     }
 };
