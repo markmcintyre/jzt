@@ -547,6 +547,10 @@ jzt.things.ActiveBomb.prototype.push = function(direction, pusher) {
     this.move(direction);
 };
 
+jzt.things.ActiveBomb.prototype.getSpriteIndex = function() {
+    return 57 - (9 - this.timeToLive);
+};
+
 jzt.things.ActiveBomb.prototype.doTick = function() {
 
     var explosion;
@@ -556,9 +560,6 @@ jzt.things.ActiveBomb.prototype.doTick = function() {
         explosion = new jzt.things.Explosion(this.board);
         explosion.radius = this.radius;
         this.board.replaceTile(this.point, explosion);
-    }
-    else {
-        this.spriteIndex--;
     }
 
 };
