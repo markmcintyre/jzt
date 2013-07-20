@@ -533,12 +533,14 @@ jzt.things.ActiveBomb.serializationType = 'ActiveBomb';
 jzt.things.ActiveBomb.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
     result.timeToLive = this.timeToLive;
+    result.radius = this.radius;
     return result;
 };
 
 jzt.things.ActiveBomb.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
-    this.timeToLive = data.timeToLive;
+    this.timeToLive = jzt.util.getOption(data, 'timeToLive', 9);
+    this.radius = jzt.util.getOption(data, 'radius', 4);
 };
 
 jzt.things.ActiveBomb.prototype.push = function(direction, pusher) {
@@ -735,6 +737,17 @@ jzt.things.Bomb = function(board) {
 jzt.things.Bomb.prototype = new jzt.things.Thing();
 jzt.things.Bomb.prototype.constructor = jzt.things.Bomb;
 jzt.things.Bomb.serializationType = 'Bomb';
+
+jzt.things.Bomb.prototype.deserialize = function(data) {
+    jzt.things.Thing.prototype.deserialize.call(this, data);
+    this.radius = jzt.util.getOption(data, 'radius', 4);
+};
+
+jzt.things.Bomb.prototype.serialize = function() {
+    var result = jzt.things.Thing.prototype.serialize.call(this);
+    result.radius = this.radius;
+    return result;
+};
 
 jzt.things.Bomb.prototype.push = function(direction, pusher) {
     this.move(direction);
@@ -1417,11 +1430,25 @@ jzt.things.Explosion = function(board) {
     this.radius = 4;
     this.timeToLive = jzt.things.Explosion.MAX_TTL;
     this.speed = 1;
+    this.spriteIndex = 0;
 };
 jzt.things.Explosion.prototype = new jzt.things.UpdateableThing();
 jzt.things.Explosion.prototype.constructor = jzt.things.Explosion;
 jzt.things.Explosion.serializationType = 'Explosion';
 jzt.things.Explosion.MAX_TTL = 5;
+
+jzt.things.Explosion.prototype.deserialize = function(data) {
+    jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.radius = jzt.getOption(data, 'radius', 4);
+    this.timeToLive = jzt.getOption(data, 'timeToLive', jzt.things.Explosion.MAX_TTL);
+};
+
+jzt.things.Explosion.prototype.serialize = function() {
+    var result = jzt.things.UpdateableThing.prototype.serialize(this);
+    result.radius = this.radius;
+    result.timeToLive = this.timeToLive;
+    return result;
+};
 
 jzt.things.Explosion.prototype.doTick = function() {
 
