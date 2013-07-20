@@ -482,11 +482,13 @@ jzt.util.storeOption = function(destination, name, value) {
     }
 };
 
-jzt.util.pointsInCircle = function(point, radius) {
-    return jzt.util.pointsInEllipse(point, radius * 2, radius);
-};
+jzt.util.generateCircleData = function(point, radius) {
+    return jzt.util.generateEllipseData(point, radius * 2, radius);
+}
 
-jzt.util.pointsInEllipse = function(point, rx, ry) {
+jzt.util.generateEllipseData = function(point, rx, ry) {
+
+    var result = {};
 
     var rx2 = rx * rx;
     var ry2 = ry * ry;
@@ -497,21 +499,25 @@ jzt.util.pointsInEllipse = function(point, rx, ry) {
     var y = ry;
     var px = 0;
     var py = twoRx2 * y;
-    var result = new jzt.PointSet();
+    var minMax;
 
-    function horizontalLine(x1, y1, x2, y2) {
-        var index = 0;
-        for(index = x1; index <= x2; index++) {
-            result.add(new jzt.Point(index, y1));
+    result.contains = function(point) {
+        if(this[point.y]) {
+            minMax = this[point.y];
+            return point.x >= minMax[0] && point.x <= minMax[1];
         }
+        return false;
     };
 
-    // Our results always contain the center point
-    result.add(point);
-
-    // If there is no radius, we can quit now
+    // If there is no radius...
     if(rx === 0 && ry === 0) {
+
+        // We should always contain the center point
+        result[point.y] = [point.x, point.x];
+
+        // Return immediately
         return result;
+
     }
 
     // Upper Region
@@ -526,8 +532,9 @@ jzt.util.pointsInEllipse = function(point, rx, ry) {
         py -= twoRx2;
         p += ry2 + px - py;
         }
-        horizontalLine(point.x - x, point.y + y, point.x + x, point.y + y);
-        horizontalLine(point.x - x, point.y - y, point.x + x, point.y - y);
+        minMax = [point.x - x, point.x + x];
+        result[point.y + y] = minMax;
+        result[point.y - y] = minMax;
     }
 
     // Lower Region
@@ -542,62 +549,46 @@ jzt.util.pointsInEllipse = function(point, rx, ry) {
         px += twoRy2;
         p += rx2 - py + px;
         }
-        horizontalLine(point.x - x, point.y + y, point.x + x, point.y + y);
-        horizontalLine(point.x - x, point.y - y, point.x + x, point.y - y);
+        minMax = [point.x - x, point.x + x];
+        result[point.y + y] = minMax;
+        result[point.y - y] = minMax;
+    }
+
+    return result;
+
+}
+
+jzt.util.pointsInCircle = function(point, radius) {
+    return jzt.util.pointsInEllipse(point, radius * 2, radius);
+};
+
+jzt.util.pointsInEllipse = function(point, rx, ry) {
+
+    var result = [];
+    var index;
+    var ellipseSegment;
+    var minMax;
+    var min;
+    var max;
+    var ellipseData = jzt.util.generateEllipseData(point, rx, ry);
+
+    for(ellipseSegment in ellipseData) {
+        if(ellipseData.hasOwnProperty(ellipseSegment)) {
+
+            minMax = ellipseData[ellipseSegment];
+            min = minMax[0];
+            max = minMax[1];
+
+            for(index = min; index <= max; ++index) {
+                result.push(new jzt.Point(index, ellipseSegment));
+            }
+
+        }
     }
 
     return result;
 
 };
-
-/*jzt.util.pointsInCircle = function(point, radius) {
-    
-    var error = -radius;
-    var x = radius;
-    var y = 0;
-    var result = {};
-
-
-    function plot8Points(point, x, y) {
-        plot4Points(point, x, y);
-        if(x != y) {
-            plot4Points(point, y, x);
-        }
-    }
-
-    function plot4Points(point, x, y) {
-        
-        horizontalLine(point.x - x, point.y + y, point.x + x, point.y + y);
-        if(x!=0 && y!=0){
-            horizontalLine(point.x - x, point.y -y, point.x+x, point.y - y);
-        }
-
-    }
-
-    function horizontalLine(x1, y1, x2, y2) {
-        var index = 0;
-        for(index = x1; index <= x2; index++) {
-            result[(new jzt.Point(index, y1)).toString()] = true;
-        }
-    };
-
-    while(x >= y) {
-        plot8Points(point, x, y);
-        error += y;
-        y++;
-        error += y;
-
-        if(error >= 0) {
-            error -= x;
-            x--;
-            error -= x;
-        }
-
-    }
-
-    return result;
-
-};*/
 
 /**
  * Retrieves a property value from a provided data object with a provided name.

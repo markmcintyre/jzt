@@ -919,7 +919,7 @@ jzt.things.Bullet.prototype.attack = function() {
      * Send a SHOT message if the bullet was from the player and any UpdateableThing, 
      * otherwise we only send the SHOT message to the player itself or ScriptabelThings.
      */
-    if(this.fromPlayer ||
+    if(thing && this.fromPlayer ||
             thing instanceof jzt.things.Player || thing instanceof jzt.things.ScriptableThing || thing instanceof jzt.things.BreakableWall) {
         thing.sendMessage('SHOT');
     }

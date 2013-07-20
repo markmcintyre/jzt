@@ -711,23 +711,24 @@ jzt.Board.prototype.render = function(c) {
     var me = this;
     var canvasWidth = this.game.context.canvas.width;
     var canvasHeight = this.game.context.canvas.height;
-    var lightPoints;
+    var torchCircle;
 
     this.updateWindowPosition();
 
-    c.fillStyle = jzt.colors.Black.rgbValue;
+    c.fillStyle = me.dark ? jzt.colors.Grey.rgbValue : jzt.colors.Black.rgbValue;
     c.fillRect(0, 0, canvasWidth, canvasHeight);
     
-    // If the board is dark, we need to calculate our light points
+    // If the board is dark, calculate our light circle
     if(me.dark) {
-        lightPoints = jzt.util.pointsInCircle(me.game.player.point, me.game.player.torchStrength);
+        torchCircle = jzt.util.generateCircleData(me.game.player.point, me.game.player.torchStrength);
     }
 
     this.eachDisplayable( function(thing, point) {
 
         // If this board is dark, we should only render the tiles in a visible range
-        if(me.dark && !lightPoints.contains(point)) {
-            me.DARK_SPRITE.draw(c, point.subtract(me.windowOrigin), me.DARK_SPRITE_COLOR, jzt.colors.Black);
+        if(me.dark && !torchCircle.contains(point)) {
+            //me.game.resources.graphics.fillTile(c, point.subtract(me.windowOrigin), jzt.colors.Grey);
+            //me.DARK_SPRITE.draw(c, point.subtract(me.windowOrigin), me.DARK_SPRITE_COLOR, jzt.colors.Black);
         }
 
         // If this board is not dark, or there's a thing to render...
@@ -741,11 +742,19 @@ jzt.Board.prototype.render = function(c) {
             if(!background && thing.under) {
                 background = thing.under.background.isLight() ? thing.under.background.darken() : thing.under.background;
             }
+
+            // Or, if the room is dark, our background should be black instead of transparent
+            else if(!background && me.dark) {
+                background = jzt.colors.Black;
+            }
+
+            // Draw our sprite
             sprite.draw(c, point.subtract(me.windowOrigin), thing.foreground, background);
+
         }
-        //else {
-        //    me.game.resources.graphics.fillTile(c, point.subtract(me.windowOrigin), jzt.colors.Black);
-        //}
+        else if(!thing && me.dark) {
+            me.game.resources.graphics.fillTile(c, point.subtract(me.windowOrigin), jzt.colors.Black);
+        }
 
   
             // Debug rendering...
