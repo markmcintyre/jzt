@@ -103,6 +103,7 @@ jzt.commands.Die.prototype.execute = function(owner) {
  jzt.commands.NotExpression.prototype.clone = function() {
     var clone = new jzt.commands.NotExpression();
     clone.expression = this.expression.clone();
+    return clone;
  };
 
  jzt.commands.NotExpression.prototype.getResult = function(owner) {

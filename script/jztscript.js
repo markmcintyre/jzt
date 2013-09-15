@@ -164,6 +164,10 @@ jztscript.parserhelper.Simple = function(command, nameToken) {
 
  };
 
+/*
+ * Adjacent Expression Parser
+ * expression = 'adjacent' DirectionExpression
+ */
 jztscript.parsers.AdjacentExpressionParser = function() {
     var ns = jzt.parser;
     var result = new ns.Sequence();
