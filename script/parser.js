@@ -24,6 +24,7 @@ jzt.parser.Assembly.prototype.clone = function() {
     result.tokens = this.tokens.slice(0);
     result.index = this.index;
     result.stack = this.stack.slice(0);
+    result.target = this.target ? this.target.clone() : undefined;
     return result;
 };
 

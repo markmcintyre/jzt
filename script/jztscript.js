@@ -59,69 +59,47 @@ jztscript.createCommandParser = function() {
  *============================================================*/
 jztscript.parserhelper = jztscript.parserhelper || {};
 jztscript.parsers = jztscript.parsers || {};
- 
+
 /*
  * Movement Parser Helper
  *
- * command   = '#' [nameToken] modifier* direction (Empty | Number)
- * modifier  = 'cw' | 'ccw' | 'opp' | 'rndp';
- * direction = 'n' | 's' | 'e' | 'w' | 'north' | 'south' | 'east' | 'west' | 'seek' | 'smartseek'
- *              | 'flow' | 'rand' | 'randf' | 'randb' | 'rndns' | 'rndew' | 'rndne';
+ * command   = '#' [nameToken] DirectionExpression (Empty | Number)
  */
 jztscript.parserhelper.MovementParser = function(command, nameToken, noCount) {
     
     var ns = jzt.parser;
-    var modifiers = jzt.commands.DirectionModifier;
-    var directions = jzt.commands.Direction;
     
     var assembler = {
         assemble: function(assembly) {
-            var result = new command();
+
+            var result;
+            var token;
+            var count;
+
+            result = new command();
             
             // Get our top token
-            var token = assembly.stack.pop();
+            token = assembly.stack.pop();
 
             // If it's a number, then that's our count
-            var count = parseInt(token);
+            count = parseInt(token);
             if(!isNaN(count)) {
                 result.count = count;
                 token = assembly.stack.pop();
             }
 
-            // The next token is our direction
-            result.direction = jzt.commands.Direction[token.toUpperCase()];
-
-            // The rest of the tokens are our modifiers
-            while(assembly.stack.length > 0) {
-                token = assembly.stack.shift();
-                result.modifiers.push(jzt.commands.DirectionModifier[token.toUpperCase()]);
-            }
+            // Our target is expected to be a DirectionExpression
+            result.directionExpression = assembly.target;
             
+            // We are the new target
             assembly.target = result;
         }
     };
     
-    // Direction Modifier
-    var directionModifier = new ns.Alternation();
-    for(var item in modifiers) {
-      if(modifiers.hasOwnProperty(item)) {
-          directionModifier.add( new ns.Literal(item));
-      }
-    }
-
-    // Direction
-    var direction = new ns.Alternation();
-    for(var item in directions) {
-      if(directions.hasOwnProperty(item)) {
-          direction.add( new ns.Literal(item));
-      }
-    }
-    
     var result = new ns.Sequence();
     result.add(ns.discard(new ns.Literal('#')));
     result.add(ns.discard(new ns.Literal(nameToken)));
-    result.add(ns.optional(new ns.Repetition(directionModifier)));
-    result.add(direction);
+    result.add(new jztscript.parsers.DirectionExpressionParser());
     if(!noCount) {
         result.add(ns.optional(new ns.Number()));
     }
@@ -145,6 +123,120 @@ jztscript.parserhelper.Simple = function(command, nameToken) {
     };
     return result;
 };
+
+/*
+ * Expression Parser
+ * (Word ('gt' | 'gte' | 'lt' | 'lte' | 'eq') Number) | 
+ * ('blocked' DirectionExpression) |
+ * ('aligned' DirectionExpression) |
+ * ('not' Expression)
+ */
+ /*jztscript.parsers.ExpressionParser = function() {
+
+    var ns = jzt.parser;
+    var result = new ns.Alternation();
+    var testCondition = new ns.Alternation();
+    var mathExpression = new ns.Sequence();
+    var blockedExpression = new ns.Sequence();
+    var alignedExpression = new ns.Sequence();
+    var notExpression = new ns.Sequence();
+
+    mathExpression.add(new ns.Word());
+    testCondition.add(new ns.Literal('gt'));
+    testCondition.add(new ns.Literal('gte'));
+    testCondition.add(new ns.Literal('lt'));
+    testCondition.add(new ns.Literal('lte'));
+    testCondition.add(new ns.Literal('eq'));
+    mathExpression.add(testCondition);
+    mathExpression.assembler = {
+        assemble: function(assembly) {
+
+        }
+    };
+    
+    blockedExpression.add(new ns.Literal('blocked'));
+    blockedExpression.add(new ns.DirectionExpressionParser());
+
+    alignedExpression.add(new ns.Literal('aligned'));
+    alignedExpression.add(new ns.DirectionExpressionParser());
+
+    notExpression.add(new ns.Literal('not'));
+    notExpression.add(new ns.ExpressionParser());
+
+    result.add(matchExpression);
+    result.add(blockedExpression);
+    result.add(alignedExpression);
+    result.add(notExpression);
+
+    result.assembler = {
+        assemble: function(assembly) {
+
+        }
+    };
+
+ };*/
+
+/*
+ * Direction Expression Parser
+ * expression = modifier* direction
+ * modifier = 'cw' | 'ccw' | 'opp' | 'rndp'
+ * direction = 'n' | 's' | 'e' | 'w' | 'north' | 'south' | 'east' | 'west' | 'seek' | 'smartseek' |
+ *             'flow' | 'rand' | 'randf' | 'randb' | 'rndns' | 'rndew' | 'rndne';
+ */
+ jztscript.parsers.DirectionExpressionParser = function() {
+
+    var ns = jzt.parser;
+    var modifiers = jzt.commands.DirectionModifier;
+    var directions = jzt.commands.Direction;
+    var result;
+    var directionModifier;
+    var direction;
+    var item;
+
+    // Direction Modifier
+    directionModifier = new ns.Alternation();
+    for(item in modifiers) {
+      if(modifiers.hasOwnProperty(item)) {
+          directionModifier.add( new ns.Literal(item));
+      }
+    }
+
+    // Direction
+    direction = new ns.Alternation();
+    for(item in directions) {
+      if(directions.hasOwnProperty(item)) {
+          direction.add( new ns.Literal(item));
+      }
+    }
+
+    result = new ns.Sequence();
+    result.add(ns.optional(new ns.Repetition(directionModifier)));
+    result.add(direction);
+    result.assembler = {
+        assemble: function(assembly) {
+
+            var result = new jzt.commands.DirectionExpression();
+
+            // Get our top token
+            var token = assembly.stack.pop();
+
+            // This should be our direction
+            result.direction = jzt.commands.Direction[token.toUpperCase()];
+
+            // The rest of the tokens are our modifiers
+            while(assembly.stack.length > 0) {
+                token = assembly.stack.shift();
+                result.modifiers.push(jzt.commands.DirectionModifier[token.toUpperCase()]);
+            }
+            
+            assembly.target = result;
+
+        }
+    };
+
+    return result;
+
+ };
  
 /*
  * Char Parser

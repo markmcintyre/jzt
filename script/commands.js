@@ -94,6 +94,37 @@ jzt.commands.Die.prototype.execute = function(owner) {
 };
 
 /*
+ * Direction Expression
+ */
+jzt.commands.DirectionExpression = function() {
+    this.modifiers = [];
+    this.direction = undefined;
+};
+
+jzt.commands.DirectionExpression.prototype.clone = function() {
+    var clone = new jzt.commands.DirectionExpression();
+    clone.modifiers = this.modifiers.slice(0);
+    clone.direction = this.direction;
+    return clone;
+};
+
+jzt.commands.DirectionExpression.prototype.getResult = function(owner) {
+
+    // Get our direction from our expression
+    var direction = this.direction.process(owner);
+    
+    // Evaluate our modifiers into a direction
+    var modifiers = this.modifiers.slice(0);
+    while(modifiers.length) {
+        direction = modifiers.pop().process(direction);
+    }
+
+    // Return our result
+    return direction;
+
+};
+
+/*
  * End Command
  */
 jzt.commands.End = function() {};
@@ -128,15 +159,13 @@ jzt.commands.Give.prototype.execute = function(owner) {
  * Go Command
  */
 jzt.commands.Go = function() {
-    this.modifiers = [];
-    this.direction = undefined;
+    this.directionExpression = undefined;
     this.count = 1;
 };
 
 jzt.commands.Go.prototype.clone = function() {
     var clone = new jzt.commands.Go();
-    clone.modifiers = this.modifiers.slice(0);
-    clone.direction = this.direction;
+    clone.directionExpression = this.directionExpression.clone();
     clone.count = this.count;
     return clone;
 };
@@ -144,14 +173,8 @@ jzt.commands.Go.prototype.clone = function() {
 jzt.commands.Go.prototype.execute = function(owner) {
     
     // Get our direction from our expression
-    var direction = this.direction.process(owner);
+    var direction = this.directionExpression.getResult(owner);
     
-    // Evaluate our modifiers into a direction
-    var modifiers = this.modifiers.slice(0);
-    while(modifiers.length) {
-        direction = modifiers.pop().process(direction);
-    }
-
     // If a direction is available
     if(direction) {
 
@@ -240,15 +263,13 @@ jzt.commands.Lock.prototype.execute = function(owner) {
  * Move Command
  */
 jzt.commands.Move = function() {
-    this.modifiers = [];
-    this.direction = undefined;
+    this.directionExpression = undefined;
     this.count = 1;
 };
 
 jzt.commands.Move.prototype.clone = function() {
     var clone = new jzt.commands.Move();
-    clone.modifiers = this.modifiers.slice(0);
-    clone.direction = this.direction;
+    clone.directionExpression = this.directionExpression.clone();
     clone.count = this.count;
     return clone;
 };
@@ -260,13 +281,7 @@ jzt.commands.Move.prototype.execute = function(owner) {
     // If we aren't stuck, calculate our next direction
     if(!this.stuck) {
         
-        direction = this.direction.process(owner);
-        
-        // Evaluate our modifiers into a direction
-        var modifiers = this.modifiers.slice(0);
-        while(modifiers.length) {
-            direction = modifiers.pop().process(direction);
-        }
+        direction = this.directionExpression.getResult(owner);
         
     }
     
@@ -421,27 +436,19 @@ jzt.commands.Set.prototype.execute = function(owner) {
  * Shoot Command
  */
 jzt.commands.Shoot = function() {
-    this.modifiers = [];
-    this.direction = jzt.Direction.North;
+    this.directionExpression = undefined;
 };
 
 jzt.commands.Shoot.prototype.clone = function() {
     var clone = new jzt.commands.Shoot();
-    clone.modifiers = this.modifiers.slice(0);
-    clone.direction = this.direction;
+    clone.directionExpression = this.directionExpression.clone();
     return clone;
 };
 
 jzt.commands.Shoot.prototype.execute = function(owner) {
 
     // Get our final direction
-    var direction = this.direction.process(owner);
-        
-    // Evaluate our modifiers into a direction
-    var modifiers = this.modifiers.slice(0);
-    while(modifiers.length) {
-        direction = modifiers.pop().process(direction);
-    }
+    var direction = this.directionExpression.getResult(owner);
 
     // If a direction is available
     if(direction) {
@@ -536,19 +543,17 @@ jzt.commands.Wait.prototype.execute = function() {
  * Walk Command
  */
 jzt.commands.Walk = function() {
-    this.modifiers = [];
-    this.direction = undefined;
+    this.directionExpression = undefined;
 };
 
 jzt.commands.Walk.prototype.clone = function() {
     var clone = new jzt.commands.Walk();
-    clone.modifiers = this.modifiers.slice(0);
-    clone.direction = this.direction;
+    clone.directionExpression = this.directionExpression.clone();
     return clone;
 };
 
 jzt.commands.Walk.prototype.execute = function(owner) {
-    var direction = this.direction.process(owner);
+    var direction = this.directionExpression.getResult(owner);
     owner.walkDirection = direction;
 };
 
