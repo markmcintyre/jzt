@@ -188,8 +188,8 @@ jzt.things.Thing.prototype.isPlayerAdjacent = function(direction) {
  *
  * @return true if player is aligned, false otherwise.
  */
-jzt.things.Thing.prototype.isPlayerAligned = function(spread) {
-    return this.point.aligned(this.board.player.point, spread);
+jzt.things.Thing.prototype.isPlayerAligned = function(spread, direction) {
+    return this.point.aligned(this.board.player.point, spread, direction);
 };
 
 /**

@@ -126,55 +126,160 @@ jztscript.parserhelper.Simple = function(command, nameToken) {
 
 /*
  * Expression Parser
- * (Word ('gt' | 'gte' | 'lt' | 'lte' | 'eq') Number) | 
- * ('blocked' DirectionExpression) |
- * ('aligned' DirectionExpression) |
- * ('not' Expression)
+ * expression = (Empty | 'not') (VariableComparisonExpression | DirectionalFlagExpression | NotExpression)
  */
- /*jztscript.parsers.ExpressionParser = function() {
+ jztscript.parsers.ExpressionParser = function() {
 
     var ns = jzt.parser;
-    var result = new ns.Alternation();
-    var testCondition = new ns.Alternation();
-    var mathExpression = new ns.Sequence();
-    var blockedExpression = new ns.Sequence();
-    var alignedExpression = new ns.Sequence();
-    var notExpression = new ns.Sequence();
+    var result = new ns.Sequence();
+    var expression = new ns.Alternation();
+    
+    result.add(ns.optional(new ns.Literal('not')));
 
-    mathExpression.add(new ns.Word());
-    testCondition.add(new ns.Literal('gt'));
-    testCondition.add(new ns.Literal('gte'));
-    testCondition.add(new ns.Literal('lt'));
-    testCondition.add(new ns.Literal('lte'));
-    testCondition.add(new ns.Literal('eq'));
-    mathExpression.add(testCondition);
-    mathExpression.assembler = {
+    expression.add(new jztscript.parsers.VariableComparisonExpressionParser());
+    expression.add(new jztscript.parsers.BlockedExpressionParser());
+    expression.add(new jztscript.parsers.AlignedExpressionParser());
+    expression.add(new jztscript.parsers.AdjacentExpressionParser());
+    result.add(expression);
+
+    result.assembler = {
         assemble: function(assembly) {
+            
+            var result;
+
+            // Return a 'Not' expression if applicable
+            if(assembly.stack.length >= 1) {
+                assembly.stack.pop();
+                result = new jzt.commands.NotExpression();
+                result.expression = assembly.target;
+                assembly.target = result;
+            }
+
+            // Otherwise, we leave the target as-is.
 
         }
     };
-    
-    blockedExpression.add(new ns.Literal('blocked'));
-    blockedExpression.add(new ns.DirectionExpressionParser());
 
-    alignedExpression.add(new ns.Literal('aligned'));
-    alignedExpression.add(new ns.DirectionExpressionParser());
+    return result;
 
-    notExpression.add(new ns.Literal('not'));
-    notExpression.add(new ns.ExpressionParser());
+ };
 
-    result.add(matchExpression);
-    result.add(blockedExpression);
-    result.add(alignedExpression);
-    result.add(notExpression);
+jztscript.parsers.AdjacentExpressionParser = function() {
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+
+    result.add(ns.discard(new ns.Literal('adjacent')));
+    result.add(new jztscript.parsers.DirectionExpressionParser());
+
+    result.assembler = {
+        assemble: function(assembly) {
+            var result = new jzt.commands.DirectionalFlagExpression();
+
+            // User our direction expression from the assembly target
+            result.directionExpression = assembly.target;
+
+            result.flagType = 'ADJACENT';
+
+            assembly.target = result;
+        }
+    };
+
+    return result;
+};
+
+/*
+ * Blocked Expression Parser
+ * expression = 'blocked' DirectionalExpression
+ */
+jztscript.parsers.BlockedExpressionParser = function() {
+
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+
+
+    result.add(ns.discard(new ns.Literal('blocked')));
+    result.add(new jztscript.parsers.DirectionExpressionParser());
 
     result.assembler = {
         assemble: function(assembly) {
 
+            var result = new jzt.commands.DirectionalFlagExpression();
+
+            // Use our direction expression from the assembly target
+            result.directionExpression = assembly.target;
+
+            result.flagType = 'BLOCKED';
+
+            assembly.target = result;
+
         }
     };
 
- };*/
+    return result;
+
+};
+
+/*
+ * Aligned Expression Parser
+ * expression = 'aligned' (Empty | DirectionalExpression)
+ */
+jztscript.parsers.AlignedExpressionParser = function() {
+
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+
+    result.add(ns.discard(new ns.Literal('aligned')));
+    result.add(ns.optional(new jztscript.parsers.DirectionExpressionParser()));
+    result.assembler = {
+        assemble: function(assembly) {
+            var result = new jzt.commands.DirectionalFlagExpression();
+
+            // If there's a direction expression, use it
+            result.directionExpression = assembly.target;
+
+            result.flagType = 'ALIGNED';
+
+            assembly.target = result;
+        }
+    };
+
+    return result;
+
+};
+
+/*
+ * Variable Comparison Expression Parser
+ * expression = Word ('gt' | 'lt' | 'gte' | 'lte' | 'eq') Number
+ */
+ jztscript.parsers.VariableComparisonExpressionParser = function() {
+
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+    var comparison = new ns.Alternation();
+
+    comparison.add(new ns.Literal('gt'));
+    comparison.add(new ns.Literal('lt'));
+    comparison.add(new ns.Literal('gte'));
+    comparison.add(new ns.Literal('lte'));
+    comparison.add(new ns.Literal('eq'));
+
+    result.add(new ns.Word());
+    result.add(comparison);
+    result.add(new ns.Number());
+
+    result.assembler = {
+        assemble: function(assembly) {
+            var result = new jzt.commands.ComparisonExpression();
+            result.numericValue = parseInt(assembly.stack.pop());
+            result.operator = assembly.stack.pop().toUpperCase();
+            result.counter = assembly.stack.pop().toLowerCase();
+            assembly.target = result;
+        }
+    };
+
+    return result;
+
+ };
 
 /*
  * Direction Expression Parser
@@ -322,31 +427,22 @@ jztscript.parsers.GoParser = function() {
   
 /*
  * If Parser
- * command = '#' 'if' Word ('gt' | 'gte' | 'lt' | 'lte' | 'eq' | 'neq') Number Word
+ * command = '#' 'if' Expression Word
  */
  jztscript.parsers.IfParser = function() {
     var ns = jzt.parser;
     var result = new ns.Sequence();
-    var test = new ns.Alternation();
+
     result.add(ns.discard(new ns.Literal('#')));
     result.add(ns.discard(new ns.Literal('if')));
+    result.add(new jztscript.parsers.ExpressionParser());
     result.add(new ns.Word());
-    test.add(new ns.Literal('gt'));
-    test.add(new ns.Literal('gte'));
-    test.add(new ns.Literal('lt'));
-    test.add(new ns.Literal('lte'));
-    test.add(new ns.Literal('eq'));
-    test.add(new ns.Literal('neq'));
-    result.add(test);
-    result.add(new ns.Number());
-    result.add(new ns.Word());
+
     result.assembler = {
         assemble: function(assembly) {
             var command = new jzt.commands.If();
             command.label = assembly.stack.pop().toUpperCase();
-            command.amount = parseInt(assembly.stack.pop());
-            command.test = assembly.stack.pop().toUpperCase();
-            command.counter = assembly.stack.pop().toLowerCase();
+            command.expression = assembly.target;
             assembly.target = command;
         }
     };

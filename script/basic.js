@@ -61,9 +61,27 @@ jzt.Point.prototype.subtract = function(other) {
  * @param spread A spread threshold to allow for in the alignement calculation.
  * @return true if a provided point is aligned with this one, false otherwise.
  */
-jzt.Point.prototype.aligned = function(other, spread) {
+jzt.Point.prototype.aligned = function(other, spread, direction) {
     spread = spread === undefined ? 1 : spread;
-    return (Math.abs(this.x - other.x) < spread) || (Math.abs(this.y - other.y) < spread);
+
+    if(!direction) {
+        return (Math.abs(this.x - other.x) < spread) || (Math.abs(this.y - other.y) < spread);
+    }
+    else if(direction === jzt.Direction.North) {
+        return (other.y < this.y) && Math.abs((this.x - other.x)) < spread;
+    }
+    else if(direction === jzt.Direction.South) {
+        return (other.y > this.y) && Math.abs((this.x - other.x)) < spread;
+    }
+    else if(direction === jzt.Direction.East) {
+        return (other.x > this.x) && Math.abs((this.y - other.y)) < spread;
+    }
+    else if(direction === jzt.Direction.West) {
+        return (other.x < this.x) && Math.abs((this.y - other.y)) < spread;
+    }
+    else {
+        return undefined;
+    }
 };
 
 /**

@@ -94,6 +94,83 @@ jzt.commands.Die.prototype.execute = function(owner) {
 };
 
 /*
+ * Not Expression
+ */
+ jzt.commands.NotExpression = function() {
+    this.expression = undefined;
+ };
+
+ jzt.commands.NotExpression.prototype.clone = function() {
+    var clone = new jzt.commands.NotExpression();
+    clone.expression = this.expression.clone();
+ };
+
+ jzt.commands.NotExpression.prototype.getResult = function(owner) {
+    return ! this.expression.getResult(owner);
+ };
+
+/*
+ * Directional Flag Expression
+ */
+ jzt.commands.DirectionalFlagExpression = function() {
+    this.flagType = undefined;
+    this.directionExpression = undefined;
+ };
+
+ jzt.commands.DirectionalFlagExpression.prototype.clone = function() {
+    var clone = new jzt.commands.DirectionalFlagExpression();
+    clone.flagType = this.flagType;
+    clone.directionExpression = this.directionExpression ? this.directionExpression.clone() : undefined;
+    return clone;
+ };
+
+ jzt.commands.DirectionalFlagExpression.prototype.getResult = function(owner) {
+    if(this.flagType === 'BLOCKED') {
+        return owner.isBlocked(this.directionExpression.getResult(owner));
+    }
+    else if(this.flagType === 'ALIGNED') {
+        return this.directionExpression ? owner.isPlayerAligned(1, this.directionExpression.getResult(owner)) : owner.isPlayerAligned(1);
+    }
+    else if(this.flagType === 'ADJACENT') {
+        return owner.isPlayerAdjacent(this.directionExpression.getResult(owner));
+    }
+ };
+
+/*
+ * Comparison Expression
+ */
+ jzt.commands.ComparisonExpression = function() {
+    this.counter = undefined;
+    this.numericValue = 0;
+    this.operator = 'eq';
+ };
+
+ jzt.commands.ComparisonExpression.prototype.clone = function() {
+    var clone = new jzt.commands.ComparisonExpression();
+    clone.counter = this.counter;
+    clone.numericValue = this.numericValue;
+    clone.operator = this.operator;
+    return clone;
+ };
+
+ jzt.commands.ComparisonExpression.prototype.getResult = function(owner) {
+
+    // Get our counter value
+    var counterValue = owner.getCounterValue(this.counter);
+
+    switch(this.operator) {
+        case 'GT': return counterValue > this.numericValue;
+        case 'LT': return counterValue < this.numericValue;
+        case 'GTE': return counterValue >= this.numericValue;
+        case 'LTE': return counterValue <= this.numericValue;
+        case 'EQ': return counterValue === this.numericValue;
+    }
+
+    return undefined;
+
+ };
+
+/*
  * Direction Expression
  */
 jzt.commands.DirectionExpression = function() {
@@ -193,37 +270,20 @@ jzt.commands.Go.prototype.execute = function(owner) {
  * If
  */
 jzt.commands.If = function() {
-    this.counter = undefined;
-    this.amount = 0;
     this.label = undefined;
-    this.test = 'eq';
+    this.expression = undefined;
 };
 
 jzt.commands.If.prototype.clone = function() {
     var clone = new jzt.commands.If();
-    clone.counter = this.counter;
-    clone.amount = this.amount;
     clone.label = this.label;
-    clone.test = this.test;
+    clone.expression = this.expression.clone();
     return clone;
 };
 
 jzt.commands.If.prototype.execute = function(owner) {
 
-    function isConditionMet(condition, firstValue, secondValue) {
-        switch(condition) {
-            case 'GT': return firstValue > secondValue;
-            case 'LT': return firstValue < secondValue;
-            case 'GTE': return firstValue >= secondValue;
-            case 'LTE': return firstValue <= secondValue;
-            case 'EQ': return firstValue === secondValue;
-            case 'NEQ': return firstValue !== secondValue;
-        }
-        return undefined;
-    }
-
-    var counterValue = owner.board.game.getCounterValue(this.counter);
-    if(isConditionMet(this.test, counterValue, this.amount)) {
+    if(this.expression.getResult(owner)) {
         owner.scriptContext.jumpToLabel(this.label);
         return jzt.commands.CommandResult.CONTINUE_AFTER_JUMP;
     }
