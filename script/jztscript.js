@@ -97,7 +97,6 @@ jztscript.parserhelper.MovementParser = function(command, nameToken, noCount) {
     };
     
     var result = new ns.Sequence();
-    result.add(ns.discard(new ns.Literal('#')));
     result.add(ns.discard(new ns.Literal(nameToken)));
     result.add(new jztscript.parsers.DirectionExpressionParser());
     if(!noCount) {
@@ -114,7 +113,6 @@ jztscript.parserhelper.MovementParser = function(command, nameToken, noCount) {
 jztscript.parserhelper.Simple = function(command, nameToken) {
     var ns = jzt.parser;
     var result = new ns.Sequence();
-    result.add(ns.discard(new ns.Literal('#')));
     result.add(ns.discard(new ns.Literal(nameToken)));
     result.assembler = {
         assemble: function(assembly) {
@@ -371,7 +369,6 @@ jztscript.parsers.CharParser = function() {
     };
     
     var result = new ns.Sequence();
-    result.add(ns.discard(new ns.Literal('#')));
     result.add(ns.discard(new ns.Literal('char')));
     result.add(new ns.Number());
     result.assembler = assembler;
@@ -403,7 +400,6 @@ jztscript.parsers.EndParser = function() {
 jztscript.parsers.GiveParser = function() {
     var ns = jzt.parser;
     var result = new ns.Sequence();
-    result.add(ns.discard(new ns.Literal('#')));
     result.add(ns.discard(new ns.Literal('give')));
     result.add(new ns.Number());
     result.add(new ns.Word());
@@ -437,7 +433,6 @@ jztscript.parsers.GoParser = function() {
     var ns = jzt.parser;
     var result = new ns.Sequence();
 
-    result.add(ns.discard(new ns.Literal('#')));
     result.add(ns.discard(new ns.Literal('if')));
     result.add(new jztscript.parsers.ExpressionParser());
     result.add(new ns.Word());
@@ -509,7 +504,6 @@ jztscript.parsers.MoveParser = function() {
 jztscript.parsers.ScrollParser = function() {
     var ns = jzt.parser;
     var result = new ns.Sequence();
-    result.add(ns.discard(new ns.Literal('#')));
     result.add(ns.discard(new ns.Literal('scroll')));
     result.add(new ns.String());
     result.add(ns.optional(new ns.Word()));
@@ -534,7 +528,6 @@ jztscript.parsers.ScrollParser = function() {
  jztscript.parsers.SendParser = function() {
     var ns = jzt.parser;
     var result = new ns.Sequence();
-    result.add(ns.discard(new ns.Literal('#')));
     result.add(ns.discard(new ns.Literal('send')));
     result.add(ns.optional(new ns.Word()));
     result.add(new ns.Word());
@@ -559,7 +552,6 @@ jztscript.parsers.ScrollParser = function() {
 jztscript.parsers.SetParser = function() {
     var ns = jzt.parser;
     var result = new ns.Sequence();
-    result.add(ns.discard(new ns.Literal('#')));
     result.add(ns.discard(new ns.Literal('set')));
     result.add(ns.optional(new ns.Number()));
     result.add(new ns.Word());
@@ -584,7 +576,6 @@ jztscript.parsers.SetParser = function() {
  jztscript.parsers.TakeParser = function() {
     var ns = jzt.parser;
     var result = new ns.Sequence();
-    result.add(ns.discard(new ns.Literal('#')));
     result.add(ns.discard(new ns.Literal('take')));
     result.add(new ns.Number());
     result.add(new ns.Word());
@@ -610,7 +601,6 @@ jztscript.parsers.RestoreParser = function() {
     var ns = jzt.parser;
     
     var result = new ns.Sequence();
-    result.add(ns.discard(new ns.Literal('#')));
     result.add(ns.discard(new ns.Literal('restore')));
     result.add(new ns.Word());
     result.assembler = {
@@ -629,7 +619,6 @@ jztscript.parsers.RestoreParser = function() {
 jztscript.parsers.SayParser = function() {
     var ns = jzt.parser;
     var result = new ns.Sequence();
-    result.add(ns.discard(new ns.Literal('#')));
     result.add(ns.discard(new ns.Literal('say')));
     result.add(new ns.String());
     result.assembler = {
@@ -683,7 +672,6 @@ jztscript.parsers.WaitParser = function() {
     };
     
     var result = new ns.Sequence();
-    result.add(ns.discard(new ns.Literal('#')));
     result.add(ns.discard(new ns.Literal('wait')));
     result.add(new ns.Number());
     result.assembler = assembler;
@@ -704,7 +692,6 @@ jztscript.parsers.WalkParser = function() {
 jztscript.parsers.ZapParser = function() {
     var ns = jzt.parser;
     var result = new ns.Sequence();
-    result.add(ns.discard(new ns.Literal('#')));
     result.add(ns.discard(new ns.Literal('zap')));
     result.add(new ns.Word());
     result.assembler = {
