@@ -97,13 +97,16 @@ jzt.Editor.prototype.switchBoard = function(boardName) {
 };
 
 jzt.Editor.prototype.save = function() {
-	localStorage['currentGame'] = JSON.stringify(this.serialize());
+	var data = JSON.stringify(this.serialize());
+	data = LZString.compressToUTF16(data);
+	localStorage['currentGame'] = data;
 };
 
 jzt.Editor.prototype.load = function() {
 	var data = localStorage['currentGame'];
 	if(data) {
-		var loadedData = JSON.parse(data);
+		var loadedData = LZString.decompressFromUTF16(data);
+		loadedData = JSON.parse(loadedData);
 		this.deserialize(loadedData);
 	}
 	else {
