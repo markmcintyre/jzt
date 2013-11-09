@@ -229,6 +229,29 @@ jzt.commands.DirectionExpression.prototype.getResult = function(owner) {
 };
 
 /*
+ * Exists Expression
+ */
+jzt.commands.ExistsExpression = function() {
+    this.count = 0;
+    this.color = undefined;
+    this.thing = undefined;
+};
+
+jzt.commands.ExistsExpression.prototype.clone = function() {
+    var clone = new jzt.commands.ExistsExpression();
+    clone.count = this.count;
+    clone.color = this.color;
+    clone.thing = this.thing;
+    return clone;
+};
+
+jzt.commands.ExistsExpression.prototype.getResult = function(owner) {
+
+    return owner.board.hasTile(this.thing, this.color, this.count);
+
+};
+
+/*
  * End Command
  */
 jzt.commands.End = function() {};

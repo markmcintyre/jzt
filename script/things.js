@@ -219,6 +219,27 @@ jzt.things.Thing.prototype.getSpriteIndex = function() {
     return this.spriteIndex;
 };
 
+/**
+ * Retrieves whether or not this Thing has the same type and color as provided.
+ *
+ * @param type a case-insensitive serializable type name
+ * @param color An optional color
+ * @return true if this Thing has a matching serializable type and color (if provided) 
+ */
+jzt.things.Thing.prototype.equals = function(type, color) {
+
+    var type = type.toUpperCase();
+
+    if(this.constructor.serializationType && this.constructor.serializationType.toUpperCase() === type) {
+
+        return color === undefined ? true : color === this.foreground;
+
+    };
+
+    return false;
+
+};
+
 // ------------------------------------------------------------------------------
 
 /*

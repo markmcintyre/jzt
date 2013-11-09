@@ -355,6 +355,30 @@ jzt.Board.prototype.eachDisplayable = function(callback) {
     }
 
 };
+
+/**
+ * Retrieves whether or not this Board has a provided number (or any) of a
+ * specific tile type.
+ *
+ * @param type A type of tile to test for
+ * @param color A color of tile to test for
+ * @param count A minimum number of tiles on the board to test for, or undefined to test for any number
+ */
+jzt.Board.prototype.hasTile = function(type, color, count) {
+
+    var tally = 0;
+
+    this.each(function(tile, point) {
+
+        if(tile && tile.equals(type, color)) {
+            tally++;
+        }
+
+    });
+
+    return count === undefined ? tally > 0 : count <= 0 ? tally <= 0 : tally >= count;
+
+};
  
 /**
  * Removes a tile from this Board at a provided Point. This function will also

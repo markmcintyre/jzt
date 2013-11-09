@@ -21,6 +21,9 @@ jzt.parser.Assembly = function(text) {
 
 jzt.parser.Assembly.prototype.clone = function() {
     var result = new jzt.parser.Assembly();
+    if(this.error) {
+        result.error = this.error;
+    }
     result.tokens = this.tokens.slice(0);
     result.index = this.index;
     result.stack = this.stack.slice(0);
@@ -284,7 +287,9 @@ jzt.parser.Terminal.prototype._matchAssembly = function(assembly) {
     }
     
     if(this.qualifies(assembly.peek())) {
+
         var result = assembly.clone();
+
         var token = result.next();
         if(!this.discard) {
             result.stack.push(token);

@@ -132,6 +132,26 @@ jztscript.parserhelper.Simple = function(command, nameToken) {
     return result;
 };
 
+jztscript.parsers.NotExpressionParser = function(expressionParser) {
+
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+
+    result.add(ns.discard(new ns.Literal('not')));
+    result.add(expressionParser);
+
+    result.assembler = {
+        assemble: function(assembly) {
+            var result = new jzt.commands.NotExpression();
+            result.expression = assembly.target;
+            assembly.target = result;
+        }
+    }
+
+    return result;
+
+};
+
 /*
  * Expression Parser
  * expression = (Empty | 'not') (VariableComparisonExpression | DirectionalFlagExpression | NotExpression)
@@ -142,18 +162,20 @@ jztscript.parserhelper.Simple = function(command, nameToken) {
     var result = new ns.Sequence();
     var expression = new ns.Alternation();
     
-    result.add(ns.optional(new ns.Literal('not')));
+    //result.add(ns.optional(new ns.Literal('not')));
 
+    expression.add(new jztscript.parsers.NotExpressionParser(result));
     expression.add(new jztscript.parsers.VariableComparisonExpressionParser());
     expression.add(new jztscript.parsers.BlockedExpressionParser());
     expression.add(new jztscript.parsers.AlignedExpressionParser());
     expression.add(new jztscript.parsers.AdjacentExpressionParser());
+    expression.add(new jztscript.parsers.ExistsExpressionParser());
     result.add(expression);
 
     result.assembler = {
         assemble: function(assembly) {
             
-            var result;
+            /*var result;
 
             // Return a 'Not' expression if applicable
             if(assembly.stack.length >= 1) {
@@ -161,7 +183,7 @@ jztscript.parserhelper.Simple = function(command, nameToken) {
                 result = new jzt.commands.NotExpression();
                 result.expression = assembly.target;
                 assembly.target = result;
-            }
+            }*/
 
             // Otherwise, we leave the target as-is.
 
@@ -258,6 +280,75 @@ jztscript.parsers.AlignedExpressionParser = function() {
     return result;
 
 };
+
+/*
+ * Exists Expression Parser
+ * expression = 'exists' [Number] [Word as color] Word as thing
+ */
+jztscript.parsers.ExistsExpressionParser = function() {
+
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+
+    result.add(ns.discard(new ns.Literal('exists')));
+    result.add(ns.optional(new ns.Number()));
+    result.add(ns.optional(new ns.Word()));
+    result.add(new ns.Word());
+    result.assembler = {
+        assemble: function(assembly) {
+
+            function parseColor(token) {
+                if(jzt.colors[token] instanceof jzt.colors.Color) {
+                    result.color = jzt.colors[token].lighten();
+                }
+                else {
+                    assembly.error = 'Unrecognized color \'' + token + '\'';
+                }
+            }
+
+            function parseNumber(token) {
+                var count = parseInt(token);
+                if(count < 0) {
+                    assembly.error = 'A positive integer is required.';
+                }
+                else {
+                    result.count = count;
+                }
+            }
+
+            var result = new jzt.commands.ExistsExpression();
+            var value;
+
+            var thing = assembly.stack.pop().toUpperCase();
+            if(jzt.things.ThingFactory.isKnownThing(thing)) {
+                result.thing = thing;
+            }
+            else {
+                assembly.error = 'Unrecognized thing \'' + thing + '\'';
+            }
+
+            if(assembly.stack.length >= 2) {
+                parseColor(assembly.stack.pop().toUpperCase());
+                parseNumber(assembly.stack.pop());
+            }
+            else if(assembly.stack.length >= 1) {
+                value = assembly.stack.pop().toUpperCase();
+                if(isNaN(value)) {
+                    parseColor(value);
+                }
+                else {
+                    parseNumber(value);
+                }
+            }
+
+            assembly.target = result;
+
+        }
+    };
+
+    return result;
+
+};  
 
 /*
  * Variable Comparison Expression Parser
