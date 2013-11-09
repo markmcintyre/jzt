@@ -3259,6 +3259,20 @@ jzt.things.ThingFactory.deserialize = function(data, board) {
 };
 
 /**
+ * Tests if a provided name corresponds to a known thing that is capable of being deserialized.
+ *
+ * @param thingName A name of a thing
+ * @return true if a Thing of a given name exists, false otherwise
+ */
+jzt.things.ThingFactory.isKnownThing = function(thingName) {
+
+    var thingMap = jzt.things.ThingFactory.getThingMap();
+
+    return (thingMap[thingName] !== undefined);
+
+};
+
+/**
  * Lazily fetches a map of Things that have declared themself as serializeable .
  *
  * @return A map of Thing functions indexed by their symbols or serialization types.
@@ -3281,7 +3295,7 @@ jzt.things.ThingFactory.getThingMap = function() {
 
                     // Uppercase version
                     jzt.things.ThingFactory.thingMap[thingProperty.serializationType.toUpperCase()] = thingProperty;
-                    
+
                 }
 
             }

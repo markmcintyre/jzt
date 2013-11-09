@@ -402,6 +402,53 @@ jzt.commands.Move.prototype.execute = function(owner) {
     
 };
 
+/* 
+ * Put Command
+ */
+jzt.commands.Put = function() {
+    this.directionExpression = undefined;
+    this.color = undefined;
+    this.thing = undefined;
+};
+
+jzt.commands.Put.prototype.clone = function() {
+    var clone = new jzt.commands.Put();
+    clone.directionExpression = this.directionExpression.clone();
+    clone.color = this.color;
+    clone.thing = this.thing;
+    return clone;
+};
+
+jzt.commands.Put.prototype.execute = function(owner) {
+
+    var data;
+    var newThing;
+
+    // Get our direction from our expression
+    var direction = this.directionExpression.getResult(owner);
+
+    // Get the point to which to add our new thing
+    var point = owner.point.add(direction);
+
+    // Get the tile in the way, if applicable
+    var obstacle = owner.board.getTile(point);
+
+    // Determine if there is free space, or if we can make some by pushing an obstacle
+    var isFreeSpace = obstacle ? owner.board.moveTile(point, point.add(direction)) : true;
+
+    // If there is free space
+    if(isFreeSpace) {
+
+        // Create our new thing
+        data = {type: this.thing, color: jzt.colors.serialize(undefined, this.color)};
+        newThing = jzt.things.ThingFactory.deserialize(data, owner.board);
+
+        owner.board.addThing(point, newThing);
+
+    }
+
+};
+
 /*
  * Restore Command
  */

@@ -376,9 +376,7 @@ jzt.Board.prototype.deleteTile = function(point) {
  * Moves a tile on this Board from a specified Point to another Point.
  * If the move was successful, true is returned, otherwise false. We can
  * optionally specify whether the move should be weak, meaning moves should
- * be treated as unsuccessful even when a pushable Thing is in the way. Additionally,
- * we can specify the move as a flier, which will move the Thing even if an unpushable
- * Thing is in the way.
+ * be treated as unsuccessful even when a pushable Thing is in the way.
  *
  * @param oldPoint A point on this Board containing a tile to be moved
  * @param newPoint A point on the Board to which a tile is to be moved.

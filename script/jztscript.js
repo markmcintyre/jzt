@@ -26,7 +26,7 @@ jztscript.CommandFactory.prototype.parseLine = function(line) {
     // Match our assembly
     var result = this.commandParser.completeMatch(assembly);
 
-    if(result === undefined || result.target === undefined) {
+    if(result === undefined || result.error || result.target === undefined) {
 
         // If we did indeed get a result, report its error
         if(result && result.error) {
@@ -368,7 +368,13 @@ jztscript.parsers.AlignedExpressionParser = function() {
         assemble: function(assembly) {
             var command = new jzt.commands.Become();
 
-            command.thing = assembly.stack.pop().toUpperCase();
+            var thing = assembly.stack.pop().toUpperCase();
+            if(jzt.things.ThingFactory.isKnownThing(thing)) {
+               command.thing = thing; 
+            }
+            else {
+                assembly.error = 'Unrecognized thing \'' + thing + '\'';
+            }
 
             if(assembly.stack.length > 0) {
                 var token = assembly.stack.pop().toUpperCase();
@@ -544,6 +550,53 @@ jztscript.parsers.LockParser = function() {
 jztscript.parsers.MoveParser = function() {
     return jztscript.parserhelper.MovementParser(jzt.commands.Move, 'move');    
 };
+
+/*
+ * Put Parser
+ * command = 'put' [DirectionExpression] [Word] Word
+ */
+ jztscript.parsers.PutParser = function() {
+
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+    var assembler = {
+        assemble: function(assembly) {
+            var command = new jzt.commands.Put();
+
+            var thing = assembly.stack.pop().toUpperCase();
+            if(jzt.things.ThingFactory.isKnownThing(thing)) {
+                command.thing = thing;
+            }
+            else {
+                assembly.error = 'Unrecognized thing \'' + thing + '\'';
+            }
+
+            if(assembly.stack.length > 0) {
+                var token = assembly.stack.pop().toUpperCase();
+                if(jzt.colors[token] instanceof jzt.colors.Color) {
+                    command.color = jzt.colors[token].lighten();
+                }
+                else {
+                    assembly.error = 'Unrecognized color \'' + token + '\'';
+                }
+            }
+
+            // We expect our target to be a DirectionExpression
+            command.directionExpression = assembly.target;
+            
+            assembly.target = command;
+        }
+    };
+
+    result.add(ns.discard(new ns.Literal('put')));
+    result.add(new jztscript.parsers.DirectionExpressionParser());
+    result.add(ns.optional(new ns.Word()));
+    result.add(new ns.Word());
+    result.assembler = assembler;
+
+    return result;
+
+ };
 
 /*
  * Scroll Parser
