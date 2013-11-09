@@ -725,6 +725,7 @@ jzt.Board.prototype.render = function(c) {
 
     this.updateWindowPosition();
 
+    // Draw our board background
     c.fillStyle = me.dark ? this.game.DARK_PATTERN : jzt.colors.Black.rgbValue;
     c.fillRect(0, 0, canvasWidth, canvasHeight);
     
@@ -733,16 +734,16 @@ jzt.Board.prototype.render = function(c) {
         torchCircle = jzt.util.generateCircleData(me.game.player.point, me.game.player.torchStrength);
     }
 
+    // For each displayable tile...
     this.eachDisplayable( function(thing, point) {
 
-        // If this board is dark, we should only render the tiles in a visible range
+        // If this board is dark, and we're out of range, skip this iteration
         if(me.dark && !torchCircle.contains(point)) {
-            //me.game.resources.graphics.fillTile(c, point.subtract(me.windowOrigin), jzt.colors.Grey);
-            //me.DARK_SPRITE.draw(c, point.subtract(me.windowOrigin), me.DARK_SPRITE_COLOR, jzt.colors.Black);
+            return;
         }
 
-        // If this board is not dark, or there's a thing to render...
-        else if(thing) {
+        // If there's a thing to render...
+        if(thing) {
 
             // Grab our sprite
             var sprite = me.game.resources.graphics.getSprite(thing.getSpriteIndex());
@@ -762,20 +763,25 @@ jzt.Board.prototype.render = function(c) {
             sprite.draw(c, point.subtract(me.windowOrigin), thing.foreground, background);
 
         }
+
+        // If there's nothing to render, but we're within the torch circle...
         else if(!thing && me.dark) {
+
+            // Draw an empty space
             me.game.resources.graphics.fillTile(c, point.subtract(me.windowOrigin), jzt.colors.Black);
+            
         }
 
   
-            // Debug rendering...
-            /*
-            var p = me.getSmartValue(point);
-            if(p !== Infinity) {
-                c.fillStyle = 'gray';
-                var drawpoint = point.subtract(me.windowOrigin);
-                c.fillText(me.getSmartValue(point).toString(), drawpoint.x * 16 + 4, drawpoint.y * 32 + 16);
-            }
-            */
+        // Debug rendering...
+        /*
+        var p = me.getSmartValue(point);
+        if(p !== Infinity) {
+            c.fillStyle = 'gray';
+            var drawpoint = point.subtract(me.windowOrigin);
+            c.fillText(me.getSmartValue(point).toString(), drawpoint.x * 16 + 4, drawpoint.y * 32 + 16);
+        }
+        */
 
     });
 
