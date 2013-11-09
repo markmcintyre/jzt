@@ -49,7 +49,8 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     this.context.mozImageSmoothingEnabled = false;
     
     this.counters = {
-        health: 100,
+        health: 50,
+        healthMax: 50,
         ammo: 0,
         gems: 0,
         torches: 0,
@@ -100,9 +101,16 @@ jzt.Game.prototype.getCounterValue = function(counter) {
  */
 jzt.Game.prototype.setCounterValue = function(counter, value) {
 
+    var maxCounter = counter + 'Max';
+
     // If the counter doesn't already exist, create it now
     if(this.counters[counter] === undefined) {
         this.counters[counter] = 0;
+    }
+
+    // If we have a corresponding maximum, ensure we don't exceed it
+    if(this.counters[maxCounter] && (value > this.counters[maxCounter])) {
+        value = this.counters[maxCounter];
     }
 
     // Values cannot be less than zero
