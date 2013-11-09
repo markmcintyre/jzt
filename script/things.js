@@ -3275,7 +3275,13 @@ jzt.things.ThingFactory.getThingMap = function() {
                 var thingProperty = jzt.things[thing];
 
                 if(thingProperty.hasOwnProperty('serializationType')) {
+
+                    // Regulard version
                     jzt.things.ThingFactory.thingMap[thingProperty.serializationType] = thingProperty;
+
+                    // Uppercase version
+                    jzt.things.ThingFactory.thingMap[thingProperty.serializationType.toUpperCase()] = thingProperty;
+                    
                 }
 
             }

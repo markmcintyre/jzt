@@ -429,6 +429,9 @@ jzt.Game.prototype.draw = function() {
     // Render the current board
     this.currentBoard.render(this.context);
 
+    // Render our status bar
+
+
     // If we are reading, also render our scroll instance
     if(this.state === jzt.GameState.Reading) {
         this.scroll.render(this.context);

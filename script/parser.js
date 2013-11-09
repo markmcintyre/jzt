@@ -197,7 +197,7 @@ jzt.parser.Sequence.prototype.match = function(assemblies) {
         result = subParser.matchAndAssemble(result);
         if(result.length <= 0) {
             if(started) {
-                this._throwSequenceException(previousResult, subParser);
+                this.determineTokenError(previousResult);
             }
             return result;
         }
@@ -211,13 +211,13 @@ jzt.parser.Sequence.prototype.match = function(assemblies) {
     
 };
 
-jzt.parser.Sequence.prototype._throwSequenceException = function(previousResult, subParser) {
+jzt.parser.Sequence.prototype.determineTokenError = function(previousResult) {
     var best = this.findBestAssembly(previousResult);
     if(best.peek() == undefined) {
-        throw 'Token expected';
+        best.error = 'Token expected';
     }
     else {
-        throw 'Unexpected token \'' + best.peek() + '\'';
+        best.error = 'Unexpected token \'' + best.peek() + '\'';
     }
 };
 
@@ -238,17 +238,8 @@ jzt.parser.Alternation.prototype.match = function(assemblies) {
     
     for(var index = 0; index < this.subParsers.length; ++index) {
         var subParser = this.subParsers[index];
-        try {
-            var alternationResult = subParser.matchAndAssemble(assemblies);
-            result = result.concat(alternationResult);
-        }
-        catch(exception) {
-            error = exception;
-        }
-    }
-    
-    if(result.length <= 0 && error != undefined) {
-        throw error;
+        var alternationResult = subParser.matchAndAssemble(assemblies);
+        result = result.concat(alternationResult);
     }
     
     return result;

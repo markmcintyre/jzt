@@ -67,6 +67,32 @@ jzt.commands.Direction = {
 };
 
 /*
+ * Become Command
+ */
+jzt.commands.Become = function() {
+    this.thing = undefined;
+    this.color = undefined;
+};
+
+jzt.commands.Become.prototype.clone = function() {
+    var clone = new jzt.commands.Become();
+    clone.thing = this.thing;
+    clone.color = this.color;
+    return clone;
+};
+
+jzt.commands.Become.prototype.execute = function(owner) {
+
+    // Create our new thing
+    var data = {type: this.thing, color: jzt.colors.serialize(undefined, this.color)};
+    var newThing = jzt.things.ThingFactory.deserialize(data, owner.board);
+
+    // Replace our owner's tile with the new thing
+    owner.board.replaceTile(owner.point, newThing);
+
+};
+
+/*
  * Char Command
  */
 jzt.commands.Char = function() {

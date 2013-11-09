@@ -514,9 +514,15 @@ jzt.colors.serialize = function(background, foreground) {
         (foreground === undefined || foreground instanceof jzt.colors.CyclingColor ? '*' : foreground.code);
 };
 
-// Assign convenienec accessors
+// Assign convenience accessors
 for(colorIndex = 0; colorIndex < jzt.colors.Colors.length; ++colorIndex) {
+
+    // Regular version
     jzt.colors[jzt.colors.Colors[colorIndex].name] = jzt.colors.Colors[colorIndex];
+
+    // All caps version
+    jzt.colors[jzt.colors.Colors[colorIndex].name.toUpperCase()] = jzt.colors.Colors[colorIndex];
+    
 }
 
 // Assign a cycling color

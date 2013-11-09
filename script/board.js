@@ -228,6 +228,7 @@ jzt.Board.prototype.initializeWindow = function() {
 
     this.windowSize.x = Math.floor(canvasWidth / this.game.resources.graphics.TILE_SIZE.x);
     this.windowSize.y = Math.floor(canvasHeight / this.game.resources.graphics.TILE_SIZE.y);
+
     this.windowLimit = new jzt.Point(this.width - this.windowSize.x, this.height - this.windowSize.y);
 
     this.updateWindowPosition();
@@ -769,7 +770,7 @@ jzt.Board.prototype.render = function(c) {
 
             // Draw an empty space
             me.game.resources.graphics.fillTile(c, point.subtract(me.windowOrigin), jzt.colors.Black);
-            
+
         }
 
   
@@ -945,7 +946,7 @@ jzt.Board.prototype.getSmartDirection = function(point) {
     return jzt.Direction.random(directions);
 
 };
- 
+
 /**
  * Renders a visual message to a provided graphics context representing this Board's current
  * display message. 

@@ -27,7 +27,17 @@ jztscript.CommandFactory.prototype.parseLine = function(line) {
     var result = this.commandParser.completeMatch(assembly);
 
     if(result === undefined || result.target === undefined) {
-        throw 'Unknown command';
+
+        // If we did indeed get a result, report its error
+        if(result && result.error) {
+            throw result.error;
+        }
+
+        // Otherwise we've got an unknown command
+        else {
+            throw 'Unknown command';
+        }
+
     };
 
     // Return the assembly's target
@@ -345,6 +355,45 @@ jztscript.parsers.AlignedExpressionParser = function() {
 
  };
  
+
+/*
+ * Become Parser
+ * command = 'become' [Word] Word
+ */
+ jztscript.parsers.BecomeParser = function() {
+
+    var ns = jzt.parser;
+
+    var assembler = {
+        assemble: function(assembly) {
+            var command = new jzt.commands.Become();
+
+            command.thing = assembly.stack.pop().toUpperCase();
+
+            if(assembly.stack.length > 0) {
+                var token = assembly.stack.pop().toUpperCase();
+                if(jzt.colors[token] instanceof jzt.colors.Color) {
+                    command.color = jzt.colors[token].lighten();
+                }
+                else {
+                    assembly.error = 'Unrecognized color \'' + token + '\'';
+                }
+            }
+
+            assembly.target = command;
+
+        }
+    };
+
+    var result = new ns.Sequence();
+    result.add(ns.discard(new ns.Literal('become')));
+    result.add(ns.optional(new ns.Word()));
+    result.add(new ns.Word());
+    result.assembler = assembler;
+    return result;
+
+ };
+
 /*
  * Char Parser
  * command = 'char' Number;
@@ -361,7 +410,7 @@ jztscript.parsers.CharParser = function() {
             var token = assembly.stack.pop();
             var character = parseInt(token);
             if(character < 0 || character > 255) {
-                throw 'Char command only accepts values from 0 to 255';
+                assembly.error = 'value \'' + character + '\' is out of range (0 to 255)';
             }
             command.character = character;
             assembly.target = command;
@@ -378,7 +427,7 @@ jztscript.parsers.CharParser = function() {
 
 /*
  * Die Parser
- * command = '#' 'die';
+ * command = die';
  */
 jztscript.parsers.DieParser = function() {
     return jztscript.parserhelper.Simple(jzt.commands.Die, 'die');
@@ -386,7 +435,7 @@ jztscript.parsers.DieParser = function() {
 
 /*
  * End Parser
- * command = '#' 'end';
+ * command = end';
  */
 jztscript.parsers.EndParser = function() {
     return jztscript.parserhelper.Simple(jzt.commands.End, 'end');
@@ -395,7 +444,7 @@ jztscript.parsers.EndParser = function() {
 /*
  * Give Parser
  *
- * command = '#' 'give' Number Word
+ * command = give' Number Word
  */
 jztscript.parsers.GiveParser = function() {
     var ns = jzt.parser;
@@ -416,7 +465,7 @@ jztscript.parsers.GiveParser = function() {
 
 /*
  * Go Parser
- * command   = '#' 'go' modifier* direction (Empty | Number)
+ * command   = go' modifier* direction (Empty | Number)
  * modifier  = 'cw' | 'ccw' | 'opp' | 'rndp';
  * direction = 'n' | 's' | 'e' | 'w' | 'north' | 'south' | 'east' | 'west' | 'seek' | 'smartseek'
  *              | 'flow' | 'rand' | 'randf' | 'randb' | 'rndns' | 'rndew' | 'rndne';
@@ -427,7 +476,7 @@ jztscript.parsers.GoParser = function() {
   
 /*
  * If Parser
- * command = '#' 'if' Expression Word
+ * command = if' Expression Word
  */
  jztscript.parsers.IfParser = function() {
     var ns = jzt.parser;
@@ -478,7 +527,7 @@ jztscript.parsers.LabelParser = function() {
 
 /*
  * Lock Parser
- * command = '#' 'lock'
+ * command = lock'
  */
 jztscript.parsers.LockParser = function() {
     return jztscript.parserhelper.Simple(jzt.commands.Lock, 'lock');
@@ -499,7 +548,7 @@ jztscript.parsers.MoveParser = function() {
 /*
  * Scroll Parser
  *
- * command = '#' 'scroll' String (Empty | Word)
+ * command = scroll' String (Empty | Word)
  */
 jztscript.parsers.ScrollParser = function() {
     var ns = jzt.parser;
@@ -523,7 +572,7 @@ jztscript.parsers.ScrollParser = function() {
 /*
  * Send Parser
  *
- * command = '#' 'send' Word Word
+ * command = send' Word Word
  */
  jztscript.parsers.SendParser = function() {
     var ns = jzt.parser;
@@ -547,7 +596,7 @@ jztscript.parsers.ScrollParser = function() {
 /*
  * Set Parser
  * 
- * command = '#' 'set' (Empty | Number) Word
+ * command = set' (Empty | Number) Word
  */
 jztscript.parsers.SetParser = function() {
     var ns = jzt.parser;
@@ -571,7 +620,7 @@ jztscript.parsers.SetParser = function() {
 /*
  * Take Parser
  *
- * command = '#' 'take' Number Word (Empty | Word)
+ * command = take' Number Word (Empty | Word)
  */
  jztscript.parsers.TakeParser = function() {
     var ns = jzt.parser;
@@ -633,7 +682,7 @@ jztscript.parsers.SayParser = function() {
 
 /*
  * Shoot Parser
- * command   = '#' 'shoot' modifier* direction
+ * command   = shoot' modifier* direction
  * modifier  = 'cw' | 'ccw' | 'opp' | 'rndp';
  * direction = 'n' | 's' | 'e' | 'w' | 'north' | 'south' | 'east' | 'west' | 'seek'
  *              | 'flow' | 'rand' | 'randf' | 'randb' | 'rndns' | 'rndew' | 'rndne';
