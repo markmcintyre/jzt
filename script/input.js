@@ -62,6 +62,9 @@ jzt.KeyboardInput.prototype.cancelInput = function() {
  */
 jzt.KeyboardInput.prototype.cancelKey = function(keyCode) {
     delete this.pressed[keyCode];
+    if(--(this.pressedKeys) < 0) {
+        this.pressedKeys = 0;
+    }
 };
 
 /**

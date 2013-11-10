@@ -60,7 +60,6 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     this.currentBoard = undefined;
     this.startingBoard = data.startingBoard;
     this.boards = {};
-    this.lastUnpause = Date.now();
 
     // Store our boards
     for(var index = 0; index < data.boards.length; ++index) {
@@ -380,7 +379,7 @@ jzt.Game.prototype.update = function() {
         this.player.update();
 
         // Also check if the user wants to pause
-        if(this.keyboard.isPressed(this.keyboard.P) && (Date.now() - this.lastUnpause) > 250 ) {
+        if(this.keyboard.isPressed(this.keyboard.P)) {
             this.setState(jzt.GameState.Paused);
         }
 
@@ -391,7 +390,7 @@ jzt.Game.prototype.update = function() {
 
         // Unpause on any expected keypress
         if(this.keyboard.isAnyPressed()) {
-            this.lastUnpause = Date.now();
+            this.keyboard.cancelKey(this.keyboard.P);
             this.setState(jzt.GameState.Playing);
             this.player.foregroundColor = jzt.colors.Colors.F;
         }
