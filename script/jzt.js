@@ -71,6 +71,9 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     this.resources.graphics = new jzt.Graphics(graphicsLoadedCallback);
     this.resources.audio = new jzt.Audio();
 
+    this.screenWidth = Math.floor(this.context.canvas.width / this.resources.graphics.TILE_SIZE.x);
+    this.screenHeight = Math.floor(this.context.canvas.height / this.resources.graphics.TILE_SIZE.y);
+
 };
 
 /**
@@ -426,11 +429,54 @@ jzt.Game.prototype.checkCounters = function() {
  */
 jzt.Game.prototype.draw = function() {
 
+    var spriteGrid;
+    var position;
+    var value;
+    var sprite;
+    var keyValues = ['9', 'A', 'B', 'C', 'D', 'E', 'F'];
+
     // Render the current board
     this.currentBoard.render(this.context);
 
-    // Render our status bar
+    // If we're paused, draw our status
+    if(this.state === jzt.GameState.Paused) {
 
+        if(this.statusPopup === undefined || this.statusPopup.language !== jzt.i18n.Messages.currentLanguage) {
+            this.statusPopup = new jzt.ui.Popup(new jzt.Point(this.screenWidth - 21,1), new jzt.Point(20,10), this);
+            this.statusPopup.language = jzt.i18n.Messages.currentLanguage;
+            spriteGrid = this.statusPopup.spriteGrid;
+            value = jzt.i18n.getMessage('pause.paused');
+            spriteGrid.addText(new jzt.Point(Math.floor((20-value.length)/2), 1), value, jzt.colors.White);
+            spriteGrid.addText(new jzt.Point(1, 3), jzt.i18n.getMessage('pause.health'), jzt.colors.Yellow);
+            spriteGrid.addText(new jzt.Point(1, 4), jzt.i18n.getMessage('pause.ammo'), jzt.colors.Yellow);
+            spriteGrid.addText(new jzt.Point(1, 5), jzt.i18n.getMessage('pause.gems'), jzt.colors.Yellow);
+            spriteGrid.addText(new jzt.Point(1, 6), jzt.i18n.getMessage('pause.torches'), jzt.colors.Yellow);
+            spriteGrid.addText(new jzt.Point(1, 7), jzt.i18n.getMessage('pause.score'), jzt.colors.Yellow);
+            spriteGrid.addText(new jzt.Point(1, 8), jzt.i18n.getMessage('pause.keys'), jzt.colors.Yellow);
+        }
+
+        position = this.statusPopup.position;
+        this.statusPopup.render(this.context);
+
+        // Draw our status values
+        this.resources.graphics.drawString(this.context, position.add(new jzt.Point(12, 3)), this.getCounterValue('health').toString(), jzt.colors.BrightWhite);
+        this.resources.graphics.drawString(this.context, position.add(new jzt.Point(12, 4)), this.getCounterValue('ammo').toString(), jzt.colors.BrightWhite);
+        this.resources.graphics.drawString(this.context, position.add(new jzt.Point(12, 5)), this.getCounterValue('gems').toString(), jzt.colors.BrightWhite);
+        this.resources.graphics.drawString(this.context, position.add(new jzt.Point(12, 6)), this.getCounterValue('torches').toString(), jzt.colors.BrightWhite);
+        this.resources.graphics.drawString(this.context, position.add(new jzt.Point(12, 7)), this.getCounterValue('score').toString(), jzt.colors.BrightWhite);
+
+        // Draw our keys
+        position = position.add(new jzt.Point(12, 8));
+        sprite = this.resources.graphics.getSprite(12);
+        for(value = 0; value < keyValues.length; ++value) {
+            if(this.getCounterValue('key' + keyValues[value]) > 0) {
+                sprite.draw(this.context, position, jzt.colors.deserializeForeground(keyValues[value]));
+                position.x++;
+            }
+        }
+
+
+    }
 
     // If we are reading, also render our scroll instance
     if(this.state === jzt.GameState.Reading) {

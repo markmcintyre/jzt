@@ -315,6 +315,97 @@ jzt.Graphics.prototype.convertSpecialCharacter = function(characterCode) {
 };
 
 /**
+ * SpriteGrid represents a block of renderable sprites defined with their colours.
+ *
+ * @param width A width for this sprite grid
+ * @param height A height for this sprite grid
+ * @param graphics a Graphics instance to own this SpriteGrid
+ */
+jzt.SpriteGrid = function(width, height, graphics) {
+    this.width = width;
+    this.height = height;
+    this.graphics = graphics;
+    this.tiles = [];
+};
+
+/**
+ * Assigns a tile to this SpriteGrid at a provided position.
+ *
+ * @param point a Point to which to assign a sprite
+ * @param spriteIndex a sprite index
+ * @param foreground a foreground Color
+ * @param background a background Color
+ */
+jzt.SpriteGrid.prototype.setTile = function(point, spriteIndex, foreground, background) {
+
+    this.tiles[point.x + point.y * this.width] = {
+        sprite: this.graphics.getSprite(spriteIndex),
+        foreground: foreground,
+        background: background
+    };
+
+};
+
+/**
+ * Adds text as sprites to this SpriteGrid.
+ *
+ * @param point a Point to which to add text
+ * @param text A text string to add to this SpriteGrid
+ * @param foreground A foreground Color
+ * @param background A background Color
+ */
+jzt.SpriteGrid.prototype.addText = function(point, text, foreground, background) {
+
+    var text = this.graphics.textToSprites(text);
+    var textPoint = point.clone();
+    var index;
+
+    for(index = 0; index < text.length; ++index) {
+        textPoint.x = point.x + index;
+        this.tiles[textPoint.x + textPoint.y * this.width] = {
+            sprite: text[index],
+            foreground: foreground,
+            background: background
+        }
+    }
+
+};
+
+/**
+ * Retrieves a tile from this SpriteGrid at a specific position
+ * 
+ * @param a Point for which to retrieve sprite data
+ * @return An Object containing a sprite, foreground, and background color.
+ */
+jzt.SpriteGrid.prototype.getTile = function(point) {
+    return this.tiles[point.x + point.y * this.width];
+};
+
+/**
+ * Draws this SpriteGrid to a specified position on a provided graphics context.
+ *
+ * @param context A 2D graphics context
+ * @param point a Point at which to draw our SpriteGrid
+ */
+jzt.SpriteGrid.prototype.draw = function(context, point) {
+
+    var destinationX = point.x * this.graphics.TILE_SIZE.x;
+    var destinationY = point.y * this.graphics.TILE_SIZE.y;
+
+    var tile;
+    var spritePoint = new jzt.Point(0, 0);
+    for(spritePoint.x = 0; spritePoint.x < this.width; ++spritePoint.x) {
+        for(spritePoint.y = 0; spritePoint.y < this.height; ++spritePoint.y) {
+            tile = this.getTile(spritePoint);
+            if(tile) {
+                tile.sprite.draw(context, spritePoint.add(point), tile.foreground, tile.background);
+            }
+        }
+    }
+
+};
+
+/**
  * Sprite represents a subsection of a larger graphic that can be drawn independetly
  * at a location.
  *

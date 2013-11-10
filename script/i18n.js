@@ -37,6 +37,15 @@ jzt.i18n.Messages.en = {
 		'gameover': 'Game over!',
 		'noammo': 'You don\'t have any ammo.',
 		'hurt': 'Ouch!'
+	},
+	pause: {
+		'paused': 'Paused',
+		'health': '   Health:',
+		'ammo': '     Ammo:',
+		'gems': '     Gems:',
+		'torches': '  Torches:',
+		'score': '    Score:',
+		'keys': '     Keys:'
 	}
 
 };
@@ -73,6 +82,15 @@ jzt.i18n.Messages.fr = {
 		'gameover': 'Game over !',
 		'noammo': 'Vous n\'avez plus de munitions.',
 		'hurt': 'Aïe !'
+	},
+	pause: {
+		'paused': 'Pause',
+		'health': '       PV:',
+		'ammo': 'Munitions:',
+		'gems': '   Bijous:',
+		'torches': '  Torches:',
+		'score': '    Score:',
+		'keys': '     Clés:'
 	}
 
 };
