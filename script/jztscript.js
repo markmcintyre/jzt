@@ -522,9 +522,17 @@ jztscript.parsers.CharParser = function() {
     
 }
 
+/**
+ * Collect Parser
+ * command = 'collect'
+ */
+jztscript.parsers.CollectParser = function() {
+    return jztscript.parserhelper.Simple(jzt.commands.Collect, 'collect');
+};
+
 /*
  * Die Parser
- * command = die';
+ * command = 'die';
  */
 jztscript.parsers.DieParser = function() {
     return jztscript.parserhelper.Simple(jzt.commands.Die, 'die');
@@ -532,7 +540,7 @@ jztscript.parsers.DieParser = function() {
 
 /*
  * End Parser
- * command = end';
+ * command = 'end';
  */
 jztscript.parsers.EndParser = function() {
     return jztscript.parserhelper.Simple(jzt.commands.End, 'end');
@@ -541,7 +549,7 @@ jztscript.parsers.EndParser = function() {
 /*
  * Give Parser
  *
- * command = give' Number Word
+ * command = 'give' Number Word
  */
 jztscript.parsers.GiveParser = function() {
     var ns = jzt.parser;
@@ -562,7 +570,7 @@ jztscript.parsers.GiveParser = function() {
 
 /*
  * Go Parser
- * command   = go' modifier* direction (Empty | Number)
+ * command   = 'go' modifier* direction (Empty | Number)
  * modifier  = 'cw' | 'ccw' | 'opp' | 'rndp';
  * direction = 'n' | 's' | 'e' | 'w' | 'north' | 'south' | 'east' | 'west' | 'seek' | 'smartseek'
  *              | 'flow' | 'rand' | 'randf' | 'randb' | 'rndns' | 'rndew' | 'rndne';
@@ -573,7 +581,7 @@ jztscript.parsers.GoParser = function() {
   
 /*
  * If Parser
- * command = if' Expression Word
+ * command = 'if' Expression Word
  */
  jztscript.parsers.IfParser = function() {
     var ns = jzt.parser;
@@ -624,7 +632,7 @@ jztscript.parsers.LabelParser = function() {
 
 /*
  * Lock Parser
- * command = lock'
+ * command = 'lock'
  */
 jztscript.parsers.LockParser = function() {
     return jztscript.parserhelper.Simple(jzt.commands.Lock, 'lock');
@@ -640,6 +648,26 @@ jztscript.parsers.LockParser = function() {
  */
 jztscript.parsers.MoveParser = function() {
     return jztscript.parserhelper.MovementParser(jzt.commands.Move, 'move');    
+};
+
+/*
+ * Play Parser
+ * command = 'play' String
+ */
+jztscript.parsers.PlayParser = function() {
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+    var assembler = {
+        assemble: function(assembly) {
+            var command = new jzt.commands.Play();
+            command.song = assembly.stack.pop();
+            assembly.target = command;
+        }
+    };
+    result.add(ns.discard(new ns.Literal('play')));
+    result.add(new ns.String());
+    result.assembler = assembler;
+    return result;
 };
 
 /*
@@ -692,7 +720,7 @@ jztscript.parsers.MoveParser = function() {
 /*
  * Scroll Parser
  *
- * command = scroll' String (Empty | Word)
+ * command = 'scroll' String (Empty | Word)
  */
 jztscript.parsers.ScrollParser = function() {
     var ns = jzt.parser;
@@ -716,7 +744,7 @@ jztscript.parsers.ScrollParser = function() {
 /*
  * Send Parser
  *
- * command = send' Word Word
+ * command = 'send' Word Word
  */
  jztscript.parsers.SendParser = function() {
     var ns = jzt.parser;
@@ -740,7 +768,7 @@ jztscript.parsers.ScrollParser = function() {
 /*
  * Set Parser
  * 
- * command = set' (Empty | Number) Word
+ * command = 'set' (Empty | Number) Word
  */
 jztscript.parsers.SetParser = function() {
     var ns = jzt.parser;
@@ -764,7 +792,7 @@ jztscript.parsers.SetParser = function() {
 /*
  * Take Parser
  *
- * command = take' Number Word (Empty | Word)
+ * command = 'take' Number Word (Empty | Word)
  */
  jztscript.parsers.TakeParser = function() {
     var ns = jzt.parser;
@@ -826,7 +854,7 @@ jztscript.parsers.SayParser = function() {
 
 /*
  * Shoot Parser
- * command   = shoot' modifier* direction
+ * command   = 'shoot' modifier* direction
  * modifier  = 'cw' | 'ccw' | 'opp' | 'rndp';
  * direction = 'n' | 's' | 'e' | 'w' | 'north' | 'south' | 'east' | 'west' | 'seek'
  *              | 'flow' | 'rand' | 'randf' | 'randb' | 'rndns' | 'rndew' | 'rndne';

@@ -110,6 +110,19 @@ jzt.commands.Char.prototype.execute = function(owner) {
 };
 
 /*
+ * Collect Command
+ */
+jzt.commands.Collect = function() {};
+jzt.commands.Collect.prototype.clone = function() {return this;};
+
+jzt.commands.Collect.prototype.execute = function(owner) {
+    var ownerPosition = owner.point;
+    var playerPosition = owner.board.player.point;
+    owner.remove();
+    owner.board.moveTile(playerPosition, ownerPosition);
+};
+
+/*
  * Die Command
  */
 jzt.commands.Die = function() {};
@@ -277,9 +290,8 @@ jzt.commands.Give.prototype.clone = function() {
 };
 
 jzt.commands.Give.prototype.execute = function(owner) {
-
     owner.board.game.adjustCounter(this.counter, this.amount);
-
+    return jzt.commands.CommandResult.CONTINUE;
 };
 
 /*
@@ -423,6 +435,24 @@ jzt.commands.Move.prototype.execute = function(owner) {
         
     }
     
+};
+
+/*
+ * Play Command
+ */
+jzt.commands.Play = function() {
+    this.song = undefined;
+};
+
+jzt.commands.Play.prototype.clone = function() {
+    var clone = new jzt.commands.Play();
+    clone.song = this.song;
+    return clone;
+};
+
+jzt.commands.Play.prototype.execute = function(owner) {
+    owner.play(this.song, true);
+    return jzt.commands.CommandResult.CONTINUE;
 };
 
 /* 

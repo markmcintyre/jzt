@@ -50,7 +50,7 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     
     this.counters = {
         health: 50,
-        healthMax: 50,
+        health_max: 50,
         ammo: 0,
         gems: 0,
         torches: 0,
@@ -104,7 +104,7 @@ jzt.Game.prototype.getCounterValue = function(counter) {
  */
 jzt.Game.prototype.setCounterValue = function(counter, value) {
 
-    var maxCounter = counter + 'Max';
+    var maxCounter = counter + '_max';
 
     // If the counter doesn't already exist, create it now
     if(this.counters[counter] === undefined) {
