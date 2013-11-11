@@ -602,7 +602,7 @@ jzt.colors.deserializeBackground = function(colorCode) {
 
 jzt.colors.serialize = function(background, foreground) {
     return (background === undefined ? '*' : background.code) + 
-        (foreground === undefined || foreground instanceof jzt.colors.CyclingColor ? '*' : foreground.code);
+        (foreground === undefined ? 'E' : foreground instanceof jzt.colors.CyclingColor ? '*' : foreground.code);
 };
 
 // Assign convenience accessors

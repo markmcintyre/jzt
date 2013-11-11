@@ -92,6 +92,34 @@ jzt.commands.Become.prototype.execute = function(owner) {
 
 };
 
+/* 
+ * Change Command
+ */
+jzt.commands.Change = function() {
+    this.targetThing = undefined;
+    this.targetColor = undefined;
+    this.newThing = undefined;
+    this.newColor = undefined;
+};
+
+jzt.commands.Change.prototype.clone = function() {
+    var clone = new jzt.commands.Change();
+    clone.targetThing = this.targetThing;
+    clone.targetColor = this.targetColor;
+    clone.newThing = this.newThing;
+    clone.newColor = this.newColor;
+    return clone;
+};
+
+jzt.commands.Change.prototype.execute = function(owner) {
+
+    var data = {type: this.newThing, color: jzt.colors.serialize(undefined, this.newColor)};
+    var newThing = jzt.things.ThingFactory.deserialize(data, owner.board);
+
+    owner.board.changeTiles(this.targetThing, this.targetColor, newThing);
+
+};
+
 /*
  * Char Command
  */

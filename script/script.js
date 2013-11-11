@@ -64,7 +64,7 @@ jzt.Script.prototype.assemble = function() {
             
             // If there was an error parsing, cancel the script and output an error
             catch(ex) {
-                this.commandIndex = -1;
+                this.commands = [];
                 console.warn('Syntax error in script \'%s\' on line %d.\n> %s\n> %s.', this.name, index, line, ex);
                 return;
             }
@@ -84,11 +84,6 @@ jzt.Script.prototype.assemble = function() {
                 this.commands.push(result);
             }
             
-        }
-        
-        // If we have at least one command, we can execute
-        if(this.commands.length > 0) {
-            this.commandIndex = 0;
         }
         
     }

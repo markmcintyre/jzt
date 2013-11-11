@@ -240,6 +240,18 @@ jzt.things.Thing.prototype.equals = function(type, color) {
 
 };
 
+/**
+ * Returns a new Thing instance with the same properties as this Thing.
+ * This clone function works by serializing the current Thing and deserializing
+ * the data as a new Thing, and should work for any serializable Thing.
+ *
+ * @return A clone of this Thing. 
+ */
+jzt.things.Thing.prototype.clone = function() {
+    var clone = this.serialize();
+    return jzt.things.ThingFactory.deserialize(clone, this.board);
+};
+
 // ------------------------------------------------------------------------------
 
 /*

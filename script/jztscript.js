@@ -492,6 +492,115 @@ jztscript.parsers.ExistsExpressionParser = function() {
  };
 
 /*
+ * Change Parser
+ * command = 'change' [Word] Word [Word] Word
+ */
+jztscript.parsers.ChangeParser = function() {
+
+    var ns = jzt.parser;
+
+    var assembler = {
+        assemble: function(assembly) {
+
+            var command = new jzt.commands.Change();
+            var token;
+            var color;
+
+            function parseColor(colorToken) {
+                if(jzt.colors.hasOwnProperty(colorToken)) {
+                    return jzt.colors[colorToken].lighten();
+                }
+            }
+
+            function isValidThing(thingToken) {
+                return jzt.things.ThingFactory.getThingMap().hasOwnProperty(thingToken);
+            }
+
+            // Assign our new Thing
+            token = assembly.stack.pop().toUpperCase();
+            if(!isValidThing(token)) {
+                assembly.error = 'Unrecognized Thing \'' + token + '\'';
+                return;
+            }
+            command.newThing = token;
+
+            // Grab our next token
+            token = assembly.stack.pop().toUpperCase();
+
+            // Attempt to parse it as a color
+            color = parseColor(token);
+
+            // If it was a color...
+            if(color) {
+
+                // Assign our new color
+                command.newColor = color;
+
+                if(assembly.stack.length <= 0) {
+                    assembly.error = 'Invalid change command.';
+                    return;
+                }
+
+                // The next token will be our target Thing
+                token = assembly.stack.pop().toUpperCase();
+                if(! isValidThing(token)) {
+                    assembly.error = 'Unrecognized Thing \'' + token + '\'';
+                    return;
+                }
+                command.targetThing = token;
+
+            }
+
+            // If it wasn't a color
+            else {
+
+                // The next token will be our target Thing
+                if(! isValidThing(token)) {
+                    assembly.error = 'Unrecognized Thing \'' + token + '\'';
+                    return;
+                }
+                command.targetThing = token;
+
+
+            }
+
+            // If there's a token left...
+            if(assembly.stack.length > 0) {
+
+                if(assembly.stack.length <= 0) {
+                    assembly.error = 'Invalid change command.';
+                    return;
+                }
+
+                // It's our target color
+                token = assembly.stack.pop().toUpperCase();
+                command.targetColor = parseColor(token);
+                if(! command.targetColor) {
+                    assembly.error = 'Unrecognized color \'' + token + '\'';
+                    return;
+                }
+
+            }
+
+            assembly.target = command;
+
+
+        }
+    };
+
+    var result = new ns.Sequence();
+    result.add(ns.discard(new ns.Literal('change')));
+    result.add(ns.optional(new ns.Word()));
+    result.add(new ns.Word());
+    result.add(ns.optional(new ns.Word()));
+    result.add(new ns.Word());
+    result.assembler = assembler;
+
+    return result;
+
+};
+
+/*
  * Char Parser
  * command = 'char' Number;
  */

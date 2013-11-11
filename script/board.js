@@ -379,6 +379,28 @@ jzt.Board.prototype.hasTile = function(type, color, count) {
     return count === undefined ? tally > 0 : count <= 0 ? tally <= 0 : tally >= count;
 
 };
+
+/**
+ * Changes all instances of tiles matching a target type and (optionally) color to
+ * a clone of a provided Thing.
+ *
+ * @param targetType a type of Thing to be changed
+ * @param targetColor a color of Thing to be changed
+ * @param newThing a Thing to be cloned in place of the target type
+ */
+jzt.Board.prototype.changeTiles = function(targetType, targetColor, newThing) {
+
+    var me = this;
+
+    this.each(function(tile, point) {
+
+        if(tile && tile.equals(targetType, targetColor)) {
+            me.replaceTile(tile.point, newThing.clone());
+        }
+
+    });
+
+};
  
 /**
  * Removes a tile from this Board at a provided Point. This function will also
