@@ -2164,7 +2164,7 @@ jzt.things.Player.prototype.update = function() {
         else {
             this.eventScheduler.cancelEvent();
         }
-        if(k.isPressed([k.T])) {
+        if(k.isPressed([k.T]) && ! this.torch) {
             this.useTorch();
         }
     }
@@ -2182,9 +2182,29 @@ jzt.things.Player.prototype.update = function() {
  * dark.
  */
 jzt.things.Player.prototype.useTorch = function() {
-    this.torch = true;
-    this.torchExpiry = Date.now() + this.TORCH_TTL;
-    this.torchStrength = this.MAX_TORCH_STRENGTH;
+
+    // If the player has torches available...
+    if(this.game.getCounterValue('torches') > 0) {
+
+        // Decrease our torch count
+        this.game.adjustCounter('torches', -1);
+
+        // Specify that we're now using a torch
+        this.torch = true;
+        this.torchExpiry = Date.now() + this.TORCH_TTL;
+        this.torchStrength = this.MAX_TORCH_STRENGTH;
+
+    }
+
+    // Otherwise, if there are no torches available...
+    else {
+
+        // Display a message indicating we have no torches
+        this.board.setDisplayMessage(jzt.i18n.getMessage('status.notorches'));
+
+    }
+
+
 };
 
 /**

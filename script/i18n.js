@@ -36,7 +36,8 @@ jzt.i18n.Messages.en = {
 	status: {
 		'gameover': 'Game over!',
 		'noammo': 'You don\'t have any ammo.',
-		'hurt': 'Ouch!'
+		'hurt': 'Ouch!',
+		'notorches': 'You don\'t have any torches.'
 	},
 	pause: {
 		'paused': 'Paused',
@@ -81,7 +82,8 @@ jzt.i18n.Messages.fr = {
 	status: {
 		'gameover': 'Game over !',
 		'noammo': 'Vous n\'avez plus de munitions.',
-		'hurt': 'Aïe !'
+		'hurt': 'Aïe !',
+		'notorches': 'Vous n\'avez plus de torches.'
 	},
 	pause: {
 		'paused': 'Pause',
