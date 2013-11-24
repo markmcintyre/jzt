@@ -3222,6 +3222,53 @@ jzt.things.Tiger.prototype.doTick = function() {
 //--------------------------------------------------------------------------------
 
 /*
+ *
+ */
+jzt.things.Torch = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.spriteIndex = 157;
+};
+jzt.things.Torch.prototype = new jzt.things.Thing();
+jzt.things.Torch.prototype.constructor = jzt.things.Torch;
+jzt.things.Torch.serializationType = 'Torch';
+
+jzt.things.Torch.prototype.serialize = function() {
+    var result = jzt.things.Thing.prototype.serialize.call(this);
+    delete result.color;
+    return result;
+};
+
+jzt.things.Torch.prototype.deserialize = function(data) {
+    jzt.things.Thing.prototype.deserialize.call(this, data);
+    this.background = undefined;
+    this.foreground = jzt.colors.Brown;
+};
+
+/**
+ * Pushes this Torch in a provided direction on its owner Board.
+ * 
+ * @param direction A direction in which to push this Torch
+ */
+jzt.things.Torch.prototype.push = function(direction) {
+    this.move(direction);
+};
+
+/**
+ * Sends a provided message to this Torch instance. If a TOUCH message is received
+ * then this Torch instance will be removed and increase the Game's 'torches' counter
+ * by five units.
+ */
+jzt.things.Torch.prototype.sendMessage = function(message) {
+    if(message === 'TOUCH') {
+        this.play('tcase');
+        this.adjustCounter('torches', 1);
+        this.remove();
+    }
+};
+
+//--------------------------------------------------------------------------------
+
+/*
  * Wall is a Thing representing an immoveable obstacle.
  *
  * @param board An owner board for this Wall.
