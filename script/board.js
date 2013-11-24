@@ -27,6 +27,7 @@ jzt.Board = function(boardData, game) {
     this.dark = boardData.dark;
     this.smartPath = [];
     this.customRenderSet = [];
+    this.torches = [];
 
     this.north = boardData.north;
     this.east = boardData.east;
@@ -661,6 +662,34 @@ jzt.Board.prototype.getPassage = function(passageId) {
 jzt.Board.prototype.addMessage = function(message) {
     this.messageQueue.push(message);
 };
+
+/**
+ * Retrieves whether or not a provided point falls within any of this
+ * Board's torches.
+ *
+ * @param point A Point to test if it's inside a torch circle
+ * @param thing A thing at the point to test if it's glowing (or lit by torches)
+ * @return true if a provided point is within any torch circle, false otherwise
+ */
+jzt.Board.prototype.isLit = function(point, thing) {
+
+    var index;
+    var torch;
+
+    if(thing && thing.glow) {
+        return true;
+    }
+
+    for(index = 0; index < this.torches.length; ++index) {
+        torch = this.torches[index];
+        if(torch.contains(point)) {
+            return true;
+        }
+    }
+
+    return false;
+
+};
     
 /**
  * Updates this Board instance by one tick in an execution cycle. This will also
@@ -669,12 +698,18 @@ jzt.Board.prototype.addMessage = function(message) {
 jzt.Board.prototype.update = function() {
 
     var me = this;
+    var torch;
 
     // Update the smart path
     this.updateSmartPath(this.player.point);
 
     // Initialize our custom renderable list
     this.customRenderSet = [];
+
+    // If the board is dark, initialize our torches
+    if(this.dark) {
+        this.torches = [];
+    }
 
     /*
      * This function works as follows: Each tile is looped through in sequential
@@ -702,6 +737,14 @@ jzt.Board.prototype.update = function() {
             // If we've got a tile with a custom renderer...
             if(tile.render) {
                 me.customRenderSet.push(tile);
+            }
+
+            // If the board is dark and we've got a torch
+            if(me.dark && typeof(tile.getTorch) === 'function') {
+                torch = tile.getTorch();
+                if(torch) {
+                    me.torches.push(torch);
+                }
             }
 
         }
@@ -773,17 +816,16 @@ jzt.Board.prototype.render = function(c) {
     // Draw our board background
     c.fillStyle = me.dark ? this.game.DARK_PATTERN : jzt.colors.Black.rgbValue;
     c.fillRect(0, 0, canvasWidth, canvasHeight);
-    
-    // If the board is dark, calculate our light circle
-    if(me.dark) {
-        torchCircle = jzt.util.generateCircleData(me.game.player.point, me.game.player.torchStrength);
-    }
 
     // For each displayable tile...
     this.eachDisplayable( function(thing, point) {
 
-        // If this board is dark, and we're out of range, skip this iteration
-        if(me.dark && !torchCircle.contains(point)) {
+        if(thing && thing instanceof jzt.things.Player) {
+            index = 0;
+        }
+
+        // If this board is dark, and we're not visible, skip this iteration
+        if(me.dark && !me.isLit(point, thing)) {
             return;
         }
 

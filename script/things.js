@@ -1512,6 +1512,10 @@ jzt.things.Explosion.prototype.doTick = function() {
 
 };
 
+jzt.things.Explosion.prototype.getTorch = function() {
+    return jzt.util.generateCircleData(this.point, Math.round((this.radius * this.timeToLive) / (jzt.things.Explosion.MAX_TTL - 1))+2);
+};
+
 jzt.things.Explosion.prototype.render = function(context) {
 
     var points;
@@ -1961,6 +1965,7 @@ jzt.things.Passage = function(board) {
     this.background = jzt.colors.Blue;
     this.targetBoard = undefined;
     this.passageId = 0;
+    this.glow = true;
 };
 jzt.things.Passage.prototype = new jzt.things.Thing();
 jzt.things.Passage.prototype.constructor = jzt.things.Passage;
@@ -2024,13 +2029,14 @@ jzt.things.Player = function(board) {
         this.eventScheduler = new jzt.DelayedEventScheduler(board.game.CYCLE_TICKS * 2, board.game.CYCLE_TICKS);
     }
 
-    this.torch = false;
+    this.torch = undefined;
     this.torchStrength = 0;
     this.torchExpiry = 0;
     this.game = undefined;
     this.speed = 1;
     this.MOVE_ACTION = 0;
     this.SHOOT_ACTION = 1;
+    this.glow = true;
     
     this.TORCH_TTL = 60000; // One Minute
     this.MAX_TORCH_STRENGTH = 5;
@@ -2119,6 +2125,10 @@ jzt.things.Player.prototype.doTick = function() {
         }
     }
 
+    if(this.torch) {
+        this.updateTorch(Date.now());
+    }
+
 };
 
 
@@ -2169,10 +2179,6 @@ jzt.things.Player.prototype.update = function() {
         }
     }
 
-    if(this.torch) {
-        this.updateTorch(Date.now());
-    }
-
     jzt.things.UpdateableThing.prototype.update.call(this);
     
 };
@@ -2216,7 +2222,6 @@ jzt.things.Player.prototype.useTorch = function() {
 jzt.things.Player.prototype.updateTorch = function(timeStamp) {
     
     var torchLife;
-    var newStrength;
 
     // If we've already past our torch expiry date
     if(timeStamp > this.torchExpiry) {
@@ -2235,6 +2240,12 @@ jzt.things.Player.prototype.updateTorch = function(timeStamp) {
         
     }
     
+};
+
+jzt.things.Player.prototype.getTorch = function() {
+    if(this.torch) {
+        return jzt.util.generateCircleData(this.point, this.torchStrength);
+    }
 };
 
 /**
@@ -3227,13 +3238,17 @@ jzt.things.Tiger.prototype.doTick = function() {
 jzt.things.Torch = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 157;
+    this.speed = 3;
+    this.torches = [];
+    this.glow = true;
+    this.animationIndex = 0;
 };
-jzt.things.Torch.prototype = new jzt.things.Thing();
+jzt.things.Torch.prototype = new jzt.things.UpdateableThing();
 jzt.things.Torch.prototype.constructor = jzt.things.Torch;
 jzt.things.Torch.serializationType = 'Torch';
 
 jzt.things.Torch.prototype.serialize = function() {
-    var result = jzt.things.Thing.prototype.serialize.call(this);
+    var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
     delete result.color;
     return result;
 };
@@ -3251,6 +3266,31 @@ jzt.things.Torch.prototype.deserialize = function(data) {
  */
 jzt.things.Torch.prototype.push = function(direction) {
     this.move(direction);
+    this.torches = [];
+};
+
+jzt.things.Torch.prototype.doTick = function() {
+
+    this.animationIndex += (Math.floor(Math.random() * 3)-1);
+
+    if(this.animationIndex > this.torches.length-1) {
+        this.animationIndex = this.torches.length-1;
+    }
+    else if(this.animationIndex < 0) {
+        this.animationIndex = 0;
+    }
+
+};
+
+jzt.things.Torch.prototype.getTorch = function() {
+
+    if(this.torches.length <= 0) {
+        this.torches.push(jzt.util.generateCircleData(this.point, 1));
+        this.torches.push(jzt.util.generateCircleData(this.point, 2));
+        this.torches.push(jzt.util.generateCircleData(this.point, 3));
+    }
+
+    return this.torches[this.animationIndex];
 };
 
 /**
