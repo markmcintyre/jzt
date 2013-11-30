@@ -220,6 +220,16 @@ jzt.things.Thing.prototype.getSpriteIndex = function() {
 };
 
 /**
+ * Retrieves a Thing that is directly adjacent to this Thing in a given direction.
+ *
+ * @param direction A direction to retrieve another Thing.
+ * @return a Thing, or undefined if no such Thing exists.
+ */
+jzt.things.Thing.prototype.getAdjacentThing = function(direction) {
+    return this.board.getTile(this.point.add(direction));
+};
+
+/**
  * Retrieves whether or not this Thing has the same type and color as provided.
  *
  * @param type a case-insensitive serializable type name
@@ -957,14 +967,14 @@ jzt.things.Bullet.prototype.doTick = function() {
     // If we are unable to move, attack our obstacle
     if(!this.move(this.direction, true)) {
         this.attack();
+        this.react();
     }
 
 };
 
 /**
  * Attempts to Attack a Thing in this Bullet's path. If a player, ScriptableThing, or BreakableWall is in 
- * its path, that Thing will be sent a SHOT message. Otherwise, this Bullet will be removed from its owner
- * board.
+ * its path, that Thing will be sent a SHOT message.
  */
 jzt.things.Bullet.prototype.attack = function() {
 
@@ -972,17 +982,74 @@ jzt.things.Bullet.prototype.attack = function() {
     var thing = this.board.getTile(this.point.add(this.direction));
 
     /*
-     * Send a SHOT message if the bullet was from the player and any UpdateableThing, 
-     * otherwise we only send the SHOT message to the player itself or ScriptabelThings.
+     * Send a SHOT message if the bullet was from the player 
+     * otherwise we only send the SHOT message to the player, ScriptableThings, and BreakableWalls.
      */
     if(thing && this.fromPlayer ||
             thing instanceof jzt.things.Player || thing instanceof jzt.things.ScriptableThing || thing instanceof jzt.things.BreakableWall) {
         thing.sendMessage('SHOT');
     }
 
-    // Regardless of what we hit, we're done
+};
+
+/**
+ * Make this Bullet react to its environment by looking for ricochet points or removing itself
+ * from the board.
+ */
+jzt.things.Bullet.prototype.react = function() {
+
+    // If we are still blocked (by a non-player), check if we should ricochet
+    var thing = this.getAdjacentThing(this.direction);
+    if(thing && !(thing instanceof jzt.things.Player)) {
+
+        // If there is a ricochet in our direction, reflect in the opposite direction if we're not blocked that way
+        if(thing instanceof jzt.things.Ricochet) {
+            this.ricochet(jzt.Direction.opposite(this.direction));
+            return;
+        }
+        
+        // If there is a ricochet to our right, reflect to the left if we're not blocked that way
+        else if(this.getAdjacentThing(jzt.Direction.clockwise(this.direction)) instanceof jzt.things.Ricochet) {
+            this.ricochet(jzt.Direction.counterClockwise(this.direction));
+            return;
+        }
+
+        // If there is a ricochet to our left, reflect to our right if we're not blocked that way
+        else if(this.getAdjacentThing(jzt.Direction.counterClockwise(this.direction)) instanceof jzt.things.Ricochet) {
+            this.ricochet(jzt.Direction.clockwise(this.direction));
+            return;
+        }
+
+    }
+
+    // Otherwise remove this bullet...
     this.remove();
 
+};
+
+/**
+ * Change the direction of this bullet (with a ricochet sound) if we're capable of moving that way.
+ *
+ * @param A direction in which to ricochet
+ */
+jzt.things.Bullet.prototype.ricochet = function(direction) {
+
+    // Change directions
+    this.direction = direction;
+
+    // If we're free to ricochet in the provided direction...
+    if(this.move(direction, true)) {
+
+        // Play our ricochet sound
+        this.play('9', false, true);
+
+    }
+
+    // If we're not free to ricochet, attack and then remove ourselves
+    else {
+        this.attack();
+        this.remove();
+    }
 };
 
 /**
@@ -2336,6 +2403,42 @@ jzt.things.Pusher.prototype.doTick = function() {
 //--------------------------------------------------------------------------------
 
 /**
+ * Ricochet is a Thing that reflects bullets.
+ *
+ * @param board An owner board for this Ricochet.
+ */
+jzt.things.Ricochet = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.spriteIndex = 42;
+    this.background = undefined;
+    this.foreground = jzt.colors.BrightGreen;
+};
+jzt.things.Ricochet.prototype = new jzt.things.Thing();
+jzt.things.Ricochet.prototype.constructor = jzt.things.Ricochet;
+jzt.things.Ricochet.serializationType = 'Ricochet';
+
+/**
+ * Serializes this Ricochet to a data object.
+ */
+ jzt.things.Ricochet.prototype.serialize = function() {
+    var result = jzt.things.Thing.prototype.serialize.call(this);
+    delete result.color;
+    return result;
+};
+
+/**
+ * Deserializes this Ricochet from a data object.
+ */
+jzt.things.Ricochet.prototype.deserialize = function(data) {
+    jzt.things.Thing.prototype.deserialize.call(this, data);
+    this.background = undefined;
+    this.foreground = jzt.colors.BrightGreen;
+};
+
+//--------------------------------------------------------------------------------
+
+
+/**
  * Ruffian is an UpdateableThing that attacks in a burst of movement, followed
  * by a wait time, then another burst of movement.
  *
@@ -3473,6 +3576,11 @@ jzt.things.ThingFactory.shoot = function(board, point, direction, fromPlayer, th
         }
     }
 
+    // Otherwise, if the bullet is from the player and the tile is a Ricochet, shoot the messenger
+    else if(fromPlayer && tile instanceof jzt.things.Ricochet) {
+        board.player.sendMessage('SHOT');
+    }
+
     // Otherwise, if the bullet is from the player, or the tile is a Player or ScriptableThing
     else if(fromPlayer ||
         tile instanceof jzt.things.Player || tile instanceof jzt.things.ScriptableThing || tile instanceof jzt.things.BreakableWall) {
@@ -3480,6 +3588,6 @@ jzt.things.ThingFactory.shoot = function(board, point, direction, fromPlayer, th
             board.game.resources.audio.play('t+c-c-c');
         }
         tile.sendMessage('SHOT');
-    } 
+    }
 
 };
