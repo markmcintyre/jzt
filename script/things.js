@@ -171,6 +171,29 @@ jzt.things.Thing.prototype.isBlocked = function(direction) {
 };
 
 /**
+ * Retrieves whether or not this Thing has a line of sight to a Player within a provided
+ * distance. A line of sight may be broken by any Thing, in which case this function
+ * returns false.
+ *
+ * @param distance a number of tiles determining the visibility distance
+ * @return true if there is an uninterrupted straight line between this thing and a player.
+ */
+jzt.things.Thing.prototype.isPlayerVisible = function(distance) {
+
+    var line = jzt.util.generateLineData(this.point, this.board.player.point);
+    var me = this;
+    var tile;
+
+    line.forEach(function(point) {
+        tile = me.board.getTile(point);
+        if(tile && tile != me && !(tile instanceof jzt.things.Player) ) {
+            return false;
+        }
+    }, distance);
+
+};
+
+/**
  * Retrieves whether or not this Thing instance is directly adjacent to a Player Thing in
  * a provided direction.
  *

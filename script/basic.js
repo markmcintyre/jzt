@@ -500,9 +500,78 @@ jzt.util.storeOption = function(destination, name, value) {
     }
 };
 
+/**
+ * Generates line data between two points.
+ * 
+ * @param point1 A first point
+ * @param point2 A second point
+ * @return Line data with a points array, contains function, and forEach function.
+ */
+jzt.util.generateLineData = function(point1, point2) {
+
+    var result = {};
+    var dx = Math.abs(point2.x - point1.x);
+    var dy = Math.abs(point2.y - point1.y);
+    var sx = (point1.x < point2.x) ? 1 : -1;
+    var sy = (point1.y < point2.y) ? 1 : -1;
+    var err = dx-dy;
+    var e2;
+    var x;
+    var y;
+
+    result.points = [];
+
+    /*
+     * Returns whether or not this line data contains a provided point.
+     */
+    result.contains = function(point) {
+        var index;
+        for(index = 0; index < this.points.length; ++index) {
+            if(this.points[index].equals(point)) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    /*
+     * Performs a callback function for each point in this line data.
+     */
+    result.forEach = function(callback, distance) {
+        var index;
+        distance = Math.min(this.points.length, distance);
+        if(callback && typeof callback === 'function') {
+            for(index = 0; index < distance; ++index) {
+                callback(this.points[index]);
+            }
+        }
+    };
+
+    x = point1.x;
+    y = point1.y;
+    while(true) {
+        result.points.push(new jzt.Point(x, y));
+        if((x === point2.x) && (y === point2.y)) {
+            return result;
+        }
+        e2 = 2 * err;
+        if(e2 >-dy) {
+            err -= dy;
+            x += sx;
+        }
+        if(e2 < dx) {
+            err += dx;
+            y += sy;
+        }
+    }
+
+    return result;
+
+};
+
 jzt.util.generateCircleData = function(point, radius) {
     return jzt.util.generateEllipseData(point, radius * 2, radius);
-}
+};
 
 jzt.util.generateEllipseData = function(point, rx, ry) {
 
@@ -574,7 +643,7 @@ jzt.util.generateEllipseData = function(point, rx, ry) {
 
     return result;
 
-}
+};
 
 jzt.util.pointsInCircle = function(point, radius) {
     return jzt.util.pointsInEllipse(point, radius * 2, radius);
