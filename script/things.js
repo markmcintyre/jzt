@@ -183,13 +183,20 @@ jzt.things.Thing.prototype.isPlayerVisible = function(distance) {
     var line = jzt.util.generateLineData(this.point, this.board.player.point);
     var me = this;
     var tile;
+    var result = true;
+
+    if(line.points.length > distance) {
+        return false;
+    }
 
     line.forEach(function(point) {
         tile = me.board.getTile(point);
         if(tile && tile != me && !(tile instanceof jzt.things.Player) ) {
-            return false;
+            result = false;
         }
-    }, distance);
+    });
+
+    return result;
 
 };
 

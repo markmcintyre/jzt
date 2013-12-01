@@ -537,11 +537,10 @@ jzt.util.generateLineData = function(point1, point2) {
     /*
      * Performs a callback function for each point in this line data.
      */
-    result.forEach = function(callback, distance) {
+    result.forEach = function(callback) {
         var index;
-        distance = Math.min(this.points.length, distance);
         if(callback && typeof callback === 'function') {
-            for(index = 0; index < distance; ++index) {
+            for(index = 0; index < this.points.length; ++index) {
                 callback(this.points[index]);
             }
         }

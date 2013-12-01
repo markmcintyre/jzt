@@ -170,6 +170,7 @@ jztscript.parsers.NotExpressionParser = function(expressionParser) {
     expression.add(new jztscript.parsers.AlignedExpressionParser());
     expression.add(new jztscript.parsers.AdjacentExpressionParser());
     expression.add(new jztscript.parsers.ExistsExpressionParser());
+    expression.add(new jztscript.parsers.PeepExpressionParser());
     result.add(expression);
 
     result.assembler = {
@@ -272,6 +273,33 @@ jztscript.parsers.AlignedExpressionParser = function() {
             result.directionExpression = assembly.target;
 
             result.flagType = 'ALIGNED';
+
+            assembly.target = result;
+        }
+    };
+
+    return result;
+
+};
+
+/*
+ * Peep Expression Parser
+ * expression = 'peep' (Empty | Number)
+ */
+jztscript.parsers.PeepExpressionParser = function() {
+
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+
+    result.add(ns.discard(new ns.Literal('peep')));
+    result.add(ns.optional(new ns.Number()));
+    result.assembler = {
+        assemble: function(assembly) {
+            var result = new jzt.commands.PeepExpression();
+
+            if(assembly.stack.length > 0) {
+                result.distance = parseInt(assembly.stack.pop());
+            }
 
             assembly.target = result;
         }

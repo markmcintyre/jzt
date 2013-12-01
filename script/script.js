@@ -319,9 +319,9 @@ jzt.ScriptContext.prototype.executeTick = function() {
                     this.executeTick();
                     break;
 
-                // Execute a second tick, assuming the counter is at the right location
+                // Normal execution, assuming the counter is at the right location
                 case jzt.commands.CommandResult.CONTINUE_AFTER_JUMP:
-                    this.executeTick();
+                    //this.executeTick();
                     break;
             
                 // Execute the same command next tick

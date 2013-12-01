@@ -270,6 +270,23 @@ jzt.commands.DirectionExpression.prototype.getResult = function(owner) {
 };
 
 /*
+ * Peep Expression
+ */
+jzt.commands.PeepExpression = function() {
+    this.distance = Infinity;
+};
+
+jzt.commands.PeepExpression.prototype.clone = function() {
+    var clone = new jzt.commands.PeepExpression();
+    clone.distance = this.distance;
+    return clone;
+};
+
+jzt.commands.PeepExpression.prototype.getResult = function(owner) {
+    return owner.isPlayerVisible(this.distance);
+};
+
+/*
  * Exists Expression
  */
 jzt.commands.ExistsExpression = function() {
@@ -610,6 +627,7 @@ jzt.commands.Scroll.prototype.execute = function(owner) {
     if(this.recipient === undefined) {
         owner.scriptContext.jumpToLabel(this.message);
         return jzt.commands.CommandResult.CONTINUE_AFTER_JUMP;
+        return;
     }
     else if(this.recipient === 'all') {
         recipients = owner.board.getScripables();
