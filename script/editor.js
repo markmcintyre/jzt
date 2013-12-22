@@ -1,31 +1,27 @@
 window.jzt = window.jzt || {};
 
-jzt.Editor = function(canvasElement, configuration) {
+jzt.Editor = function(editorElement, configuration) {
 	
 	var me = this;
+
+	this.editorElement = editorElement;
 
 	this.addBoardCallback = configuration.addBoard;
 	this.removeBoardCallback = configuration.removeBoard;
 	this.changeBoardCallback = configuration.changeBoard;
 	this.templateChangeCallback = configuration.changeTemplate;
 
-	this.canvasElement = canvasElement;
-
-	this.canvasElement.addEventListener('mousemove', function(event){me.onCanvasMouseMoved(event)}, false);
-	this.canvasElement.addEventListener('mousedown', function(event){me.onCanvasMouseDown(event)}, false);
-	this.canvasElement.addEventListener('mouseup', function(event){me.onCanvasMouseUp(event)}, false);
-
-	this.context = canvasElement.getContext('2d');
-    this.context.imageSmoothingEnabled = false;
-    this.context.webkitImageSmoothingEnabled = false;
-    this.context.mozImageSmoothingEnabled = false;
-
 	this.boards = [];
 
 	var mockGame = {
     	resources: {},
     	isDebugRendering: true,
-    	context: this.context
+    	context: {
+    		canvas: {
+    			width: 1,
+    			height: 1
+    		}
+    	}
 	};
 
 	this.game = mockGame;
@@ -46,6 +42,41 @@ jzt.Editor = function(canvasElement, configuration) {
 		}
 	});
 
+	this.graphics = mockGame.resources.graphics;
+
+
+};
+
+jzt.Editor.prototype.initializeBoardElement = function(board) {
+
+	var me = this;
+
+	// Remove the old canvas
+	this.editorElement.innerHTML = '';
+
+	// Create a new canvas
+	this.canvasElement = document.createElement('canvas');
+	this.canvasElement.width = board.width * this.graphics.TILE_SIZE.x;
+	this.canvasElement.height = board.height * this.graphics.TILE_SIZE.y;
+
+	// Add our canvas
+	this.editorElement.appendChild(this.canvasElement);
+
+	// Add our event listeners
+	this.canvasElement.addEventListener('mousemove', function(event){me.onCanvasMouseMoved(event)}, false);
+	this.canvasElement.addEventListener('mousedown', function(event){me.onCanvasMouseDown(event)}, false);
+	this.canvasElement.addEventListener('mouseup', function(event){me.onCanvasMouseUp(event)}, false);
+
+	// Assign our context
+	this.context = this.canvasElement.getContext('2d');
+	this.game.context = this.context;
+    this.context.imageSmoothingEnabled = false;
+    this.context.webkitImageSmoothingEnabled = false;
+    this.context.mozImageSmoothingEnabled = false;
+
+    // Scroll to the correct location
+    //editArea.scrollTop = (canvas.height - editArea.clientHeight) / 2;
+	//editArea.scrollLeft = (canvas.width - editArea.clientWidth) / 2;
 
 };
 
@@ -88,8 +119,13 @@ jzt.Editor.prototype.getBoard = function(boardName) {
 jzt.Editor.prototype.switchBoard = function(boardName) {
 
 	var board = this.getBoard(boardName);
+
 	this.currentBoard = board;
 	this.currentBoard.initializePlayer(new jzt.things.Player());
+
+	this.initializeBoardElement(board);
+
+	this.currentBoard.initializeWindow();
 	this.currentBoard.render(this.context);
 
 	this.changeBoardCallback.call(this, boardName);

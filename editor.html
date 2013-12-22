@@ -55,7 +55,6 @@
 		</header>
 		
 		<div id="edit-area">
-			<canvas id="jzt" width="1600" height="3200"></canvas>
 		</div>
 
 		<div id="toolbox">
@@ -154,7 +153,6 @@
 			var newScriptButton = document.getElementById('new-script-button');
 			var scriptEditor = document.getElementById('script-editor');
 			var editArea = document.getElementById('edit-area');
-			var canvas = document.getElementById('jzt');
 			var editor = undefined;
 
 			function onToolSelected(event) {
@@ -231,9 +229,6 @@
 					scriptSelector.options[index] = new Option(editor.currentBoard.scripts[index].name);
 				}
 				selectScript(scriptSelector.value);
-
-				editArea.scrollTop = (canvas.height - editArea.clientHeight) / 2;
-				editArea.scrollLeft = (canvas.width - editArea.clientWidth) / 2;
 				
 			};
 
@@ -308,7 +303,8 @@
 				changeBoard: onBoardChanged,
 				changeTemplate: onTemplateChanged
 			};
-			editor = new jzt.Editor(canvas, callbacks);
+
+			editor = new jzt.Editor(editArea, callbacks);
 
 			boardSelector.addEventListener('change', onBoardSelected, false);
 			templateEditor.addEventListener('blur', onTemplateEdited, false);
