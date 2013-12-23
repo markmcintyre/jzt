@@ -686,6 +686,9 @@ jzt.commands.Shoot.prototype.execute = function(owner) {
     // If a direction is available
     if(direction) {
 
+        // Play a shooting noise
+        owner.play('c-f#');
+
         // Shoot
         jzt.things.ThingFactory.shoot(owner.board, owner.point.add(direction), direction, false);
 

@@ -224,7 +224,7 @@ jzt.Scroll.prototype.update = function() {
 		}
 
 		// If Enter is pressed...
-		else if(k.isPressed(k.ENTER)) {
+		else if(k.isPressed(k.ENTER) || k.isPressed(k.SPACE)) {
 			this.eventScheduler.scheduleEvent(k.isPressed(k.ENTER), jzt.Scroll.ScrollAction.Select);
 		}
 
