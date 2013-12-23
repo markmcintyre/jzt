@@ -10,6 +10,9 @@ jzt.Editor = function(editorElement, configuration) {
 	this.removeBoardCallback = configuration.removeBoard;
 	this.changeBoardCallback = configuration.changeBoard;
 	this.templateChangeCallback = configuration.changeTemplate;
+	this.changeModeCallback = configuration.changeMode;
+
+	this.mode = jzt.Editor.Mode.SELECT;
 
 	this.boards = [];
 
@@ -46,6 +49,11 @@ jzt.Editor = function(editorElement, configuration) {
 
 
 };
+
+jzt.Editor.Mode = {
+	DRAW: 0,
+	SELECT: 1
+}
 
 jzt.Editor.prototype.initializeBoardElement = function(board) {
 
@@ -172,6 +180,11 @@ jzt.Editor.prototype.serialize = function() {
 	return result;
 };
 
+jzt.Editor.prototype.setMode = function(mode) {
+	this.mode = mode;
+	this.changeModeCallback.call(this, mode);
+};
+
 jzt.Editor.prototype.addBoard = function(boardName, width, height) {
 
 	var template = {
@@ -258,8 +271,11 @@ jzt.Editor.prototype.eventToBoardPoint = function(event) {
 
 
 jzt.Editor.prototype.onCanvasMouseDown = function(event) {
-	this.drawing = true;
-	this.previousPlot = new jzt.Point(-1,-1);
+
+	if(this.mode === jzt.Editor.Mode.DRAW) {
+		this.drawing = true;
+		this.previousPlot = new jzt.Point(-1,-1);
+	}
 
 	this.onCanvasMouseMoved(event);
 
@@ -292,12 +308,54 @@ jzt.Editor.prototype.onCanvasMouseMoved = function(event) {
 };
 
 jzt.Editor.prototype.onCanvasMouseUp = function(event) {
+
+	var thing;
+	var point = this.eventToBoardPoint(event);
+	var convertedPoint = point.add(this.currentBoard.windowOrigin);
+
+
 	this.drawing = false;
+
+	if(this.mode === jzt.Editor.Mode.SELECT) {
+
+		thing = this.currentBoard.getTile(convertedPoint);
+		if(thing) {
+			this.setActiveTemplate(thing.serialize());
+		}
+		else {
+			this.setActiveTemplate(undefined);
+		}
+
+	}
+
+
+
 };
 
 jzt.Editor.prototype.drawCursor = function(point, context) {
+
+	var xSize = this.graphics.TILE_SIZE.x;
+	var ySize = this.graphics.TILE_SIZE.y;
+	var xPos = point.x * this.graphics.TILE_SIZE.x;
+	var yPos = point.y * this.graphics.TILE_SIZE.y;
+
 	context.fillStyle = 'rgba(255, 255, 255, 0.25)';
 	context.strokeStyle = '#FFFFFF';
-    context.fillRect(point.x * this.game.resources.graphics.TILE_SIZE.x, point.y * this.game.resources.graphics.TILE_SIZE.y,  this.game.resources.graphics.TILE_SIZE.x, this.game.resources.graphics.TILE_SIZE.y);
-    context.strokeRect(point.x * this.game.resources.graphics.TILE_SIZE.x, point.y * this.game.resources.graphics.TILE_SIZE.y, this.game.resources.graphics.TILE_SIZE.x, this.game.resources.graphics.TILE_SIZE.y);
+
+    context.fillRect(xPos, yPos,  xSize, ySize);
+    
+    // If we're in drawing mode
+    if(this.mode === jzt.Editor.Mode.DRAW) {
+    	context.strokeRect(xPos, yPos, xSize, ySize);
+    }
+
+    // If we're in select mode
+    else if(this.mode === jzt.Editor.Mode.SELECT) {
+    	context.beginPath();
+    	context.moveTo(xPos + (xSize / 2), yPos);
+    	context.lineTo(xPos + (xSize / 2), yPos + ySize);
+    	context.moveTo(xPos, yPos + (ySize / 2));
+    	context.lineTo(xPos + xSize, yPos + (ySize / 2));
+    	context.stroke();
+    }
 };

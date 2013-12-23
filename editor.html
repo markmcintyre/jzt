@@ -130,6 +130,12 @@
 					<li class="colorF" data-color="F">White</li>
 				</ol>
 			</div>
+			<div id="other-customizers">
+				<select id="mode-selector">
+					<option value="0">Drawing</option>
+					<option value="1">Select</option>
+				</select>
+			</div>
 		</div>
 		
 		<script type="text/javascript" src="script/jzt.js"></script>
@@ -152,6 +158,7 @@
 			var scriptSelector = document.getElementById('script-selector');
 			var newScriptButton = document.getElementById('new-script-button');
 			var scriptEditor = document.getElementById('script-editor');
+			var modeSelector = document.getElementById('mode-selector');
 			var editArea = document.getElementById('edit-area');
 			var editor = undefined;
 
@@ -222,6 +229,12 @@
 
 			};
 
+			function onModeChanged(mode) {
+				if(parseInt(modeSelector.value) !== mode) {
+					modeSelector.value = mode.toString();
+				}
+			};
+
 			function onBoardChanged(boardName) {
 				boardSelector.value = boardName;
 				scriptSelector.options.length = 0;
@@ -284,6 +297,11 @@
 				editor.setTemplateForeground(jzt.colors.getColor(color));
 			};
 
+			function onModeSelected(event) {
+				var mode = parseInt(modeSelector.value);
+				editor.setMode(mode);
+			};
+
 			var tools = document.getElementsByName('activeTemplate');
 			for( var index = 0; index < tools.length; index++ ) {
         		tools[index].addEventListener('change', onToolSelected, false);
@@ -301,11 +319,13 @@
 				addBoard: onBoardAdded,
 				removeBoard: onBoardRemoved,
 				changeBoard: onBoardChanged,
-				changeTemplate: onTemplateChanged
+				changeTemplate: onTemplateChanged,
+				changeMode: onModeChanged
 			};
 
 			editor = new jzt.Editor(editArea, callbacks);
 
+			modeSelector.addEventListener('change', onModeSelected, false);
 			boardSelector.addEventListener('change', onBoardSelected, false);
 			templateEditor.addEventListener('blur', onTemplateEdited, false);
 			scriptSelector.addEventListener('change', onScriptSelected, false);
