@@ -480,16 +480,23 @@ jzt.things.ScriptableThing.serializationType = 'Scriptable';
 jzt.things.ScriptableThing.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this) || {};
 
-    result.serializationType = jzt.things.ScriptableThing.serializationType;
+    //result.serializationType = jzt.things.ScriptableThing.serializationType;
     result.name = this.name;
     result.spriteIndex = this.spriteIndex;
     result.script = this.scriptName;
 
     if(this.scriptContext) {
-        result.scriptContext = this.scriptContext.serialize();
-        result.messageQueue = this.messageQueue.slice(0);
+
+        if(this.scriptContext.commandIndex !== 0) {
+            result.scriptContext = this.scriptContext.serialize();
+        }
+        if(this.messageQueue.length > 0) {
+            result.messageQueue = this.messageQueue.slice(0);
+        }
         jzt.util.storeOption(result, 'walkDirection', jzt.Direction.getName(this.walkDirection));
-        jzt.util.storeOption(result, 'locked', this.locked);
+        if(this.locked) {
+            jzt.util.storeOption(result, 'locked', this.locked);
+        }
         jzt.util.storeOption(result, 'orientation', jzt.Direction.getName(this.orientation));
     }
 
