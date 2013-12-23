@@ -480,7 +480,6 @@ jzt.things.ScriptableThing.serializationType = 'Scriptable';
 jzt.things.ScriptableThing.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this) || {};
 
-    //result.serializationType = jzt.things.ScriptableThing.serializationType;
     result.name = this.name;
     result.spriteIndex = this.spriteIndex;
     result.script = this.scriptName;
