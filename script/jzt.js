@@ -303,6 +303,8 @@ jzt.Game.prototype.getBoard = function(name) {
  */
 jzt.Game.prototype.setBoard = function(board, playerPoint) {
 
+    var properties;
+
     // First, erase the old player position if applicable
     if(this.currentBoard) {
         this.currentBoard.setTile(this.player.point, this.player.under);
@@ -326,9 +328,19 @@ jzt.Game.prototype.setBoard = function(board, playerPoint) {
             this.currentBoard = new jzt.Board(this.boards[board], this);
         }
 
+        // Export our old player properties, if applicable
+        if(this.player) {
+            properties = this.player.getProperties();
+        }
+
         // Construct our new player for this board
         this.player = new jzt.things.Player(this.currentBoard);
         this.player.game = this;
+
+        // Assign our exported properties, if applicable
+        if(properties) {
+            this.player.setProperties(properties);
+        }
 
     }
 

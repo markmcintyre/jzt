@@ -182,6 +182,7 @@ jzt.Board.prototype.initializePlayer = function(player) {
     this.player = player;
     this.setTile(player.point, player);
     this.player.board = this;
+    this.initializeTorch(this.player);
 };
 
 /*
@@ -201,6 +202,7 @@ jzt.Board.prototype.initializeTiles = function(tileDataCollection) {
             var thing = jzt.things.ThingFactory.deserialize(tile, this);
             if(thing !== undefined) {
                 this.setTile(new jzt.Point(x,y), thing);
+                this.initializeTorch(thing);
             }
 
             if(++x >= this.width) {
@@ -212,6 +214,24 @@ jzt.Board.prototype.initializeTiles = function(tileDataCollection) {
 
     }
     
+};
+
+/**
+ * Initializes a Torch for a provided thing
+ *
+ * @param A thing for which to initialize a torch
+ */
+jzt.Board.prototype.initializeTorch = function(thing) {
+
+    var torch;
+
+    // If the board is dark and we've got a torch, add it to our collection
+    if(this.dark && typeof(thing.getTorch) === 'function') {
+        torch = thing.getTorch();
+        if(torch) {
+            this.torches.push(torch);
+        }
+    }
 };
 
 jzt.Board.prototype.initializeWindow = function() {
@@ -750,13 +770,7 @@ jzt.Board.prototype.update = function() {
                 me.customRenderSet.push(tile);
             }
 
-            // If the board is dark and we've got a torch
-            if(me.dark && typeof(tile.getTorch) === 'function') {
-                torch = tile.getTorch();
-                if(torch) {
-                    me.torches.push(torch);
-                }
-            }
+            me.initializeTorch(tile);
 
         }
 

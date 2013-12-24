@@ -2300,8 +2300,36 @@ jzt.things.Player.prototype = new jzt.things.UpdateableThing();
 jzt.things.Player.prototype.constructor = jzt.things.Player;
 jzt.things.Player.serializationType = 'Player';
 
+/**
+ * Serializes this Player instance. Note that serializing a Player does not
+ * return data.
+ */
 jzt.things.Player.prototype.serialize = function() {
     return 0;
+};
+
+/**
+ * Retrieves exportable properties from this Player.
+ *
+ * @return Player properties
+ */
+jzt.things.Player.prototype.getProperties = function() {
+    return {
+        torch: this.torch,
+        torchExpiry: this.torchExpiry,
+        torchStrength: this.torchStrength
+    };
+};
+
+/**
+ * Assigns properties to this Player from an exported properties object.
+ *
+ * @param properties Exported Player properties.
+ */
+jzt.things.Player.prototype.setProperties = function(properties) {
+    this.torch = jzt.util.getOption(properties, 'torch', this.torch);
+    this.torchExpiry = jzt.util.getOption(properties, 'torchExpiry', this.torchExpiry);
+    this.torchStrength = jzt.util.getOption(properties, 'torchStrength', this.torchStrength);
 };
 
 /**
@@ -2478,6 +2506,7 @@ jzt.things.Player.prototype.useTorch = function() {
 jzt.things.Player.prototype.onUnpause = function(pauseDuration) {
     if(this.torch) {
         this.torchExpiry = this.torchExpiry + pauseDuration;
+
     }
 };
 
