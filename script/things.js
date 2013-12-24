@@ -916,7 +916,7 @@ jzt.things.Blinker.prototype.blink = function() {
 
 jzt.things.Blinker.prototype.createBlinkWall = function(point) {
     var blinkWall = new jzt.things.BlinkWall(this.board);
-    blinkWall.spriteIndex = (this.direction === jzt.Direction.North || this.direction === jzt.Direction.South) ? 186 : 205;
+    blinkWall.horizontal = (this.direction === jzt.Direction.North || this.direction === jzt.Direction.South) ? false : true;
     blinkWall.foreground = this.foreground;
     return blinkWall;
 };
@@ -928,13 +928,30 @@ jzt.things.Blinker.prototype.createBlinkWall = function(point) {
  */
 jzt.things.BlinkWall = function(board) {
     jzt.things.Thing.call(this, board);
-    this.spriteIndex = 205;
+    this.horizontal = false;
     this.background = undefined;
     this.foreground = jzt.colors.Yellow;
 };
 jzt.things.BlinkWall.prototype = new jzt.things.Thing();
 jzt.things.BlinkWall.prototype.constructor = jzt.things.BlinkWall;
 jzt.things.BlinkWall.serializationType = 'BlinkWall';
+
+jzt.things.BlinkWall.prototype.serialize = function() {
+    var result = jzt.things.Thing.prototype.serialize.call(this);
+    if(this.horizontal) {
+        result.horizontal = this.horizontal;
+    }
+    return result;
+};
+
+jzt.things.BlinkWall.prototype.deserialize = function(data) {
+    jzt.things.Thing.prototype.deserialize.call(this, data);
+    this.horizontal = jzt.util.getOption(data, 'horizontal', false);
+};
+
+jzt.things.BlinkWall.prototype.getSpriteIndex = function() {
+    return this.horizontal ? 205 : 186;
+};
 
 //--------------------------------------------------------------------------------
 
