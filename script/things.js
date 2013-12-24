@@ -2473,6 +2473,15 @@ jzt.things.Player.prototype.useTorch = function() {
 };
 
 /**
+ * An event handler to be called when the game is unpaused.
+ */
+jzt.things.Player.prototype.onUnpause = function(pauseDuration) {
+    if(this.torch) {
+        this.torchExpiry = this.torchExpiry + pauseDuration;
+    }
+};
+
+/**
  * Updates this Player's torch as of a provided timestamp moment, dimming
  * the surrounding area as the torch ages.
  *

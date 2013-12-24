@@ -825,7 +825,7 @@ jzt.Board.prototype.render = function(c) {
     this.updateWindowPosition();
 
     // Draw our board background
-    c.fillStyle = me.dark ? this.game.DARK_PATTERN : jzt.colors.Black.rgbValue;
+    c.fillStyle = !me.game.isDebugRendering && me.dark ? this.game.DARK_PATTERN : jzt.colors.Black.rgbValue;
     c.fillRect(0, 0, canvasWidth, canvasHeight);
 
     // For each displayable tile...
@@ -836,7 +836,7 @@ jzt.Board.prototype.render = function(c) {
         }
 
         // If this board is dark, and we're not visible, skip this iteration
-        if(me.dark && !me.isLit(point, thing)) {
+        if(!me.game.isDebugRendering && me.dark && !me.isLit(point, thing)) {
             return;
         }
 

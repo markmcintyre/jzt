@@ -11,6 +11,7 @@ jzt.Editor = function(editorElement, configuration) {
 	this.changeBoardCallback = configuration.changeBoard;
 	this.changeTemplateCallback = configuration.changeTemplate;
 	this.changeModeCallback = configuration.changeMode;
+	this.changeBoardOptionsCallback = configuration.changeBoardOptions;
 
 	this.mode = jzt.Editor.Mode.DRAW;
 
@@ -88,6 +89,15 @@ jzt.Editor.prototype.initializeBoardElement = function(board) {
 
 };
 
+jzt.Editor.prototype.setBoardOptions = function(options) {
+	this.currentBoard.dark = options.dark;
+	this.currentBoard.north = options.north !== '' ? options.north : undefined;
+	this.currentBoard.south = options.south !== '' ? options.south : undefined;
+	this.currentBoard.east = options.east !== '' ? options.east : undefined;
+	this.currentBoard.west = options.west !== '' ? options.west : undefined;
+	this.changeBoardOptionsCallback.call(this, options);
+};
+
 jzt.Editor.prototype.getUniqueBoardName = function(candidate) {
 
 	var index = 2;
@@ -127,6 +137,7 @@ jzt.Editor.prototype.getBoard = function(boardName) {
 jzt.Editor.prototype.switchBoard = function(boardName) {
 
 	var board = this.getBoard(boardName);
+	var boardOptions;
 
 	this.currentBoard = board;
 	if(!board.player) {
@@ -139,6 +150,14 @@ jzt.Editor.prototype.switchBoard = function(boardName) {
 	this.currentBoard.render(this.context);
 
 	this.changeBoardCallback.call(this, boardName);
+	boardOptions = {
+		north: board.north,
+		east: board.east,
+		south: board.south,
+		west: board.west,
+		dark: board.dark
+	}
+	this.changeBoardOptionsCallback.call(this, boardOptions);
 
 };
 

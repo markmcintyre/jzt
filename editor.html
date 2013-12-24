@@ -112,6 +112,12 @@
 		</div>
 
 		<div id="customizers">
+			<div id="other-customizers">
+				<select id="mode-selector">
+					<option value="0">Drawing</option>
+					<option value="1">Select</option>
+				</select>
+			</div>
 			<div id="template-customizer">
 				<textarea id="active-template-editor" rows="10" style="width: 100%"></textarea>
 			</div>
@@ -131,11 +137,13 @@
 					<li class="colorF" data-color="F">White</li>
 				</ol>
 			</div>
-			<div id="other-customizers">
-				<select id="mode-selector">
-					<option value="0">Drawing</option>
-					<option value="1">Select</option>
-				</select>
+			
+			<div id="board-customizer">
+				<label>North: <select id="north-selector"><option value="">None</option></select></label><br/>
+				<label>East: <select id="east-selector"><option value="">None</option></select></label><br/>
+				<label>South: <select id="south-selector"><option value="">None</option></select></label><br/>
+				<label>West: <select id="west-selector"><option value="">None</option></select></label><br/>
+				<label><input type="checkbox" id="dark-selector" /> Dark Room</label>
 			</div>
 		</div>
 		
@@ -155,6 +163,11 @@
 
 			var templates = {};
 			var boardSelector = document.getElementById('board-selector');
+			var northSelector = document.getElementById('north-selector');
+			var eastSelector = document.getElementById('east-selector');
+			var southSelector = document.getElementById('south-selector');
+			var westSelector = document.getElementById('west-selector');
+			var darkSelector = document.getElementById('dark-selector');
 			var templateEditor = document.getElementById('active-template-editor');
 			var scriptSelector = document.getElementById('script-selector');
 			var newScriptButton = document.getElementById('new-script-button');
@@ -225,6 +238,10 @@
 
 			function onBoardAdded(boardName) {
 				boardSelector.options[boardSelector.options.length] = new Option(boardName, boardName);
+				northSelector.options[northSelector.options.length] = new Option(boardName, boardName);
+				southSelector.options[southSelector.options.length] = new Option(boardName, boardName);
+				eastSelector.options[eastSelector.options.length] = new Option(boardName, boardName);
+				westSelector.options[westSelector.options.length] = new Option(boardName, boardName);
 			};
 
 			function onBoardRemoved(boardName) {
@@ -245,6 +262,16 @@
 				}
 				selectScript(scriptSelector.value);
 				
+			};
+
+			function onBoardOptionsChanged(options) {
+
+				northSelector.value = options.north ? options.north : '';
+				eastSelector.value = options.east ? options.east : '';
+				southSelector.value = options.south ? options.south : '';
+				westSelector.value = options.west ? options.west : '';
+				darkSelector.checked = options.dark;
+
 			};
 
 			function onTemplateChanged(newTemplate) {
@@ -322,6 +349,17 @@
 				editor.setMode(mode);
 			};
 
+			function onBoardOptionsSelected(event) {
+				var options = {
+					north: northSelector.value,
+					south: southSelector.value,
+					east: eastSelector.value,
+					west: westSelector.value,
+					dark: darkSelector.checked
+				};
+				editor.setBoardOptions(options);
+			};
+
 			var tools = document.getElementsByName('activeTemplate');
 			for( var index = 0; index < tools.length; index++ ) {
         		tools[index].addEventListener('change', onToolSelected, false);
@@ -340,7 +378,8 @@
 				removeBoard: onBoardRemoved,
 				changeBoard: onBoardChanged,
 				changeTemplate: onTemplateChanged,
-				changeMode: onModeChanged
+				changeMode: onModeChanged,
+				changeBoardOptions: onBoardOptionsChanged
 			};
 
 			editor = new jzt.Editor(editArea, callbacks);
@@ -351,6 +390,11 @@
 			scriptSelector.addEventListener('change', onScriptSelected, false);
 			newScriptButton.addEventListener('click', onNewScriptClick, false);
 			scriptEditor.addEventListener('blur', onScriptChanged, false);
+			northSelector.addEventListener('change', onBoardOptionsSelected, false);
+			eastSelector.addEventListener('change', onBoardOptionsSelected, false);
+			southSelector.addEventListener('change', onBoardOptionsSelected, false);
+			westSelector.addEventListener('change', onBoardOptionsSelected, false);
+			darkSelector.addEventListener('click', onBoardOptionsSelected, false);
 
 
 		</script>

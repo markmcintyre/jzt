@@ -179,6 +179,9 @@ jzt.Game.prototype.setState = function(state) {
         // Cancel all keyboard input
         this.keyboard.cancelInput();
 
+        // Remember our pause time
+        this.pauseStart = Date.now();
+
     }
 
     // If we are to resume playing...
@@ -186,6 +189,11 @@ jzt.Game.prototype.setState = function(state) {
 
         // Forget if P was pressed
         delete this.keyboard.cancelKey[this.keyboard.P];
+
+        // Calculate our pause duration and notify our player
+        if(this.pauseStart) {
+            this.player.onUnpause(Date.now() - this.pauseStart);
+        }
 
         // Clear any active display message
         this.currentBoard.setDisplayMessage(undefined);
