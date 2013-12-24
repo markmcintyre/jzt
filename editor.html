@@ -160,6 +160,7 @@
 			var scriptEditor = document.getElementById('script-editor');
 			var modeSelector = document.getElementById('mode-selector');
 			var editArea = document.getElementById('edit-area');
+			var toolBox = document.getElementById('toolbox');
 			var editor = undefined;
 
 			function onToolSelected(event) {
@@ -246,7 +247,25 @@
 			};
 
 			function onTemplateChanged(newTemplate) {
-				templateEditor.value = JSON.stringify(newTemplate, undefined, 4);
+
+				var element;
+
+				if(newTemplate) {
+					templateEditor.value = JSON.stringify(newTemplate, undefined, 4);
+
+					if(newTemplate.type) {
+						element = toolBox.querySelector('input[value="' + newTemplate.type + '"]');
+						if(element) {
+							element.checked = true;
+						}
+					}
+
+				}
+				else {
+					templateEditor.value = '(None)';
+					toolBox.querySelector('input[value=""]').checked = true;
+				}
+
 			};
 
 			function onTemplateEdited() {
