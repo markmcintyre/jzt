@@ -2467,6 +2467,9 @@ jzt.things.Player.prototype.update = function() {
     }
 
     jzt.things.UpdateableThing.prototype.update.call(this);
+
+    // To stay sufficiently responsive, the player torch has to be initialized explicitly here
+    this.board.initializeTorch(this);
     
 };
 

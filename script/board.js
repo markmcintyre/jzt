@@ -763,6 +763,7 @@ jzt.Board.prototype.update = function() {
                 if(!tile.updateOnReverse()) {
                     tile.update();
                 }
+
             }
 
             // If we've got a tile with a custom renderer...
@@ -770,7 +771,10 @@ jzt.Board.prototype.update = function() {
                 me.customRenderSet.push(tile);
             }
 
-            me.initializeTorch(tile);
+            // Update our torch, if applicable
+            if(! (tile instanceof jzt.things.Player)) {
+                me.initializeTorch(tile);
+            }
 
         }
 
