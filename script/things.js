@@ -2281,6 +2281,11 @@ jzt.things.Player = function(board) {
 };
 jzt.things.Player.prototype = new jzt.things.UpdateableThing();
 jzt.things.Player.prototype.constructor = jzt.things.Player;
+jzt.things.Player.serializationType = 'Player';
+
+jzt.things.Player.prototype.serialize = function() {
+    return 0;
+};
 
 /**
  * Receives a request to be pushed in a given direction.
@@ -3660,13 +3665,17 @@ jzt.things.ThingFactory = jzt.things.ThingFactory || {};
  */
 jzt.things.ThingFactory.deserialize = function(data, board) {
 
-    var thingMap = jzt.things.ThingFactory.getThingMap();
+    if(data && data.type) {
 
-    var ThingFunction = thingMap[data.type];
-    if(ThingFunction) {
-        var result = new ThingFunction(board);
-        result.deserialize(data);
-        return result;
+        var thingMap = jzt.things.ThingFactory.getThingMap();
+
+        var ThingFunction = thingMap[data.type];
+        if(ThingFunction) {
+            var result = new ThingFunction(board);
+            result.deserialize(data);
+            return result;
+        }
+
     }
 
 };

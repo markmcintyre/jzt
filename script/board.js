@@ -169,11 +169,6 @@ jzt.Board.prototype.getScriptables = function(name) {
  */
 jzt.Board.prototype.initializePlayer = function(player) {
 
-    // If we already have a player, remove it
-    if(this.player) {
-        this.setTile(player.point, undefined);
-    }
-
     // Check if our player is outside our range
     if(this.isOutside(player.point)) {
 
@@ -415,7 +410,9 @@ jzt.Board.prototype.deleteTile = function(point) {
     var thing = this.getTile(point);
 
     // Delete the tile
-    this.setTile(point, thing.under);
+    if(thing) {
+        this.setTile(point, thing.under);
+    }
     
 };
 
@@ -502,7 +499,21 @@ jzt.Board.prototype.setTile = function(point, tile) {
     if(!this.isOutside(point)) {
 
         if(tile) {
+
             tile.point = point.clone();
+
+            if(tile instanceof jzt.things.Player && this.player !== tile) {
+
+                // Remove the old player
+                this.deleteTile(this.player.point);
+
+                // Add our new player
+                tile = this.player;
+                tile.point = point.clone();
+                this.initializePlayer(this.player);
+
+            }
+
         }
         
         this.tiles[point.x + point.y * this.width] = tile;
