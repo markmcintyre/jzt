@@ -155,7 +155,7 @@ jzt.ScriptContext = function(script, owner) {
     this.script = script;
     this.commandIndex = 0;
     this.currentLabels = {};
-    this.storedCommand = undefined;
+    this.heap = {};
     this.initializeLabels(script);
     this.scrollContent = [];
 };
@@ -171,13 +171,13 @@ jzt.ScriptContext.prototype.serialize = function() {
     var label;
     result.commandIndex = this.commandIndex;
     result.currentLabels = {};
+    result.heap = this.heap;
     for(label in this.currentLabels) {
         if(this.currentLabels.hasOwnProperty(label) && this.currentLabels[label]) {
             result.currentLabels[label] = this.currentLabels[label];
         }
     }
 
-    //TODO: Serialize stored command
     return result;
 
 };
@@ -192,13 +192,12 @@ jzt.ScriptContext.prototype.deserialize = function(data) {
     var label;
 
     this.commandIndex = data.commandIndex;
+    this.heap = data.heap;
     for(label in data.currentLabels) {
         if(data.currentLabels.hasOwnProperty(label)) {
             this.currentLabels[label] = data.currentLabels[label];
         }
     }
-
-    // TODO: Deserialize stored command
 
 };
 
@@ -282,17 +281,10 @@ jzt.ScriptContext.prototype.executeTick = function() {
         
         var command;
         var result;
-        
-        // If we have a stored command...
-        if(this.storedCommand) {
-            command = this.storedCommand;
-        }
-        
-        // Otherwise fetch a new command
-        else {
-            command = this.script.getCommand(this.commandIndex);
-        }
-        
+
+        // Fetch a new command
+        command = this.script.getCommand(this.commandIndex);
+
         if(command) {
 
             result = command.execute(this.owner);
@@ -326,7 +318,6 @@ jzt.ScriptContext.prototype.executeTick = function() {
             
                 // Execute the same command next tick
                 case jzt.commands.CommandResult.REPEAT:
-                    this.storedCommand = command;
                     break;
             
                 default:
@@ -357,11 +348,6 @@ jzt.ScriptContext.prototype.jumpToLabel = function(label) {
             
             // Set our current line to the active label index
             this.commandIndex = labelIndicies[labelIndex];
-    
-            // If we have a stored command, clear it
-            if(this.storedCommand) {
-                this.storedCommand = undefined;
-            }
             
         }
 
@@ -411,10 +397,6 @@ jzt.ScriptContext.prototype.restoreLabel = function(label) {
  */
 jzt.ScriptContext.prototype.advanceLine = function() {
     if(this.isRunning()) {
-        // If we have a stored command, clear it
-        if(this.storedCommand) {
-            this.storedCommand = undefined;
-        }
         this.commandIndex++;
     }
 };

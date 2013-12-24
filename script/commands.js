@@ -355,6 +355,10 @@ jzt.commands.Go.prototype.clone = function() {
 };
 
 jzt.commands.Go.prototype.execute = function(owner) {
+
+    if(!owner.scriptContext.heap.count) {
+        owner.scriptContext.heap.count = this.count;
+    }
     
     // Get our direction from our expression
     var direction = this.directionExpression.getResult(owner);
@@ -365,8 +369,11 @@ jzt.commands.Go.prototype.execute = function(owner) {
         owner.move(direction);
 
         // If we are to go a number of times...
-        if(--this.count > 0) {
+        if(--owner.scriptContext.heap.count > 0) {
             return jzt.commands.CommandResult.REPEAT;
+        }
+        else {
+            delete owner.scriptContext.heap.count;
         }
 
     }
@@ -445,8 +452,12 @@ jzt.commands.Move.prototype.execute = function(owner) {
     
     var direction;
 
+    if(!owner.scriptContext.heap.count) {
+        owner.scriptContext.heap.count = this.count;
+    }
+
     // If we aren't stuck, calculate our next direction
-    if(!this.stuck) {
+    if(!owner.scriptContext.heap.stuck) {
         
         direction = this.directionExpression.getResult(owner);
         
@@ -454,7 +465,7 @@ jzt.commands.Move.prototype.execute = function(owner) {
     
     // If we are stuck, we will continue trying that direction
     else {
-        direction = this.stuck;
+        direction = jzt.Direction.fromName(owner.scriptContext.heap.stuck);
     }
     
     // If a direction is available
@@ -465,7 +476,7 @@ jzt.commands.Move.prototype.execute = function(owner) {
         // If we were not successful, we're stuck
         if(!success) {
             
-            this.stuck = direction;
+            owner.scriptContext.heap.stuck = jzt.Direction.getShortName(direction);
             
             // We will try again until we're free
             return jzt.commands.CommandResult.REPEAT;
@@ -473,9 +484,13 @@ jzt.commands.Move.prototype.execute = function(owner) {
         }
         
         // If we are to move a number of times...
-        else if(--this.count > 0) {
-            this.stuck = undefined;
+        else if(--owner.scriptContext.heap.count > 0) {
+            delete owner.scriptContext.heap.stuck;
             return jzt.commands.CommandResult.REPEAT;
+        }
+        else {
+            delete owner.scriptContext.heap.count;
+            delete owner.scriptContext.heap.stuck;
         }
         
     }
@@ -785,9 +800,17 @@ jzt.commands.Wait.prototype.clone = function() {
     return clone;
 };
 
-jzt.commands.Wait.prototype.execute = function() {
-    if(--this.cycles > 0) {
+jzt.commands.Wait.prototype.execute = function(owner) {
+
+    if(!owner.scriptContext.heap.cycles) {
+        owner.scriptContext.heap.cycles = this.cycles;
+    }
+
+    if(--owner.scriptContext.heap.cycles > 0) {
         return jzt.commands.CommandResult.REPEAT;
+    }
+    else {
+        delete owner.scriptContext.heap.cycles;
     }
 };
 
