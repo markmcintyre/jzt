@@ -747,6 +747,22 @@ jzt.commands.Take.prototype.execute = function(owner) {
 };
 
 /*
+ * Torch Command
+ */
+jzt.commands.Torch = function() {
+    this.radius = 0;
+};
+
+jzt.commands.Torch.prototype.clone = function() {
+    var clone = new jzt.commands.Torch();
+    clone.radius = this.radius;
+    return clone;
+};
+jzt.commands.Torch.prototype.execute = function(owner) {
+    owner.setTorchRadius(this.radius);
+};
+
+/*
  * Unlock Command
  */
 jzt.commands.Unlock = function() {};

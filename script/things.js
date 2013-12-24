@@ -467,6 +467,7 @@ jzt.things.ScriptableThing = function(board) {
     this.locked = false;
     this.orientation = undefined;
     this.spriteIndex = 1;
+    this.torchRadius = undefined;
 };
 jzt.things.ScriptableThing.prototype = new jzt.things.UpdateableThing();
 jzt.things.ScriptableThing.prototype.constructor = jzt.things.ScriptableThing;
@@ -483,6 +484,10 @@ jzt.things.ScriptableThing.prototype.serialize = function() {
     result.name = this.name;
     result.spriteIndex = this.spriteIndex;
     result.script = this.scriptName;
+
+    if(this.torchRadius > 0) {
+        result.torchRadius = this.torchRadius;
+    }
 
     if(this.scriptContext) {
 
@@ -515,6 +520,7 @@ jzt.things.ScriptableThing.prototype.deserialize = function(data) {
     if(data.spriteIndex) {
         this.spriteIndex = data.spriteIndex;
     }
+    this.setTorchRadius(jzt.util.getOption(data, 'torchRadius', 0));
     this.scriptName = data.script;
     var script = this.board.getScript(this.scriptName);
     if(script) {
@@ -587,6 +593,16 @@ jzt.things.ScriptableThing.prototype.doTick = function() {
         this.scriptContext.executeTick();
     }
     
+};
+
+jzt.things.ScriptableThing.prototype.setTorchRadius = function(radius) {
+    this.torchRadius = radius;
+}
+
+jzt.things.ScriptableThing.prototype.getTorch = function() {
+    if(this.torchRadius > 0) {
+        return jzt.util.generateCircleData(this.point, this.torchRadius);
+    }
 };
 
 /*==================================================================================

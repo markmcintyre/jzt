@@ -953,6 +953,26 @@ jztscript.parsers.SetParser = function() {
  };
 
 /*
+ * Torch Parser
+ *
+ * command = 'torch' Number
+ */
+jztscript.parsers.TorchParser = function() {
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+    result.add(ns.discard(new ns.Literal('torch')));
+    result.add(new ns.Number());
+    result.assembler = {
+        assemble: function(assembly) {
+            var command = new jzt.commands.Torch();
+            command.radius = parseInt(assembly.stack.pop());
+            assembly.target = command;
+        }
+    };
+    return result;
+};
+
+/*
  * Restore Parser
  */
 jztscript.parsers.RestoreParser = function() {
