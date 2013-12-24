@@ -129,7 +129,9 @@ jzt.Editor.prototype.switchBoard = function(boardName) {
 	var board = this.getBoard(boardName);
 
 	this.currentBoard = board;
-	this.currentBoard.initializePlayer(new jzt.things.Player());
+	if(!board.player) {
+		this.currentBoard.initializePlayer(new jzt.things.Player());
+	}
 
 	this.initializeBoardElement(board);
 

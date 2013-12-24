@@ -502,7 +502,7 @@ jzt.Board.prototype.setTile = function(point, tile) {
 
             tile.point = point.clone();
 
-            if(tile instanceof jzt.things.Player && this.player !== tile) {
+            if(tile instanceof jzt.things.Player && (!point.equals(this.player.point))) {
 
                 // Remove the old player
                 this.deleteTile(this.player.point);
