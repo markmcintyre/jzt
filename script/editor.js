@@ -389,23 +389,43 @@ jzt.Editor.prototype.onCanvasMouseUp = function(event) {
 
 };
 
-jzt.Editor.prototype.getType = function(point) {
-
-	var thing = this.currentBoard.getTile(point);
-
-	if(thing && thing.constructor.hasOwnProperty('serializationType')) {
-		return thing.constructor.serializationType;
-	}
-
-}
-
 jzt.Editor.prototype.fill = function(point) {
 
-	var thing = this.currentBoard.getTile(point);
-	var typeOfInterest = this.getType(point);
+	var thing;
+	var targetDetails;
+	var me = this;
+
+	function getDetails(thing) {
+
+		var type;
+		var color;
+
+		if(thing && thing.constructor.hasOwnProperty('serializationType')) {
+			type = thing.constructor.serializationType;
+		}
+
+		if(thing) {
+			color = jzt.colors.serialize(thing.foreground, thing.background);
+		}
+
+		return '' + type + color;
+
+	}
+
+	function fillNeighbour(point, targetDetails) {
+
+		var details = getDetails(me.currentBoard.getTile(point));
+		if(details === targetDetails) {
+			me.fill(point);
+		}
+
+	}
+
+	thing = this.currentBoard.getTile(point);
+	targetDetails = getDetails(thing);
 
 	// Don't fill if we're already the correct type
-	if(this.activeTemplate.type === typeOfInterest) {
+	if(getDetails(jzt.things.ThingFactory.deserialize(this.activeTemplate, this.currentBoard)) === targetDetails) {
 		return;
 	}
 
@@ -417,21 +437,10 @@ jzt.Editor.prototype.fill = function(point) {
 		this.currentBoard.addThing(point, undefined);
 	}
 
-	if(this.getType(point.add(jzt.Direction.North)) === typeOfInterest) {
-		this.fill(point.add(jzt.Direction.North));
-	}
-
-	if(this.getType(point.add(jzt.Direction.East)) === typeOfInterest) {
-		this.fill(point.add(jzt.Direction.East));
-	}
-
-	if(this.getType(point.add(jzt.Direction.South)) === typeOfInterest) {
-		this.fill(point.add(jzt.Direction.South));
-	}
-
-	if(this.getType(point.add(jzt.Direction.West)) === typeOfInterest) {
-		this.fill(point.add(jzt.Direction.West));
-	}
+	fillNeighbour(point.add(jzt.Direction.North), targetDetails);
+	fillNeighbour(point.add(jzt.Direction.East), targetDetails);
+	fillNeighbour(point.add(jzt.Direction.South), targetDetails);
+	fillNeighbour(point.add(jzt.Direction.West), targetDetails);
 
 };
 
