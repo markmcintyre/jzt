@@ -101,13 +101,20 @@
 			<label><input type="radio" name="activeTemplate" value="Scriptable" />Scriptable</label>
 			<br/>
 
-			<button id="save-game">Save</button>
+
 
 			<label>Boards
 				<select id="board-selector">
 					<option value='jzt.newboard'>Create New Board</option>
 				</select>
 			</label>
+
+			<button id="delete-board">Delete Board</button>
+			<br/>
+
+			<button id="save-game">Save</button>
+			<a download="untitled.jzt" id="download" href="#">Download</a>
+			<input id="load-game" type="file" /><br/>
 
 		</div>
 
@@ -175,6 +182,9 @@
 			var modeSelector = document.getElementById('mode-selector');
 			var editArea = document.getElementById('edit-area');
 			var toolBox = document.getElementById('toolbox');
+			var download = document.getElementById('download');
+			var loadGame = document.getElementById('load-game');
+			var deleteBoard = document.getElementById('delete-board');
 			var editor = undefined;
 
 			function onToolSelected(event) {
@@ -246,6 +256,21 @@
 
 			function onBoardRemoved(boardName) {
 
+				function findIndex(element, name) {
+					var index;
+					for(index = 0; index < element.length; ++index) {
+						if(element.options[index].value === name) {
+							return index;
+						}
+					}
+				}
+
+				
+				boardSelector.remove(findIndex(boardSelector, boardName));
+				northSelector.remove(findIndex(northSelector, boardName));
+				eastSelector.remove(findIndex(eastSelector, boardName));
+				southSelector.remove(findIndex(southSelector, boardName));
+				westSelector.remove(findIndex(westSelector, boardName));
 			};
 
 			function onModeChanged(mode) {
@@ -360,6 +385,30 @@
 				editor.setBoardOptions(options);
 			};
 
+			function onDownload(event) {
+				var game = editor.serialize();
+				download.download = game.name.replace(/[^a-z0-9_\-]/gi, '-').toLowerCase() + '.jzt';
+				download.href = 'data:application/octet-stream;charset=utf-8;base64,' + LZString.compressToBase64(JSON.stringify(editor.serialize()));
+			};
+
+			function onLoadGame(event) {
+				var fileReader;
+				var result;
+				if(event.target.files && event.target.files[0]) {
+					fileReader = new FileReader();
+					fileReader.onload = function(event) {
+						result = event.target.result.split(',')[1];
+						result = LZString.decompressFromBase64(result);
+						editor.deserialize(JSON.parse(result));
+					};
+					fileReader.readAsDataURL(event.target.files[0]);
+				}
+			};
+
+			function onDeleteBoard(event) {
+				editor.removeBoard(editor.currentBoard.name);
+			};
+
 			var tools = document.getElementsByName('activeTemplate');
 			for( var index = 0; index < tools.length; index++ ) {
         		tools[index].addEventListener('change', onToolSelected, false);
@@ -395,6 +444,9 @@
 			southSelector.addEventListener('change', onBoardOptionsSelected, false);
 			westSelector.addEventListener('change', onBoardOptionsSelected, false);
 			darkSelector.addEventListener('click', onBoardOptionsSelected, false);
+			download.addEventListener('click', onDownload, false);
+			loadGame.addEventListener('change', onLoadGame, false);
+			deleteBoard.addEventListener('click', onDeleteBoard, false);
 
 
 		</script>

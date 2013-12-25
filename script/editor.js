@@ -180,9 +180,18 @@ jzt.Editor.prototype.load = function() {
 };
 
 jzt.Editor.prototype.deserialize = function(data) {
+
+	var index;
+	var board;
+
+	for(index = 0; index < this.boards.length; ++index) {
+		this.removeBoardCallback.call(this, this.boards[index].name);
+	}
+
 	this.boards = [];
-	for(var index = 0; index < data.boards.length; ++index) {
-		var board = new jzt.Board(data.boards[index], this.game);
+
+	for(index = 0; index < data.boards.length; ++index) {
+		board = new jzt.Board(data.boards[index], this.game);
 		this.boards.push(board);
 		this.addBoardCallback.call(this, board.name);
 	}
@@ -204,6 +213,26 @@ jzt.Editor.prototype.serialize = function() {
 jzt.Editor.prototype.setMode = function(mode) {
 	this.mode = mode;
 	this.changeModeCallback.call(this, mode);
+};
+
+jzt.Editor.prototype.removeBoard = function(boardName) {
+	var index;
+	var found = -1;
+	for(index = 0; index < this.boards.length; ++index) {
+		if(this.boards[index].name === boardName) {
+			found = index;
+			break;
+		}
+	}
+	if(found >= 0) {
+		this.boards.splice(found, 1);
+		this.removeBoardCallback.call(this, boardName);
+
+		if(this.boards.length > 0) {
+			this.switchBoard(this.boards[0].name);
+		}
+	}
+
 };
 
 jzt.Editor.prototype.addBoard = function(boardName, width, height) {
