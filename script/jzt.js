@@ -268,7 +268,7 @@ jzt.Game.prototype.movePlayerToBoardEdge = function(edge, boardName) {
     }
 
     // If the player cannot move to this location, return immediately
-    if(!newBoard.moveTile(outsideLocation, newLocation)) {
+    if(!newBoard.moveTile(outsideLocation, newLocation, false, true)) {
         return;
     }
 

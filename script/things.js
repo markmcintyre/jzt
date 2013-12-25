@@ -1662,6 +1662,7 @@ jzt.things.River.prototype.isSurrenderable = function(thing) {
 jzt.things.River.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
     delete result.color;
+    delete result.speed;
     result.direction = jzt.Direction.getShortName(this.direction);
     return result;
 };
@@ -3602,6 +3603,7 @@ jzt.things.Torch.serializationType = 'Torch';
 jzt.things.Torch.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
     delete result.color;
+    delete result.speed;
     return result;
 };
 

@@ -445,9 +445,10 @@ jzt.Board.prototype.deleteTile = function(point) {
  * @param oldPoint A point on this Board containing a tile to be moved
  * @param newPoint A point on the Board to which a tile is to be moved.
  * @param weak Whether or not we should weakly move the tile.
+ * @param ghost Whether or not we should actually move the tile, or behave as if a ghost moved (without actually moving)
  * @return true if a move was successful, false otherwise.
  */
-jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak) {
+jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak, ghost) {
     
     var thing = this.getTile(oldPoint);
     var obstacle = this.getTile(newPoint);
@@ -456,11 +457,14 @@ jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak) {
     // If the coast is clear...
     if(this.isFree(newPoint)) {
 
-        this.setTile(newPoint, thing);
-        this.setTile(oldPoint, thing === undefined ? undefined : thing.under);
+        if(!ghost) {
 
-        if(thing !== undefined) {
-            thing.under = undefined;
+            this.setTile(newPoint, thing);
+            this.setTile(oldPoint, thing === undefined ? undefined : thing.under);
+
+            if(thing !== undefined) {
+                thing.under = undefined;
+            }
         }
 
         return true;
@@ -469,14 +473,17 @@ jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak) {
     // If we are blocked, but the path is surrenderable...
     else if(!this.isOutside(newPoint) && obstacle.isSurrenderable(thing)) {
 
-        // If our thing isn't undefined
-        if(thing !== undefined) {
-            underOldThing = thing.under;
-            thing.under = obstacle;
-        }
 
-        this.setTile(newPoint, thing);
-        this.setTile(oldPoint, underOldThing);
+        if(!ghost) {
+            // If our thing isn't undefined
+            if(thing !== undefined) {
+                underOldThing = thing.under;
+                thing.under = obstacle;
+            }
+
+            this.setTile(newPoint, thing);
+            this.setTile(oldPoint, underOldThing);
+        }
 
         return true;
 
@@ -498,7 +505,7 @@ jzt.Board.prototype.moveTile = function(oldPoint, newPoint, weak) {
 
             // Otherwise, if a space was opened up, or if the space is surrenderable...
             else if(this.isFree(newPoint) || this.getTile(newPoint).isSurrenderable(thing)) {
-                return this.moveTile(oldPoint, newPoint, weak);
+                return this.moveTile(oldPoint, newPoint, weak, ghost);
             }
 
         }
