@@ -53,7 +53,8 @@ jzt.Editor = function(editorElement, configuration) {
 
 jzt.Editor.Mode = {
 	DRAW: 0,
-	SELECT: 1
+	SELECT: 1,
+	FILL: 2
 }
 
 jzt.Editor.prototype.initializeBoardElement = function(board) {
@@ -377,8 +378,60 @@ jzt.Editor.prototype.onCanvasMouseUp = function(event) {
 		}
 
 	}
+	else if(this.mode === jzt.Editor.Mode.FILL) {
+
+		this.fill(convertedPoint);
+
+	}
+
+	this.currentBoard.render(this.context);
 
 
+};
+
+jzt.Editor.prototype.getType = function(point) {
+
+	var thing = this.currentBoard.getTile(point);
+
+	if(thing && thing.constructor.hasOwnProperty('serializationType')) {
+		return thing.constructor.serializationType;
+	}
+
+}
+
+jzt.Editor.prototype.fill = function(point) {
+
+	var thing = this.currentBoard.getTile(point);
+	var typeOfInterest = this.getType(point);
+
+	// Don't fill if we're already the correct type
+	if(this.activeTemplate.type === typeOfInterest) {
+		return;
+	}
+
+	// If we have an active template, add our thing
+	if(this.activeTemplate) {
+		this.currentBoard.addThing(point, jzt.things.ThingFactory.deserialize(this.activeTemplate, this.currentBoard));
+	}
+	else {
+		this.currentBoard.addThing(point, undefined);
+	}
+
+	if(this.getType(point.add(jzt.Direction.North)) === typeOfInterest) {
+		this.fill(point.add(jzt.Direction.North));
+	}
+
+	if(this.getType(point.add(jzt.Direction.East)) === typeOfInterest) {
+		this.fill(point.add(jzt.Direction.East));
+	}
+
+	if(this.getType(point.add(jzt.Direction.South)) === typeOfInterest) {
+		this.fill(point.add(jzt.Direction.South));
+	}
+
+	if(this.getType(point.add(jzt.Direction.West)) === typeOfInterest) {
+		this.fill(point.add(jzt.Direction.West));
+	}
 
 };
 
