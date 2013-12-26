@@ -521,6 +521,13 @@ jzt.things.ScriptableThing.prototype.deserialize = function(data) {
         this.spriteIndex = data.spriteIndex;
     }
     this.setTorchRadius(jzt.util.getOption(data, 'torchRadius', 0));
+    this.locked = data.locked;
+    if(data.walkDirection) {
+        this.walkDirection = jzt.Direction.fromName(data.walkDirection);
+    }
+    if(data.orientation) {
+        this.orientation = jzt.Direction.fromName(data.orientation);
+    }
     this.scriptName = data.script;
     var script = this.board.getScript(this.scriptName);
     if(script) {
