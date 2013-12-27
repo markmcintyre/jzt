@@ -270,7 +270,7 @@ jzt.parser.Terminal.prototype.match = function(assemblies) {
     
     for(var index = 0; index < assemblies.length; ++index) {
         var assembly = assemblies[index];
-        var assemblyResult = this._matchAssembly(assembly);
+        var assemblyResult = this.matchAssembly(assembly);
         if(assemblyResult != undefined) {
             result.push(assemblyResult);
         }
@@ -280,7 +280,7 @@ jzt.parser.Terminal.prototype.match = function(assemblies) {
     
 };
 
-jzt.parser.Terminal.prototype._matchAssembly = function(assembly) {
+jzt.parser.Terminal.prototype.matchAssembly = function(assembly) {
     
     if(assembly.isDone()) {
         return undefined;
