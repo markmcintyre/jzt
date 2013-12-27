@@ -421,6 +421,10 @@ jzt.Editor.prototype.fill = function(point) {
 
 	}
 
+	if(this.currentBoard.isOutside(point)) {
+		return;
+	}
+
 	thing = this.currentBoard.getTile(point);
 	targetDetails = getDetails(thing);
 
