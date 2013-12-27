@@ -31,6 +31,8 @@ jzt.GameState = {
  */
 jzt.Game = function(canvasElement, data, onLoadCallback) {
     
+    var graphicsLoadedCallback;
+
     this.FPS = 30;
     this.CPS = 10;
     this.CYCLE_RATE = Math.round(this.FPS / this.CPS);
@@ -43,16 +45,28 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     this.player = undefined;
     this.keyboard = new jzt.KeyboardInput();
     this.canvasElement = canvasElement;
+    if(window.devicePixelRatio) {
+        canvasElement.style.width = canvasElement.width + 'px';
+        canvasElement.style.height = canvasElement.height + 'px';
+        canvasElement.width = canvasElement.width * window.devicePixelRatio;
+        canvasElement.height = canvasElement.height * window.devicePixelRatio;
+    }
     this.context = canvasElement.getContext('2d');
     this.context.imageSmoothingEnabled = false;
     this.context.webkitImageSmoothingEnabled = false;
     this.context.mozImageSmoothingEnabled = false;
 
+
     this.deserialize(data);
 
     this.resources.audio = new jzt.Audio();
-    var graphicsLoadedCallback = this.onGraphicsLoaded.bind(this);
+    graphicsLoadedCallback = this.onGraphicsLoaded.bind(this);
     this.resources.graphics = new jzt.Graphics(graphicsLoadedCallback);
+
+    if(window.devicePixelRatio) {
+        this.resources.graphics.TILE_SIZE.x = this.resources.graphics.TILE_SIZE.x * window.devicePixelRatio;
+        this.resources.graphics.TILE_SIZE.y = this.resources.graphics.TILE_SIZE.y * window.devicePixelRatio;
+    }
 
     this.screenWidth = Math.floor(this.context.canvas.width / this.resources.graphics.TILE_SIZE.x);
     this.screenHeight = Math.floor(this.context.canvas.height / this.resources.graphics.TILE_SIZE.y);
