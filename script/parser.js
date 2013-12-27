@@ -103,7 +103,7 @@ jzt.parser.Parser.prototype.findBestAssembly = function(assemblies) {
     
 };
 
-jzt.parser.Parser.prototype._cloneAssemblies = function(assemblies) {
+jzt.parser.Parser.prototype.cloneAssemblies = function(assemblies) {
   
   var result = [];
   
@@ -140,7 +140,7 @@ jzt.parser.Repetition.prototype.match = function(assemblies) {
         }
     }
     
-    var result = this._cloneAssemblies(assemblies);
+    var result = this.cloneAssemblies(assemblies);
     while(assemblies.length > 0) {
         assemblies = this.subParser.matchAndAssemble(assemblies);
         result = result.concat(assemblies);
@@ -160,7 +160,7 @@ jzt.parser.Empty.prototype = new jzt.parser.Parser();
 jzt.parser.Empty.prototype.constructor = jzt.parser.Empty;
 
 jzt.parser.Empty.prototype.match = function(assemblies) {
-    return this._cloneAssemblies(assemblies);
+    return this.cloneAssemblies(assemblies);
 };
 
 /*
