@@ -47,7 +47,66 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     this.context.imageSmoothingEnabled = false;
     this.context.webkitImageSmoothingEnabled = false;
     this.context.mozImageSmoothingEnabled = false;
+
+    this.deserialize(data);
+
+    this.resources.audio = new jzt.Audio();
+    var graphicsLoadedCallback = this.onGraphicsLoaded.bind(this);
+    this.resources.graphics = new jzt.Graphics(graphicsLoadedCallback);
+
+    this.screenWidth = Math.floor(this.context.canvas.width / this.resources.graphics.TILE_SIZE.x);
+    this.screenHeight = Math.floor(this.context.canvas.height / this.resources.graphics.TILE_SIZE.y);
+
+};
+
+jzt.Game.prototype.serialize = function() {
+
+    var result = {};
+    var index;
+
+    result.name = this.name;
+    result.startingBoard = this.currentBoard.name;
+    result.author = this.author;
+    result.boards = [];
+    result.counters = {};
+
+    for(index in this.counters) {
+        if(this.counters.hasOwnProperty(index) && !isNaN(this.counters[index])) {
+            result.counters[index] = this.counters[index];
+        }
+    }
+
+    // Serialize our current board
+    this.boards[this.currentBoard.name] = this.currentBoard.serialize();
+
+    for(index in this.boards) {
+        if(this.boards.hasOwnProperty(index)) {
+            result.boards.push(this.boards[index]);
+        }
+    }
+
+    return result;
+
+};
+
+jzt.Game.prototype.deserialize = function(data) {
+
+    var index;
+    var isRunning;
+
+    // If we're already running, end the game loop
+    if(this.intervalId) {
+        isRunning = true;
+        this.end();
+    }
+
+    this.name = data.name;
+    this.currentBoard = undefined;
+    this.startingBoard = data.startingBoard;
+    this.author = data.author;
+    this.boards = {};
     
+    // Initialize our default counters
     this.counters = {
         health: 50,
         health_max: 50,
@@ -57,22 +116,21 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
         score: 0
     };
 
-    this.currentBoard = undefined;
-    this.startingBoard = data.startingBoard;
-    this.boards = {};
+    for(index in data.counters) {
+        if(data.counters.hasOwnProperty(index) && !isNaN(data.counters[index])) {
+            this.counters[index] = data.counters[index];
+        }
+    }
 
-    // Store our boards
-    for(var index = 0; index < data.boards.length; ++index) {
+    for(index = 0; index < data.boards.length; ++index) {
         var board = data.boards[index];
         this.boards[board.name] = board;
     }
-    
-    var graphicsLoadedCallback = this.onGraphicsLoaded.bind(this);
-    this.resources.graphics = new jzt.Graphics(graphicsLoadedCallback);
-    this.resources.audio = new jzt.Audio();
 
-    this.screenWidth = Math.floor(this.context.canvas.width / this.resources.graphics.TILE_SIZE.x);
-    this.screenHeight = Math.floor(this.context.canvas.height / this.resources.graphics.TILE_SIZE.y);
+    // If we were running, resume the game loop
+    if(isRunning) {
+        this.run();
+    }
 
 };
 
@@ -360,14 +418,17 @@ jzt.Game.prototype.setBoard = function(board, playerPoint) {
  */
 jzt.Game.prototype.run = function() {
 
-    this.keyboard.initialize();
-    this.setBoard(this.startingBoard);
-    this.setState(jzt.GameState.Paused);
-    this.drawFunction = this.draw.bind(this);
-        
-    // Start the game loop
-    this.intervalId = setInterval(this.loop.bind(this), 1000 / this.FPS);
-        
+    // If our game loop isn't already running
+    if(! this.intervalId) {
+        this.keyboard.initialize();
+        this.setBoard(this.startingBoard);
+        this.setState(jzt.GameState.Paused);
+        this.drawFunction = this.draw.bind(this);
+            
+        // Start the game loop
+        this.intervalId = setInterval(this.loop.bind(this), 1000 / this.FPS);   
+    }
+
 };
   
 /**
@@ -380,6 +441,21 @@ jzt.Game.prototype.loop = function() {
     requestAnimationFrame(this.drawFunction);
 
 };
+
+/**
+ * Ends the game completely.
+ */
+jzt.Game.prototype.end = function() {
+
+    // Stop the game loop if it's running
+    if(this.intervalId) {
+
+        clearInterval(this.intervalId);
+        this.intervalId = undefined;
+
+    }
+
+}
 
 /**
  * Updates this Game's state by one execution tick.

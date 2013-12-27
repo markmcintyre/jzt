@@ -39,12 +39,18 @@ jzt.KeyboardInput = function() {
  */
 jzt.KeyboardInput.prototype.initialize = function() {
     
-    // Remember our bound functions in case we need to remove them from a listener
-    this.boundOnKeyUp = this.onKeyUp.bind(this);
-    this.boundOnKeyDown = this.onKeyDown.bind(this);
-    
-    window.addEventListener('keydown', this.boundOnKeyDown, false);
-    window.addEventListener('keyup', this.boundOnKeyUp, false);
+    if(!this.initialized) {
+
+        // Remember our bound functions in case we need to remove them from a listener
+        this.boundOnKeyUp = this.onKeyUp.bind(this);
+        this.boundOnKeyDown = this.onKeyDown.bind(this);
+        
+        window.addEventListener('keydown', this.boundOnKeyDown, false);
+        window.addEventListener('keyup', this.boundOnKeyUp, false);
+
+    }
+
+    this.initialized = true;
     
 };
 
