@@ -80,6 +80,9 @@ jzt.Editor.Thing = {
 	River: {
 		direction: {type: 'direction', default: 'N', label: 'Direction'}
 	},
+	Door: {
+		color: {type: 'color', default: '1F', options: ['1','2','3','4','5','6','7'], foreground: false, label: 'Color'}
+	},
 	Lion: {
 		speed: {type: 'number', min: 1, max: 10, default: 2, label: 'Speed'},
 		intelligence: {type: 'number', min: 1, max: 10, default: 3, label: 'Intelligence'}
@@ -355,6 +358,7 @@ jzt.Editor.prototype.createField = function(fieldName, field, template) {
 	var label;
 	var element;
 	var me = this;
+	var index;
 	var nonStandard = false;
 
 	label = document.createElement('label');
@@ -368,10 +372,10 @@ jzt.Editor.prototype.createField = function(fieldName, field, template) {
 	}
 	else if(field.type === 'direction') {
 		element = document.createElement('select');
-		element.options[element.options.length] = (new Option('North', 'N'));
-		element.options[element.options.length] = (new Option('East', 'E'));
-		element.options[element.options.length] = (new Option('South', 'S'));
-		element.options[element.options.length] = (new Option('West', 'W'));
+		element.options[element.options.length] = new Option('North', 'N');
+		element.options[element.options.length] = new Option('East', 'E');
+		element.options[element.options.length] = new Option('South', 'S');
+		element.options[element.options.length] = new Option('West', 'W');
 	}
 	else if(field.type === 'boolean') {
 		element = document.createElement('input');
@@ -386,6 +390,40 @@ jzt.Editor.prototype.createField = function(fieldName, field, template) {
 		}
 		else if(field.default) {
 			element.checked = field.default;
+		}
+	}
+	else if(field.type === 'color') {
+		element = document.createElement('select');
+		for(index = 0; index < field.options.length; ++index) {
+			element.options[element.options.length] = new Option(jzt.colors.getColor(field.options[index]).name, field.options[index]);
+		}
+		nonStandard = true;
+		element.addEventListener('change', function(event) {
+			var oldValue = template[fieldName];
+			var background;
+			var foreground;
+
+			oldValue = oldValue ? oldValue : field.default ? field.default : '**';
+			background = jzt.colors.deserializeBackground(oldValue);
+			foreground = jzt.colors.deserializeForeground(oldValue);
+
+			if(field.foreground) {
+				template[fieldName] = jzt.colors.serialize(background, jzt.colors.getColor(element.value));
+			}
+			else {
+				template[fieldName] = jzt.colors.serialize(jzt.colors.getColor(element.value), foreground);
+			}
+
+			me.changeTemplateCallback.call(me, me.activeTemplate);
+
+		}, false); 
+		if(template.hasOwnProperty(fieldName)) {
+			if(field.foreground) {
+				element.value = jzt.colors.deserializeForeground(template[fieldName]);
+			}
+			else {
+				element.value = jzt.colors.deserializeBackground(template[fieldName]);
+			}
 		}
 	}
 	else {

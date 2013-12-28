@@ -1706,6 +1706,11 @@ jzt.things.Door.prototype = new jzt.things.Thing();
 jzt.things.Door.prototype.constructor = jzt.things.Door;
 jzt.things.Door.serializationType = 'Door';
 
+jzt.things.Door.prototype.deserialize = function(data) {
+    jzt.things.Thing.prototype.deserialize.call(this, data);
+    this.foreground = jzt.colors.BrightWhite;
+};
+
 /**
  * Delivers a provided message to this Thing. If a TOUCH message is received, then
  * this Door will vanish if an associated Key has been previously collected.
