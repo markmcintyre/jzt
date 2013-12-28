@@ -67,21 +67,39 @@ jzt.Editor.Thing = {
 	Blinker: {
 		direction: {type: 'direction', default: 'E', label: 'Direction'},
 		period: {type: 'number', min: 1, max: 50, default: 1, label: 'Period'},
-		delay: {type: 'number', min: 0, max: 50, default: 0, label: 'Delay'}
+		delay: {type: 'number', min: 0, max: 50, default: 0, label: 'Delay'},
+		color: {type: 'color', default: '*9', options: ['8','9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
 	},
 	Bomb: {
-		radius: {type: 'number', default: 4, min: 2, max: 20, label: 'Radius', 'advanced': true}
+		radius: {type: 'number', default: 4, min: 2, max: 20, label: 'Radius', 'advanced': true},
+		color: {type: 'color', default: '*C', options: ['8','9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
 	},
 	Centipede: {
 		head: {type: 'boolean', default: false, label: 'Head'},
 		deviance: {type: 'number', min: 1, max: 10, default: 0, label: 'Deviance'},
-		intelligence: {type: 'number', min: 1, max: 10, default: 0}
+		intelligence: {type: 'number', min: 1, max: 10, default: 0},
+		color: {type: 'color', default: '*9', options: ['8','9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
 	},
 	River: {
 		direction: {type: 'direction', default: 'N', label: 'Direction'}
 	},
 	Door: {
 		color: {type: 'color', default: '1F', options: ['1','2','3','4','5','6','7'], foreground: false, label: 'Color'}
+	},
+	FakeWall: {
+		color: {type: 'color', default: '0E', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
+	},
+	Gem: {
+		color: {type: 'color', default: '0D', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
+	},
+	InvisibleWall: {
+		color: {type: 'color', default: '0A', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
+	},
+	Key: {
+		color: {type: 'color', default: '0F', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
+	},
+	LineWall: {
+		color: {type: 'color', default: '09', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
 	},
 	Lion: {
 		speed: {type: 'number', min: 1, max: 10, default: 2, label: 'Speed'},
