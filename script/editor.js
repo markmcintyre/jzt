@@ -69,6 +69,9 @@ jzt.Editor.Thing = {
 		period: {type: 'number', 'min': 1, 'max': 50, 'default': 1, 'label': 'Period'},
 		delay: {type: 'number', 'min': 0, 'max': 50, 'default': 0, 'label': 'Delay'}
 	},
+	Bomb: {
+		radius: {type: 'number', 'default': 4, 'min': 2, 'max': 20, 'label': 'Radius'}
+	},
 	Lion: {
 		speed: {type: 'number', 'min': 1, 'max': 10, 'default': 2, 'label': 'Speed'},
 		intelligence: {type: 'number', 'min': 1, 'max': 10, 'default': 3, 'label': 'Intelligence'}
@@ -364,6 +367,21 @@ jzt.Editor.prototype.createField = function(fieldName, field, template) {
 		}
 		else {
 			element.value = field.default;
+		}
+	}
+	else if(field.type === 'direction') {
+		element = document.createElement('select');
+		element.options[element.options.length] = (new Option('North', 'N'));
+		element.options[element.options.length] = (new Option('East', 'E'));
+		element.options[element.options.length] = (new Option('South', 'S'));
+		element.options[element.options.length] = (new Option('West', 'W'));
+		element.addEventListener('change', function(event) {
+			template[fieldName] = element.value;
+			me.setActiveTemplate(template);
+		}, false);
+
+		if(template.hasOwnProperty(fieldName)) {
+			element.value = template[fieldName];
 		}
 	}
 	else {
