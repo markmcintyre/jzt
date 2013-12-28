@@ -12,6 +12,7 @@ jzt.Editor = function(editorElement, configuration) {
 	this.changeTemplateCallback = configuration.changeTemplate;
 	this.changeModeCallback = configuration.changeMode;
 	this.changeBoardOptionsCallback = configuration.changeBoardOptions;
+	this.changeGameOptionsCallback = configuration.changeGameOptions;
 
 	this.mode = jzt.Editor.Mode.DRAW;
 
@@ -99,6 +100,13 @@ jzt.Editor.prototype.setBoardOptions = function(options) {
 	this.changeBoardOptionsCallback.call(this, options);
 };
 
+jzt.Editor.prototype.setGameOptions = function(options) {
+	this.game.title = options.title;
+	this.game.author = options.author;
+	this.game.startingBoard = options.startingBoard;
+	this.changeGameOptionsCallback.call(this, options);
+};
+
 jzt.Editor.prototype.getUniqueBoardName = function(candidate) {
 
 	var index = 2;
@@ -184,10 +192,13 @@ jzt.Editor.prototype.deserialize = function(data) {
 
 	var index;
 	var board;
+	var options = {};
 
 	for(index = 0; index < this.boards.length; ++index) {
 		this.removeBoardCallback.call(this, this.boards[index].name);
 	}
+
+	
 
 	this.boards = [];
 
@@ -196,14 +207,23 @@ jzt.Editor.prototype.deserialize = function(data) {
 		this.boards.push(board);
 		this.addBoardCallback.call(this, board.name);
 	}
+	
+
+	options.title = data.title;
+	options.author = data.author;
+	options.startingBoard = data.startingBoard;
+
+	this.setGameOptions(options);
+
 	this.switchBoard(data.startingBoard);
+
 };
 
 jzt.Editor.prototype.serialize = function() {
 	var result = {};
-	result.name = 'Untitled Game';
-	result.startingBoard = this.boards[0].name;
-	result.author = 'Mark McIntyre';
+	result.title = this.game.title;
+	result.startingBoard = this.game.startingBoard;
+	result.author = this.game.author;
 	result.boards = [];
 	for(var index = 0; index < this.boards.length; ++index) {
 		result.boards.push(this.boards[index].serialize());

@@ -132,6 +132,7 @@
 			<div id="script-customizer">
 				<select id="script-selector"></select>
 				<button id="new-script-button">New Script</button>
+				<button id="delete-script-button">Delete Script</button>
 				<textarea id="script-editor" rows="20" style="width: 100%"></textarea>
 			</div>
 			<div id="color-customizer">
@@ -152,6 +153,12 @@
 				<label>South: <select id="south-selector"><option value="">None</option></select></label><br/>
 				<label>West: <select id="west-selector"><option value="">None</option></select></label><br/>
 				<label><input type="checkbox" id="dark-selector" /> Dark Room</label>
+			</div>
+
+			<div id="game-customizer">
+				<label>Game Title: <input type="text" id="game-name" /></label><br/>
+				<label>Author: <input type="text" id="author-name"/></label><br/>
+				<label>Starting Board: <select id="starting-board-selector"></select></label>
 			</div>
 		</div>
 		
@@ -179,6 +186,7 @@
 			var templateEditor = document.getElementById('active-template-editor');
 			var scriptSelector = document.getElementById('script-selector');
 			var newScriptButton = document.getElementById('new-script-button');
+			var deleteScriptButton = document.getElementById('delete-script-button');
 			var scriptEditor = document.getElementById('script-editor');
 			var modeSelector = document.getElementById('mode-selector');
 			var editArea = document.getElementById('edit-area');
@@ -186,6 +194,9 @@
 			var download = document.getElementById('download');
 			var loadGame = document.getElementById('load-game');
 			var deleteBoard = document.getElementById('delete-board');
+			var gameName = document.getElementById('game-name');
+			var authorName = document.getElementById('author-name');
+			var startingBoardSelector = document.getElementById('starting-board-selector');
 			var editor = undefined;
 
 			function onToolSelected(event) {
@@ -253,6 +264,7 @@
 				southSelector.options[southSelector.options.length] = new Option(boardName, boardName);
 				eastSelector.options[eastSelector.options.length] = new Option(boardName, boardName);
 				westSelector.options[westSelector.options.length] = new Option(boardName, boardName);
+				startingBoardSelector.options[startingBoardSelector.options.length] = new Option(boardName, boardName);
 			};
 
 			function onBoardRemoved(boardName) {
@@ -272,6 +284,7 @@
 				eastSelector.remove(findIndex(eastSelector, boardName));
 				southSelector.remove(findIndex(southSelector, boardName));
 				westSelector.remove(findIndex(westSelector, boardName));
+				startingBoardSelector.remove(findIndex(startingBoardSelector, boardName));
 			};
 
 			function onModeChanged(mode) {
@@ -298,6 +311,12 @@
 				westSelector.value = options.west ? options.west : '';
 				darkSelector.checked = options.dark;
 
+			};
+
+			function onGameOptionsChanged(options) {
+				gameName.value = options.title ? options.title : 'Untitled';
+				authorName.value = options.author ? options.author : 'Anonymous';
+				startingBoardSelector.value = options.startingBoard ? options.startingBoard : editor.currentBoard.name;
 			};
 
 			function onTemplateChanged(newTemplate) {
@@ -360,6 +379,10 @@
 				}
 			};
 
+			function onDeleteScriptClick(event) {
+
+			};
+
 			function onScriptChanged(event) {
 				var script = editor.currentBoard.getScript(scriptSelector.value);
 				script.rawScript = scriptEditor.value;
@@ -384,6 +407,15 @@
 					dark: darkSelector.checked
 				};
 				editor.setBoardOptions(options);
+			};
+
+			function onGameOptionsSelected(event) {
+				var options = {
+					title: gameName.value,
+					author: authorName.value,
+					startingBoard: startingBoardSelector.value
+				};
+				editor.setGameOptions(options);
 			};
 
 			function onDownload(event) {
@@ -429,7 +461,8 @@
 				changeBoard: onBoardChanged,
 				changeTemplate: onTemplateChanged,
 				changeMode: onModeChanged,
-				changeBoardOptions: onBoardOptionsChanged
+				changeBoardOptions: onBoardOptionsChanged,
+				changeGameOptions: onGameOptionsChanged
 			};
 
 			editor = new jzt.Editor(editArea, callbacks);
@@ -439,6 +472,7 @@
 			templateEditor.addEventListener('blur', onTemplateEdited, false);
 			scriptSelector.addEventListener('change', onScriptSelected, false);
 			newScriptButton.addEventListener('click', onNewScriptClick, false);
+			deleteScriptButton.addEventListener('click', onDeleteScriptClick, false);
 			scriptEditor.addEventListener('blur', onScriptChanged, false);
 			northSelector.addEventListener('change', onBoardOptionsSelected, false);
 			eastSelector.addEventListener('change', onBoardOptionsSelected, false);
@@ -448,6 +482,9 @@
 			download.addEventListener('click', onDownload, false);
 			loadGame.addEventListener('change', onLoadGame, false);
 			deleteBoard.addEventListener('click', onDeleteBoard, false);
+			gameName.addEventListener('blur', onGameOptionsSelected, false);
+			authorName.addEventListener('blur', onGameOptionsSelected, false);
+			startingBoardSelector.addEventListener('change', onGameOptionsSelected, false);
 
 
 		</script>
