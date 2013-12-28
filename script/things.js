@@ -2450,19 +2450,20 @@ jzt.things.Player.prototype.doTick = function() {
 jzt.things.Player.prototype.update = function() {
 
     var k = this.game.keyboard;
+    var key = k.getMostRecentPress([k.UP, k.RIGHT, k.DOWN, k.LEFT]);
 
     if(k.isPressed(k.SHIFT) || k.isPressed(k.SPACE)) {
 
-        if(k.isPressed(k.UP)) {
+        if(key === k.UP) {
             this.eventScheduler.scheduleEvent(k.isPressed(k.UP), {'type': this.SHOOT_ACTION,  'direction': jzt.Direction.North});
         }
-        else if(k.isPressed(k.RIGHT)) {
+        else if(key === k.RIGHT) {
             this.eventScheduler.scheduleEvent(k.isPressed(k.RIGHT), {'type': this.SHOOT_ACTION, 'direction': jzt.Direction.East});
         }
-        else if(k.isPressed(k.DOWN)) {
+        else if(key === k.DOWN) {
             this.eventScheduler.scheduleEvent(k.isPressed(k.DOWN), {'type': this.SHOOT_ACTION, 'direction': jzt.Direction.South});
         } 
-        else if(k.isPressed(k.LEFT)) {
+        else if(key === k.LEFT) {
             this.eventScheduler.scheduleEvent(k.isPressed(k.LEFT), {'type': this.SHOOT_ACTION, 'direction': jzt.Direction.West});
         }
         else {
@@ -2470,16 +2471,16 @@ jzt.things.Player.prototype.update = function() {
         }
     }
     else {
-        if(k.isPressed(k.UP)) {
+        if(key === k.UP) {
             this.eventScheduler.scheduleEvent(k.isPressed(k.UP), {'type': this.MOVE_ACTION, 'direction': jzt.Direction.North});
         }
-        else if(k.isPressed(k.RIGHT)) {
+        else if(key === k.RIGHT) {
             this.eventScheduler.scheduleEvent(k.isPressed(k.RIGHT), {'type': this.MOVE_ACTION, 'direction': jzt.Direction.East});
         }
-        else if(k.isPressed(k.DOWN)) {
+        else if(key === k.DOWN) {
             this.eventScheduler.scheduleEvent(k.isPressed(k.DOWN), {'type': this.MOVE_ACTION, 'direction': jzt.Direction.South});
         }
-        else if(k.isPressed(k.LEFT)) {
+        else if(key === k.LEFT) {
             this.eventScheduler.scheduleEvent(k.isPressed(k.LEFT), {'type': this.MOVE_ACTION, 'direction': jzt.Direction.West});
         }
         else {

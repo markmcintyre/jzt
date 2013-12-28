@@ -92,6 +92,40 @@ jzt.KeyboardInput.prototype.isAnyPressed = function() {
 jzt.KeyboardInput.prototype.isPressed = function(keyCode) {
     return this.pressed[keyCode];  
 };
+
+/**
+ * Retrieves the key code of the most recently pressed key out of a provided array of key codes.
+ * If no array is provided, the most recently pressed key out of all possible capturable keys is returned.
+ *
+ * @param keys An array of key codes.
+ * @return A most recently pressed key code.
+ */
+jzt.KeyboardInput.prototype.getMostRecentPress = function(keys) {
+
+    var index;
+    var key;
+    var highestTimeStamp = 0;
+    var result;
+
+    if(this.pressedKeys <= 0) {
+        return;
+    }
+
+    if(!keys) {
+        keys = this.capturableKeys;
+    }
+
+    for(index = 0; index < keys.length; ++index) {
+        key = keys[index];
+        if(this.pressed[key] > highestTimeStamp) {
+            highestTimeStamp = this.pressed[key];
+            result = key;
+        }
+    }
+
+    return result;
+
+};
   
 /**
  * An event handler to be triggered when a key is pressed.
