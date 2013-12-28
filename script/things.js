@@ -2486,9 +2486,12 @@ jzt.things.Player.prototype.update = function() {
         else {
             this.eventScheduler.cancelEvent();
         }
-        if(k.isPressed([k.T]) && ! this.torch) {
+
+        // If T has been pressed, and we have 10 seconds or less on our current torch
+        if(k.isPressed([k.T]) && ((!this.torch || (this.torchExpiry - Date.now()) < 10000))) {
             this.useTorch();
         }
+
     }
 
     jzt.things.UpdateableThing.prototype.update.call(this);
