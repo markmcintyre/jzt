@@ -5,6 +5,7 @@ jzt.Editor = function(editorElement, configuration) {
 	var me = this;
 
 	this.editorElement = editorElement;
+	this.templateCustomizer = document.getElementById('template-customizer');
 
 	this.addBoardCallback = configuration.addBoard;
 	this.removeBoardCallback = configuration.removeBoard;
@@ -56,7 +57,27 @@ jzt.Editor.Mode = {
 	DRAW: 0,
 	SELECT: 1,
 	FILL: 2
-}
+};
+
+jzt.Editor.Thing = {
+	Bear: {
+		sensitivity: {type: 'number', 'min': 1, 'max': 10, 'default': 1, 'label': 'Sensitivity'},
+		speed: {type: 'number', 'min': 1, 'max': 10, 'default': 2, 'label': 'Speed'}
+	},
+	Blinker: {
+		direction: {type: 'direction', 'default': 'E', 'label': 'Direction'},
+		period: {type: 'number', 'min': 1, 'max': 50, 'default': 1, 'label': 'Period'},
+		delay: {type: 'number', 'min': 0, 'max': 50, 'default': 0, 'label': 'Delay'}
+	},
+	Lion: {
+		speed: {type: 'number', 'min': 1, 'max': 10, 'default': 2, 'label': 'Speed'},
+		intelligence: {type: 'number', 'min': 1, 'max': 10, 'default': 3, 'label': 'Intelligence'}
+	},
+	Tiger: {
+		speed: {type: 'number', 'min': 1, 'max': 10, 'default': 2, 'label': 'Speed'},
+		intelligence: {type: 'number', 'min': 1, 'max': 10, 'default': 3, 'label': 'Intelligence'}
+	}
+};
 
 jzt.Editor.prototype.initializeBoardElement = function(board) {
 
@@ -300,8 +321,96 @@ jzt.Editor.prototype.addBoard = function(boardName, width, height) {
 
 };
 
+jzt.Editor.prototype.getTemplateThing = function(template) {
+
+	if(template.type) {
+
+		for(thing in jzt.Editor.Thing) {
+			if(jzt.Editor.Thing.hasOwnProperty(thing)) {
+
+				if(thing === template.type) {
+					return jzt.Editor.Thing[thing];
+				}
+
+			}
+		}
+
+	}
+
+};
+
+jzt.Editor.prototype.createField = function(fieldName, field, template) {
+
+	var label;
+	var element;
+	var me = this;
+
+	label = document.createElement('label');
+	label.innerHTML = field.label + ':';
+
+	if(field.type === 'number') {
+		element = document.createElement('input');
+		element.type = 'range';
+		element.min = field.min;
+		element.max = field.max;
+
+		element.addEventListener('change', function(event) {
+			template[fieldName] = element.value;
+			me.setActiveTemplate(template);
+		}, false);
+
+		if(template.hasOwnProperty(fieldName)) {
+			element.value = template[fieldName];
+		}
+		else {
+			element.value = field.default;
+		}
+	}
+	else {
+		element = document.createElement('input');
+		element.addEventListener('change', function(event) {
+			template[fieldName] = element.value;
+			me.setActiveTemplate(template);
+		}, false);
+
+		if(template.hasOwnProperty(fieldName)) {
+			element.value = template[fieldName];
+		}
+
+	}
+
+	label.appendChild(element);
+
+	return label;
+	
+
+};
+
 jzt.Editor.prototype.setActiveTemplate = function(template) {
+
+	var thing;
+	var field;
+	var element;
+	var label;
+
 	this.activeTemplate = template;
+	this.templateCustomizer.innerHTML = '';
+
+	thing = this.getTemplateThing(template);
+	if(thing) {
+
+		for(field in thing) {
+			if(thing.hasOwnProperty(field)) {
+
+				this.templateCustomizer.appendChild(this.createField(field, thing[field], template));
+				this.templateCustomizer.appendChild(document.createElement('br'));
+
+			}
+		}
+
+	}
+
+
 	this.changeTemplateCallback.call(this, this.activeTemplate);
 };
 
