@@ -77,6 +77,7 @@ jzt.Editor.prototype.initializeBoardElement = function(board) {
 	this.canvasElement.addEventListener('mousemove', function(event){me.onCanvasMouseMoved(event)}, false);
 	this.canvasElement.addEventListener('mousedown', function(event){me.onCanvasMouseDown(event)}, false);
 	this.canvasElement.addEventListener('mouseup', function(event){me.onCanvasMouseUp(event)}, false);
+	window.addEventListener('keydown', function(event){me.onKeyDown(event)}, false);
 
 	// Assign our context
 	this.context = this.canvasElement.getContext('2d');
@@ -340,6 +341,17 @@ jzt.Editor.prototype.eventToBoardPoint = function(event) {
 	return new jzt.Point(x,y);
 };
 
+jzt.Editor.prototype.onKeyDown = function(event) {
+	if(event.keyCode === 83) {
+		this.setMode(jzt.Editor.Mode.SELECT);
+	}
+	else if(event.keyCode === 68) {
+		this.setMode(jzt.Editor.Mode.DRAW);
+	}
+	else if(event.keyCode === 70) {
+		this.setMode(jzt.Editor.Mode.FILL);
+	}
+};
 
 jzt.Editor.prototype.onCanvasMouseDown = function(event) {
 
