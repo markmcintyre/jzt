@@ -61,24 +61,32 @@ jzt.Editor.Mode = {
 
 jzt.Editor.Thing = {
 	Bear: {
-		sensitivity: {type: 'number', 'min': 1, 'max': 10, 'default': 1, 'label': 'Sensitivity'},
-		speed: {type: 'number', 'min': 1, 'max': 10, 'default': 2, 'label': 'Speed'}
+		sensitivity: {type: 'number', min: 1, max: 10, default: 1, label: 'Sensitivity'},
+		speed: {type: 'number', min: 1, max: 10, default: 2, label: 'Speed'}
 	},
 	Blinker: {
-		direction: {type: 'direction', 'default': 'E', 'label': 'Direction'},
-		period: {type: 'number', 'min': 1, 'max': 50, 'default': 1, 'label': 'Period'},
-		delay: {type: 'number', 'min': 0, 'max': 50, 'default': 0, 'label': 'Delay'}
+		direction: {type: 'direction', default: 'E', label: 'Direction'},
+		period: {type: 'number', min: 1, max: 50, default: 1, label: 'Period'},
+		delay: {type: 'number', min: 0, max: 50, default: 0, label: 'Delay'}
 	},
 	Bomb: {
-		radius: {type: 'number', 'default': 4, 'min': 2, 'max': 20, 'label': 'Radius'}
+		radius: {type: 'number', default: 4, min: 2, max: 20, label: 'Radius', 'advanced': true}
+	},
+	Centipede: {
+		head: {type: 'boolean', default: false, label: 'Head'},
+		deviance: {type: 'number', min: 1, max: 10, default: 0, label: 'Deviance'},
+		intelligence: {type: 'number', min: 1, max: 10, default: 0}
+	},
+	River: {
+		direction: {type: 'direction', default: 'N', label: 'Direction'}
 	},
 	Lion: {
-		speed: {type: 'number', 'min': 1, 'max': 10, 'default': 2, 'label': 'Speed'},
-		intelligence: {type: 'number', 'min': 1, 'max': 10, 'default': 3, 'label': 'Intelligence'}
+		speed: {type: 'number', min: 1, max: 10, default: 2, label: 'Speed'},
+		intelligence: {type: 'number', min: 1, max: 10, default: 3, label: 'Intelligence'}
 	},
 	Tiger: {
-		speed: {type: 'number', 'min': 1, 'max': 10, 'default': 2, 'label': 'Speed'},
-		intelligence: {type: 'number', 'min': 1, 'max': 10, 'default': 3, 'label': 'Intelligence'}
+		speed: {type: 'number', min: 1, max: 10, default: 2, label: 'Speed'},
+		intelligence: {type: 'number', min: 1, max: 10, default: 3, label: 'Intelligence'}
 	}
 };
 
@@ -326,7 +334,7 @@ jzt.Editor.prototype.addBoard = function(boardName, width, height) {
 
 jzt.Editor.prototype.getTemplateThing = function(template) {
 
-	if(template.type) {
+	if(template && template.type) {
 
 		for(thing in jzt.Editor.Thing) {
 			if(jzt.Editor.Thing.hasOwnProperty(thing)) {
@@ -347,6 +355,7 @@ jzt.Editor.prototype.createField = function(fieldName, field, template) {
 	var label;
 	var element;
 	var me = this;
+	var nonStandard = false;
 
 	label = document.createElement('label');
 	label.innerHTML = field.label + ':';
@@ -356,18 +365,6 @@ jzt.Editor.prototype.createField = function(fieldName, field, template) {
 		element.type = 'range';
 		element.min = field.min;
 		element.max = field.max;
-
-		element.addEventListener('change', function(event) {
-			template[fieldName] = element.value;
-			me.setActiveTemplate(template);
-		}, false);
-
-		if(template.hasOwnProperty(fieldName)) {
-			element.value = template[fieldName];
-		}
-		else {
-			element.value = field.default;
-		}
 	}
 	else if(field.type === 'direction') {
 		element = document.createElement('select');
@@ -375,24 +372,38 @@ jzt.Editor.prototype.createField = function(fieldName, field, template) {
 		element.options[element.options.length] = (new Option('East', 'E'));
 		element.options[element.options.length] = (new Option('South', 'S'));
 		element.options[element.options.length] = (new Option('West', 'W'));
+	}
+	else if(field.type === 'boolean') {
+		element = document.createElement('input');
+		element.type = 'checkbox';
+		nonStandard = true;
+		element.addEventListener('click', function(event) {
+			template[fieldName] = element.checked;
+			me.changeTemplateCallback.call(me, me.activeTemplate);
+		}, false);
+		if(template.hasOwnProperty(fieldName)) {
+			element.checked = template[fieldName];
+		}
+		else if(field.default) {
+			element.checked = field.default;
+		}
+	}
+	else {
+		element = document.createElement('input');
+	}
+
+	if(!nonStandard && element) {
+
 		element.addEventListener('change', function(event) {
 			template[fieldName] = element.value;
-			me.setActiveTemplate(template);
+			me.changeTemplateCallback.call(me, me.activeTemplate);
 		}, false);
 
 		if(template.hasOwnProperty(fieldName)) {
 			element.value = template[fieldName];
 		}
-	}
-	else {
-		element = document.createElement('input');
-		element.addEventListener('change', function(event) {
-			template[fieldName] = element.value;
-			me.setActiveTemplate(template);
-		}, false);
-
-		if(template.hasOwnProperty(fieldName)) {
-			element.value = template[fieldName];
+		else if(field.default) {
+			element.value = field.default;
 		}
 
 	}
@@ -420,8 +431,10 @@ jzt.Editor.prototype.setActiveTemplate = function(template) {
 		for(field in thing) {
 			if(thing.hasOwnProperty(field)) {
 
-				this.templateCustomizer.appendChild(this.createField(field, thing[field], template));
-				this.templateCustomizer.appendChild(document.createElement('br'));
+				if(this.advancedMode || !thing[field].advanced) {
+					this.templateCustomizer.appendChild(this.createField(field, thing[field], template));
+					this.templateCustomizer.appendChild(document.createElement('br'));
+				}
 
 			}
 		}

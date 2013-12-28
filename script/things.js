@@ -163,6 +163,10 @@ jzt.things.Thing.prototype.isBlocked = function(direction) {
         return false;
     }
 
+    if(this.board.isOutside(newPoint)) {
+        return true;
+    }
+
     var obstacle = this.board.getTile(newPoint);
     if(obstacle) {
         return !obstacle.isSurrenderable(this);
@@ -1281,7 +1285,7 @@ jzt.things.Centipede = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.spriteIndex = 79;
     this.foreground = jzt.colors.BrightBlue;
-    this.background = jzt.colors.Black;
+    this.background = undefined;
     this.speed = 3;
     this.follower = undefined;
     this.head = false;
@@ -1328,6 +1332,9 @@ jzt.things.Centipede.prototype.deserialize = function(data) {
     }
     if(this.deviance > 10) {
         this.deviance = 10;
+    }
+    if(this.intelligence > 10) {
+        this.intelligence = 10;
     }
     if(this.head) {
         this.spriteIndex = 233;
@@ -1404,6 +1411,7 @@ jzt.things.Centipede.prototype.linkSegments = function(leader) {
         this.deviance = leader.deviance;
         this.intelligence = leader.intelligence;
         this.cycleCount = leader.cycleCount;
+        this.speed = leader.speed;
     }
 
     this.follower = this.getAdjacentSegment();
