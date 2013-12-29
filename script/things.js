@@ -464,7 +464,7 @@ jzt.things.UpdateableThing.prototype.doTick = function() {};
  */
 jzt.things.ScriptableThing = function(board) {
     jzt.things.UpdateableThing.call(this, board);
-    this.name = undefined;
+    this.name = 'UnknownScriptable';
     this.scriptContext = undefined;
     this.messageQueue = [];
     this.walkDirection = undefined;
@@ -520,7 +520,7 @@ jzt.things.ScriptableThing.prototype.serialize = function() {
  */
 jzt.things.ScriptableThing.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
-    this.name = data.name;
+    this.name = jzt.util.getOption(data, 'name', 'UnknownScriptable');
     if(data.spriteIndex) {
         this.spriteIndex = data.spriteIndex;
     }

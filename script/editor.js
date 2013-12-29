@@ -68,17 +68,23 @@ jzt.Editor.Thing = {
 		direction: {type: 'direction', default: 'E', label: 'Direction'},
 		period: {type: 'number', min: 1, max: 50, default: 1, label: 'Period'},
 		delay: {type: 'number', min: 0, max: 50, default: 0, label: 'Delay'},
-		color: {type: 'color', default: '*9', options: ['8','9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
+		color: {type: 'color', default: '*9', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
 	},
 	Bomb: {
 		radius: {type: 'number', default: 4, min: 2, max: 20, label: 'Radius', advanced: true},
-		color: {type: 'color', default: '*C', options: ['8','9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
+		color: {type: 'color', default: '*C', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
+	},
+	Boulder: {
+		color: {type: 'color', default: '*E', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
+	},
+	BreakableWall: {
+		color: {type: 'color', default: '0B', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
 	},
 	Centipede: {
 		head: {type: 'boolean', default: false, label: 'Head'},
 		deviance: {type: 'number', min: 1, max: 10, default: 0, label: 'Deviance'},
 		intelligence: {type: 'number', min: 1, max: 10, default: 0},
-		color: {type: 'color', default: '*9', options: ['8','9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
+		color: {type: 'color', default: '*9', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
 	},
 	River: {
 		direction: {type: 'direction', default: 'N', label: 'Direction'}
@@ -119,6 +125,12 @@ jzt.Editor.Thing = {
 		speed: {type: 'number', default: 3, min: '1', max: '10', label: 'Speed', advanced: true},
 		intelligence: {type: 'number', default: 5, min: '1', max: '10', label: 'Intelligence'},
 		restingTime: {type: 'number', default: 5, min: '1', max: '20', label: 'Resting time'}
+	},
+	Scriptable: {
+		name: {type: 'text', default: 'Unknown', label: 'Name'},
+		color: {type: 'color', default: '*F', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'},
+		script: {type: 'script', label: 'Script'},
+		speed: {type: 'number', min: 1, max: 10, default: 3, label: 'Speed'}
 	},
 	SliderEw: {
 		color: {type: 'color', default: '*F', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
