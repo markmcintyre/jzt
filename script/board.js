@@ -873,7 +873,7 @@ jzt.Board.prototype.render = function(c) {
 
             // Our background colour may come from the 'under' tile if no background is defined
             var background = thing.background;
-            if(!background && thing.under) {
+            if(!background && thing.under && thing.under.background) {
                 background = thing.under.background.isLight() ? thing.under.background.darken() : thing.under.background;
             }
 

@@ -2659,6 +2659,7 @@ jzt.things.Pusher.prototype.serialize = function() {
  */
 jzt.things.Pusher.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.background = undefined;
     if(data.orientation) {
         this.orientation = jzt.Direction.fromName(data.orientation);
     }
@@ -2858,6 +2859,7 @@ jzt.things.SliderEw = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 29;
     this.background = undefined;
+    this.foreground = jzt.colors.BrightWhite;
 };
 jzt.things.SliderEw.prototype = new jzt.things.Thing();
 jzt.things.SliderEw.prototype.constructor = jzt.things.SliderEw;
@@ -2887,6 +2889,7 @@ jzt.things.SliderNs = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 18;
     this.background = undefined;
+    this.foreground = jzt.colors.BrightWhite;
 };
 jzt.things.SliderNs.prototype = new jzt.things.Thing();
 jzt.things.SliderNs.prototype.constructor = jzt.things.SliderNs;

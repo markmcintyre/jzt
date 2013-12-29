@@ -62,7 +62,7 @@ jzt.Editor.Mode = {
 jzt.Editor.Thing = {
 	Bear: {
 		sensitivity: {type: 'number', min: 1, max: 10, default: 1, label: 'Sensitivity'},
-		speed: {type: 'number', min: 1, max: 10, default: 2, label: 'Speed'}
+		speed: {type: 'number', min: 1, max: 10, default: 2, label: 'Speed', advanced: true}
 	},
 	Blinker: {
 		direction: {type: 'direction', default: 'E', label: 'Direction'},
@@ -71,7 +71,7 @@ jzt.Editor.Thing = {
 		color: {type: 'color', default: '*9', options: ['8','9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
 	},
 	Bomb: {
-		radius: {type: 'number', default: 4, min: 2, max: 20, label: 'Radius', 'advanced': true},
+		radius: {type: 'number', default: 4, min: 2, max: 20, label: 'Radius', advanced: true},
 		color: {type: 'color', default: '*C', options: ['8','9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
 	},
 	Centipede: {
@@ -102,12 +102,56 @@ jzt.Editor.Thing = {
 		color: {type: 'color', default: '09', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
 	},
 	Lion: {
-		speed: {type: 'number', min: 1, max: 10, default: 2, label: 'Speed'},
+		speed: {type: 'number', min: 1, max: 10, default: 2, label: 'Speed', advanced: true},
 		intelligence: {type: 'number', min: 1, max: 10, default: 3, label: 'Intelligence'}
 	},
+	Passage: {
+		color: {type: 'color', default: '1F', options: ['1','2','3','4','5','6','7'], foreground: false, label: 'Color'},
+		passageId: {type: 'text', default: 'Door 1', label: 'ID'},
+		targetBoard: {type: 'board', label: 'Target Board'}
+	},
+	Pusher: {
+		speed: {type: 'number', default: 3, min: '1', max: '10', label: 'Speed', advanced: true},
+		orientation: {type: 'direction', default: 'S', label: 'Direction'},
+		color: {type: 'color', default: '*E', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
+	},
+	Ruffian: {
+		speed: {type: 'number', default: 3, min: '1', max: '10', label: 'Speed', advanced: true},
+		intelligence: {type: 'number', default: 5, min: '1', max: '10', label: 'Intelligence'},
+		restingTime: {type: 'number', default: 5, min: '1', max: '20', label: 'Resting time'}
+	},
+	SliderEw: {
+		color: {type: 'color', default: '*F', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
+	},
+	SliderNs: {
+		color: {type: 'color', default: '*F', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
+	},
+	Snake: {
+		speed: {type: 'number', default: 3, min: 1, max: 10, label: 'Speed'}
+	},
+	SolidWall: {
+		color: {type: 'color', default: '0E', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
+	},
+	Spider: {
+		intelligence: {type: 'number', default: 5, min: 1, max: 5, label: 'Intelligence'},
+		color: {type: 'color', default: '*C', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
+	},
+	SpinningGun: {
+		intelligence: {type: 'number', default: 5, min: 1, max: 5, label: 'Intelligence'},
+		firingRate: {type: 'number', default: 5, min: 1, max: 10, label: 'Firing rate'},
+		color: {type: 'color', default: '*A', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
+	},
+	Teleporter: {
+		orientation: {type: 'direction', default: 'E', label: 'Direction'},
+		color: {type: 'color', default: '*B', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
+	},
 	Tiger: {
-		speed: {type: 'number', min: 1, max: 10, default: 2, label: 'Speed'},
-		intelligence: {type: 'number', min: 1, max: 10, default: 3, label: 'Intelligence'}
+		speed: {type: 'number', min: 1, max: 10, default: 2, label: 'Speed', advanced: true},
+		intelligence: {type: 'number', min: 1, max: 10, default: 3, label: 'Intelligence'},
+		firingRate: {type: 'number', min: 1, max: 20, default: 5, label: 'Firing rate'}
+	},
+	Wall: {
+		color: {type: 'color', default: '0E', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
 	}
 };
 
