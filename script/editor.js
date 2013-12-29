@@ -437,10 +437,10 @@ jzt.Editor.prototype.createField = function(fieldName, field, template) {
 		}, false); 
 		if(template.hasOwnProperty(fieldName)) {
 			if(field.foreground) {
-				element.value = jzt.colors.deserializeForeground(template[fieldName]);
+				element.value = jzt.colors.deserializeForeground(template[fieldName]).code;
 			}
 			else {
-				element.value = jzt.colors.deserializeBackground(template[fieldName]);
+				element.value = jzt.colors.deserializeBackground(template[fieldName]).code;
 			}
 		}
 	}
