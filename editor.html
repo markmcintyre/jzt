@@ -104,11 +104,9 @@
 
 
 			<label>Boards
-				<select id="board-selector">
-					<option value='jzt.newboard'>Create New Board</option>
-				</select>
+				<select id="board-selector"></select>
 			</label>
-
+			<button id="new-board">New Board</button>
 			<button id="delete-board">Delete Board</button>
 			<br/>
 
@@ -194,6 +192,7 @@
 			var toolBox = document.getElementById('toolbox');
 			var download = document.getElementById('download');
 			var loadGame = document.getElementById('load-game');
+			var newBoard = document.getElementById('new-board');
 			var deleteBoard = document.getElementById('delete-board');
 			var gameName = document.getElementById('game-name');
 			var authorName = document.getElementById('author-name');
@@ -240,21 +239,17 @@
 			};
 
 			function onBoardSelected(event) {
-				var newName;
-				var width;
-				var height;
+				editor.switchBoard(event.target.value);
+			};
 
-				if(event.target.value === 'jzt.newboard') {
-					newName = window.prompt('Please enter a board name.', 'Untitled');
-					width = parseInt(window.prompt('Please enter a board width.', '40'));
-					height = parseInt(window.prompt('Please enter a board height.', '20'));
-					if(newName && width && height) {
-						newName = editor.getUniqueBoardName(newName);
-						editor.addBoard(newName, width, height);
-					}
-				}
-				else {
-					editor.switchBoard(event.target.value);
+			function onNewBoardClicked(event) {
+
+				var newName = window.prompt('Please enter a board name.', 'Untitled');
+				var width = parseInt(window.prompt('Please enter a board width.', '40'));
+				var height = parseInt(window.prompt('Please enter a board height.', '20'));
+				if(newName && width && height) {
+					newName = editor.getUniqueBoardName(newName);
+					editor.addBoard(newName, width, height);
 				}
 
 			};
@@ -495,6 +490,7 @@
 			darkSelector.addEventListener('click', onBoardOptionsSelected, false);
 			download.addEventListener('click', onDownload, false);
 			loadGame.addEventListener('change', onLoadGame, false);
+			newBoard.addEventListener('click', onNewBoardClicked, false);
 			deleteBoard.addEventListener('click', onDeleteBoard, false);
 			gameName.addEventListener('blur', onGameOptionsSelected, false);
 			authorName.addEventListener('blur', onGameOptionsSelected, false);
