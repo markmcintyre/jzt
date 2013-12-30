@@ -382,6 +382,19 @@
 
 			function onDeleteScriptClick(event) {
 
+				var index;
+				var scriptName = scriptSelector.value;
+
+				for(index = 0; index < editor.currentBoard.scripts.length; ++index) {
+					if(editor.currentBoard.scripts[index].name === scriptName) {
+						editor.currentBoard.scripts.splice(index, 1);
+					}
+				}
+
+				scriptSelector.remove(scriptSelector.selectedIndex);
+
+				selectScript(scriptSelector.value);
+ 
 			};
 
 			function onScriptChanged(event) {
