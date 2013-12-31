@@ -2851,6 +2851,64 @@ jzt.things.Ruffian.prototype.doTick = function() {
 //--------------------------------------------------------------------------------
 
 /**
+ * Signpost is a Thing that displays a message when touched.
+ *
+ * @param board An owner board
+ */
+jzt.things.Signpost = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.spriteIndex = 209;
+    this.background = undefined;
+    this.foreground = jzt.colors.Brown;
+    this.text = undefined;
+};
+jzt.things.Signpost.prototype = new jzt.things.Thing();
+jzt.things.Signpost.prototype.constructor = jzt.things.Signpost;
+jzt.things.Signpost.serializationType = 'Signpost';
+
+jzt.things.Signpost.prototype.serialize = function() {
+    var result = jzt.things.Thing.prototype.serialize.call(this);
+    delete result.color;
+    result.text = this.text;
+    return result;
+};
+
+jzt.things.Signpost.prototype.deserialize = function(data) {
+    jzt.things.Thing.prototype.deserialize.call(this, data);
+    this.background = undefined;
+    this.foreground = jzt.colors.Brown;
+    this.text = data.text;
+};
+
+jzt.things.Signpost.prototype.sendMessage = function(message) {
+
+    var lines;
+    var index;
+
+    if(message === 'TOUCH') {
+
+        this.board.game.scroll.setTitle(jzt.i18n.getMessage('obstacles.signpost'));
+        this.board.game.scroll.clearLines();
+
+        if(!this.text) {
+            this.text = jzt.i18n.getMessage('obstacles.signpostmessage');
+        }
+
+        lines = this.text.split('\n');
+        for(index = 0; index < lines.length; ++index) {
+            this.board.game.scroll.addLine(lines[index]);
+        }
+
+
+        this.board.game.setState(jzt.GameState.Reading);
+
+    }
+
+};
+
+//--------------------------------------------------------------------------------
+
+/**
  * SliderEw is a Thing that is pushable only in the East and West direction.
  *
  * @param board An owner board.

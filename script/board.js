@@ -33,6 +33,10 @@ jzt.Board = function(boardData, game) {
     this.east = boardData.east;
     this.south = boardData.south;
     this.west = boardData.west;
+    this.northOffset = boardData.northOffset ? boardData.northOffset : 0;
+    this.eastOffset = boardData.eastOffset ? boardData.eastOffset : 0;
+    this.southOffset = boardData.southOffset ? boardData.southOffset : 0;
+    this.westOffset = boardData.westOffset ? boardData.westOffset : 0;
 
     this.defaultPlayerX = boardData.playerX;
     this.defaultPlayerY = boardData.playerY;
@@ -43,7 +47,6 @@ jzt.Board = function(boardData, game) {
     this.DISPLAY_MESSAGE_TTL = game.FPS * 3; // 3 seconds
     this.DARK_SPRITE = game.resources.graphics.getSprite(176);
     this.DARK_SPRITE_COLOR = jzt.colors.Grey;
-    this.BOARD_DATA_WORD_LENGTH = 4;
 
     this.height = boardData.height;
     this.width = boardData.width;
@@ -96,6 +99,10 @@ jzt.Board.prototype.serialize = function() {
     jzt.util.storeOption(result, 'east', this.east);
     jzt.util.storeOption(result, 'south', this.south);
     jzt.util.storeOption(result, 'west', this.west);
+    jzt.util.storeOption(result, 'northOffset', this.northOffset);
+    jzt.util.storeOption(result, 'eastOffset', this.eastOffset);
+    jzt.util.storeOption(result, 'southOffset', this.southOffset);
+    jzt.util.storeOption(result, 'westOffset', this.westOffset);
 
     if(this.player) {
         result.playerX = this.player.point.x;
@@ -656,27 +663,32 @@ jzt.Board.prototype.isFree = function(point) {
 jzt.Board.prototype.movePlayerOffBoard = function(direction) {
     
     var boardName;
+    var offset;
 
     // Find the board we are switching to
     switch(direction) {
         case jzt.Direction.North:
             boardName = this.north;
+            offset = this.northOffset;
             break;
         case jzt.Direction.East:
             boardName = this.east;
+            offset = this.eastOffset;
             break;
         case jzt.Direction.South:
             boardName = this.south;
+            offset = this.southOffset;
             break;
         case jzt.Direction.West:
             boardName = this.west;
+            offset = this.westOffset;
             break;
         default:
             return;
     }
 
     // Move our player to that board edge
-    this.game.movePlayerToBoardEdge(jzt.Direction.opposite(direction), boardName);
+    this.game.movePlayerToBoardEdge(jzt.Direction.opposite(direction), boardName, offset);
     
 };
 

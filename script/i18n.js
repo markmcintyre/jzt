@@ -31,7 +31,9 @@ jzt.i18n.Messages.en = {
 		'7': 'white'
 	},
 	obstacles: {
-		'water': 'Your way is blocked by water.'
+		'water': 'Your way is blocked by water.',
+		'signpost': 'Signpost',
+		'signpostmessage': 'The signpost is curiously left blank.'
 	},
 	status: {
 		'gameover': 'Game over!',
@@ -78,7 +80,9 @@ jzt.i18n.Messages.fr = {
 		'7': 'blanche'
 	},
 	obstacles: {
-		'water': 'Votre chemin est bloquée par de l\'eau'
+		'water': 'Votre chemin est bloquée par de l\'eau',
+		'signpost': 'Poteau Indicateur',
+		'signpostmessage': 'Le poteau indicateur est curieusement vierge.'
 	},
 	status: {
 		'gameover': 'Game over !',

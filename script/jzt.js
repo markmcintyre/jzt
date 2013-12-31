@@ -353,7 +353,7 @@ jzt.Game.prototype.setState = function(state) {
  * @param edge A Direction representing an edge of a board
  * @param boardName A name of a Board to be loaded.
  */ 
-jzt.Game.prototype.movePlayerToBoardEdge = function(edge, boardName) {
+jzt.Game.prototype.movePlayerToBoardEdge = function(edge, boardName, offset) {
 
     // Retrieve our new board (or the current board if it's the same)
     var newBoard = (boardName === this.currentBoard.name) ? this.currentBoard : this.getBoard(boardName);
@@ -367,6 +367,16 @@ jzt.Game.prototype.movePlayerToBoardEdge = function(edge, boardName) {
     var outsideLocation = new jzt.Point(this.player.point.x, this.player.point.y);
     var newLocation = new jzt.Point(this.player.point.x, this.player.point.y);
 
+    // Adjust based on our offset
+    if(offset && (edge === jzt.Direction.North || edge == jzt.Direction.South)) {
+        outsideLocation.x = outsideLocation.x + offset;
+        newLocation.x = newLocation.x + offset
+    }
+    else if(offset && (edge === jzt.Direction.East || edge === jzt.Direction.West)) {
+        outsideLocation.y = outsideLocation.y + offset;
+        newLocation.y = newLocation.y + offset;
+    }
+    
     switch(edge) {
         case jzt.Direction.North:
             outsideLocation.y = -1;

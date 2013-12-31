@@ -20,7 +20,7 @@
 			}
 			#edit-area {
 				overflow: scroll;
-				width: 640px;
+				width: 75%;
 				height: 480px;
 			}
 			#color-customizer ol {
@@ -71,6 +71,7 @@
 			<br/>
 			<label><input type="radio" name="activeTemplate" value="Water" />Water</label>
 			<label><input type="radio" name="activeTemplate" value="Forest" />Forest</label>
+			<label><input type="radio" name="activeTemplate" value="Signpost">Signpost</label>
 			<label><input type="radio" name="activeTemplate" value="Ricochet" />Ricochet</label>
 			<label><input type="radio" name="activeTemplate" value="Door" />Door</label>
 			<br/>
@@ -441,7 +442,7 @@
 
 			function onDownload(event) {
 				var game = editor.serialize();
-				download.download = game.name.replace(/[^a-z0-9_\-]/gi, '-').toLowerCase() + '.jzt';
+				download.download = game.title.replace(/[^a-z0-9_\-]/gi, '-').toLowerCase() + '.jzt';
 				download.href = 'data:application/octet-stream;charset=utf-8;base64,' + LZString.compressToBase64(JSON.stringify(editor.serialize()));
 			};
 
