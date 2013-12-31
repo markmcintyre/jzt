@@ -323,7 +323,9 @@ jzt.Editor.prototype.deserialize = function(data) {
 
 	options.title = data.title;
 	options.author = data.author;
+	options.titleBoard = data.titleBoard;
 	options.startingBoard = data.startingBoard;
+	options.victoryBoard = data.victoryBoard;
 
 	this.setGameOptions(options);
 
