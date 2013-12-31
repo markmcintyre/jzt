@@ -81,7 +81,9 @@ jzt.Game.prototype.serialize = function() {
     var index;
 
     result.name = this.name;
+    result.titleBoard = this.titleBoard;
     result.startingBoard = this.currentBoard.name;
+    result.victoryBoard = this.victoryBoard;
     result.author = this.author;
     result.boards = [];
     result.counters = {};
@@ -119,7 +121,9 @@ jzt.Game.prototype.deserialize = function(data) {
 
     this.name = data.name;
     this.currentBoard = undefined;
+    this.titleBoard = data.titleBoard;
     this.startingBoard = data.startingBoard;
+    this.victoryBoard = data.victoryBoard;
     this.author = data.author;
     this.boards = {};
 

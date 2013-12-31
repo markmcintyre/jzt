@@ -213,7 +213,9 @@ jzt.Editor.prototype.setBoardOptions = function(options) {
 jzt.Editor.prototype.setGameOptions = function(options) {
 	this.game.title = options.title;
 	this.game.author = options.author;
+	this.game.titleBoard = options.titleBoard;
 	this.game.startingBoard = options.startingBoard;
+	this.game.victoryBoard = options.victoryBoard;
 	this.changeGameOptionsCallback.call(this, options);
 };
 
@@ -332,7 +334,9 @@ jzt.Editor.prototype.deserialize = function(data) {
 jzt.Editor.prototype.serialize = function() {
 	var result = {};
 	result.title = this.game.title;
+	result.titleBoard = this.game.titleBoard;
 	result.startingBoard = this.game.startingBoard;
+	result.victoryBoard = this.game.victoryBoard;
 	result.author = this.game.author;
 	result.boards = [];
 	for(var index = 0; index < this.boards.length; ++index) {

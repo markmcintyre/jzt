@@ -157,7 +157,9 @@
 			<div id="game-customizer">
 				<label>Game Title: <input type="text" id="game-name" /></label><br/>
 				<label>Author: <input type="text" id="author-name"/></label><br/>
+				<label>Title Board: <select id="title-board-selector"><option value="">None</option></select></label>
 				<label>Starting Board: <select id="starting-board-selector"></select></label>
+				<label>Victory Board: <select id="victory-board-selector"><option value="">None</option></select></label>
 			</div>
 		</div>
 		
@@ -197,6 +199,8 @@
 			var gameName = document.getElementById('game-name');
 			var authorName = document.getElementById('author-name');
 			var startingBoardSelector = document.getElementById('starting-board-selector');
+			var titleBoardSelector = document.getElementById('title-board-selector');
+			var victoryBoardSelector = document.getElementById('victory-board-selector');
 			var editor = undefined;
 
 			function onToolSelected(event) {
@@ -260,7 +264,9 @@
 				southSelector.options[southSelector.options.length] = new Option(boardName, boardName);
 				eastSelector.options[eastSelector.options.length] = new Option(boardName, boardName);
 				westSelector.options[westSelector.options.length] = new Option(boardName, boardName);
+				titleBoardSelector.options[titleBoardSelector.options.length] = new Option(boardName, boardName);
 				startingBoardSelector.options[startingBoardSelector.options.length] = new Option(boardName, boardName);
+				victoryBoardSelector.options[victoryBoardSelector.options.length] = new Option(boardName, boardName);
 			};
 
 			function onBoardRemoved(boardName) {
@@ -280,7 +286,9 @@
 				eastSelector.remove(findIndex(eastSelector, boardName));
 				southSelector.remove(findIndex(southSelector, boardName));
 				westSelector.remove(findIndex(westSelector, boardName));
+				titleBoardSelector.remove(findIndex(titleBoardSelector, boardName));
 				startingBoardSelector.remove(findIndex(startingBoardSelector, boardName));
+				victoryBoardSelector.remove(findIndex(victoryBoardSelector, boardName));
 			};
 
 			function onModeChanged(mode) {
@@ -312,7 +320,9 @@
 			function onGameOptionsChanged(options) {
 				gameName.value = options.title ? options.title : 'Untitled';
 				authorName.value = options.author ? options.author : 'Anonymous';
+				titleBoardSelector.value = options.titleBoard ? options.titleBoard : '';
 				startingBoardSelector.value = options.startingBoard ? options.startingBoard : editor.currentBoard.name;
+				victoryBoardSelector.value = options.victoryBoard ? options.victoryBoard : '';
 			};
 
 			function onTemplateChanged(newTemplate) {
@@ -422,7 +432,9 @@
 				var options = {
 					title: gameName.value,
 					author: authorName.value,
-					startingBoard: startingBoardSelector.value
+					titleBoard: titleBoardSelector.value,
+					startingBoard: startingBoardSelector.value,
+					victoryBoard: victoryBoardSelector.value
 				};
 				editor.setGameOptions(options);
 			};
@@ -494,7 +506,9 @@
 			deleteBoard.addEventListener('click', onDeleteBoard, false);
 			gameName.addEventListener('blur', onGameOptionsSelected, false);
 			authorName.addEventListener('blur', onGameOptionsSelected, false);
+			titleBoardSelector.addEventListener('change', onGameOptionsSelected, false);
 			startingBoardSelector.addEventListener('change', onGameOptionsSelected, false);
+			victoryBoardSelector.addEventListener('change', onGameOptionsSelected, false);
 
 
 		</script>
