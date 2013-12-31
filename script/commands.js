@@ -116,6 +116,14 @@ jzt.commands.Change.prototype.execute = function(owner) {
     var data = {type: this.newThing, color: jzt.colors.serialize(undefined, this.newColor)};
     var newThing = jzt.things.ThingFactory.deserialize(data, owner.board);
 
+    /* If no new color was specified, take the unusual step of explicitly
+     * Removing the default color from the cloned thing. The changeTiles
+     * method will interpret this as inheriting the color from its target.
+     */
+    if(!this.newColor) {
+        newThing.foreground = undefined;
+    }
+
     owner.board.changeTiles(this.targetThing, this.targetColor, newThing);
 
 };

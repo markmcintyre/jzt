@@ -407,11 +407,19 @@ jzt.Board.prototype.hasTile = function(type, color, count) {
 jzt.Board.prototype.changeTiles = function(targetType, targetColor, newThing) {
 
     var me = this;
+    var clone;
 
     this.each(function(tile, point) {
 
         if(tile && tile.equals(targetType, targetColor)) {
-            me.replaceTile(tile.point, newThing.clone());
+
+            clone = newThing.clone();
+
+            if(!newThing.foreground) {
+                clone.foreground = tile.foreground;
+            }
+
+            me.replaceTile(tile.point, clone);
         }
 
     });
