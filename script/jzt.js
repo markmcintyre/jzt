@@ -18,7 +18,9 @@ jzt.GameState = {
     Playing: 0,
     Paused: 1,
     GameOver: 2,
-    Reading: 3
+    Reading: 3,
+    Title: 4,
+    Victory: 5
 };
 
 /**
@@ -83,6 +85,7 @@ jzt.Game.prototype.serialize = function() {
     result.author = this.author;
     result.boards = [];
     result.counters = {};
+    result.savedGame = true;
 
     for(index in this.counters) {
         if(this.counters.hasOwnProperty(index) && !isNaN(this.counters[index])) {
@@ -119,6 +122,8 @@ jzt.Game.prototype.deserialize = function(data) {
     this.startingBoard = data.startingBoard;
     this.author = data.author;
     this.boards = {};
+
+    data.savedGame = data.savedGame ? true : false;
     
     // Initialize our default counters
     this.counters = {
@@ -262,6 +267,17 @@ jzt.Game.prototype.setState = function(state) {
         // Forget if P was pressed
         delete this.keyboard.cancelKey[this.keyboard.P];
 
+        // If we were previously on the title screen...
+        if(this.state === jzt.GameState.Title) {
+
+            // Forget everything about our current board
+            this.currentBoard = undefined;
+
+            // Load our starting board
+            this.setBoard(this.startingBoard);
+
+        }
+
         // Calculate our pause duration and notify our player
         if(this.pauseStart) {
             this.player.onUnpause(Date.now() - this.pauseStart);
@@ -270,7 +286,8 @@ jzt.Game.prototype.setState = function(state) {
         // Clear any active display message
         this.currentBoard.setDisplayMessage(undefined);
 
-        // No longer blink the player
+        // Reset our player display
+        this.player.hidden = false;
         this.player.background = this.player.background.darken();
 
     }
@@ -291,6 +308,31 @@ jzt.Game.prototype.setState = function(state) {
         // Deactivate subsequent audio output
         this.resources.audio.setActive(false);
         
+    }
+
+    else if(state === jzt.GameState.Title) {
+
+        if(this.titleBoard) {
+            this.setBoard(this.titleBoard);
+        }
+        else {
+            this.setBoard(this.startingBoard);
+        }
+
+        if(this.player) {
+            this.player.hidden = true;
+        }
+
+    }
+
+    else if(state === jzt.GameState.Victory) {
+
+        if(this.victoryBoard) {
+            this.setBoard(this.victoryBoard);
+        }
+
+        this.player.hidden = true;
+
     }
 
     // Assign our new state
@@ -435,8 +477,15 @@ jzt.Game.prototype.run = function() {
     // If our game loop isn't already running
     if(! this.intervalId) {
         this.keyboard.initialize();
-        this.setBoard(this.startingBoard);
-        this.setState(jzt.GameState.Paused);
+
+        if(this.savedGame) {
+            this.setBoard(this.startingBoard);
+            this.setState(jzt.GameState.Paused);
+        }
+        else {
+            this.setState(jzt.GameState.Title);
+        }
+
         this.drawFunction = this.draw.bind(this);
             
         // Start the game loop
@@ -517,6 +566,27 @@ jzt.Game.prototype.update = function() {
     else if(this.state === jzt.GameState.GameOver) {
         this.currentBoard.update();
         this.currentBoard.setDisplayMessage(jzt.i18n.getMessage('status.gameover'));
+    }
+
+    // If we're on the title screen...
+    else if(this.state === jzt.GameState.Title) {
+
+        this.currentBoard.update();
+        this.currentBoard.setDisplayMessage(jzt.i18n.getMessage('status.title'));
+
+        // Also check if the user wants to play
+        if(this.keyboard.isPressed(this.keyboard.P) || this.keyboard.isPressed(this.keyboard.SPACE)) {
+            this.keyboard.cancelKey(this.keyboard.P);
+            this.setState(jzt.GameState.Playing);
+        }
+
+    }
+
+    // If we've won
+    else if(this.state === jzt.GameState.Victory) {
+
+        this.currentBoard.update();
+
     }
 
 };

@@ -856,17 +856,13 @@ jzt.Board.prototype.render = function(c) {
     // For each displayable tile...
     this.eachDisplayable( function(thing, point) {
 
-        if(thing && thing instanceof jzt.things.Player) {
-            index = 0;
-        }
-
         // If this board is dark, and we're not visible, skip this iteration
         if(!me.game.isDebugRendering && me.dark && !me.isLit(point, thing)) {
             return;
         }
 
         // If there's a thing to render...
-        if(thing) {
+        if(thing && !thing.hidden) {
 
             // Grab our sprite
             var sprite = me.game.resources.graphics.getSprite(thing.getSpriteIndex());

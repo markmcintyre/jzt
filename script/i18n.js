@@ -37,7 +37,8 @@ jzt.i18n.Messages.en = {
 		'gameover': 'Game over!',
 		'noammo': 'You don\'t have any ammo.',
 		'hurt': 'Ouch!',
-		'notorches': 'You don\'t have any torches.'
+		'notorches': 'You don\'t have any torches.',
+		'title': 'Press [P] to play.'
 	},
 	pause: {
 		'paused': 'Paused',
@@ -83,7 +84,8 @@ jzt.i18n.Messages.fr = {
 		'gameover': 'Game over !',
 		'noammo': 'Vous n\'avez plus de munitions.',
 		'hurt': 'Aïe !',
-		'notorches': 'Vous n\'avez plus de torches.'
+		'notorches': 'Vous n\'avez plus de torches.',
+		'title': 'Appuyez sur [P] pour jouer.'
 	},
 	pause: {
 		'paused': 'Pause',
