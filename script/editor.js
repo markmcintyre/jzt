@@ -18,6 +18,7 @@ jzt.Editor = function(editorElement, configuration) {
 	this.mode = jzt.Editor.Mode.DRAW;
 
 	this.boards = [];
+	this.cursor = new jzt.Point(0,0);
 
 	var mockGame = {
     	resources: {},
@@ -199,6 +200,68 @@ jzt.Editor.prototype.initializeBoardElement = function(board) {
     //editArea.scrollTop = (canvas.height - editArea.clientHeight) / 2;
 	//editArea.scrollLeft = (canvas.width - editArea.clientWidth) / 2;
 
+};
+
+jzt.Editor.prototype.setCursorPosition = function(point) {
+
+	this.cursor = point;
+
+	if(this.cursor.x < 0) {
+		this.cursor.x = 0;
+	}
+	if(this.cursor.y < 0) {
+		this.cursor.y = 0;
+	}
+	if(this.cursor.x >= this.currentBoard.width) {
+		this.cursor.x = this.currentBoard.width - 1;
+	}
+	if(this.cursor.y >= this.currentBoard.height) {
+		this.cursor.y = this.currentBoard.height - 1;
+	}
+
+	if(this.drawing) {
+		this.plot();
+	}
+
+	this.render(this.context);
+
+};
+
+jzt.Editor.prototype.togglePlot = function() {
+
+	var thing = this.currentBoard.getTile(this.cursor);
+
+	if(thing) {
+		this.currentBoard.addThing(this.cursor, undefined);
+		this.render(this.context);
+	}
+	else {
+		this.plot();
+	}
+
+};
+
+jzt.Editor.prototype.plot = function() {
+
+	if(!this.previousPlot || !this.previousPlot.equals(this.cursor)) {
+
+		this.previousPlot = this.cursor;
+
+		if(this.activeTemplate) {
+			this.currentBoard.addThing(this.cursor, jzt.things.ThingFactory.deserialize(this.activeTemplate, this.currentBoard));
+		}
+		else {
+			this.currentBoard.addThing(this.cursor, undefined);
+		}
+
+		this.render(this.context);
+
+	}
+
+};
+
+jzt.Editor.prototype.moveCursor = function(direction) {
+	this.setCursorPosition(this.cursor.add(direction));
 };
 
 jzt.Editor.prototype.setBoardOptions = function(options) {
@@ -596,70 +659,70 @@ jzt.Editor.prototype.setTemplateBackground = function(background) {
 jzt.Editor.prototype.eventToBoardPoint = function(event) {
 	var x = Math.floor(event.offsetX / this.game.resources.graphics.TILE_SIZE.x);
 	var y = Math.floor(event.offsetY / this.game.resources.graphics.TILE_SIZE.y);
-	return new jzt.Point(x,y);
+	return new jzt.Point(x,y).add(this.currentBoard.windowOrigin);
 };
 
 jzt.Editor.prototype.onKeyDown = function(event) {
-	if(event.keyCode === 83) {
-		this.setMode(jzt.Editor.Mode.SELECT);
-	}
-	else if(event.keyCode === 68) {
-		this.setMode(jzt.Editor.Mode.DRAW);
-	}
-	else if(event.keyCode === 70) {
-		this.setMode(jzt.Editor.Mode.FILL);
-	}
-};
 
-jzt.Editor.prototype.onCanvasMouseDown = function(event) {
+	var activeElement = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
 
-	if(this.mode === jzt.Editor.Mode.DRAW) {
-		this.drawing = true;
-		this.previousPlot = new jzt.Point(-1,-1);
-	}
+	if(activeElement !== 'input' && activeElement !== 'textarea' && activeElement !== 'select' && activeElement !== 'button') {
 
-	this.onCanvasMouseMoved(event);
+		if(event.keyCode === 37) {
+			this.moveCursor(jzt.Direction.West);
+			event.preventDefault();
+		}
+		else if(event.keyCode === 38) {
+			this.moveCursor(jzt.Direction.North);
+			event.preventDefault();
+		}
+		else if(event.keyCode === 39) {
+			this.moveCursor(jzt.Direction.East);
+			event.preventDefault();
+		}
+		else if(event.keyCode === 40) {
+			this.moveCursor(jzt.Direction.South);
+			event.preventDefault();
+		}
+		else if(event.keyCode === 83) {
+			this.setMode(jzt.Editor.Mode.SELECT);
+			event.preventDefault();
+		}
+		else if(event.keyCode === 68) {
+			this.setMode(jzt.Editor.Mode.DRAW);
+			event.preventDefault();
+		}
+		else if(event.keyCode === 70) {
+			this.setMode(jzt.Editor.Mode.FILL);
+			event.preventDefault();
+		}
+		else if(event.keyCode === 32) {
 
-};
+			this.togglePlot();
+			event.preventDefault();
 
-jzt.Editor.prototype.onCanvasMouseMoved = function(event) {
+		}
+		else if(event.keyCode === 9) {
 
-	var point = this.eventToBoardPoint(event);
-	var convertedPoint = point.add(this.currentBoard.windowOrigin);
-
-	if(!this.previousPlot || !this.previousPlot.equals(point)) {
-		this.previousPlot = point;
-
-		if(this.drawing && !this.currentBoard.isOutside(convertedPoint)) {
-
-			if(this.activeTemplate) {
-				this.currentBoard.addThing(convertedPoint, jzt.things.ThingFactory.deserialize(this.activeTemplate, this.currentBoard));
-			}
-			else {
-				this.currentBoard.addThing(convertedPoint, undefined);
-			}
-			
+			this.drawing = !this.drawing;
+			this.plot();
+			event.preventDefault();
 		}
 
-		this.currentBoard.render(this.context);
-		this.drawCursor(point, this.context);
-
 	}
 
 };
 
-jzt.Editor.prototype.onCanvasMouseUp = function(event) {
+jzt.Editor.prototype.invokeTool = function() {
 
 	var thing;
-	var point = this.eventToBoardPoint(event);
-	var convertedPoint = point.add(this.currentBoard.windowOrigin);
 
+	if(this.mode === jzt.Editor.Mode.DRAW) {
 
-	this.drawing = false;
-
+	}
 	if(this.mode === jzt.Editor.Mode.SELECT) {
 
-		thing = this.currentBoard.getTile(convertedPoint);
+		thing = this.currentBoard.getTile(this.cursor);
 		if(thing) {
 			this.setActiveTemplate(thing.serialize());
 		}
@@ -670,12 +733,37 @@ jzt.Editor.prototype.onCanvasMouseUp = function(event) {
 	}
 	else if(this.mode === jzt.Editor.Mode.FILL) {
 
-		this.fill(convertedPoint);
+		this.fill(this.cursor);
 
 	}
 
 	this.currentBoard.render(this.context);
 
+};
+
+jzt.Editor.prototype.onCanvasMouseDown = function(event) {
+
+	if(this.mode === jzt.Editor.Mode.DRAW) {
+		this.drawing = true;
+		this.previousPlot = new jzt.Point(-1,-1);
+	}
+
+	this.setCursorPosition(this.eventToBoardPoint(event));
+
+};
+
+jzt.Editor.prototype.onCanvasMouseMoved = function(event) {
+
+	this.setCursorPosition(this.eventToBoardPoint(event));
+
+};
+
+jzt.Editor.prototype.onCanvasMouseUp = function(event) {
+
+	this.drawing = false;
+
+	this.setCursorPosition(this.eventToBoardPoint(event));
+	this.invokeTool();
 
 };
 
@@ -738,12 +826,17 @@ jzt.Editor.prototype.fill = function(point) {
 
 };
 
-jzt.Editor.prototype.drawCursor = function(point, context) {
+jzt.Editor.prototype.render = function(context) {
+	this.currentBoard.render(context);
+	this.drawCursor(context);
+};
+
+jzt.Editor.prototype.drawCursor = function(context) {
 
 	var xSize = this.graphics.TILE_SIZE.x;
 	var ySize = this.graphics.TILE_SIZE.y;
-	var xPos = point.x * this.graphics.TILE_SIZE.x;
-	var yPos = point.y * this.graphics.TILE_SIZE.y;
+	var xPos = this.cursor.x * this.graphics.TILE_SIZE.x;
+	var yPos = this.cursor.y * this.graphics.TILE_SIZE.y;
 
 	context.fillStyle = 'rgba(255, 255, 255, 0.25)';
 	context.strokeStyle = '#FFFFFF';
