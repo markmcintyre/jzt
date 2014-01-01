@@ -865,8 +865,8 @@ jzt.Board.prototype.setDisplayMessage = function(message, duration) {
 
     if(message !== undefined) {
         this.displayMessage = ' ' + message + ' ';
-        if(this.displayMessage.length > this.width) {
-            this.displayMessage = this.displayMessage.substring(0, this.width);
+        if(this.displayMessage.length > this.windowSize.x) {
+            this.displayMessage = this.displayMessage.substring(0, this.windowSize.x);
         }
         this.displayMessageTick = duration ? this.game.FPS * duration : this.DISPLAY_MESSAGE_TTL;
     }
