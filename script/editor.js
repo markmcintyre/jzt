@@ -58,8 +58,7 @@ jzt.Editor = function(editorElement, configuration) {
 jzt.Editor.Mode = {
 	DRAW: 0,
 	SELECT: 1,
-	FILL: 2,
-	TEXT: 3
+	FILL: 2
 };
 
 jzt.Editor.Thing = {
@@ -160,6 +159,10 @@ jzt.Editor.Thing = {
 		orientation: {type: 'direction', default: 'E', label: 'Direction'},
 		color: {type: 'color', default: '*B', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
 	},
+	Text: {
+		color: {type: 'color', default: '1F', options: ['1','2','3','4','5','6','7','8'], foreground: false, label: 'Color'},
+		text: {type: 'text', default: '', label: 'Text'}
+	},
 	Tiger: {
 		speed: {type: 'number', min: 1, max: 10, default: 2, label: 'Speed', advanced: true},
 		intelligence: {type: 'number', min: 1, max: 10, default: 3, label: 'Intelligence'},
@@ -204,10 +207,6 @@ jzt.Editor.prototype.initializeBoardElement = function(board) {
     this.focusPoint = new jzt.Point(board.defaultPlayerX, board.defaultPlayerY);
     this.cursor = this.focusPoint;
 
-    // Scroll to the correct location
-    //editArea.scrollTop = (canvas.height - editArea.clientHeight) / 2;
-	//editArea.scrollLeft = (canvas.width - editArea.clientWidth) / 2;
-
 };
 
 jzt.Editor.prototype.setCursorPosition = function(point) {
@@ -251,12 +250,49 @@ jzt.Editor.prototype.togglePlot = function() {
 
 jzt.Editor.prototype.plot = function() {
 
+	var thing;
+	var c;
+
 	if(!this.previousPlot || !this.previousPlot.equals(this.cursor)) {
 
 		this.previousPlot = this.cursor;
 
 		if(this.activeTemplate) {
-			this.currentBoard.addThing(this.cursor, jzt.things.ThingFactory.deserialize(this.activeTemplate, this.currentBoard));
+
+			if(this.activeTemplate.type === 'Text') {
+
+				if(this.activeTemplate.text) {
+
+					for(index = 0; index < this.activeTemplate.text.length; ++index) {
+
+						c = this.activeTemplate.text.charAt(index);
+						c = this.graphics.convertSpecialCharacter(c);
+
+						thing = this.currentBoard.getTile(this.cursor);
+						if(thing && thing instanceof jzt.things.Text) {
+							thing.i18n[jzt.i18n.getLanguage()] = c;
+							thing.foreground = jzt.colors.deserializeForeground(this.activeTemplate.color);
+							thing.background = jzt.colors.deserializeBackground(this.activeTemplate.color);
+						}
+						else {
+							thing = {type: 'Text', i18n: {}, color: this.activeTemplate.color};
+							thing.i18n[jzt.i18n.getLanguage()] = c;
+							this.currentBoard.addThing(this.cursor, jzt.things.ThingFactory.deserialize(thing, this.currentBoard));
+						}
+						this.cursor = this.cursor.add(jzt.Direction.East);
+					}
+
+
+					this.cursor = this.previousPlot;
+
+				}
+
+			}
+			else {
+				this.currentBoard.addThing(this.cursor, jzt.things.ThingFactory.deserialize(this.activeTemplate, this.currentBoard));
+			}
+
+
 		}
 		else {
 			this.currentBoard.addThing(this.cursor, undefined);
@@ -783,29 +819,6 @@ jzt.Editor.prototype.invokeTool = function() {
 	else if(this.mode === jzt.Editor.Mode.FILL) {
 
 		this.fill(this.cursor);
-
-	}
-	else if(this.mode === jzt.Editor.Mode.TEXT) {
-
-		text = prompt('Enter text to display');
-
-		if(text) {
-			for(index = 0; index < text.length; ++index) {
-				c = text.charAt(index);
-				c = this.graphics.convertSpecialCharacter(c);
-
-				thing = this.currentBoard.getTile(this.cursor);
-				if(thing && thing instanceof jzt.things.Text) {
-					thing.i18n[jzt.i18n.getLanguage()] = c;
-				}
-				else {
-					thing = {type: 'Text', i18n: {}};
-					thing.i18n[jzt.i18n.getLanguage()] = c;
-					this.currentBoard.addThing(this.cursor, jzt.things.ThingFactory.deserialize(thing, this.currentBoard));
-				}
-				this.cursor = this.cursor.add(jzt.Direction.East);
-			}
-		}
 
 	}
 
