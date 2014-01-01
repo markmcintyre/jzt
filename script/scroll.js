@@ -46,6 +46,7 @@ jzt.Scroll = function(owner) {
 			this.dots.push(spaceSprite);
 		}
 	}
+	this.setHeight(0);
 };
 
 /**
