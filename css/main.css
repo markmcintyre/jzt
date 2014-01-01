@@ -1,0 +1,16 @@
+body {
+	background-color: rgb(0,0,170);
+}
+
+header h1 {
+	display: none;
+}
+
+#jzt {
+	position: absolute;
+	margin: auto;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+}

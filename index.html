@@ -2,14 +2,15 @@
 <html>
 	<head>
 		<title>JZT</title>
+		<link rel="stylesheet" type="text/css" href="css/main.css" />
 	</head>
 	<body>
 		
 		<header>
-			<!--<h1>Mark's Test Thing</h1>-->
+			<h1>JZT: Nostalgic DOS Game</h1>
 		</header>
 		
-		<canvas id="jzt" style="border: 1px solid blue;" width="800" height="640"></canvas>
+		<canvas id="jzt" width="800" height="640"></canvas>
 		
 		<script type="text/javascript" src="script/jzt.js"></script>
 		<script type="text/javascript" src="script/board.js"></script>
@@ -31,7 +32,6 @@
 			data = LZString.decompressFromUTF16(data);
 			data = JSON.parse(data);
 		
-			//jzt.debug.on = true;
 			var canvas = document.getElementById('jzt');
 			var game = new jzt.Game(canvas, data, function() {
 				this.run();

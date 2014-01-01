@@ -3498,12 +3498,16 @@ jzt.things.Text.prototype.deserialize = function(data) {
 
 jzt.things.Text.prototype.getSpriteIndex = function() {
 
+    var result;
+
     if(this.i18n.hasOwnProperty(jzt.i18n.getLanguage())) {
-        return this.i18n[jzt.i18n.getLanguage()];
+        result = this.i18n[jzt.i18n.getLanguage()];
     }
     else {
-        return this.i18n[jzt.i18n.DefaultLanguage];
+        result = this.i18n[jzt.i18n.DefaultLanguage];
     }
+
+    return result ? result : 0;
 
 };
 
