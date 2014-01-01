@@ -145,7 +145,12 @@ jzt.i18n.findMessage = function(source, key) {
 
 };
 
+jzt.i18n.getLanguage = function() {
+	return jzt.i18n.language;
+};
+
 jzt.i18n.setLanguage = function(language) {
+	jzt.i18n.language = language;
 	jzt.i18n.Messages.currentLanguage = jzt.i18n.Messages[language];
 };
 

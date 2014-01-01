@@ -53,13 +53,13 @@ jzt.Editor = function(editorElement, configuration) {
 
 	window.addEventListener('keydown', this.onKeyDown.bind(this), false);
 
-
 };
 
 jzt.Editor.Mode = {
 	DRAW: 0,
 	SELECT: 1,
-	FILL: 2
+	FILL: 2,
+	TEXT: 3
 };
 
 jzt.Editor.Thing = {
@@ -764,7 +764,10 @@ jzt.Editor.prototype.onKeyDown = function(event) {
 
 jzt.Editor.prototype.invokeTool = function() {
 
+	var index;
 	var thing;
+	var text;
+	var c;
 
 	if(this.mode === jzt.Editor.Mode.SELECT) {
 
@@ -780,6 +783,29 @@ jzt.Editor.prototype.invokeTool = function() {
 	else if(this.mode === jzt.Editor.Mode.FILL) {
 
 		this.fill(this.cursor);
+
+	}
+	else if(this.mode === jzt.Editor.Mode.TEXT) {
+
+		text = prompt('Enter text to display');
+
+		if(text) {
+			for(index = 0; index < text.length; ++index) {
+				c = text.charAt(index);
+				c = this.graphics.convertSpecialCharacter(c);
+
+				thing = this.currentBoard.getTile(this.cursor);
+				if(thing && thing instanceof jzt.things.Text) {
+					thing.i18n[jzt.i18n.getLanguage()] = c;
+				}
+				else {
+					thing = {type: 'Text', i18n: {}};
+					thing.i18n[jzt.i18n.getLanguage()] = c;
+					this.currentBoard.addThing(this.cursor, jzt.things.ThingFactory.deserialize(thing, this.currentBoard));
+				}
+				this.cursor = this.cursor.add(jzt.Direction.East);
+			}
+		}
 
 	}
 

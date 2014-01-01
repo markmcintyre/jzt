@@ -3456,6 +3456,61 @@ jzt.things.Teleporter.prototype.push = function(direction) {
 //--------------------------------------------------------------------------------
 
 /**
+ * Text is a Thing that displays a character depending on the locale of the game.
+ *
+ * @param board An owner board for this Thing.
+ */
+jzt.things.Text = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.i18n = {
+        en: 0
+    };
+    this.foreground = jzt.colors.BrightWhite;
+    this.background = jzt.colors.Blue;
+};
+jzt.things.Text.prototype = new jzt.things.Thing();
+jzt.things.Text.prototype.constructor = jzt.things.Text;
+jzt.things.Text.serializationType = 'Text';
+
+/**
+ * Serializes this Text into a data object.
+ *
+ * @return A data object representing a serialized Text.
+ */
+jzt.things.Text.prototype.serialize = function() {
+    var result = jzt.things.Thing.prototype.serialize.call(this);
+    result.i18n = this.i18n;
+    return result;
+};
+
+/**
+ * Deserializes a provided data object to configure this Text instance.
+ *
+ * @param A data object representing a serialized Text.
+ */
+jzt.things.Text.prototype.deserialize = function(data) {
+
+    jzt.things.Thing.prototype.deserialize.call(this, data);
+    this.i18n = data.i18n;
+    this.foreground = jzt.colors.BrightWhite;
+    
+};
+
+jzt.things.Text.prototype.getSpriteIndex = function() {
+
+    if(this.i18n.hasOwnProperty(jzt.i18n.getLanguage())) {
+        return this.i18n[jzt.i18n.getLanguage()];
+    }
+    else {
+        return this.i18n[jzt.i18n.DefaultLanguage];
+    }
+
+};
+
+
+//--------------------------------------------------------------------------------
+
+/**
  * ThrowingStar is an UpdateableThing representing a projectile that seeks the player
  * continually with a spinning animation until its time to live has expired and it
  * is removed from its owner Board.
