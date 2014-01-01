@@ -181,8 +181,8 @@ jzt.Editor.prototype.initializeBoardElement = function(board) {
 
 	// Create a new canvas
 	this.canvasElement = document.createElement('canvas');
-	this.canvasElement.width = 640;
-	this.canvasElement.height = 480;
+	this.canvasElement.width = 800;
+	this.canvasElement.height = 640;
 
 	// Add our canvas
 	this.editorElement.appendChild(this.canvasElement);
