@@ -667,6 +667,7 @@ jzt.Editor.prototype.eventToBoardPoint = function(event) {
 
 jzt.Editor.prototype.onKeyDown = function(event) {
 
+	var oldMode;
 	var activeElement = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
 
 	if(activeElement !== 'input' && activeElement !== 'textarea' && activeElement !== 'select' && activeElement !== 'button') {
@@ -701,9 +702,28 @@ jzt.Editor.prototype.onKeyDown = function(event) {
 		}
 		else if(event.keyCode === 32) {
 
-			this.togglePlot();
+			if(this.mode === jzt.Editor.Mode.DRAW) {
+				this.togglePlot();
+			}
+			else {
+				this.invokeTool();
+			}
 			event.preventDefault();
 
+		}
+		else if(event.keyCode === 13) {
+			oldMode = this.mode;
+			this.mode = jzt.Editor.Mode.SELECT;
+			this.invokeTool();
+			this.mode = oldMode;
+			event.preventDefault();
+		}
+		else if(event.keyCode === 88) {
+			oldMode = this.mode;
+			this.mode = jzt.Editor.Mode.FILL;
+			this.invokeTool();
+			this.mode = oldMode;
+			event.preventDefault();
 		}
 		else if(event.keyCode === 9) {
 
@@ -720,9 +740,6 @@ jzt.Editor.prototype.invokeTool = function() {
 
 	var thing;
 
-	if(this.mode === jzt.Editor.Mode.DRAW) {
-
-	}
 	if(this.mode === jzt.Editor.Mode.SELECT) {
 
 		thing = this.currentBoard.getTile(this.cursor);
