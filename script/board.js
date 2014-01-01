@@ -28,6 +28,7 @@ jzt.Board = function(boardData, game) {
     this.smartPath = [];
     this.customRenderSet = [];
     this.torches = [];
+    this.focusPoint = new jzt.Point(0,0);
 
     this.north = boardData.north;
     this.east = boardData.east;
@@ -192,6 +193,8 @@ jzt.Board.prototype.initializePlayer = function(player) {
     this.setTile(player.point, player);
     this.player.board = this;
     this.initializeTorch(this.player);
+    this.focusPoint = this.player.point;
+
 };
 
 /*
@@ -271,18 +274,18 @@ jzt.Board.prototype.initializeWindow = function() {
 
 jzt.Board.prototype.updateWindowPosition = function() {
 
-    if(this.player) {
+    if(this.focusPoint) {
 
         if(this.width > this.windowSize.x) {
-            this.windowOrigin.x = this.player.point.x - Math.round(this.windowSize.x / 2);
+            this.windowOrigin.x = this.focusPoint.x - Math.round(this.windowSize.x / 2);
             this.windowOrigin.x = this.windowOrigin.x < 0 ? 0 : this.windowOrigin.x > this.windowLimit.x ? this.windowLimit.x : this.windowOrigin.x;
         }
 
         if(this.height > this.windowSize.y) {
-            this.windowOrigin.y = this.player.point.y - Math.round(this.windowSize.y / 2);
+            this.windowOrigin.y = this.focusPoint.y - Math.round(this.windowSize.y / 2);
             this.windowOrigin.y = this.windowOrigin.y < 0 ? 0 : this.windowOrigin.y > this.windowLimit.y ? this.windowLimit.y : this.windowOrigin.y;
         }
-        
+
     }
 
 };
@@ -623,11 +626,11 @@ jzt.Board.prototype.replaceTile = function(point, newTile) {
 };
 
 /**
- * Retruns true if a provided Point is located outside of this Board's
+ * Returns true if a provided Point is located outside of this Board's
  * boundaries.
  *
  * @param point A point to check
- * @return true if a provided Point is within this Board's boundaries,
+ * @return true if a provided Point is outisde this Board's boundaries,
  *         false otherwise.
  */
 jzt.Board.prototype.isOutside = function(point) {
@@ -641,6 +644,24 @@ jzt.Board.prototype.isOutside = function(point) {
 
     return false;
 
+};
+
+/**
+ * Returns true if a provided Point is located outside of this Board's visible
+ * window boundary.
+ *
+ * @param point A point to check.
+ * @return true if a provided Point is outside this Board's boundaries, false otherwise.
+ */
+jzt.Board.prototype.isOutsideWindow = function(point) {
+    if(point.x < this.windowOrigin.x || point.x >= (this.windowOrigin.x + this.windowSize.x)) {
+        return true;
+    }
+    else if(point.y < this.windowOrigin.y || point.y >= (this.windowOrigin.y + this.windowSize.y)) {
+        return true;
+    }
+
+    return false;
 };
 
 /**
@@ -869,6 +890,7 @@ jzt.Board.prototype.render = function(c) {
     var torchCircle;
     var index;
 
+    // Update our window
     this.updateWindowPosition();
 
     // Draw our board background

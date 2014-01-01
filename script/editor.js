@@ -181,8 +181,8 @@ jzt.Editor.prototype.initializeBoardElement = function(board) {
 
 	// Create a new canvas
 	this.canvasElement = document.createElement('canvas');
-	this.canvasElement.width = board.width * this.graphics.TILE_SIZE.x;
-	this.canvasElement.height = board.height * this.graphics.TILE_SIZE.y;
+	this.canvasElement.width = 640;
+	this.canvasElement.height = 480;
 
 	// Add our canvas
 	this.editorElement.appendChild(this.canvasElement);
@@ -191,6 +191,7 @@ jzt.Editor.prototype.initializeBoardElement = function(board) {
 	this.canvasElement.addEventListener('mousemove', this.onCanvasMouseMoved.bind(this), false);
 	this.canvasElement.addEventListener('mousedown', this.onCanvasMouseDown.bind(this), false);
 	this.canvasElement.addEventListener('mouseup', this.onCanvasMouseUp.bind(this), false);
+	this.canvasElement.addEventListener('mousewheel', this.onCanvasScroll.bind(this), false);
 
 	// Assign our context
 	this.context = this.canvasElement.getContext('2d');
@@ -198,6 +199,10 @@ jzt.Editor.prototype.initializeBoardElement = function(board) {
     this.context.imageSmoothingEnabled = false;
     this.context.webkitImageSmoothingEnabled = false;
     this.context.mozImageSmoothingEnabled = false;
+
+    // Assign our focus
+    this.focusPoint = new jzt.Point(board.defaultPlayerX, board.defaultPlayerY);
+    this.cursor = this.focusPoint;
 
     // Scroll to the correct location
     //editArea.scrollTop = (canvas.height - editArea.clientHeight) / 2;
@@ -264,7 +269,28 @@ jzt.Editor.prototype.plot = function() {
 };
 
 jzt.Editor.prototype.moveCursor = function(direction) {
+
+	var startX;
+	var endX;
+
 	this.setCursorPosition(this.cursor.add(direction));
+
+	if(this.currentBoard.isOutsideWindow(this.cursor)) {
+
+		startX = this.currentBoard.windowOrigin.x;
+		endX = startX + this.currentBoard.windowSize.x;
+
+		if(this.cursor.x < startX || this.cursor.x >= endX) {
+			this.focusPoint.x = this.cursor.x;
+		}
+		else {
+			this.focusPoint.y = this.cursor.y;
+		}
+
+		this.render(this.context);
+
+	}
+
 };
 
 jzt.Editor.prototype.setBoardOptions = function(options) {
@@ -788,6 +814,19 @@ jzt.Editor.prototype.onCanvasMouseUp = function(event) {
 
 };
 
+jzt.Editor.prototype.onCanvasScroll = function(event) {
+
+	var deltaX = Math.round(event.deltaX / 10);
+	var deltaY = Math.round(event.deltaY / 10);
+	deltaX = deltaX > 2 ? 2 : deltaX < -2 ? -2 : deltaX;
+	deltaY = deltaY > 2 ? 2 : deltaY < -2 ? -2 : deltaY;
+
+	this.focusPoint = this.focusPoint.add( new jzt.Point(deltaX, deltaY));
+	event.preventDefault();
+	this.render(this.context);
+
+};
+
 jzt.Editor.prototype.fill = function(point) {
 
 	var thing;
@@ -848,6 +887,7 @@ jzt.Editor.prototype.fill = function(point) {
 };
 
 jzt.Editor.prototype.render = function(context) {
+	this.currentBoard.focusPoint = this.focusPoint;
 	this.currentBoard.render(context);
 	this.drawCursor(context);
 };
@@ -856,8 +896,8 @@ jzt.Editor.prototype.drawCursor = function(context) {
 
 	var xSize = this.graphics.TILE_SIZE.x;
 	var ySize = this.graphics.TILE_SIZE.y;
-	var xPos = this.cursor.x * this.graphics.TILE_SIZE.x;
-	var yPos = this.cursor.y * this.graphics.TILE_SIZE.y;
+	var xPos = this.cursor.subtract(this.currentBoard.windowOrigin).x * this.graphics.TILE_SIZE.x;
+	var yPos = this.cursor.subtract(this.currentBoard.windowOrigin).y * this.graphics.TILE_SIZE.y;
 
 	context.fillStyle = 'rgba(222, 222, 255, 0.25)';
 	context.strokeStyle = '#DDDDFF';

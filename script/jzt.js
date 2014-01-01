@@ -376,7 +376,7 @@ jzt.Game.prototype.movePlayerToBoardEdge = function(edge, boardName, offset) {
         outsideLocation.y = outsideLocation.y + offset;
         newLocation.y = newLocation.y + offset;
     }
-    
+
     switch(edge) {
         case jzt.Direction.North:
             outsideLocation.y = -1;
@@ -550,6 +550,9 @@ jzt.Game.prototype.update = function() {
 
         // Update the player
         this.player.update();
+
+        // Update our focus point
+        this.currentBoard.focusPoint = this.player.point;
 
         // Also check if the user wants to pause
         if(this.keyboard.isPressed(this.keyboard.P)) {
