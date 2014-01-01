@@ -252,11 +252,11 @@ jzt.Editor.prototype.plot = function() {
 		}
 		else {
 			this.currentBoard.addThing(this.cursor, undefined);
-		}
-
-		this.render(this.context);
+		}	
 
 	}
+
+	this.render(this.context);
 
 };
 
@@ -838,8 +838,9 @@ jzt.Editor.prototype.drawCursor = function(context) {
 	var xPos = this.cursor.x * this.graphics.TILE_SIZE.x;
 	var yPos = this.cursor.y * this.graphics.TILE_SIZE.y;
 
-	context.fillStyle = 'rgba(255, 255, 255, 0.25)';
-	context.strokeStyle = '#FFFFFF';
+	context.fillStyle = 'rgba(222, 222, 255, 0.25)';
+	context.strokeStyle = '#DDDDFF';
+	context.lineWidth = this.drawing ? 4 : 2;
 
     context.fillRect(xPos, yPos,  xSize, ySize);
     
