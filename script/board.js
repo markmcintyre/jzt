@@ -71,6 +71,8 @@ jzt.Board.prototype.validateData = function(data) {
     if(!data.height || !data.width) {valid = false;}
     if(typeof data.height !== 'number') {valid = false;}
     if(typeof data.width !== 'number') {valid = false;}
+    if(data.height > 150 || data.height < 10) {valid = false;}
+    if(data.width > 150 || data.width < 10) {valid = false;}
     if(!data.tiles || !data.tiles instanceof Array) {valid = false;}
     if(!data.scripts || !data.script instanceof Array) {valid = false;}
 

@@ -254,7 +254,12 @@
 				var height = parseInt(window.prompt('Please enter a board height.', '20'));
 				if(newName && width && height) {
 					newName = editor.getUniqueBoardName(newName);
-					editor.addBoard(newName, width, height);
+					try {
+						editor.addBoard(newName, width, height);
+					}
+					catch(ex) {
+						alert(ex);
+					}
 				}
 
 			};

@@ -51,6 +51,8 @@ jzt.Editor = function(editorElement, configuration) {
 
 	this.graphics = mockGame.resources.graphics;
 
+	window.addEventListener('keydown', this.onKeyDown.bind(this), false);
+
 
 };
 
@@ -173,7 +175,9 @@ jzt.Editor.prototype.initializeBoardElement = function(board) {
 	var me = this;
 
 	// Remove the old canvas
-	this.editorElement.innerHTML = '';
+	if(this.canvasElement) {
+		this.editorElement.removeChild(this.canvasElement);
+	}
 
 	// Create a new canvas
 	this.canvasElement = document.createElement('canvas');
@@ -184,10 +188,9 @@ jzt.Editor.prototype.initializeBoardElement = function(board) {
 	this.editorElement.appendChild(this.canvasElement);
 
 	// Add our event listeners
-	this.canvasElement.addEventListener('mousemove', function(event){me.onCanvasMouseMoved(event)}, false);
-	this.canvasElement.addEventListener('mousedown', function(event){me.onCanvasMouseDown(event)}, false);
-	this.canvasElement.addEventListener('mouseup', function(event){me.onCanvasMouseUp(event)}, false);
-	window.addEventListener('keydown', function(event){me.onKeyDown(event)}, false);
+	this.canvasElement.addEventListener('mousemove', this.onCanvasMouseMoved.bind(this), false);
+	this.canvasElement.addEventListener('mousedown', this.onCanvasMouseDown.bind(this), false);
+	this.canvasElement.addEventListener('mouseup', this.onCanvasMouseUp.bind(this), false);
 
 	// Assign our context
 	this.context = this.canvasElement.getContext('2d');
@@ -755,6 +758,7 @@ jzt.Editor.prototype.onCanvasMouseDown = function(event) {
 jzt.Editor.prototype.onCanvasMouseMoved = function(event) {
 
 	this.setCursorPosition(this.eventToBoardPoint(event));
+	document.activeElement.blur();
 
 };
 
