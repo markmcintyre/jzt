@@ -28,7 +28,7 @@ jzt.Scroll = function(owner) {
 	this.screenWidth = owner.screenWidth;
 	this.screenHeight = owner.screenHeight;
 	this.width = 48;
-	this.textAreaWidth = this.width - 6;
+	this.textAreaWidth = this.width - 8;
 	this.height = 0;
 	this.fullHeight = Math.floor(owner.context.canvas.height / this.graphics.TILE_SIZE.y) - 2;
 	this.state = jzt.Scroll.ScrollState.Opening;
@@ -38,7 +38,7 @@ jzt.Scroll = function(owner) {
 	this.eventScheduler = new jzt.DelayedEventScheduler(this.game.CYCLE_TICKS * 2, this.game.CYCLE_TICKS);
 	spaceSprite = this.graphics.getSprite(32);
 	dotSprite = this.graphics.getSprite(7);
-	for(index = 0; index < this.textAreaWidth; ++index) {
+	for(index = 0; index < this.textAreaWidth-1; ++index) {
 		if(index % 5 === 0) {
 			this.dots.push(dotSprite);
 		}
@@ -46,6 +46,7 @@ jzt.Scroll = function(owner) {
 			this.dots.push(spaceSprite);
 		}
 	}
+	this.dots.push(dotSprite);
 	this.setHeight(0);
 };
 
@@ -88,14 +89,64 @@ jzt.Scroll.prototype.open = function() {
  * @param lineLabel A label to be delivered to a registered listener if the line is selected.
  */
 jzt.Scroll.prototype.addLine = function(line, center, lineLabel) {
-	var sprites = this.graphics.textToSprites(line);
-	if(center) {
-		sprites.center = true;
+
+	var splitLine = line.split(/\s+/);
+	var index;
+	var sprites;
+	var adjustedText;
+	var text;
+	var effectiveWidth = lineLabel ? this.textAreaWidth - 2 : this.textAreaWidth;
+	var me = this;
+
+	function outputText(text) {
+		sprites = me.graphics.textToSprites(adjustedText);
+			
+		if(center) {
+			sprites.center = center;
+		}
+		if(lineLabel) {
+			sprites.label = lineLabel;
+		}
+
+		me.lines.push(sprites);
 	}
-	if(lineLabel) {
-		sprites.label = lineLabel;
+
+	// Initialize to blank text
+	adjustedText = '';
+	text = '';
+
+	for(index = 0; index < splitLine.length; ++index) {
+
+		text = splitLine[index];
+
+		if(text.length > effectiveWidth) {
+			text = text.substring(0, effectiveWidth);
+		}
+
+		// Add a space, unless we're exactly at the limit
+		if(adjustedText.length > 0 && adjustedText.length + text.length < effectiveWidth) {
+			adjustedText += ' ';
+		}
+
+		// If we've reached our maximum width, add our sprite line
+		if(adjustedText.length > 0 && (adjustedText.length + text.length > effectiveWidth)) {
+			
+			outputText(adjustedText);
+
+			// Clear our text
+			adjustedText = '';
+
+		}
+
+		// Form our new adjusted text
+		adjustedText += text;
+
 	}
-	this.lines.push(sprites);
+
+	// Add any remaining characters
+	outputText(adjustedText);
+
+
 };
 
 /**
