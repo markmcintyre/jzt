@@ -285,6 +285,17 @@ jzt.things.Thing.prototype.equals = function(type, color) {
 };
 
 /**
+ * Displays a short, localizable message exactly once.
+ *
+ * @param messageKey A localization key for a message to display.
+ */
+jzt.things.Thing.prototype.oneTimeMessage = function(messageKey) {
+
+    this.board.game.oneTimeMessage(messageKey);
+
+};
+
+/**
  * Returns a new Thing instance with the same properties as this Thing.
  * This clone function works by serializing the current Thing and deserializing
  * the data as a new Thing, and should work for any serializable Thing.
@@ -718,6 +729,7 @@ jzt.things.Ammo.prototype.push = function(direction) {
  */
 jzt.things.Ammo.prototype.sendMessage = function(message) {
     if(message === 'TOUCH') {
+        this.oneTimeMessage('status.ammo');
         this.play('tcc#d');
         this.adjustCounter('ammo', 5);
         this.remove();
@@ -1916,6 +1928,8 @@ jzt.things.Forest.prototype.deserialize = function(data) {
 jzt.things.Forest.prototype.sendMessage = function(message) {
     if(message === 'TOUCH') {
 
+        this.oneTimeMessage('status.forest');
+
         this.play(this.constructor.noteCycle[this.constructor.noteIndex++]);
         if(this.constructor.noteIndex >= this.constructor.noteCycle.length) {
             this.constructor.noteIndex = 0;
@@ -1946,6 +1960,7 @@ jzt.things.Gem.serializationType = 'Gem';
  */
 jzt.things.Gem.prototype.sendMessage = function(message) {
     if(message === 'TOUCH') {
+        this.oneTimeMessage('status.gem');
         this.remove();
         this.adjustCounter('health', 1);
         this.adjustCounter('gems', 1);
@@ -3798,6 +3813,7 @@ jzt.things.Torch.prototype.getTorch = function() {
  */
 jzt.things.Torch.prototype.sendMessage = function(message) {
     if(message === 'TOUCH') {
+        this.oneTimeMessage('status.torch');
         this.play('tcase');
         this.adjustCounter('torches', 1);
         this.remove();

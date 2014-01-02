@@ -40,7 +40,12 @@ jzt.i18n.Messages.en = {
 		'noammo': 'You don\'t have any ammo.',
 		'hurt': 'Ouch!',
 		'notorches': 'You don\'t have any torches.',
-		'title': 'Press [P] to play.'
+		'title': 'Press [P] to play.',
+		'forest': 'A path is cleared through the forest.',
+		'gem': 'Gems give you health.',
+		'torch': 'Torches light up dark rooms.',
+		'ammo': 'Ammunition: 5 shots per container.',
+		'dark': 'Room is dark -- You need to light a torch.'
 	},
 	pause: {
 		'paused': 'Paused',
@@ -89,7 +94,12 @@ jzt.i18n.Messages.fr = {
 		'noammo': 'Vous n\'avez plus de munitions.',
 		'hurt': 'Aïe !',
 		'notorches': 'Vous n\'avez plus de torches.',
-		'title': 'Appuyez sur [P] pour jouer.'
+		'title': 'Appuyez sur [P] pour jouer.',
+		'forest': 'Vous frayez un chemin dans la fôret.',
+		'gem': 'Les bijoux augmentent vos PV.',
+		'torch': 'Les torches éclairent des pièces sombres.',
+		'ammo': 'Munitions: 5 bulles par unité.',
+		'dark': 'Pièce sombre -- Vous avez besoin d\'une torche!'
 	},
 	pause: {
 		'paused': 'Pause',

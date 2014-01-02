@@ -58,7 +58,6 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     this.context.webkitImageSmoothingEnabled = false;
     this.context.mozImageSmoothingEnabled = false;
 
-
     this.deserialize(data);
 
     this.resources.audio = new jzt.Audio();
@@ -126,6 +125,7 @@ jzt.Game.prototype.deserialize = function(data) {
     this.victoryBoard = data.victoryBoard;
     this.author = data.author;
     this.boards = {};
+    this.readMessages = {};
 
     data.savedGame = data.savedGame ? true : false;
     
@@ -286,9 +286,6 @@ jzt.Game.prototype.setState = function(state) {
         if(this.pauseStart) {
             this.player.onUnpause(Date.now() - this.pauseStart);
         }
-
-        // Clear any active display message
-        this.currentBoard.setDisplayMessage(undefined);
 
         // Reset our player display
         this.player.hidden = false;
@@ -479,6 +476,11 @@ jzt.Game.prototype.setBoard = function(board, playerPoint) {
         this.player.under = this.currentBoard.getTile(playerPoint);
     }
 
+    // If the board is dark, tell the player
+    if(this.currentBoard.dark) {
+        this.oneTimeMessage('status.dark');
+    }
+
     this.currentBoard.initializePlayer(this.player);
 
 };
@@ -618,6 +620,31 @@ jzt.Game.prototype.checkCounters = function() {
 
         // Assign our state to be GameOVer
         this.setState(jzt.GameState.GameOver);
+
+    }
+
+};
+
+/**
+ * Displays a short, localizable message exactly once.
+ *
+ * @param messageKey A localization key for a message to display.
+ */
+jzt.Game.prototype.oneTimeMessage = function(messageKey) {
+
+    var message;
+
+    // If we haven't already shown this message...
+    if(!this.readMessages.hasOwnProperty(messageKey)) {
+
+        // Remember that we've shown this message now.
+        this.readMessages[messageKey] = true;
+
+        // Retrieve our message
+        message = jzt.i18n.getMessage(messageKey);
+
+        // Display it.
+        this.currentBoard.setDisplayMessage(message);
 
     }
 
