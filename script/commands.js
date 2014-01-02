@@ -555,7 +555,7 @@ jzt.commands.Put.prototype.execute = function(owner) {
     var obstacle = owner.board.getTile(point);
 
     // Determine if there is free space, or if we can make some by pushing an obstacle
-    var isFreeSpace = obstacle ? owner.board.moveTile(point, point.add(direction)) : true;
+    var isFreeSpace = obstacle ? owner.board.moveTile(owner.point, point, false, true) : true;
 
     // If there is free space
     if(isFreeSpace) {
