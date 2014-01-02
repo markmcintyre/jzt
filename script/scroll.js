@@ -104,15 +104,24 @@ jzt.Scroll.prototype.addLine = function(line, center, lineLabel) {
 		if(center) {
 			sprites.center = center;
 		}
+
 		if(lineLabel) {
 			sprites.label = lineLabel;
 		}
 
 		me.lines.push(sprites);
+
+	}
+
+	// If we're a consecutive label, don't add a blank line
+	if(!(lineLabel && this.lines.length > 0 && (this.lines[this.lines.length-1].label))) {
+		if(this.lines.length > 0) {
+			me.lines.push([]);
+		}
 	}
 
 	// Initialize to blank text
-	adjustedText = '';
+	adjustedText = ' ';
 	text = '';
 
 	for(index = 0; index < splitLine.length; ++index) {
@@ -124,7 +133,7 @@ jzt.Scroll.prototype.addLine = function(line, center, lineLabel) {
 		}
 
 		// Add a space, unless we're exactly at the limit
-		if(adjustedText.length > 0 && adjustedText.length + text.length < effectiveWidth) {
+		if(adjustedText.length > 0 && adjustedText.length < effectiveWidth) {
 			adjustedText += ' ';
 		}
 
