@@ -45,7 +45,8 @@ jzt.i18n.Messages.en = {
 		'gem': 'Gems give you health.',
 		'torch': 'Torches light up dark rooms.',
 		'ammo': 'Ammunition: 5 shots per container.',
-		'dark': 'Room is dark -- You need to light a torch.'
+		'dark': 'Room is dark -- You need to light a torch.',
+		'breakable': 'This wall has several cracks.'
 	},
 	pause: {
 		'paused': 'Paused',
@@ -99,7 +100,8 @@ jzt.i18n.Messages.fr = {
 		'gem': 'Les bijoux augmentent vos PV.',
 		'torch': 'Les torches éclairent des pièces sombres.',
 		'ammo': 'Munitions: 5 bulles par unité.',
-		'dark': 'Pièce sombre -- Vous avez besoin d\'une torche!'
+		'dark': 'Pièce sombre -- Vous avez besoin d\'une torche!',
+		'breakable': 'Ce mur a plusieurs fissures.'
 	},
 	pause: {
 		'paused': 'Pause',

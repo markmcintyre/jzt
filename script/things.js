@@ -1090,6 +1090,9 @@ jzt.things.BreakableWall.prototype.sendMessage = function(message) {
         this.play('t-c');
         this.remove();
     }
+    else if(message === 'TOUCH') {
+        this.oneTimeMessage('status.breakable');
+    }
 };
 
 //--------------------------------------------------------------------------------
