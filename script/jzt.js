@@ -269,7 +269,7 @@ jzt.Game.prototype.setState = function(state) {
     else if(state === jzt.GameState.Playing) {
 
         // Forget if P was pressed
-        delete this.keyboard.cancelKey[this.keyboard.P];
+        this.keyboard.cancelKey(this.keyboard.P);
 
         // If we were previously on the title screen...
         if(this.state === jzt.GameState.Title) {

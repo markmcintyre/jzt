@@ -1429,7 +1429,14 @@ jzt.things.Centipede.prototype.linkSegments = function(leader) {
     this.follower = this.getAdjacentSegment();
 
     if(this.follower) {
+
+        if(this.head) {
+            // Choose a natural initial orientation
+            this.orientation = this.follower.point.directionTo(this.point);
+        }
+
         this.follower.linkSegments(this);
+
     }
 
 };
@@ -1465,9 +1472,12 @@ jzt.things.Centipede.prototype.reverse = function() {
  * Turns this Centipede into a head segment.
  */
 jzt.things.Centipede.prototype.becomeHead = function() {
+
     this.head = true;
     this.spriteIndex = 233;
+
     this.cycleCount = Math.floor(Math.random() * this.speed);
+
 };
 
 /**
@@ -1556,7 +1566,7 @@ jzt.things.Centipede.prototype.sendMessage = function(message) {
  */
 jzt.things.Centipede.prototype.deviate = function() {
 
-    if(this.deviance === 0) {
+    if(this.deviance <= 0) {
         return false;
     }
 
@@ -1571,6 +1581,10 @@ jzt.things.Centipede.prototype.deviate = function() {
  * probability based on this Centipede's intelligence property.
  */
 jzt.things.Centipede.prototype.seekPlayer = function() {
+
+    if(this.intelligence <= 0) {
+        return false;
+    }
 
     if(this.isPlayerAligned()) {
 
@@ -2565,7 +2579,6 @@ jzt.things.Player.prototype.useTorch = function() {
 jzt.things.Player.prototype.onUnpause = function(pauseDuration) {
     if(this.torch) {
         this.torchExpiry = this.torchExpiry + pauseDuration;
-
     }
 };
 

@@ -84,8 +84,8 @@ jzt.Editor.Thing = {
 	},
 	Centipede: {
 		head: {type: 'boolean', default: false, label: 'Head'},
-		deviance: {type: 'number', min: 1, max: 10, default: 0, label: 'Deviance'},
-		intelligence: {type: 'number', min: 1, max: 10, default: 0},
+		deviance: {type: 'number', min: 0, max: 10, default: 0, label: 'Deviance'},
+		intelligence: {type: 'number', min: 0, max: 10, default: 0},
 		color: {type: 'color', default: '*9', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
 	},
 	River: {

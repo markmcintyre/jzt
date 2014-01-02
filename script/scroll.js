@@ -121,7 +121,7 @@ jzt.Scroll.prototype.addLine = function(line, center, lineLabel) {
 	}
 
 	// Initialize to blank text
-	adjustedText = ' ';
+	adjustedText = lineLabel ? '' : ' ';
 	text = '';
 
 	for(index = 0; index < splitLine.length; ++index) {

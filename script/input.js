@@ -58,6 +58,7 @@ jzt.KeyboardInput.prototype.initialize = function() {
  * Cancels all tracked keyboard input.
  */
 jzt.KeyboardInput.prototype.cancelInput = function() {
+    this.pressed = {};
     this.pressedKeys = 0;
 };
 
@@ -68,7 +69,7 @@ jzt.KeyboardInput.prototype.cancelInput = function() {
  */
 jzt.KeyboardInput.prototype.cancelKey = function(keyCode) {
     delete this.pressed[keyCode];
-    if(--(this.pressedKeys) < 0) {
+    if(--this.pressedKeys < 0) {
         this.pressedKeys = 0;
     }
 };
@@ -150,7 +151,7 @@ jzt.KeyboardInput.prototype.onKeyDown = function(event) {
 jzt.KeyboardInput.prototype.onKeyUp = function(event) {
     if( this.capturableKeys.indexOf(event.keyCode) >= 0) {
         delete this.pressed[event.keyCode];
-        if(--(this.pressedKeys) < 0) {
+        if(--this.pressedKeys < 0) {
             this.pressedKeys = 0;
         }
         event.preventDefault();
