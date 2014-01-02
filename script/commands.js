@@ -551,21 +551,43 @@ jzt.commands.Put.prototype.execute = function(owner) {
     // Get the point to which to add our new thing
     var point = owner.point.add(direction);
 
-    // Get the tile in the way, if applicable
-    var obstacle = owner.board.getTile(point);
+    var obstacle;
+    var isFreeSpace;
 
-    // Determine if there is free space, or if we can make some by pushing an obstacle
-    var isFreeSpace = obstacle ? owner.board.moveTile(owner.point, point, false, true) : true;
+    // If our point is off the board, return immediately
+    if(owner.board.isOutside(point)) {
+        return;
+    }
 
-    // If there is free space
-    if(isFreeSpace) {
+    // If we're clearing a spot
+    if(!this.thing) {
 
-        // Create our new thing
-        data = {type: this.thing, color: jzt.colors.serialize(undefined, this.color)};
-        newThing = jzt.things.ThingFactory.deserialize(data, owner.board);
+        obstacle = owner.board.getTile(point);
 
-        owner.board.addThing(point, newThing);
+        if(!(obstacle instanceof jzt.things.Player)) {
+            owner.board.deleteTile(point);
+        }
+    }
 
+    // Otherwise, if we're putting a THING...
+    else {
+
+        // Get the tile in the way, if applicable
+        obstacle = owner.board.getTile(point);
+
+        // Determine if there is free space, or if we can make some by pushing an obstacle
+        isFreeSpace = obstacle ? owner.board.moveTile(owner.point, point, false, true) : true;
+
+        // If there is free space
+        if(isFreeSpace) {
+
+            // Create our new thing
+            data = {type: this.thing, color: jzt.colors.serialize(undefined, this.color)};
+            newThing = jzt.things.ThingFactory.deserialize(data, owner.board);
+
+            owner.board.addThing(point, newThing);
+
+        }
     }
 
 };

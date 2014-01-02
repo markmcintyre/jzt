@@ -163,8 +163,12 @@ jzt.Board.prototype.getScriptables = function(name) {
     var result = [];
 
     this.each(function(tile) {
-        if(tile && tile instanceof jzt.things.ScriptableThing && (tile.name && tile.name.toUpperCase() === name)) {
-            result.push(tile);
+        if(tile && tile instanceof jzt.things.ScriptableThing) {
+
+            if(!name || (tile.name && tile.name.toUpperCase() === name)) {
+                result.push(tile);
+            }
+
         }
     });
 
@@ -178,6 +182,9 @@ jzt.Board.prototype.getScriptables = function(name) {
  * @param A player instance to use on this board.
  */
 jzt.Board.prototype.initializePlayer = function(player) {
+
+    var scriptables;
+    var index;
 
     // Check if our player is outside our range
     if(this.isOutside(player.point)) {
@@ -194,6 +201,12 @@ jzt.Board.prototype.initializePlayer = function(player) {
     this.player.board = this;
     this.initializeTorch(this.player);
     this.focusPoint = this.player.point;
+
+    // Send ScriptableThings the 'enter' message
+    scriptables = this.getScriptables();
+    for(index = 0; index < scriptables.length; ++index) {
+        scriptables[index].sendMessage('ENTER');
+    }
 
 };
 

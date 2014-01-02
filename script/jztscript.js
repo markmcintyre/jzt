@@ -820,7 +820,10 @@ jztscript.parsers.PlayParser = function() {
             var command = new jzt.commands.Put();
 
             var thing = assembly.stack.pop().toUpperCase();
-            if(jzt.things.ThingFactory.isKnownThing(thing)) {
+            if(thing === 'EMPTY') {
+                command.thing = undefined;
+            }
+            else if(jzt.things.ThingFactory.isKnownThing(thing)) {
                 command.thing = thing;
             }
             else {
