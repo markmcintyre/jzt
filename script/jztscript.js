@@ -879,6 +879,26 @@ jztscript.parsers.ScrollParser = function() {
 };
 
 /*
+ * ScrollC Parser
+ *
+ * command = 'scrollc' String
+ */
+jztscript.parsers.ScrollCParser = function() {
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+    result.add(ns.discard(new ns.Literal('scrollc')));
+    result.add(new ns.String());
+    result.assembler = {
+        assemble: function(assembly) {
+            var command = new jzt.commands.ScrollC();
+            command.text = ns.processString(assembly.stack.pop());
+            assembly.target = command;
+        }
+    };
+    return result;
+};
+
+/*
  * Send Parser
  *
  * command = 'send' Word Word

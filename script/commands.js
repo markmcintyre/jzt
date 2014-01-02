@@ -628,6 +628,25 @@ jzt.commands.Scroll.prototype.execute = function(owner) {
 };
 
 /*
+ * ScrollC Command
+ */
+jzt.commands.ScrollC = function() {
+    this.text = undefined;
+    this.modifiesScroll = true;
+};
+
+jzt.commands.ScrollC.prototype.clone = function() {
+    var clone = new jzt.commands.ScrollC();
+    clone.text = this.text;
+    return clone;
+};
+
+jzt.commands.ScrollC.prototype.execute = function(owner) {
+    owner.scriptContext.addScrollContent(this.text, true);
+    return jzt.commands.CommandResult.CONTINUE;
+};
+
+/*
  * Send Command
  */
  jzt.commands.Send = function() {
