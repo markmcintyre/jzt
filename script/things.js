@@ -2054,14 +2054,26 @@ jzt.things.InvisibleWall.prototype.getSpriteIndex = function() {
  * @param board An owner Board for this Key.
  */
 jzt.things.Key = function(board) {
-    jzt.things.Thing.call(this, board);
+    jzt.things.UpdateableThing.call(this, board);
     this.spriteIndex = 12;
     this.background = undefined;
     this.foreground = jzt.colors.BrightBlue;
+    this.speed = 1;
 };
-jzt.things.Key.prototype = new jzt.things.Thing();
+jzt.things.Key.prototype = new jzt.things.UpdateableThing();
 jzt.things.Key.prototype.constructor = jzt.things.Key;
 jzt.things.Key.serializationType = 'Key';
+
+/**
+ * Performs a single tick operation for this Key.
+ */
+jzt.things.Key.prototype.doTick = function() {
+
+    if(this.under && this.under instanceof jzt.things.River) {
+        this.move(this.under.direction, true);
+    }
+
+};
 
 /**
  * Delivers a provided message to this Thing. If a TOUCH message is 

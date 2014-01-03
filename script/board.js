@@ -803,7 +803,7 @@ jzt.Board.prototype.canPlayerShoot = function(displayMessage) {
     if(displayMessage && this.maxPlayerBullets <= 0) {
         this.setDisplayMessage(jzt.i18n.getMessage('status.noshoot'));
     }
-    
+
     return this.playerBullets < this.maxPlayerBullets;
 
 };
