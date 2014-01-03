@@ -197,13 +197,15 @@ jzt.Game.prototype.setCounterValue = function(counter, value) {
         value = this.counters[maxCounter];
     }
 
-    // Values cannot be less than zero
-    if(value < 0) {
-        value = 0;
+    // If our value is less or equal to zero, remove the counter entirely
+    if(value <= 0) {
+        delete this.counters[counter];
     }
 
-    // Set our value
-    this.counters[counter] = value;
+    // Otherwise assign our counter value
+    else {
+        this.counters[counter] = value;
+    }
 
 };
 
@@ -616,7 +618,7 @@ jzt.Game.prototype.update = function() {
 jzt.Game.prototype.checkCounters = function() {
 
     // If our player is dead, and it's not already GameOver state
-    if(this.counters.health <= 0 && this.state !== jzt.GameState.GameOver) {
+    if(this.getCounterValue('health') <= 0 && this.state !== jzt.GameState.GameOver) {
 
         // Assign our state to be GameOVer
         this.setState(jzt.GameState.GameOver);

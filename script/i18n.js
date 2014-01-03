@@ -46,7 +46,8 @@ jzt.i18n.Messages.en = {
 		'torch': 'Torches light up dark rooms.',
 		'ammo': 'Ammunition: 5 shots per container.',
 		'dark': 'Room is dark -- You need to light a torch.',
-		'breakable': 'This wall has several cracks.'
+		'breakable': 'This wall has several cracks.',
+		'noshoot': 'You can\'t shoot here.'
 	},
 	pause: {
 		'paused': 'Paused',
@@ -101,7 +102,8 @@ jzt.i18n.Messages.fr = {
 		'torch': 'Les torches éclairent des pièces sombres.',
 		'ammo': 'Munitions: 5 bulles par unité.',
 		'dark': 'Pièce sombre -- Vous avez besoin d\'une torche!',
-		'breakable': 'Ce mur a plusieurs fissures.'
+		'breakable': 'Ce mur a plusieurs fissures.',
+		'noshoot': 'Vous ne pouvez pas tirer ici.'
 	},
 	pause: {
 		'paused': 'Pause',

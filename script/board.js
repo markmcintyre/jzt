@@ -29,6 +29,8 @@ jzt.Board = function(boardData, game) {
     this.customRenderSet = [];
     this.torches = [];
     this.focusPoint = new jzt.Point(0,0);
+    this.maxPlayerBullets = boardData.maxPlayerBullets !== undefined ? boardData.maxPlayerBullets : Infinity;
+    this.playerBullets = 0;
 
     this.north = boardData.north;
     this.east = boardData.east;
@@ -106,6 +108,10 @@ jzt.Board.prototype.serialize = function() {
     jzt.util.storeOption(result, 'eastOffset', this.eastOffset);
     jzt.util.storeOption(result, 'southOffset', this.southOffset);
     jzt.util.storeOption(result, 'westOffset', this.westOffset);
+
+    if(this.maxPlayerBullets !== Infinity) {
+        result.maxPlayerBullets = this.maxPlayerBullets;
+    }
 
     if(this.player) {
         result.playerX = this.player.point.x;
@@ -786,6 +792,23 @@ jzt.Board.prototype.isLit = function(point, thing) {
 };
     
 /**
+ * Returns whether or not another player bullet is permissable on the board
+ * after the most recent update.
+ *
+ * @param displayMessage Whether or not to display a message if no shooting is allowed, ever.
+ * @return true if another player bullet is allowed, false otherwise
+ */
+jzt.Board.prototype.canPlayerShoot = function(displayMessage) {
+
+    if(displayMessage && this.maxPlayerBullets <= 0) {
+        this.setDisplayMessage(jzt.i18n.getMessage('status.noshoot'));
+    }
+    
+    return this.playerBullets < this.maxPlayerBullets;
+
+};
+
+/**
  * Updates this Board instance by one tick in an execution cycle. This will also
  * update all UpdateableThings tracked by this Board.
  */
@@ -799,6 +822,9 @@ jzt.Board.prototype.update = function() {
 
     // Initialize our custom renderable list
     this.customRenderSet = [];
+
+    // Initialize our bullet count
+    this.playerBullets = 0;
 
     // If the board is dark, initialize our torches
     if(this.dark) {
@@ -818,6 +844,11 @@ jzt.Board.prototype.update = function() {
     this.each(function(tile) {
 
         if(tile) {
+
+            // If we got a player bullet, update our count
+            if(tile instanceof jzt.things.Bullet && tile.fromPlayer) {
+                me.playerBullets++;
+            }
 
             // If we got an updateable tile...
             if(tile instanceof jzt.things.UpdateableThing && ! (tile instanceof jzt.things.Player)) {

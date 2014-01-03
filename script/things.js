@@ -2451,6 +2451,12 @@ jzt.things.Player.prototype.move = function(direction) {
  * @param A Direction in which to shoot a player bullet.
  */
 jzt.things.Player.prototype.shoot = function(direction) {
+
+    // If we can't shoot on this board, return
+    if(this.board.canPlayerShoot(true) <= 0) {
+        return;
+    }
+
     if(this.getCounterValue('ammo') > 0) {
         this.adjustCounter('ammo', -1);
         jzt.things.ThingFactory.shoot(this.board, this.point.add(direction), direction, true);
