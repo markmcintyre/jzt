@@ -22,7 +22,7 @@ jzt.Editor = function(editorElement, configuration) {
 
 	var mockGame = {
     	resources: {},
-    	isDebugRendering: true,
+    	isEditor: true,
     	context: {
     		canvas: {
     			width: 1,

@@ -48,7 +48,8 @@ jzt.i18n.Messages.en = {
 		'dark': 'Room is dark -- You need to light a torch.',
 		'breakable': 'This wall has several cracks.',
 		'noshoot': 'You can\'t shoot here.',
-		'heart': 'Maximum health increased by 10!'
+		'heart': 'Maximum health increased by 10!',
+		'invisible': 'You are blocked by an invisible wall.'
 	},
 	pause: {
 		'paused': 'Paused',
@@ -105,7 +106,8 @@ jzt.i18n.Messages.fr = {
 		'dark': 'Pièce sombre -- Vous avez besoin d\'une torche!',
 		'breakable': 'Ce mur a plusieurs fissures.',
 		'noshoot': 'Il est interdit de tirer ici.',
-		'heart': 'PV max a augmenté par 10 !'
+		'heart': 'PV max a augmenté par 10 !',
+		'invisible': 'Vous êtes bloqué par un mur invisible.'
 	},
 	pause: {
 		'paused': 'Pause',

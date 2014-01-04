@@ -1892,7 +1892,7 @@ jzt.things.FakeWall.prototype.isSurrenderable = function() {
  * representation will be used.
  */
 jzt.things.FakeWall.prototype.getSpriteIndex = function() {
-    return this.board.game.isDebugRendering ? 176 : 178;
+    return this.board.game.isEditor ? 176 : 178;
 };
 
 //--------------------------------------------------------------------------------
@@ -2064,6 +2064,7 @@ jzt.things.InvisibleWall.prototype.sendMessage = function(message) {
         var replacement = new jzt.things.Wall();
         replacement.foreground = this.foreground;
         replacement.background = this.background;
+        this.oneTimeMessage('status.invisible');
         this.board.replaceTile(this.point, replacement);
         this.play('t--dc');
     }
@@ -2076,7 +2077,7 @@ jzt.things.InvisibleWall.prototype.sendMessage = function(message) {
  * @return A sprite index.
  */
 jzt.things.InvisibleWall.prototype.getSpriteIndex = function() {
-    return this.board.game.isDebugRendering ? 176 : 0;
+    return this.board.game.isEditor ? 176 : 0;
 };
 
 //--------------------------------------------------------------------------------
@@ -2194,7 +2195,7 @@ jzt.things.LineWall.lineMap = {
  */
 jzt.things.LineWall.prototype.getSpriteIndex = function() {
 
-    if(this.spriteIndex !== undefined && !this.board.game.isDebugRendering) {
+    if(this.spriteIndex !== undefined && !this.board.game.isEditor) {
         return this.spriteIndex;
     }
 
@@ -3313,7 +3314,7 @@ jzt.things.SpiderWeb.lineMap = {
  */
 jzt.things.SpiderWeb.prototype.getSpriteIndex = function() {
 
-    if(this.spriteIndex !== undefined && !this.board.game.isDebugRendering) {
+    if(this.spriteIndex !== undefined && !this.board.game.isEditor) {
         return this.spriteIndex;
     }
 

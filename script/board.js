@@ -208,10 +208,12 @@ jzt.Board.prototype.initializePlayer = function(player) {
     this.initializeTorch(this.player);
     this.focusPoint = this.player.point;
 
-    // Send ScriptableThings the 'enter' message
-    scriptables = this.getScriptables();
-    for(index = 0; index < scriptables.length; ++index) {
-        scriptables[index].sendMessage('ENTER');
+    // If we're not editing, send ScriptableThings the 'enter' message
+    if(!this.game.isEditor) {
+        scriptables = this.getScriptables();
+        for(index = 0; index < scriptables.length; ++index) {
+            scriptables[index].sendMessage('ENTER');
+        }
     }
 
 };
@@ -938,14 +940,14 @@ jzt.Board.prototype.render = function(c) {
     this.updateWindowPosition();
 
     // Draw our board background
-    c.fillStyle = !me.game.isDebugRendering && me.dark ? this.game.DARK_PATTERN : jzt.colors.Black.rgbValue;
+    c.fillStyle = !me.game.isEditor && me.dark ? this.game.DARK_PATTERN : jzt.colors.Black.rgbValue;
     c.fillRect(0, 0, canvasWidth, canvasHeight);
 
     // For each displayable tile...
     this.eachDisplayable( function(thing, point) {
 
         // If this board is dark, and we're not visible, skip this iteration
-        if(!me.game.isDebugRendering && me.dark && !me.isLit(point, thing)) {
+        if(!me.game.isEditor && me.dark && !me.isLit(point, thing)) {
             return;
         }
 
