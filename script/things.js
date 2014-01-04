@@ -2004,6 +2004,40 @@ jzt.things.Gem.prototype.push = function(direction) {
 
 //--------------------------------------------------------------------------------
 
+jzt.things.Heart = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.spriteIndex = 3;
+    this.foreground = jzt.colors.BrightRed;
+    this.background = undefined;
+};
+jzt.things.Heart.prototype = new jzt.things.Thing();
+jzt.things.Heart.prototype.constructor = jzt.things.Heart;
+jzt.things.Heart.serializationType = 'Heart';
+
+jzt.things.Heart.prototype.serialize = function() {
+    var result = jzt.things.Thing.prototype.serialize.call(this);
+    delete result.color;
+    return result;
+};
+
+jzt.things.Heart.prototype.deserialize = function(data) {
+    jzt.things.Thing.prototype.deserialize.call(this, data);
+    this.foreground = jzt.colors.BrightRed;
+    this.background = undefined;
+};
+
+jzt.things.Heart.prototype.sendMessage = function(message) {
+    if(message === 'TOUCH') {
+        this.remove();
+        this.play('-cegs3+c+c+c');
+        this.adjustCounter('health_max', 10);
+        this.adjustCounter('health', 10);
+        this.board.setDisplayMessage(jzt.i18n.getMessage('status.heart'));
+    }
+};
+
+//--------------------------------------------------------------------------------
+
 /*
  * InvisibleWall will appear invisible until it is touched, at which point it
  * becomes a regular Wall.
@@ -2374,7 +2408,7 @@ jzt.things.Player = function(board) {
     this.glow = true;
     
     this.TORCH_TTL = 60000; // One Minute
-    this.MAX_TORCH_STRENGTH = 5;
+    this.MAX_TORCH_STRENGTH = 4;
     
 };
 jzt.things.Player.prototype = new jzt.things.UpdateableThing();

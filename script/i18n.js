@@ -47,7 +47,8 @@ jzt.i18n.Messages.en = {
 		'ammo': 'Ammunition: 5 shots per container.',
 		'dark': 'Room is dark -- You need to light a torch.',
 		'breakable': 'This wall has several cracks.',
-		'noshoot': 'You can\'t shoot here.'
+		'noshoot': 'You can\'t shoot here.',
+		'heart': 'Maximum health increased by 10!'
 	},
 	pause: {
 		'paused': 'Paused',
@@ -103,7 +104,8 @@ jzt.i18n.Messages.fr = {
 		'ammo': 'Munitions: 5 bulles par unité.',
 		'dark': 'Pièce sombre -- Vous avez besoin d\'une torche!',
 		'breakable': 'Ce mur a plusieurs fissures.',
-		'noshoot': 'Vous ne pouvez pas tirer ici.'
+		'noshoot': 'Il est interdit de tirer ici.',
+		'heart': 'PV max a augmenté par 10 !'
 	},
 	pause: {
 		'paused': 'Pause',
