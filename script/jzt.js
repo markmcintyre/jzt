@@ -287,6 +287,7 @@ jzt.Game.prototype.setState = function(state) {
         // Calculate our pause duration and notify our player
         if(this.pauseStart) {
             this.player.onUnpause(Date.now() - this.pauseStart);
+            delete this.pauseStart;
         }
 
         // Reset our player display
@@ -297,7 +298,12 @@ jzt.Game.prototype.setState = function(state) {
 
     // If we are to start reading
     else if(state === jzt.GameState.Reading) {
+
+        // Remember our pause time
+        this.pauseStart = Date.now();
+
         this.scroll.open();
+
     }
 
     else if(state === jzt.GameState.GameOver) {
