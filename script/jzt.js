@@ -20,7 +20,8 @@ jzt.GameState = {
     GameOver: 2,
     Reading: 3,
     Title: 4,
-    Victory: 5
+    Victory: 5,
+    FileManagement: 6
 };
 
 /**
@@ -215,6 +216,7 @@ jzt.Game.prototype.setCounterValue = function(counter, value) {
  */
 jzt.Game.prototype.onGraphicsLoaded = function() {
     this.scroll = new jzt.Scroll(this);
+    this.fileManagement = new jzt.FileManagement(this);
     this.DARK_PATTERN = this.context.createPattern(this.resources.graphics.DARK_IMAGE, 'repeat');
     this.onLoadCallback();
 };
@@ -306,6 +308,17 @@ jzt.Game.prototype.setState = function(state) {
 
     }
 
+    // If we are to enter file management
+    else if(state === jzt.GameState.FileManagement) {
+
+        // Remember our pause time
+        this.pauseStart = Date.now();
+
+        this.fileManagement.open();
+
+    }
+
+    // If it's game over
     else if(state === jzt.GameState.GameOver) {
 
         // Stop all scheduled audio
@@ -319,6 +332,7 @@ jzt.Game.prototype.setState = function(state) {
         
     }
 
+    // If it's the title screen
     else if(state === jzt.GameState.Title) {
 
         if(this.titleBoard) {
@@ -334,6 +348,7 @@ jzt.Game.prototype.setState = function(state) {
 
     }
 
+    // If it's a victory
     else if(state === jzt.GameState.Victory) {
 
         if(this.victoryBoard) {
@@ -564,9 +579,15 @@ jzt.Game.prototype.update = function() {
         // Update our focus point
         this.currentBoard.focusPoint = this.player.point;
 
-        // Also check if the user wants to pause
+        // Check if the user wants to pause
         if(this.keyboard.isPressed(this.keyboard.P)) {
             this.setState(jzt.GameState.Paused);
+        }
+
+        // Check if the user wants to save
+        else if(this.keyboard.isPressed(this.keyboard.S)) {
+            this.fileManagement.dialogType = jzt.FileManagement.Type.SAVE;
+            this.setState(jzt.GameState.FileManagement);
         }
 
     }
@@ -583,9 +604,17 @@ jzt.Game.prototype.update = function() {
 
     }
 
+    // If we're reading...
     else if(this.state === jzt.GameState.Reading) {
 
         this.scroll.update();
+
+    }
+
+    // If it's file management...
+    else if(this.state === jzt.GameState.FileManagement) {
+
+        this.fileManagement.update();
 
     }
 
@@ -726,6 +755,11 @@ jzt.Game.prototype.draw = function() {
     // If we are reading, also render our scroll instance
     if(this.state === jzt.GameState.Reading) {
         this.scroll.render(this.context);
+    }
+
+    // If we're in file management, render our file management instance
+    if(this.state === jzt.GameState.FileManagement) {
+        this.fileManagement.render(this.context);
     }
             
 };

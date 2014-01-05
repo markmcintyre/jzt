@@ -471,7 +471,7 @@ jzt.SpriteGrid = function(width, height, graphics) {
 jzt.SpriteGrid.prototype.setTile = function(point, spriteIndex, foreground, background) {
 
     this.tiles[point.x + point.y * this.width] = {
-        sprite: this.graphics.getSprite(spriteIndex),
+        sprite: spriteIndex ? this.graphics.getSprite(spriteIndex) : undefined,
         foreground: foreground,
         background: background
     };
@@ -530,7 +530,17 @@ jzt.SpriteGrid.prototype.draw = function(context, point) {
         for(spritePoint.y = 0; spritePoint.y < this.height; ++spritePoint.y) {
             tile = this.getTile(spritePoint);
             if(tile) {
-                tile.sprite.draw(context, spritePoint.add(point), tile.foreground, tile.background);
+
+                // If we have a sprite defined...
+                if(tile.sprite) {
+                    tile.sprite.draw(context, spritePoint.add(point), tile.foreground, tile.background);
+                }
+
+                // If we only have a color defined...
+                else {
+                    this.graphics.fillTile(context, spritePoint.add(point), tile.background);
+                }
+
             }
         }
     }

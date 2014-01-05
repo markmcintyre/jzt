@@ -59,6 +59,12 @@ jzt.i18n.Messages.en = {
 		'torches': '  Torches:',
 		'score': '    Score:',
 		'keys': '     Keys:'
+	},
+	file: {
+		'new': 'Empty Slot',
+		'saved': 'Saved Game',
+		'save': 'Save Game',
+		'load': 'Restore Game'
 	}
 
 };
@@ -117,6 +123,12 @@ jzt.i18n.Messages.fr = {
 		'torches': '  Torches:',
 		'score': '    Score:',
 		'keys': '     Clés:'
+	},
+	file: {
+		'new': 'Espace Vide',
+		'saved': 'Jeux Sauvegardé',
+		'save': 'Sauvegarder',
+		'load': 'Ouvrir'
 	}
 
 };
@@ -132,7 +144,7 @@ jzt.i18n.getMessage = function(key) {
 	}
 
 	if(result === undefined) {
-		return undefined;
+		return key;
 	}
 	
 	for(argumentIndex = 1; argumentIndex < arguments.length; ++argumentIndex) {

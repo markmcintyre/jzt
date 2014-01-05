@@ -26,12 +26,13 @@ jzt.KeyboardInput = function() {
     this.ESCAPE = 27;
     this.T = 84;
     this.P = 80;
+    this.S = 83;
     this.BACKSPACE = 8;
 
     this.pressedKeys = 0;
 
     this.pressed = {};
-    this.capturableKeys = [this.LEFT, this.UP, this.RIGHT, this.DOWN, this.SHIFT, this.SPACE, this.T, this.P, this.ENTER, this.ESCAPE, this.BACKSPACE];
+    this.capturableKeys = [this.LEFT, this.UP, this.RIGHT, this.DOWN, this.SHIFT, this.SPACE, this.T, this.P, this.S, this.ENTER, this.ESCAPE, this.BACKSPACE];
     
 };
 
