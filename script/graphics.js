@@ -479,6 +479,13 @@ jzt.SpriteGrid.prototype.setTile = function(point, spriteIndex, foreground, back
 };
 
 /**
+ * Clears this SpriteGrid's tiles.
+ */
+jzt.SpriteGrid.prototype.clear = function() {
+    this.tiles = [];
+};
+
+/**
  * Adds text as sprites to this SpriteGrid.
  *
  * @param point a Point to which to add text

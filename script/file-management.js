@@ -90,6 +90,7 @@ jzt.FileManagement.prototype.open = function(dialogType) {
 	}
 
 	// Initalize our dialog title and sprite grid
+	this.popup.redraw();
 	this.initializeTitle();
 	this.initializeSlots();
 
@@ -114,8 +115,8 @@ jzt.FileManagement.prototype.update = function() {
 		this.eventScheduler.scheduleEvent(k.isPressed(k.ENTER), jzt.FileManagement.Action.Select);
 	}
 
-	else if(k.isPressed(k.DELETE)) {
-		this.eventScheduler.scheduleEvent(k.isPressed(k.DELETE), jztFileManagement.Action.Delete);
+	else if(k.isPressed(k.DELETE) || k.isPressed(k.BACKSPACE)) {
+		this.eventScheduler.scheduleEvent(k.isPressed(k.DELETE), jzt.FileManagement.Action.Delete);
 	}
 
 	// If Escape was pressed, close the scroll
@@ -187,7 +188,7 @@ jzt.FileManagement.prototype.doTick = function() {
 
 			// Otherwise create a new id
 			else {
-				this.saveFile('save-' + this.files.length, this.game);
+				this.saveFile('save-' + Date.now(), this.game);
 			}
 
 		}
@@ -209,8 +210,15 @@ jzt.FileManagement.prototype.doTick = function() {
 
 	}
 
+	// If we're deleting a game
 	else if(event === jzt.FileManagement.Action.Delete) {
-		console.log('DELETE');
+
+		file = this.files[this.selectedIndex];
+
+		if(file && file.id) {
+			this.deleteFile(file.id);
+		}
+
 	}
 
 	// If we're exiting
@@ -221,11 +229,16 @@ jzt.FileManagement.prototype.doTick = function() {
 
 };
 
-jzt.FileManagement.prototype.pruneIndex = function(saveIndex) {
+jzt.FileManagement.prototype.pruneIndex = function() {
 
 	var index;
 	var file;
 	var saveId;
+	var saveIndex;
+	var changed = false;
+
+	saveIndex = localStorage['saveIndex'];
+	saveIndex = saveIndex ? JSON.parse(saveIndex) : [];
 
 	// For each entry in the index...
 	for(index = saveIndex.length - 1; index >= 0; --index) {
@@ -237,9 +250,15 @@ jzt.FileManagement.prototype.pruneIndex = function(saveIndex) {
 		// If there is no corresponding or id, remove it from the index
 		if(!saveId || !localStorage.hasOwnProperty(saveId)) {
 			saveIndex.splice(index, 1);
+			changed = true;
 		}
 
 
+	}
+
+	// Recommit our index if there were changes
+	if(changed) {
+		localStorage['saveIndex'] = JSON.stringify(saveIndex);
 	}
 
 };
@@ -265,6 +284,21 @@ jzt.FileManagement.prototype.addToIndex = function(saveIndex, newFile) {
 
 	// Push our new file to the index 
 	saveIndex.push(newFile);
+
+};
+
+jzt.FileManagement.prototype.deleteFile = function(saveId) {
+
+	// If we have a game with the right ID, delete it...
+	if(localStorage.hasOwnProperty(saveId)) {
+
+		delete localStorage[saveId];
+		this.pruneIndex();
+
+		this.open();
+
+	}
+
 
 };
 

@@ -62,12 +62,17 @@ jzt.ui.Popup.prototype.render = function(c) {
 
 };
 
+jzt.ui.Popup.prototype.redraw = function() {
+	this.spriteGrid.clear();
+	this.createBorder(this.spriteGrid);
+};
+
 jzt.ui.Popup.prototype.setColor = function(background, foreground, scrollbarBackground, scrollbarForeground) {
 	this.background = background;
 	this.foreground = foreground;
 	this.scrollbarBackground = scrollbarBackground ? scrollbarBackground : background;
 	this.scrollbarForeground = scrollbarForeground ? scrollbarForeground : foreground;
-	this.createBorder(this.spriteGrid);
+	this.redraw();
 };
 
 jzt.ui.Popup.prototype.setScrollBar = function(index, maximumIndex, visibleCount) {
