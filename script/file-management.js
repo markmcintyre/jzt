@@ -268,6 +268,25 @@ jzt.FileManagement.prototype.addToIndex = function(saveIndex, newFile) {
 
 };
 
+jzt.FileManagement.prototype.loadFile = function(saveId, game) {
+
+	var data;
+
+	// If our save ID exists...
+	if(localStorage.hasOwnProperty(saveId)) {
+
+		// Grab our serialized game
+		data = localStorage[saveId];
+		data = LZString.decompressFromUTF16(data);
+		data = JSON.parse(data);
+
+		game.deserialize(data);
+
+	}
+
+
+};
+
 jzt.FileManagement.prototype.saveFile = function(saveId, game) {
 
 	var saveIndex;

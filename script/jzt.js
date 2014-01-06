@@ -590,6 +590,12 @@ jzt.Game.prototype.update = function() {
             this.setState(jzt.GameState.FileManagement);
         }
 
+        // Check if the user wants to restore
+        else if(this.keyboard.isPressed(this.keyboard.R)) {
+            this.fileManagement.dialogType = jzt.FileManagement.Type.OPEN;
+            this.setState(jzt.GameState.FileManagement);
+        }
+
     }
 
     // If we're paused...
