@@ -40,208 +40,56 @@ jzt.FileManagement.Type = {
 	OPEN: 2
 }
 
-jzt.FileManagement.prototype.open = function() {
+/**
+ * Action is an enumerated type representing a performable action for
+ * this FileManagement.
+ */
+jzt.FileManagement.Action = {
+	Up: 0,
+	Down: 1,
+	Select: 2,
+	Delete: 3,
+	Exit: 4
+}
 
-	if(!this.files) {
-		this.files = []
+jzt.FileManagement.prototype.open = function(dialogType) {
+
+	// If we're provided a dialog type, set it here
+	if(dialogType) {
+		this.dialogType = dialogType;
 	}
 
-	this.files = [
-		{
-			title: 'Village of JZT',
-			board: 'Board 1',
-			timestamp: 1388944186478,
-			id: 'savegame00'
-	    },
-	    {
-	    	title: 'Village of JZT',
-	    	board: 'Board 2',
-	    	timestamp: 1388944186478,
-	    	id: 'savegame00'
-	    },
-	    {
-			title: 'Village of JZT',
-			board: 'Board 3',
-			timestamp: 1388944186478,
-			id: 'savegame00'
-	    },
-	    {
-	    	title: 'Village of JZT',
-	    	board: 'Board 4',
-	    	timestamp: 1388944186478,
-	    	id: 'savegame00'
-	    },
-	    {
-			title: 'Village of JZT',
-			board: 'Board 5',
-			timestamp: 1388944186478,
-			id: 'savegame00'
-	    },
-	    {
-	    	title: 'Village of JZT',
-	    	board: 'Board 6',
-	    	timestamp: 1388944186478,
-	    	id: 'savegame00'
-	    },
-	     {
-			title: 'Village of JZT',
-			board: 'Board 7',
-			timestamp: 1388944186478,
-			id: 'savegame00'
-	    },
-	    {
-	    	title: 'Village of JZT',
-	    	board: 'Board 8',
-	    	timestamp: 1388944186478,
-	    	id: 'savegame00'
-	    },{
-			title: 'Village of JZT',
-			board: 'Board 1',
-			timestamp: 1388944186478,
-			id: 'savegame00'
-	    },
-	    {
-	    	title: 'Village of JZT',
-	    	board: 'Board 2',
-	    	timestamp: 1388944186478,
-	    	id: 'savegame00'
-	    },
-	    {
-			title: 'Village of JZT',
-			board: 'Board 3',
-			timestamp: 1388944186478,
-			id: 'savegame00'
-	    },
-	    {
-	    	title: 'Village of JZT',
-	    	board: 'Board 4',
-	    	timestamp: 1388944186478,
-	    	id: 'savegame00'
-	    },
-	    {
-			title: 'Village of JZT',
-			board: 'Board 5',
-			timestamp: 1388944186478,
-			id: 'savegame00'
-	    },
-	    {
-	    	title: 'Village of JZT',
-	    	board: 'Board 6',
-	    	timestamp: 1388944186478,
-	    	id: 'savegame00'
-	    },
-	     {
-			title: 'Village of JZT',
-			board: 'Board 7',
-			timestamp: 1388944186478,
-			id: 'savegame00'
-	    },
-	    {
-	    	title: 'Village of JZT',
-	    	board: 'Board 8',
-	    	timestamp: 1388944186478,
-	    	id: 'savegame00'
-	    },{
-			title: 'Village of JZT',
-			board: 'Board 1',
-			timestamp: 1388944186478,
-			id: 'savegame00'
-	    },
-	    {
-	    	title: 'Village of JZT',
-	    	board: 'Board 2',
-	    	timestamp: 1388944186478,
-	    	id: 'savegame00'
-	    },
-	    {
-			title: 'Village of JZT',
-			board: 'Board 3',
-			timestamp: 1388944186478,
-			id: 'savegame00'
-	    },
-	    {
-	    	title: 'Village of JZT',
-	    	board: 'Board 4',
-	    	timestamp: 1388944186478,
-	    	id: 'savegame00'
-	    },
-	    {
-			title: 'Village of JZT',
-			board: 'Board 5',
-			timestamp: 1388944186478,
-			id: 'savegame00'
-	    },
-	    {
-	    	title: 'Village of JZT',
-	    	board: 'Board 6',
-	    	timestamp: 1388944186478,
-	    	id: 'savegame00'
-	    },
-	     {
-			title: 'Village of JZT',
-			board: 'Board 7',
-			timestamp: 1388944186478,
-			id: 'savegame00'
-	    },
-	    {
-	    	title: 'Village of JZT',
-	    	board: 'Board 8',
-	    	timestamp: 1388944186478,
-	    	id: 'savegame00'
-	    },{
-			title: 'Village of JZT',
-			board: 'Board 1',
-			timestamp: 1388944186478,
-			id: 'savegame00'
-	    },
-	    {
-	    	title: 'Village of JZT',
-	    	board: 'Board 2',
-	    	timestamp: 1388944186478,
-	    	id: 'savegame00'
-	    },
-	    {
-			title: 'Village of JZT',
-			board: 'Board 3',
-			timestamp: 1388944186478,
-			id: 'savegame00'
-	    },
-	    {
-	    	title: 'Village of JZT',
-	    	board: 'Board 4',
-	    	timestamp: 1388944186478,
-	    	id: 'savegame00'
-	    },
-	    {
-			title: 'Village of JZT',
-			board: 'Board 5',
-			timestamp: 1388944186478,
-			id: 'savegame00'
-	    },
-	    {
-	    	title: 'Village of JZT',
-	    	board: 'Board 6',
-	    	timestamp: 1388944186478,
-	    	id: 'savegame00'
-	    },
-	     {
-			title: 'Village of JZT',
-			board: 'Board 7',
-			timestamp: 1388944186478,
-			id: 'savegame00'
-	    },
-	    {
-	    	title: 'Village of JZT',
-	    	board: 'Board 8',
-	    	timestamp: 1388944186478,
-	    	id: 'savegame00'
-	    }
-	];
+	// Re-initialize our index and scrolling offset
+	this.selectedIndex = 0;
+	this.offset = 0;
 
-	if(this.files[0] !== undefined) {
-		this.files.splice(0, 0, undefined);
+	// Load our save index from local storage
+	this.files = localStorage.saveIndex;
+
+	// If we've got an index...
+	if(this.files) {
+
+		// Parse it and display the most recent first
+		this.files = JSON.parse(this.files);
+		this.files.reverse();
+
+	}
+	else {
+		this.files = [];
 	}
 
+	// If we're saving...
+	if(this.dialogType === jzt.FileManagement.Type.SAVE) {
+
+		// Make sure our first element is an empty save slot
+		if(this.files.length <= 0 || this.files[0] !== undefined) {
+			this.files.splice(0, 0, undefined);
+		}
+
+
+	}
+
+	// Initalize our dialog title and sprite grid
 	this.initializeTitle();
 	this.initializeSlots();
 
@@ -253,22 +101,26 @@ jzt.FileManagement.prototype.update = function() {
 
 	// If the up key is pressed, scroll up one block
 	if(k.isPressed(k.UP)) {
-		this.eventScheduler.scheduleEvent(k.isPressed(k.UP), jzt.Scroll.ScrollAction.Up);
+		this.eventScheduler.scheduleEvent(k.isPressed(k.UP), jzt.FileManagement.Action.Up);
 	}
 
 	// If the down key is pressed, scroll down one block
 	else if(k.isPressed(k.DOWN)) {
-		this.eventScheduler.scheduleEvent(k.isPressed(k.DOWN), jzt.Scroll.ScrollAction.Down);
+		this.eventScheduler.scheduleEvent(k.isPressed(k.DOWN), jzt.FileManagement.Action.Down);
 	}
 
 	// If Enter is pressed...
 	else if(k.isPressed(k.ENTER) || k.isPressed(k.SPACE)) {
-		this.eventScheduler.scheduleEvent(k.isPressed(k.ENTER), jzt.Scroll.ScrollAction.Select);
+		this.eventScheduler.scheduleEvent(k.isPressed(k.ENTER), jzt.FileManagement.Action.Select);
+	}
+
+	else if(k.isPressed(k.DELETE)) {
+		this.eventScheduler.scheduleEvent(k.isPressed(k.DELETE), jztFileManagement.Action.Delete);
 	}
 
 	// If Escape was pressed, close the scroll
 	else if(k.isPressed(k.ESCAPE)) {
-		this.eventScheduler.scheduleEvent(k.isPressed(k.ESCAPE), jzt.Scroll.ScrollAction.Exit);
+		this.eventScheduler.scheduleEvent(k.isPressed(k.ESCAPE), jzt.FileManagement.Action.Exit);
 	}
 
 	// If nothing was currently down, cancel any previously scheduled event
@@ -287,8 +139,14 @@ jzt.FileManagement.prototype.update = function() {
 jzt.FileManagement.prototype.doTick = function() {
 
 	var event = this.eventScheduler.takeEvent();
+	var file;
+	var index;
+	var saves;
+	var id;
+	var game;
 
-	if(event === jzt.Scroll.ScrollAction.Up) {
+	// If we're scrolling up...
+	if(event === jzt.FileManagement.Action.Up) {
 		if(--this.selectedIndex < 0) {
 			this.selectedIndex = 0;
 		}
@@ -298,7 +156,9 @@ jzt.FileManagement.prototype.doTick = function() {
 
 		this.initializeSlots();
 	}
-	else if(event === jzt.Scroll.ScrollAction.Down) {
+
+	// If we're scrolling down...
+	else if(event === jzt.FileManagement.Action.Down) {
 		if(++this.selectedIndex >= this.files.length - 1) {
 			this.selectedIndex = this.files.length - 1;
 		}
@@ -307,10 +167,140 @@ jzt.FileManagement.prototype.doTick = function() {
 		}
 		this.initializeSlots();
 	}
-	else if(event === jzt.Scroll.ScrollAction.Exit) {
+
+	// If we're selecting an element
+	else if(event === jzt.FileManagement.Action.Select) {
+		
+		// If we are saving...
+		if(this.dialogType === jzt.FileManagement.Type.SAVE) {
+
+			// Grab our existing file (if applicable)
+			file = this.files[this.selectedIndex];
+
+			// If there is already a file, use it's id
+			if(file && file.id) {
+
+				// TODO: Confirm overwrite
+				this.saveFile(file.id, this.game);
+
+			}
+
+			// Otherwise create a new id
+			else {
+				this.saveFile('save-' + this.files.length, this.game);
+			}
+
+		}
+
+		// If we are opening...
+		if(this.dialogType === jzt.FileManagement.Type.OPEN) {
+
+			file = this.files[this.selectedIndex];
+
+			if(file && file.id) {
+				this.loadFile(file.id, this.game);
+			}
+
+		}
+
+		// Go back to playing!
+		this.game.setState(jzt.GameState.Playing);
+
+
+	}
+
+	else if(event === jzt.FileManagement.Action.Delete) {
+		console.log('DELETE');
+	}
+
+	// If we're exiting
+	else if(event === jzt.FileManagement.Action.Exit) {
 		this.game.setState(jzt.GameState.Playing);
 	}
 
+
+};
+
+jzt.FileManagement.prototype.pruneIndex = function(saveIndex) {
+
+	var index;
+	var file;
+	var saveId;
+
+	// For each entry in the index...
+	for(index = saveIndex.length - 1; index >= 0; --index) {
+
+		// Grab our file and its id
+		file = saveIndex[index];
+		saveId = file.id;
+
+		// If there is no corresponding or id, remove it from the index
+		if(!saveId || !localStorage.hasOwnProperty(saveId)) {
+			saveIndex.splice(index, 1);
+		}
+
+
+	}
+
+};
+
+jzt.FileManagement.prototype.addToIndex = function(saveIndex, newFile) {
+
+	var index;
+	var file;
+	var saveId;
+
+	// For each entry in the index...
+	for(index = saveIndex.length - 1; index >= 0; --index) {
+
+		// Grab our file
+		file = saveIndex[index];
+
+		// If the ID matches, remove the old copy
+		if(file.id === newFile.id) {
+			saveIndex.splice(index, 1);
+		}
+
+	}
+
+	// Push our new file to the index 
+	saveIndex.push(newFile);
+
+};
+
+jzt.FileManagement.prototype.saveFile = function(saveId, game) {
+
+	var saveIndex;
+	var saveGame;
+	var file;
+	var game;
+
+	// Grab our index from local storage, if it exists
+	saveIndex = localStorage['saveIndex'];
+	saveIndex = saveIndex ? JSON.parse(saveIndex) : [];
+
+	// Create a file entry for our index
+	file = {
+		title: this.game.name,
+		board: this.game.currentBoard.name,
+		timestamp: Date.now(),
+		id: saveId
+	};
+
+	// Prepare the game data
+	game = this.game.serialize();
+	game = JSON.stringify(game);
+	game = LZString.compressToUTF16(game);
+
+	// Store our index entry
+	this.addToIndex(saveIndex, file);
+
+	// Save back to local storage
+	localStorage['saveIndex'] = JSON.stringify(saveIndex);
+
+	// Store our game
+	localStorage[saveId] = game;
+	
 
 };
 
