@@ -939,9 +939,19 @@ jzt.Board.prototype.render = function(c) {
     // Update our window
     this.updateWindowPosition();
 
+    // Draw our border, if applicable
+    if(this.windowOrigin.x < 0 || this.windowOrigin.y < 0) {
+        c.fillStyle = jzt.colors.Grey.rgbValue;
+        c.fillRect(0, 0, canvasWidth, canvasHeight);
+    }
+
     // Draw our board background
     c.fillStyle = !me.game.isEditor && me.dark ? this.game.DARK_PATTERN : jzt.colors.Black.rgbValue;
-    c.fillRect(0, 0, canvasWidth, canvasHeight);
+    var startX = Math.max(0 - this.windowOrigin.x * this.game.resources.graphics.TILE_SIZE.x, 0);
+    var startY = Math.max(0 - this.windowOrigin.y * this.game.resources.graphics.TILE_SIZE.y, 0);
+    var endX = Math.min(this.width * this.game.resources.graphics.TILE_SIZE.x, this.windowSize.x * this.game.resources.graphics.TILE_SIZE.x);
+    var endY = Math.min(this.height * this.game.resources.graphics.TILE_SIZE.y, this.windowSize.y * this.game.resources.graphics.TILE_SIZE.y);
+    c.fillRect(startX, startY, endX, endY);
 
     // For each displayable tile...
     this.eachDisplayable( function(thing, point) {

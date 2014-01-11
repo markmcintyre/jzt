@@ -54,6 +54,21 @@ jzt.Point.prototype.subtract = function(other) {
 };
 
 /**
+ * Returns whether or not this point is directly adjacent to a provided point.
+ *
+ * @param other Another point to test for adjacency
+ * @return true if a provided point is adjacent, false otherwise
+ */
+jzt.Point.prototype.adjacent = function(other) {
+
+    var xDeviance = Math.abs(this.x - other.x);
+    var yDeviance = Math.abs(this.y - other.y);
+
+    return !(xDeviance > 1 || yDeviance > 1);
+
+};
+
+/**
  * Retrieves whether or not a provided point is aligned with this one, within a given
  * spread threshold.
  *

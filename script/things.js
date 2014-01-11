@@ -1122,7 +1122,7 @@ jzt.things.Bullet.serializationType = 'Bullet';
 jzt.things.Bullet.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this) || {};
     delete result.color;
-    result.direction = this.direction;
+    result.direction = jzt.Direction.getShortName(this.direction);
     if(this.fromPlayer) {
         result.fromPlayer = true;
     }
@@ -1139,7 +1139,7 @@ jzt.things.Bullet.prototype.serialize = function() {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
     this.background = undefined;
     this.foreground = jzt.colors.BrightWhite;
-    this.direction = data.direction;
+    this.direction = jzt.Direction.fromName(data.direction);
     if(data.fromPlayer) {
         this.fromPlayer = data.fromPlayer;
     }
@@ -1325,6 +1325,9 @@ jzt.things.Centipede.prototype.serialize = function() {
     result.head = this.head;
     result.deviance = this.deviance;
     result.intelligence = this.intelligence;
+    if(this.orientation) {
+        result.orientation = jzt.Direction.getShortName(this.orientation);
+    }
     if(this.follower) {
         result.nextSegment = jzt.Direction.getShortName(this.point.directionTo(this.follower.point));
     }
@@ -1342,6 +1345,9 @@ jzt.things.Centipede.prototype.deserialize = function(data) {
     this.head = data.head;
     this.intelligence = data.intelligence;
     this.deviance = data.deviance;
+    if(data.orientation) {
+        this.orientation = jzt.Direction.fromName(data.orientation);
+    }
     if(data.nextSegment) {
         this.nextSegment = jzt.Direction.fromName(data.nextSegment);
     }
@@ -1372,7 +1378,7 @@ jzt.things.Centipede.prototype.getAdjacentSegment = function() {
      * @return true if a candidate is an unlinked, non-head Centipede
      */
     function isUnlinkedSegment(candidate) {
-        return candidate && candidate instanceof jzt.things.Centipede && !candidate.linked && !candidate.head;
+        return candidate && (candidate instanceof jzt.things.Centipede) && !candidate.linked && !candidate.nextSegment && !candidate.head;
     }
 
     var result;
@@ -1380,8 +1386,13 @@ jzt.things.Centipede.prototype.getAdjacentSegment = function() {
     // If a next segment direction was explicitly defined...
     if(this.nextSegment) {
         result = this.board.getTile(this.point.add(this.nextSegment));
-        this.nextSegment = undefined;
-        return result;
+        delete this.nextSegment;
+
+        // Sanity check before returning our result
+        if((result instanceof jzt.things.Centipede) && !result.head) {
+            return result;
+        }
+
     }
 
     // Try North
@@ -1494,7 +1505,7 @@ jzt.things.Centipede.prototype.becomeHead = function() {
  */
 jzt.things.Centipede.prototype.move = function(direction) {
 
-    var myPlace = this.point;
+    var myPlace = this.point.clone();
 
     // If we're a head, check to see if we're attacking the player
     if(this.head && this.isPlayerAdjacent(direction)) {
