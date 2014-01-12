@@ -49,7 +49,8 @@ jzt.i18n.Messages.en = {
 		'breakable': 'This wall has several cracks.',
 		'noshoot': 'You can\'t shoot here.',
 		'heart': 'Maximum health increased by 10!',
-		'invisible': 'You are blocked by an invisible wall.'
+		'invisible': 'You are blocked by an invisible wall.',
+		'notdark': 'You don\'t need a torch here.'
 	},
 	pause: {
 		'paused': 'Paused',
@@ -113,7 +114,8 @@ jzt.i18n.Messages.fr = {
 		'breakable': 'Ce mur a plusieurs fissures.',
 		'noshoot': 'Il est interdit de tirer ici.',
 		'heart': 'PV max a augmenté par 10 !',
-		'invisible': 'Vous êtes bloqué par un mur invisible.'
+		'invisible': 'Vous êtes bloqué par un mur invisible.',
+		'notdark': 'Vous n\'avez pas besoin d\'une torche ici.'
 	},
 	pause: {
 		'paused': 'Pause',

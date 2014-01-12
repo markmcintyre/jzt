@@ -602,7 +602,7 @@ jzt.things.ScriptableThing.prototype.walk = function() {
         if(!this.move(this.walkDirection)) {
             this.sendMessage('THUD');
         }
-        
+
     }
 };
 
@@ -2620,6 +2620,12 @@ jzt.things.Player.prototype.useTorch = function() {
 
     // If the player has torches available...
     if(this.game.getCounterValue('torches') > 0) {
+
+        // If the room isn't dark, let the player keep the torch
+        if(!this.board.dark) {
+            this.board.setDisplayMessage(jzt.i18n.getMessage('status.notdark'));
+            return;
+        }
 
         // Decrease our torch count
         this.game.adjustCounter('torches', -1);
