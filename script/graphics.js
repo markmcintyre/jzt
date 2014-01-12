@@ -21,6 +21,8 @@ var colorIndex;
  */
 jzt.Graphics = function(onLoadCallback) {
   
+    var me = this;
+
     this.TILE_SIZE = new jzt.Point(16, 32);
     this.SPRITE_SIZE = new jzt.Point(8, 16);
 
@@ -38,44 +40,52 @@ jzt.Graphics = function(onLoadCallback) {
     this.sprites = [];
     this.spriteSource = new Image();
     this.spriteSource.src = this.SPRITE_DATA;
-    this.colorSpriteSource = undefined;
+    this.colorSpriteSources = [];
     this.onLoadCallback = onLoadCallback;
     
-    // Our anonymouse function is not bound to this Graphics instance
-    var me = this;
-
     // An anonymous function to finish initialization once our sprite source has been fully loaded
     this.spriteSource.onload = function() {
         
-        // Create a buffer to store our sprite graphics
-        var buffer = document.createElement('canvas');
-
-        // We will create a version of our sprite for each foreground color
-        buffer.width = this.width;
-        buffer.height = this.height * jzt.colors.Colors.length;
-        me.colorSpriteSource = buffer;
-        
-        // Grab our 2D context
-        var context = buffer.getContext('2d');
-
-        // Each pixel has an ARGB value
-        var pixelCount = this.width * this.height * 4;
+        var buffer;
+        var context;
+        var pixelCount;
+        var color;
+        var imageData;
+        var rgba;
+        var pixel;
+        var tilesPerRow;
+        var tilesPerColumn;
+        var row;
+        var column;
+        var spritePoint;
+        var sprite;
         
         // Create offscreen canvases
-        for(var color in jzt.colors.Colors) {
+        for(color in jzt.colors.Colors) {
             if(jzt.colors.Colors.hasOwnProperty(color)) {
+
+                // Create a buffer to store our sprite graphics
+                buffer = document.createElement('canvas');
+                buffer.width = this.width;
+                buffer.height = this.height;
+
+                // We will create a version of our sprite for each foreground color
+                me.colorSpriteSources[color] = buffer;
+                
+                // Grab our 2D context
+                context = buffer.getContext('2d');
+
+                // Each pixel has an ARGB value
+                pixelCount = this.width * this.height * 4;
                 
                 // Get our color
                 color = jzt.colors.Colors[color];
 
-                // Start drawing at our colored sprite offset
-                var yOffset = color.index * this.height;
-
                 // Draw the black and white image first
-                context.drawImage(this, 0, yOffset);
+                context.drawImage(this, 0, 0);
 
                 // Grab the raw image data
-                var imageData = context.getImageData(0, yOffset, this.width, yOffset + this.height);
+                var imageData = context.getImageData(0, 0, this.width, this.height);
                 var rgba = imageData.data;
 
                 // For each of our pixels...
@@ -110,21 +120,21 @@ jzt.Graphics = function(onLoadCallback) {
                 }
 
                 // Write our image data at the same location as it was read from
-                context.putImageData(imageData, 0, yOffset);
+                context.putImageData(imageData, 0, 0);
                 
             }
 
         }
 
         // Create our sprites
-        var tilesPerRow = this.width / me.SPRITE_SIZE.x;
-        var tilesPerColumn = this.height / me.SPRITE_SIZE.y;
+        tilesPerRow = this.width / me.SPRITE_SIZE.x;
+        tilesPerColumn = this.height / me.SPRITE_SIZE.y;
     
-        for(var row = 0; row < tilesPerColumn; ++row) {
-            for(var column = 0; column < tilesPerRow; ++column) {
+        for(row = 0; row < tilesPerColumn; ++row) {
+            for(column = 0; column < tilesPerRow; ++column) {
             
-                var spritePoint = new jzt.Point(column * me.SPRITE_SIZE.x, row * me.SPRITE_SIZE.y);
-                var sprite = new jzt.Sprite(spritePoint, me);
+                spritePoint = new jzt.Point(column * me.SPRITE_SIZE.x, row * me.SPRITE_SIZE.y);
+                sprite = new jzt.Sprite(spritePoint, me);
                 me.sprites.push(sprite);
             
             }
@@ -578,6 +588,8 @@ jzt.Sprite = function(point, owner) {
 jzt.Sprite.prototype.draw = function(context, point, foreground, background) {
     
     var blink;
+    var destinationX;
+    var destinationY;
 
     /*
      * Back in the DOS days, a bright background would actually signal
@@ -588,8 +600,8 @@ jzt.Sprite.prototype.draw = function(context, point, foreground, background) {
         background = background.darken();
     }
     
-    var destinationX = point.x * this.owner.TILE_SIZE.x;
-    var destinationY = point.y * this.owner.TILE_SIZE.y;
+    destinationX = point.x * this.owner.TILE_SIZE.x;
+    destinationY = point.y * this.owner.TILE_SIZE.y;
 
     // Draw the background
     if(background) {
@@ -600,9 +612,7 @@ jzt.Sprite.prototype.draw = function(context, point, foreground, background) {
     // If we aren't blinking, or if the blink state is off, draw our sprite
     if(!blink || ! this.owner.blinkState) {
         
-        var yOffset = foreground.index * this.owner.SPRITE_DATA_HEIGHT;
-        
-        context.drawImage(this.owner.colorSpriteSource, this.point.x, yOffset + this.point.y, this.owner.SPRITE_SIZE.x, this.owner.SPRITE_SIZE.y,
+        context.drawImage(this.owner.colorSpriteSources[foreground.index], this.point.x, this.point.y, this.owner.SPRITE_SIZE.x, this.owner.SPRITE_SIZE.y,
             destinationX, destinationY, this.owner.TILE_SIZE.x, this.owner.TILE_SIZE.y);
             
     }
