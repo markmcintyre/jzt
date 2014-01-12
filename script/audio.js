@@ -35,9 +35,10 @@ jzt.Audio = function() {
 
         // Initialize our audio nodes
         this.userVolume = 0.08;
-        this.volume = this.context.createGainNode();
+        this.volume = this.context.createGain ? this.context.createGain() : this.context.createGainNode();
         this.volume.gain.value = this.userVolume;
         this.volume.connect(this.context.destination);
+
         this.timestamp = this.context.currentTime;
         this.interruptTimestamp = this.context.currentTime;
     }
@@ -111,7 +112,7 @@ jzt.Audio.prototype.playAfter = function(notation, uninterruptable) {
 
         // Create an oscillator for this play session
         this.oscillator = this.context.createOscillator();
-        this.oscillator.type = this.oscillator.SQUARE;
+        this.oscillator.type = this.oscillator.SQUARE ? this.oscillator.SQUARE : 'square';
         this.oscillator.connect(this.volume);
 
         // Polyfill for oscillator start and stop
