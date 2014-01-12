@@ -2045,6 +2045,7 @@ jzt.things.Heart.prototype.sendMessage = function(message) {
         this.play('-cegs3+c+c+c');
         this.adjustCounter('health_max', 10);
         this.adjustCounter('health', 10);
+        this.adjustCounter('score', 500);
         this.board.setDisplayMessage(jzt.i18n.getMessage('status.heart'));
     }
 };
