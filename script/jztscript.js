@@ -976,6 +976,15 @@ jztscript.parsers.SetParser = function() {
  };
 
 /*
+ * Throwstar Parser
+ *
+ * command = 'throwstar' direction
+ */
+jztscript.parsers.ThrowStarParser = function() {
+    return jztscript.parserhelper.MovementParser(jzt.commands.ThrowStar, 'throwstar', true);
+};
+
+/*
  * Torch Parser
  *
  * command = 'torch' Number

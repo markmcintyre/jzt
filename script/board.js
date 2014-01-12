@@ -993,14 +993,14 @@ jzt.Board.prototype.render = function(c) {
 
   
         // Debug rendering...
-        /*
-        var p = me.getSmartValue(point);
-        if(p !== Infinity) {
-            c.fillStyle = 'gray';
-            var drawpoint = point.subtract(me.windowOrigin);
-            c.fillText(me.getSmartValue(point).toString(), drawpoint.x * 16 + 4, drawpoint.y * 32 + 16);
-        }
-        */
+        //
+        //var p = me.getSmartValue(point);
+        //if(p !== Infinity) {
+        //    c.fillStyle = 'gray';
+        //    var drawpoint = point.subtract(me.windowOrigin);
+        //    c.fillText(me.getSmartValue(point).toString(), drawpoint.x * 16 + 4, drawpoint.y * 32 + 16);
+        //}
+        
 
     });
 

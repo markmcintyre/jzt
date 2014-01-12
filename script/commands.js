@@ -811,6 +811,34 @@ jzt.commands.Take.prototype.execute = function(owner) {
 };
 
 /*
+ * Throwstar Command
+ */
+ jzt.commands.ThrowStar = function() {
+    this.directionExpression = undefined;
+ };
+
+ jzt.commands.ThrowStar.prototype.clone = function() {
+    var clone = new jzt.commands.ThrowStar();
+    clone.directionExpression = this.directionExpression.clone();
+    return clone;
+ };
+
+ jzt.commands.ThrowStar.prototype.execute = function(owner) {
+
+    // Get our final direction
+    var direction = this.directionExpression.getResult(owner);
+
+    // If a direction is available
+    if(direction) {
+
+        // Shoot
+        jzt.things.ThingFactory.shoot(owner.board, owner.point.add(direction), direction, false, true);
+
+    }
+
+};
+
+/*
  * Torch Command
  */
 jzt.commands.Torch = function() {

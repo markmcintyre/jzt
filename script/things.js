@@ -550,6 +550,11 @@ jzt.things.ScriptableThing.prototype.deserialize = function(data) {
         if(data.scriptContext) {
             this.scriptContext.deserialize(data.scriptContext);
         }
+
+        if(typeof data.messageQueue === 'array' && data.messageQueue.length > 0) {
+            this.messageQueue = data.messageQueue.slice(0);
+        }
+
     }
 };
 
@@ -594,13 +599,10 @@ jzt.things.ScriptableThing.prototype.move = function(direction) {
 jzt.things.ScriptableThing.prototype.walk = function() {
     if(this.walkDirection) {
         
-        if(this.isBlocked(this.walkDirection)) {
+        if(!this.move(this.walkDirection)) {
             this.sendMessage('THUD');
         }
-        else {
-            jzt.debug.log('%s is walking %s', this.name, jzt.Direction.getName(this.walkDirection));
-            this.move(this.walkDirection);
-        }
+        
     }
 };
 
@@ -3621,7 +3623,7 @@ jzt.things.ThrowingStar = function(board) {
     this.speed = 1;
     this.spriteIndex = 179;
     this.animationIndex = Math.floor(Math.random()*jzt.things.ThrowingStar.animationFrames.length-1);
-    this.foreground = '*';
+    this.foreground = jzt.colors.Cycle;
     this.timeToLive = 255;
     this.nextMove = Math.floor(Math.random()*2);
 };
@@ -3637,6 +3639,7 @@ jzt.things.ThrowingStar.animationFrames = [179, 47, 196, 92];
  */
 jzt.things.ThrowingStar.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    delete result.color;
     result.timeToLive = this.timeToLive;
     return result;
 };
@@ -3648,6 +3651,8 @@ jzt.things.ThrowingStar.prototype.serialize = function() {
  */
 jzt.things.ThrowingStar.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.foreground = jzt.colors.Cycle;
+    this.background = undefined;
     this.timeToLove = jzt.util.getOption(data, 'timeToLive', 100);
 };
 
