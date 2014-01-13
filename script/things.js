@@ -753,6 +753,7 @@ jzt.things.Bear = function(board) {
     this.foreground = jzt.colors.Brown;
     this.sensitivity = 9;
     this.speed = 3;
+    this.conveyable = true;
 };
 jzt.things.Bear.prototype = new jzt.things.UpdateableThing();
 jzt.things.Bear.prototype.constructor = jzt.things.Bear;
@@ -1046,6 +1047,7 @@ jzt.things.Bomb.prototype.sendMessage = function(message) {
  */
 jzt.things.Boulder = function(board) {
     jzt.things.Thing.call(this, board);
+    this.conveyable = true;
     this.spriteIndex = 254;
 };
 jzt.things.Boulder.prototype = new jzt.things.Thing();
@@ -1682,6 +1684,113 @@ jzt.things.Centipede.prototype.doTick = function() {
     
 };
 
+jzt.things.Conveyor = function(board) {
+    jzt.things.UpdateableThing.call(this, board);
+    this.clockwise = true;
+    this.animationIndex = Math.floor(Math.random()*jzt.things.Conveyor.animationFrames.length-1);
+    this.spriteIndex = 179;
+};
+jzt.things.Conveyor.prototype = new jzt.things.UpdateableThing();
+jzt.things.Conveyor.prototype.constructor = jzt.things.Conveyor;
+jzt.things.Conveyor.serializationType = 'Conveyor';
+jzt.things.Conveyor.animationFrames = [179, 47, 45, 92];
+
+jzt.things.Conveyor.prototype.serialize = function() {
+    var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    result.clockwise = this.clockwise;
+    return result;
+};
+
+jzt.things.Conveyor.prototype.deserialize = function(data) {
+    jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.clockwise = data.clockwise;
+};
+
+jzt.things.Conveyor.prototype.doTick = function() {
+
+    var me = this;
+    var heldThing;
+    var x = this.point.x;
+    var y = this.point.y;
+
+    var point = new jzt.Point(0,0);
+    var newPoint = new jzt.Point(0,0);
+
+    function moveThing(x1, y1, x2, y2) {
+
+        var thing;
+
+        point.x = x1;
+        point.y = y1;
+
+        thing = me.board.getTile(point);
+
+        if(thing && thing.conveyable) {
+            newPoint.x = x2;
+            newPoint.y = y2;
+            me.board.moveTile(point, newPoint, true);
+        }
+
+    }
+
+    // Hold our first thing
+    point.x = x-1;
+    point.y = y-1;
+    heldThing = this.board.getTile(point);
+
+    // If it's conveyable, delete it to free up some space
+    if(heldThing && heldThing.conveyable) { 
+        this.board.deleteTile(point);
+    }
+    
+    if(this.clockwise) {
+
+        if(++this.animationIndex > jzt.things.Conveyor.animationFrames.length-1) {
+            this.animationIndex = 0;
+        }
+
+        moveThing(x-1,y,x-1,y-1);
+        moveThing(x-1,y+1,x-1,y);
+        moveThing(x,y+1,x-1,y+1);
+        moveThing(x+1,y+1,x,y+1);
+        moveThing(x+1,y,x+1,y+1);
+        moveThing(x+1,y-1,x+1,y);
+        moveThing(x,y-1,x+1,y-1);
+
+        if(heldThing && heldThing.conveyable) {
+            point.x = x;
+            point.y = y-1;
+            this.board.setTile(point, heldThing);
+        }
+
+    }
+
+    else {
+
+        if(--this.animationIndex < 0) {
+            this.animationIndex = jzt.things.Conveyor.animationFrames.length-1;
+        }
+
+        moveThing(x,y-1,x-1,y-1);
+        moveThing(x+1,y-1,x,y-1);
+        moveThing(x+1,y,x+1,y-1);
+        moveThing(x+1,y+1,x+1,y);
+        moveThing(x,y+1,x+1,y+1);
+        moveThing(x-1,y+1,x,y+1);
+        moveThing(x-1,y,x-1,y+1);
+
+        if(heldThing && heldThing.conveyable) {
+            point.x = x-1;
+            point.y = y;
+            this.board.setTile(point, heldThing);
+        }
+
+    }
+
+    this.spriteIndex = jzt.things.Conveyor.animationFrames[this.animationIndex];
+
+};
+
 //--------------------------------------------------------------------------------
 jzt.things.River = function(board) {
     jzt.things.Thing.call(this, board);
@@ -1976,6 +2085,7 @@ jzt.things.Gem = function(board) {
     this.spriteIndex = 4;
     this.background = undefined;
     this.foreground = jzt.colors.BrightMagenta;
+    this.conveyable = true;
 };
 jzt.things.Gem.prototype = new jzt.things.Thing();
 jzt.things.Gem.prototype.constructor = jzt.things.Gem;
@@ -2022,6 +2132,7 @@ jzt.things.Heart = function(board) {
     this.spriteIndex = 3;
     this.foreground = jzt.colors.BrightRed;
     this.background = undefined;
+    this.conveyable = true;
 };
 jzt.things.Heart.prototype = new jzt.things.Thing();
 jzt.things.Heart.prototype.constructor = jzt.things.Heart;
@@ -2108,6 +2219,7 @@ jzt.things.Key = function(board) {
     this.background = undefined;
     this.foreground = jzt.colors.BrightBlue;
     this.speed = 1;
+    this.conveyable = true;
 };
 jzt.things.Key.prototype = new jzt.things.UpdateableThing();
 jzt.things.Key.prototype.constructor = jzt.things.Key;
@@ -2241,6 +2353,7 @@ jzt.things.Lion = function(board) {
     this.foreground = jzt.colors.BrightRed;
     this.background = undefined;
     this.speed = 2;
+    this.conveyable = true;
 };
 jzt.things.Lion.prototype = new jzt.things.UpdateableThing();
 jzt.things.Lion.prototype.constructor = jzt.things.Lion;
@@ -2408,6 +2521,7 @@ jzt.things.Player = function(board) {
     this.point = new jzt.Point(-1,-1);
     this.foreground = jzt.colors.BrightWhite;
     this.background = jzt.colors.Blue;
+    this.conveyable = true;
 
     if(board) {
         this.eventScheduler = new jzt.DelayedEventScheduler(board.game.CYCLE_TICKS * 2, board.game.CYCLE_TICKS);
@@ -2834,6 +2948,7 @@ jzt.things.Ruffian = function(board) {
     this.timeLeft = 0;
     this.speed = 1;
     this.orientation = jzt.Direction.North;
+    this.conveyable = true;
 };
 jzt.things.Ruffian.prototype = new jzt.things.UpdateableThing();
 jzt.things.Ruffian.prototype.constructor = jzt.things.Ruffian;
@@ -3722,6 +3837,7 @@ jzt.things.Tiger = function(board) {
     this.intelligence = 5;
     this.firingRate = 5;
     this.speed = 2;
+    this.conveyable = true;
 };
 jzt.things.Tiger.prototype = new jzt.things.UpdateableThing();
 jzt.things.Tiger.prototype.constructor = jzt.things.Tiger;

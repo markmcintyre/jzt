@@ -88,6 +88,10 @@ jzt.Editor.Thing = {
 		intelligence: {type: 'number', min: 0, max: 10, default: 0},
 		color: {type: 'color', default: '*9', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
 	},
+	Conveyor: {
+		color: {type: 'color', default: '*C', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'},
+		clockwise: {type: 'boolean', default: true, label: 'Clockwise'}
+	},
 	River: {
 		direction: {type: 'direction', default: 'N', label: 'Direction'}
 	},
