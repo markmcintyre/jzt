@@ -1694,6 +1694,7 @@ jzt.things.Conveyor.prototype = new jzt.things.UpdateableThing();
 jzt.things.Conveyor.prototype.constructor = jzt.things.Conveyor;
 jzt.things.Conveyor.serializationType = 'Conveyor';
 jzt.things.Conveyor.animationFrames = [179, 47, 45, 92];
+jzt.things.Conveyor.MoveAction = {MOVE: 1, TENTATIVE: 2};
 
 jzt.things.Conveyor.prototype.serialize = function() {
     var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
@@ -1706,86 +1707,141 @@ jzt.things.Conveyor.prototype.deserialize = function(data) {
     this.clockwise = data.clockwise;
 };
 
-jzt.things.Conveyor.prototype.doTick = function() {
+jzt.things.Conveyor.prototype.markPath = function(path) {
 
-    var me = this;
-    var heldThing;
-    var x = this.point.x;
-    var y = this.point.y;
+    var index;
+    var tile;
+    var obstacle;
+    var MoveAction = jzt.things.Conveyor.MoveAction;
 
-    var point = new jzt.Point(0,0);
-    var newPoint = new jzt.Point(0,0);
+    for(index = path.length-1; index >= 0; --index) {
 
-    function moveThing(x1, y1, x2, y2) {
+        // Grab our tile of interest
+        tile = this.board.getTile(path[index]);
 
-        var thing;
+        // If it exists and is conveyable...
+        if(tile && tile.conveyable) {
 
-        point.x = x1;
-        point.y = y1;
+            // If we're starting, our move is tentative on the final move
+            if(index === path.length-1) {
+                path[index].action = MoveAction.TENTATIVE;
+            }
 
-        thing = me.board.getTile(point);
+            // If we're not just starting...
+            else {
 
-        if(thing && thing.conveyable) {
-            newPoint.x = x2;
-            newPoint.y = y2;
-            me.board.moveTile(point, newPoint, true);
+                // If the path isn't off the board...
+                if(!this.board.isOutside(path[index+1])) {
+
+                    // Grab our obstacle
+                    obstacle = this.board.getTile(path[index+1]);
+                    
+                    // If there is no obstacle, or it's surrenderable, then set our action to MOVE
+                    if(!obstacle || (!obstacle.conveyable && obstacle.surrenderable)) {
+                        path[index].action = MoveAction.MOVE;
+                    }
+
+                    // Otherwise set it to the same action as the previous path point
+                    else {
+                        path[index].action = path[index+1].action;
+                    }
+
+                }
+                
+            }
+
         }
 
     }
 
-    // Hold our first thing
-    point.x = x-1;
-    point.y = y-1;
-    heldThing = this.board.getTile(point);
+    // If our last path action was MOVE or TENTATIVE...
+    if(this.board.isFreeOrSurrenderable(path[0]) || path[0].action === MoveAction.MOVE || path[0].action === MoveAction.TENTATIVE) {
 
-    // If it's conveyable, delete it to free up some space
-    if(heldThing && heldThing.conveyable) { 
-        this.board.deleteTile(point);
+        // Convert all TENTATIVE actions to MOVE actions
+        for(index = 0; index < path.length; index++) {
+            if( path[index].action === MoveAction.TENTATIVE) {
+                path[index].action = MoveAction.MOVE;
+            }
+        }
+
     }
-    
+
+};
+
+jzt.things.Conveyor.prototype.executePath = function(path) {
+
+    var index;
+    var heldThing;
+    var thing;
+
+    for(index = path.length-1; index >= 0; --index) {
+
+        if(path[index].action === jzt.things.Conveyor.MoveAction.MOVE) {
+
+            thing = this.board.getTile(path[index]);
+            this.board.deleteTile(path[index]);
+
+            if(index === path.length-1) {
+                heldThing = thing;
+            }
+            else {
+                this.board.addThing(path[index+1], thing);
+            }
+
+        }
+
+    }
+
+    if(heldThing) {
+        this.board.addThing(path[0], heldThing);
+    }
+
+};
+
+jzt.things.Conveyor.prototype.doTick = function() {
+
+    var path;
+
     if(this.clockwise) {
 
-        if(++this.animationIndex > jzt.things.Conveyor.animationFrames.length-1) {
+        if(++this.animationIndex >= jzt.things.Conveyor.animationFrames.length) {
             this.animationIndex = 0;
         }
 
-        moveThing(x-1,y,x-1,y-1);
-        moveThing(x-1,y+1,x-1,y);
-        moveThing(x,y+1,x-1,y+1);
-        moveThing(x+1,y+1,x,y+1);
-        moveThing(x+1,y,x+1,y+1);
-        moveThing(x+1,y-1,x+1,y);
-        moveThing(x,y-1,x+1,y-1);
 
-        if(heldThing && heldThing.conveyable) {
-            point.x = x;
-            point.y = y-1;
-            this.board.setTile(point, heldThing);
-        }
+        path = [
+            new jzt.Point(this.point.x-1, this.point.y-1),
+            new jzt.Point(this.point.x, this.point.y-1),
+            new jzt.Point(this.point.x+1, this.point.y-1),
+            new jzt.Point(this.point.x+1, this.point.y),
+            new jzt.Point(this.point.x+1, this.point.y+1),
+            new jzt.Point(this.point.x, this.point.y+1),
+            new jzt.Point(this.point.x-1, this.point.y+1),
+            new jzt.Point(this.point.x-1, this.point.y)
+        ];
 
     }
-
     else {
 
         if(--this.animationIndex < 0) {
             this.animationIndex = jzt.things.Conveyor.animationFrames.length-1;
         }
 
-        moveThing(x,y-1,x-1,y-1);
-        moveThing(x+1,y-1,x,y-1);
-        moveThing(x+1,y,x+1,y-1);
-        moveThing(x+1,y+1,x+1,y);
-        moveThing(x,y+1,x+1,y+1);
-        moveThing(x-1,y+1,x,y+1);
-        moveThing(x-1,y,x-1,y+1);
-
-        if(heldThing && heldThing.conveyable) {
-            point.x = x-1;
-            point.y = y;
-            this.board.setTile(point, heldThing);
-        }
+        path = [
+            new jzt.Point(this.point.x-1, this.point.y-1),
+            new jzt.Point(this.point.x-1, this.point.y),
+            new jzt.Point(this.point.x-1, this.point.y+1),
+            new jzt.Point(this.point.x, this.point.y+1),
+            new jzt.Point(this.point.x+1, this.point.y+1),
+            new jzt.Point(this.point.x+1, this.point.y),
+            new jzt.Point(this.point.x+1, this.point.y-1),
+            new jzt.Point(this.point.x, this.point.y-1)
+        ];
 
     }
+
+    this.markPath(path);
+    this.executePath(path);
 
     this.spriteIndex = jzt.things.Conveyor.animationFrames[this.animationIndex];
 

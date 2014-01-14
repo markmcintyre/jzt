@@ -618,6 +618,20 @@ jzt.Board.prototype.addThing = function(point, thing, respectSurrenderabilty) {
 };
 
 /**
+ * Returns whether or not a specific point is free or surrenderable to a provided Thing.
+ *
+ * @param point A point to test for
+ * @param thing A thing used to test for surrenderability if a point is not free.
+ * @return true if the provided spot is either free, or surrenderable to a provided thing.
+ */
+jzt.Board.prototype.isFreeOrSurrenderable = function(point, thing) {
+
+    var obstacle = this.getTile(point);
+    return !this.isOutside(point) && ((!obstacle) || (obstacle.isSurrenderable(thing)));
+
+};
+
+/**
  * Retrieves a tile from this Board at a provided Point.
  * 
  * @param point A point from which to retrieve a tile.
