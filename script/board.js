@@ -657,7 +657,7 @@ jzt.Board.prototype.getTile = function(point) {
  */
 jzt.Board.prototype.replaceTile = function(point, newTile) {
     this.deleteTile(point);
-    this.setTile(point, newTile);
+    this.addThing(point, newTile, true);
 };
 
 /**
