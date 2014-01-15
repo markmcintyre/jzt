@@ -788,11 +788,17 @@ jzt.things.Bear.prototype.deserialize = function(data) {
  * 
  * @param direction A direction in which to push this Bear.
  */
-jzt.things.Bear.prototype.push = function(direction) {
-    if(!this.move(direction)) {
+jzt.things.Bear.prototype.push = function(direction, pusher) {
+
+    if(pusher instanceof jzt.things.River) {
+        this.move(direction, true);
+    }
+
+    else if(!this.move(direction)) {
         this.play('t+c---c++++c--c');
         this.remove();
     }
+
 };
 
 /**
@@ -838,6 +844,12 @@ jzt.things.Bear.prototype.doTick = function() {
             this.remove();
             return;
         }
+
+        // Don't attempt to move in the direction of a river
+        else if(thing && thing instanceof jzt.things.River && thing.direction === jzt.Direction.opposite(direction)) {
+            return;
+        }
+
         this.move(direction, true);
     }
    
@@ -2194,10 +2206,16 @@ jzt.things.Gem.prototype.sendMessage = function(message) {
  *
  * @param direction A direction in which to push this Gem.
  */
-jzt.things.Gem.prototype.push = function(direction) {
-    if(!this.move(direction)) {
+jzt.things.Gem.prototype.push = function(direction, pusher) {
+
+    if(pusher instanceof jzt.things.River) {
+        this.move(direction, true);
+    }
+
+    else if(!this.move(direction)) {
         this.remove();
     }
+
 };
 
 //--------------------------------------------------------------------------------
@@ -2234,6 +2252,17 @@ jzt.things.Heart.prototype.sendMessage = function(message) {
         this.adjustCounter('score', 500);
         this.board.setDisplayMessage(jzt.i18n.getMessage('status.heart'));
     }
+};
+
+jzt.things.Heart.prototype.push = function(direction, pusher) {
+
+    if(pusher instanceof jzt.things.River) {
+        this.move(direction, true);
+    }
+    else {
+        this.move(direction);
+    }
+
 };
 
 //--------------------------------------------------------------------------------
@@ -2476,11 +2505,17 @@ jzt.things.Lion.prototype.sendMessage = function(message) {
  *
  * @param direction A direction in which this Thing is requested to move.
  */
-jzt.things.Lion.prototype.push = function(direction) {
-    if(!this.move(direction)) {
+jzt.things.Lion.prototype.push = function(direction, pusher) {
+
+    if(pusher instanceof jzt.things.River) {
+        this.move(direction, true);
+    }
+
+    else if(!this.move(direction)) {
         this.play('t+c---c++++c--c');
         this.remove();
     }
+
 };
 
 /**
@@ -2512,6 +2547,12 @@ jzt.things.Lion.prototype.doTick = function() {
         this.remove();
         return;
     }
+
+    // Don't attempt to move in the direction of a river
+    else if(thing && thing instanceof jzt.things.River && thing.direction === jzt.Direction.opposite(direction)) {
+        return;
+    }
+
     this.move(direction, true);
    
 };
@@ -3050,11 +3091,17 @@ jzt.things.Ruffian.prototype.deserialize = function(data) {
  * 
  * @param direction A direction in which to push this Ruffian.
  */
-jzt.things.Ruffian.prototype.push = function(direction) {
-    if(!this.move(direction)) {
+jzt.things.Ruffian.prototype.push = function(direction, pusher) {
+
+    if(pusher instanceof jzt.things.River) {
+        this.move(direction, true);
+    }
+
+    else if(!this.move(direction)) {
         this.remove();
         this.play('t+c---c++++c--c');
     }
+
 };
 
 /**
@@ -3121,6 +3168,11 @@ jzt.things.Ruffian.prototype.doTick = function() {
         if(thing && thing instanceof jzt.things.Player) {
             thing.sendMessage('SHOT');
             this.remove();
+            return;
+        }
+
+        // Don't attempt to move in the direction of a river
+        else if(thing && thing instanceof jzt.things.River && thing.direction === jzt.Direction.opposite(direction)) {
             return;
         }
 
@@ -3958,11 +4010,17 @@ jzt.things.Tiger.prototype.sendMessage = function(message) {
  *
  * @param direction A direction in which this Thing is requested to move.
  */
-jzt.things.Tiger.prototype.push = function(direction) {
-    if(!this.move(direction)) {
+jzt.things.Tiger.prototype.push = function(direction, pusher) {
+
+    if(pusher instanceof jzt.things.River) {
+        this.move(direction, true);
+    }
+
+    else if(!this.move(direction)) {
         this.play('t+c---c++++c--c');
         this.remove();
     }
+
 };
 
 /**
@@ -4005,7 +4063,10 @@ jzt.things.Tiger.prototype.doTick = function() {
         return;
     }
 
-    this.move(direction, true);
+    // Don't attempt to move in the direction of a river
+    else if(!(thing && thing instanceof jzt.things.River && thing.direction === jzt.Direction.opposite(direction))) {
+        this.move(direction, true);
+    }
  
     if(this.shootPlayer()) {
         var playerDirection = this.getPlayerDirection();

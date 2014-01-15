@@ -342,8 +342,11 @@ jzt.Game.prototype.setState = function(state) {
             this.setBoard(this.startingBoard);
         }
 
+        // The player shouldn't be on the board
         if(this.player) {
-            this.player.hidden = true;
+            this.player.remove();
+            this.player.point.x = -1;
+            this.player.point.y = -1;
         }
 
     }
