@@ -876,6 +876,11 @@ jzt.Board.prototype.update = function() {
 
             }
 
+            // If the tile the thing is on is updateable while under...
+            if(tile.under && tile.under.updateWhileUnder) {
+                tile.under.updateWhileUnder();
+            }
+
             // If we've got a tile with a custom renderer...
             if(tile.render) {
                 me.customRenderSet.push(tile);

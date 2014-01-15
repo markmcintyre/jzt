@@ -644,6 +644,7 @@ jzt.things.ActiveBomb = function(board) {
     this.speed = 6;
     this.spriteIndex = 57;
     this.radius = 4;
+    this.conveyable = true;
 };
 jzt.things.ActiveBomb.prototype = new jzt.things.UpdateableThing();
 jzt.things.ActiveBomb.prototype.constructor = jzt.things.ActiveBomb;
@@ -1006,6 +1007,7 @@ jzt.things.Bomb = function(board) {
     jzt.things.Thing.call(this, board);
     this.radius = 4;
     this.spriteIndex = 11;
+    this.conveyable = true;
 }
 jzt.things.Bomb.prototype = new jzt.things.Thing();
 jzt.things.Bomb.prototype.constructor = jzt.things.Bomb;
@@ -1060,7 +1062,12 @@ jzt.things.Boulder.serializationType = 'Boulder';
  * @param direction A direction in which this Thing is requested to move.
  */
 jzt.things.Boulder.prototype.push = function(direction, pusher) {
-    if(this.move(direction)) {
+
+    if(pusher instanceof jzt.things.River) {
+        this.move(direction, true);
+    }
+
+    else if(this.move(direction)) {
         this.play('t--f', false, true);
     }
 };
@@ -1754,7 +1761,7 @@ jzt.things.Conveyor.prototype.markPath = function(path) {
 
     }
 
-    // If our last path action was MOVE or TENTATIVE...
+    // If the last position is free, or if the last path action is MOVE or TENTATIVE...
     if(this.board.isFreeOrSurrenderable(path[0]) || path[0].action === MoveAction.MOVE || path[0].action === MoveAction.TENTATIVE) {
 
         // Convert all TENTATIVE actions to MOVE actions
@@ -1875,6 +1882,20 @@ jzt.things.River.prototype.initialize = function() {
             this.spriteIndex = 17;
             break;
     }
+};
+
+jzt.things.River.prototype.updateWhileUnder = function() {
+    jzt.things.UpdateableThing.prototype.update.call(this); 
+}
+
+jzt.things.River.prototype.doTick = function() {
+
+    var thing = this.board.getTile(this.point);
+
+    if(thing.conveyable) {
+        thing.push(this.direction, this);
+    }
+
 };
 
 jzt.things.River.prototype.isSurrenderable = function(thing) {
@@ -2270,27 +2291,15 @@ jzt.things.InvisibleWall.prototype.getSpriteIndex = function() {
  * @param board An owner Board for this Key.
  */
 jzt.things.Key = function(board) {
-    jzt.things.UpdateableThing.call(this, board);
+    jzt.things.Thing.call(this, board);
     this.spriteIndex = 12;
     this.background = undefined;
     this.foreground = jzt.colors.BrightBlue;
-    this.speed = 1;
     this.conveyable = true;
 };
-jzt.things.Key.prototype = new jzt.things.UpdateableThing();
+jzt.things.Key.prototype = new jzt.things.Thing();
 jzt.things.Key.prototype.constructor = jzt.things.Key;
 jzt.things.Key.serializationType = 'Key';
-
-/**
- * Performs a single tick operation for this Key.
- */
-jzt.things.Key.prototype.doTick = function() {
-
-    if(this.under && this.under instanceof jzt.things.River) {
-        this.move(this.under.direction, true);
-    }
-
-};
 
 /**
  * Delivers a provided message to this Thing. If a TOUCH message is 
@@ -2332,7 +2341,12 @@ jzt.things.Key.prototype.sendMessage = function(message) {
  * @param direction A direction in which this Thing is requested to move.
  */
 jzt.things.Key.prototype.push = function(direction, pusher) {
-    if(!(pusher instanceof jzt.things.Player) && this.move(direction)) {
+
+    if(pusher instanceof jzt.things.River) {
+        this.move(direction, true);
+    }
+
+    else if(!(pusher instanceof jzt.things.Player) && this.move(direction)) {
         this.play('t--f', false, true);
     }
 };
@@ -2704,10 +2718,6 @@ jzt.things.Player.prototype.shoot = function(direction) {
 jzt.things.Player.prototype.doTick = function() {
 
     var event = this.eventScheduler.takeEvent();
-
-    if(this.under instanceof jzt.things.River) {
-        this.push(this.under.direction, this.under);
-    }
 
     if(event) {
         if(event.type === this.MOVE_ACTION) {
