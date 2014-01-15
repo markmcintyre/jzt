@@ -64,9 +64,7 @@ jzt.things.Thing.prototype.deserialize = function(data) {
         if(!this.foreground) {
             this.foreground = jzt.colors.Yellow;
         }
-        if(!this.background) {
-            this.background = jzt.colors.Black;
-        }
+        this.background = undefined;
     }
 
     if(data.under) {

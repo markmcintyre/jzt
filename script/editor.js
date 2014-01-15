@@ -108,7 +108,7 @@ jzt.Editor.Thing = {
 		color: {type: 'color', default: '0A', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
 	},
 	Key: {
-		color: {type: 'color', default: '0F', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
+		color: {type: 'color', default: '*F', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
 	},
 	LineWall: {
 		color: {type: 'color', default: '09', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
