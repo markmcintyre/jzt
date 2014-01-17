@@ -812,6 +812,7 @@ jzt.things.Bear.prototype.sendMessage = function(message) {
 
     if(message === 'SHOT' || message === 'BOMBED') {
         this.play('t+c---c++++c--c', true);
+        this.adjustCounter('score', 10);
         this.remove();
     }
     else if(message === 'TOUCH') {
@@ -1584,6 +1585,7 @@ jzt.things.Centipede.prototype.remove = function() {
 jzt.things.Centipede.prototype.sendMessage = function(message) {
     if(message === 'SHOT' || message === 'BOMBED') {
         this.play('t+c---c++++c--c', true);
+        this.adjustCounter('score', 10);
         this.remove();
     }
     if(message === 'TOUCH') {
@@ -2491,6 +2493,7 @@ jzt.things.Lion.prototype.sendMessage = function(message) {
 
     if(message === 'SHOT' || message === 'BOMBED') {
         this.play('t+c---c++++c--c', true);
+        this.adjustCounter('score', 10);
         this.remove();
     }
     else if(message === 'TOUCH') {
@@ -3112,6 +3115,7 @@ jzt.things.Ruffian.prototype.push = function(direction, pusher) {
 jzt.things.Ruffian.prototype.sendMessage = function(message) {
     if(message === 'SHOT' || message === 'BOMBED') {
         this.play('t+c---c++++c--c', true);
+        this.adjustCounter('score', 10);
         this.remove();
     }
     else if(message === 'TOUCH') {
@@ -3342,6 +3346,7 @@ jzt.things.Snake.prototype.push = function(direction) {
 jzt.things.Snake.prototype.sendMessage = function(message) {
     if(message === 'SHOT' || message === 'BOMBED') {
         this.play('t+c---c++++c--c', true);
+        this.adjustCounter('score', 10);
         this.remove();
     }
     else if(message === 'TOUCH') {
@@ -3473,6 +3478,7 @@ jzt.things.Spider.prototype.sendMessage = function(message) {
 
     if(message === 'SHOT' || message === 'BOMBED') {
         this.play('t+c---c++++c--c', true);
+        this.adjustCounter('score', 10);
         this.remove();
     }
     else if(message === 'TOUCH') {
@@ -3996,6 +4002,7 @@ jzt.things.Tiger.prototype.sendMessage = function(message) {
 
     if(message === 'SHOT' || message === 'BOMBED') {
         this.play('t+c---c++++c--c', true);
+        this.adjustCounter('score', 10);
         this.remove();
     }
     else if(message === 'TOUCH') {
