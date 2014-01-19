@@ -98,6 +98,10 @@ jzt.Editor.Thing = {
 	Door: {
 		color: {type: 'color', default: '1F', options: ['1','2','3','4','5','6','7'], foreground: false, label: 'Color'}
 	},
+	Duplicator: {
+		copyDirection: {type: 'direction', default: 'E', label: 'Clone Direction'},
+		speed: {type: 'number', min: 1, max: 10, default: 5, label: 'Speed'}
+	},
 	FakeWall: {
 		color: {type: 'color', default: '0E', options: ['9','A','B','C','D','E','F'], foreground: true, label: 'Color'}
 	},

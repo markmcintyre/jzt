@@ -74,7 +74,9 @@ jzt.Audio.prototype.cancel = function() {
         this.volume.gain.value = this.userVolume;
 
         // Stop the oscillator
-        this.oscillator.stop(0);
+        // TODO: Once Chrome fixes a certain bug, use stop instead of disconnect
+        this.oscillator.disconnect();
+        this.oscillator = undefined;
 
         // Reset our timestamp and interrupt timestamp to right now
         this.timestamp = this.context.currentTime;

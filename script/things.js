@@ -1701,6 +1701,8 @@ jzt.things.Centipede.prototype.doTick = function() {
     
 };
 
+//--------------------------------------------------------------------------------
+
 jzt.things.Conveyor = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.clockwise = true;
@@ -1863,70 +1865,6 @@ jzt.things.Conveyor.prototype.doTick = function() {
     this.spriteIndex = jzt.things.Conveyor.animationFrames[this.animationIndex];
 
 };
-
-//--------------------------------------------------------------------------------
-jzt.things.River = function(board) {
-    jzt.things.Thing.call(this, board);
-    this.direction = jzt.Direction.North;
-    this.background = jzt.colors.Blue;
-    this.foreground = jzt.colors.BrightBlue;
-    this.speed = 1;
-    this.initialize();
-};
-jzt.things.River.prototype = new jzt.things.Thing();
-jzt.things.River.prototype.constructor = jzt.things.River;
-jzt.things.River.serializationType = 'River';
-
-jzt.things.River.prototype.initialize = function() {
-    switch(jzt.Direction.getShortName(this.direction)) {
-        case 'N': 
-            this.spriteIndex = 30;
-            break;
-        case 'E': 
-            this.spriteIndex = 16;
-            break;
-        case 'S': 
-            this.spriteIndex = 31;
-            break;
-        case 'W': 
-            this.spriteIndex = 17;
-            break;
-    }
-};
-
-jzt.things.River.prototype.updateWhileUnder = function() {
-    jzt.things.UpdateableThing.prototype.update.call(this); 
-}
-
-jzt.things.River.prototype.doTick = function() {
-
-    var thing = this.board.getTile(this.point);
-
-    if(thing.conveyable) {
-        thing.push(this.direction, this);
-    }
-
-};
-
-jzt.things.River.prototype.isSurrenderable = function(thing) {
-    return true;
-};
-
-jzt.things.River.prototype.serialize = function() {
-    var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
-    delete result.color;
-    delete result.speed;
-    result.direction = jzt.Direction.getShortName(this.direction);
-    return result;
-};
-
-jzt.things.River.prototype.deserialize = function(data) {
-    jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
-    this.background = jzt.colors.Blue;
-    this.foreground = jzt.colors.BrightBlue;
-    this.direction = jzt.Direction.fromName(data.direction);
-    this.initialize();
-};
  
 //--------------------------------------------------------------------------------
 
@@ -1983,6 +1921,96 @@ jzt.things.Door.prototype.sendMessage = function(message) {
         }
 
     }
+
+};
+
+//--------------------------------------------------------------------------------
+
+jzt.things.Duplicator = function(board) {
+    jzt.things.UpdateableThing.call(this, board);
+    this.MAX_STEPS = 20;
+    this.copyDirection = jzt.Direction.East;
+    this.speed = 10;
+    this.spriteIndex = 250;
+    this.background = undefined;
+    this.currentStep = 0;
+    this.foreground = jzt.colors.BrightWhite;
+};
+jzt.things.Duplicator.prototype = new jzt.things.UpdateableThing();
+jzt.things.Duplicator.prototype.constructor = jzt.things.Duplicator;
+jzt.things.Duplicator.serializationType = 'Duplicator';
+jzt.things.Duplicator.animationFrames = [250, 249, 7, 9, 111, 79];
+
+jzt.things.Duplicator.prototype.serialize = function() {
+    var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    delete result.color;
+    result.copyDirection = jzt.Direction.getShortName(this.copyDirection);
+    return result;
+};
+
+jzt.things.Duplicator.prototype.deserialize = function(data) {
+    jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.background = undefined;
+    this.foreground = jzt.colors.BrightWhite;
+    this.copyDirection = jzt.Direction.fromName(data.copyDirection);
+};
+
+jzt.things.Duplicator.prototype.doTick = function() {
+
+    var cloneThing;
+    var targetThing;
+    var isFreeSpace;
+    var clonePoint;
+    var targetPoint;
+    var cloned = false;
+
+    if(++this.currentStep >= this.MAX_STEPS) {
+
+        this.currentStep = 0;
+
+        // Grab our clone point and thing
+        clonePoint = this.point.add(this.copyDirection);
+        cloneThing = this.board.getTile(clonePoint);
+
+        // Grab our target point
+        targetPoint = this.point.add(jzt.Direction.opposite(this.copyDirection));
+
+        // If our target point is on the board, see what's already there
+        if(!this.board.isOutside(targetPoint)) {
+            targetThing = this.board.getTile(targetPoint);
+        }
+
+        // Otherwise, cancel the clone
+        else {
+            cloneThing = undefined;
+        }
+
+        // If we got a thing to clone...
+        if(cloneThing) {
+
+            // Determine if there is free space, or if we can make some by pushing an obstacle
+            isFreeSpace = targetThing ? this.board.moveTile(this.point, targetPoint, false, true) : true;
+
+            // If there is free space
+            if(isFreeSpace) {
+
+                cloned = true;
+
+                // Create our new thing
+                this.board.addThing(targetPoint, cloneThing.clone());
+
+            }
+
+        }
+
+
+        this.play(cloned ? 'scdefg' : '--f#f#');
+
+
+
+    }
+
+    this.spriteIndex = jzt.things.Duplicator.animationFrames[Math.round((this.currentStep / this.MAX_STEPS) * (jzt.things.Duplicator.animationFrames.length-1))];
 
 };
 
@@ -3032,6 +3060,71 @@ jzt.things.Ricochet.prototype.deserialize = function(data) {
     jzt.things.Thing.prototype.deserialize.call(this, data);
     this.background = undefined;
     this.foreground = jzt.colors.BrightGreen;
+};
+
+//--------------------------------------------------------------------------------
+
+jzt.things.River = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.direction = jzt.Direction.North;
+    this.background = jzt.colors.Blue;
+    this.foreground = jzt.colors.BrightBlue;
+    this.speed = 1;
+    this.initialize();
+};
+jzt.things.River.prototype = new jzt.things.Thing();
+jzt.things.River.prototype.constructor = jzt.things.River;
+jzt.things.River.serializationType = 'River';
+
+jzt.things.River.prototype.initialize = function() {
+    switch(jzt.Direction.getShortName(this.direction)) {
+        case 'N': 
+            this.spriteIndex = 30;
+            break;
+        case 'E': 
+            this.spriteIndex = 16;
+            break;
+        case 'S': 
+            this.spriteIndex = 31;
+            break;
+        case 'W': 
+            this.spriteIndex = 17;
+            break;
+    }
+};
+
+jzt.things.River.prototype.updateWhileUnder = function() {
+    jzt.things.UpdateableThing.prototype.update.call(this); 
+}
+
+jzt.things.River.prototype.doTick = function() {
+
+    var thing = this.board.getTile(this.point);
+
+    if(thing.conveyable) {
+        thing.push(this.direction, this);
+    }
+
+};
+
+jzt.things.River.prototype.isSurrenderable = function(thing) {
+    return true;
+};
+
+jzt.things.River.prototype.serialize = function() {
+    var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    delete result.color;
+    delete result.speed;
+    result.direction = jzt.Direction.getShortName(this.direction);
+    return result;
+};
+
+jzt.things.River.prototype.deserialize = function(data) {
+    jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
+    this.background = jzt.colors.Blue;
+    this.foreground = jzt.colors.BrightBlue;
+    this.direction = jzt.Direction.fromName(data.direction);
+    this.initialize();
 };
 
 //--------------------------------------------------------------------------------
