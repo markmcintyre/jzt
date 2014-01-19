@@ -530,9 +530,7 @@ jzt.things.ScriptableThing.prototype.serialize = function() {
 jzt.things.ScriptableThing.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
     this.name = jzt.util.getOption(data, 'name', 'UnknownScriptable');
-    if(data.spriteIndex) {
-        this.spriteIndex = data.spriteIndex;
-    }
+    this.spriteIndex = jzt.util.getOption(data, 'spriteIndex', 1);
     this.setTorchRadius(jzt.util.getOption(data, 'torchRadius', 0));
     this.locked = data.locked;
     if(data.walkDirection) {
@@ -2248,7 +2246,7 @@ jzt.things.Heart.prototype.deserialize = function(data) {
 jzt.things.Heart.prototype.sendMessage = function(message) {
     if(message === 'TOUCH') {
         this.remove();
-        this.play('-cegs3+c+c+c');
+        this.play('te-c+c+c');
         this.adjustCounter('health_max', 10);
         this.adjustCounter('health', 10);
         this.adjustCounter('score', 500);
