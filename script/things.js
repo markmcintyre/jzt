@@ -2004,7 +2004,7 @@ jzt.things.Duplicator.prototype.doTick = function() {
         }
 
 
-        this.play(cloned ? 'scdefg' : '--f#f#');
+        this.play(cloned ? 'scdefg' : '--g#f#');
 
 
 
