@@ -530,7 +530,7 @@ jzt.Game.prototype.run = function() {
         }
 
         this.boundLoop = this.loop.bind(this);
-        this.then = performance.now();
+        this.then = Date.now();
             
         // Start the game loop
         this.loopId = requestAnimationFrame(this.boundLoop);
@@ -541,8 +541,13 @@ jzt.Game.prototype.run = function() {
 /**
  * Executes a single cycle of this Game's primary loop, effectively running
  * this Game for a single graphics tick.
+ *
+ * TODO: Use performance.now() and the parameter passed to this function by 
+ * requestAnimationFrame to do timing once browser support improves.
  */  
-jzt.Game.prototype.loop = function(now) {
+jzt.Game.prototype.loop = function() {
+
+    var now = Date.now();
 
     var delta = now - this.then;
 
