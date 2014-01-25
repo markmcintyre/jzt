@@ -40,9 +40,10 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     this.CPS = 10;
     this.CYCLE_RATE = Math.round(this.FPS / this.CPS);
     this.CYCLE_TICKS = Math.floor(1000 / this.FPS) * this.CYCLE_RATE;
-
-    this.intervalId = undefined;
+    this.FPS_INTERVAL = 1000 / this.FPS;
     
+    this.loopId = undefined;
+
     this.onLoadCallback = onLoadCallback;
     this.resources = {};
     this.player = undefined;
@@ -114,7 +115,7 @@ jzt.Game.prototype.deserialize = function(data) {
     var isRunning;
 
     // If we're already running, end the game loop
-    if(this.intervalId) {
+    if(this.loopId) {
         isRunning = true;
         this.end();
     }
@@ -517,7 +518,7 @@ jzt.Game.prototype.setBoard = function(board, playerPoint) {
 jzt.Game.prototype.run = function() {
 
     // If our game loop isn't already running
-    if(! this.intervalId) {
+    if(! this.loopId) {
         this.keyboard.initialize();
 
         if(this.savedGame) {
@@ -528,10 +529,11 @@ jzt.Game.prototype.run = function() {
             this.setState(jzt.GameState.Title);
         }
 
-        this.drawFunction = this.draw.bind(this);
+        this.boundLoop = this.loop.bind(this);
+        this.then = performance.now();
             
         // Start the game loop
-        this.intervalId = setInterval(this.loop.bind(this), 1000 / this.FPS);   
+        this.loopId = requestAnimationFrame(this.boundLoop);
     }
 
 };
@@ -540,10 +542,17 @@ jzt.Game.prototype.run = function() {
  * Executes a single cycle of this Game's primary loop, effectively running
  * this Game for a single graphics tick.
  */  
-jzt.Game.prototype.loop = function() {
+jzt.Game.prototype.loop = function(now) {
 
-    this.update();
-    requestAnimationFrame(this.drawFunction);
+    var delta = now - this.then;
+
+    this.loopId = requestAnimationFrame(this.boundLoop);
+
+    if(delta > this.FPS_INTERVAL) {
+        this.then = now - (delta % this.FPS_INTERVAL)
+        this.update();
+        this.draw();
+    }
 
 };
 
@@ -553,10 +562,10 @@ jzt.Game.prototype.loop = function() {
 jzt.Game.prototype.end = function() {
 
     // Stop the game loop if it's running
-    if(this.intervalId) {
+    if(this.loopId) {
 
-        clearInterval(this.intervalId);
-        this.intervalId = undefined;
+        cancelAnimationFrame(this.loopId);
+        this.loopId = undefined;
 
     }
 

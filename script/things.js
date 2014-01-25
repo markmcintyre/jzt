@@ -2662,7 +2662,7 @@ jzt.things.Player = function(board) {
     this.conveyable = true;
 
     if(board) {
-        this.eventScheduler = new jzt.DelayedEventScheduler(board.game.CYCLE_TICKS * 2, board.game.CYCLE_TICKS);
+        this.eventScheduler = new jzt.DelayedEventScheduler(board.game.CYCLE_TICKS * 2, 0);
     }
 
     this.torch = undefined;
