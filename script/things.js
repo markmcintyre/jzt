@@ -3314,6 +3314,7 @@ jzt.things.Signpost.prototype.sendMessage = function(message) {
 
     var lines;
     var index;
+    var text;
 
     if(message === 'TOUCH') {
 
@@ -3326,7 +3327,8 @@ jzt.things.Signpost.prototype.sendMessage = function(message) {
 
         lines = this.text.split('\n');
         for(index = 0; index < lines.length; ++index) {
-            this.board.game.scroll.addLine(lines[index]);
+            text = jzt.i18n.getBoardMessage(this.board, lines[index]);
+            this.board.game.scroll.addLine(text);
         }
 
 

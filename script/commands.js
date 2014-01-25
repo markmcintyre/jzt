@@ -624,7 +624,8 @@ jzt.commands.Say.prototype.clone = function() {
 };
 
 jzt.commands.Say.prototype.execute = function(owner) {
-    owner.board.setDisplayMessage(this.text);
+    var message = jzt.i18n.getBoardMessage(owner.board, this.text);
+    owner.board.setDisplayMessage(message);
     return jzt.commands.CommandResult.CONTINUE;
 };
 
@@ -645,7 +646,8 @@ jzt.commands.Scroll.prototype.clone = function() {
 };
 
 jzt.commands.Scroll.prototype.execute = function(owner) {
-    owner.scriptContext.addScrollContent(this.text, false, this.label);
+    var message = jzt.i18n.getBoardMessage(owner.board, this.text);
+    owner.scriptContext.addScrollContent(message, false, this.label);
     return jzt.commands.CommandResult.CONTINUE;
 };
 
@@ -664,7 +666,8 @@ jzt.commands.ScrollC.prototype.clone = function() {
 };
 
 jzt.commands.ScrollC.prototype.execute = function(owner) {
-    owner.scriptContext.addScrollContent(this.text, true);
+    var message = jzt.i18n.getBoardMessage(owner.board, this.text);
+    owner.scriptContext.addScrollContent(message, true);
     return jzt.commands.CommandResult.CONTINUE;
 };
 

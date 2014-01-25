@@ -31,6 +31,7 @@ jzt.Board = function(boardData, game) {
     this.focusPoint = new jzt.Point(0,0);
     this.maxPlayerBullets = boardData.maxPlayerBullets !== undefined ? boardData.maxPlayerBullets : Infinity;
     this.playerBullets = 0;
+    this.i18n = undefined;
 
     this.north = boardData.north;
     this.east = boardData.east;
@@ -54,6 +55,7 @@ jzt.Board = function(boardData, game) {
     this.height = boardData.height;
     this.width = boardData.width;
 
+    this.initializeI18n(boardData.i18n);
     this.initializeScripts(boardData.scripts);
     this.initializeTiles(boardData.tiles);
     this.initializeWindow();
@@ -95,6 +97,7 @@ jzt.Board.prototype.serialize = function() {
     var result = {};
     var index;
     var script;
+    var message;
 
     result.name = this.name;
 
@@ -143,6 +146,38 @@ jzt.Board.prototype.serialize = function() {
         result.scripts.push( script.serialize() );
     }
 
+    // Store i18n data
+    if(this.i18n) {
+
+        // Create an i18n container for our results
+        result.i18n = {};
+
+        // For each of our i18n values...
+        for(index in this.i18n) {
+            if(this.i18n.hasOwnProperty(index)) {
+
+                // We are expecting a two-letter language code
+                if(typeof this.i18n[index] === 'string' || index.length === 2) {
+
+                    // Create an object for our language strings
+                    result.i18n[index] = {};
+
+                    for(message in this.i18n[index]) {
+                        if(this.i18n[index].hasOwnProperty(message)) {
+                            // If our value is a string, store it in our result
+                            if(typeof this.i18n[index][message] === 'string') {
+                                result.i18n[index][message] = this.i18n[index][message];
+                            }
+                        }
+                    }
+
+                }
+
+            }
+        }
+
+    }
+
     return result;
 
 };
@@ -162,6 +197,44 @@ jzt.Board.prototype.initializeScripts = function(scriptData) {
         this.scripts.push(script);
     }
     
+};
+
+jzt.Board.prototype.initializeI18n = function(i18nData) {
+
+    var language;
+    var entry;
+
+    if(i18nData) {
+
+        this.i18n = {};
+
+        // For each of our i18n values...
+        for(language in i18nData) {
+            if(i18nData.hasOwnProperty(language)) {
+
+                if(typeof language === 'string' && language.length === 2) {
+
+                    // Create a section for our messages in this language
+                    this.i18n[language] = {};
+
+                    for(entry in i18nData[language]) {
+                        if(i18nData[language].hasOwnProperty(entry)) {
+
+                            // If our value is a string, store it in our result
+                            if(typeof i18nData[language][entry] === 'string') {
+                                this.i18n[language][entry] = i18nData[language][entry];
+                            }
+
+                        }
+                    }
+                    
+                }
+
+            }
+        }
+
+    }
+
 };
 
 jzt.Board.prototype.getScriptables = function(name) {
@@ -1183,6 +1256,30 @@ jzt.Board.prototype.getSmartDirection = function(point) {
     return jzt.Direction.random(directions);
 
 };
+
+jzt.Board.prototype.getMessage = function(key) {
+
+    var result;
+    var language = jzt.i18n.getLanguage();
+
+    result = this.getMessageForLanguage(language, key);
+
+    // If no message was found and we haven't tried the default language...
+    if(result === undefined && language !== jzt.i18n.DefaultLanguage) {
+        result = this.getMessageForLanguage(jzt.i18n.DefaultLanguage, key);
+    }
+
+    return result !== undefined ? result : '??? ' + key + ' ???';
+
+};
+
+jzt.Board.prototype.getMessageForLanguage = function(language, key) {
+
+    if(this.i18n && this.i18n.hasOwnProperty(language) && this.i18n[language].hasOwnProperty(key)) {
+        return this.i18n[language][key];
+    }
+
+}
 
 /**
  * Renders a visual message to a provided graphics context representing this Board's current

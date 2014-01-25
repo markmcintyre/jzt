@@ -186,4 +186,16 @@ jzt.i18n.setLanguage = function(language) {
 	jzt.i18n.Messages.currentLanguage = jzt.i18n.Messages[language];
 };
 
+jzt.i18n.getBoardMessage = function(board, potentialKey) {
+
+	var message;
+
+	if(potentialKey.indexOf('i18n:') === 0 ) {
+		return board.getMessage(potentialKey.substring(5));
+	}
+
+	return potentialKey;
+
+};
+
 jzt.i18n.setLanguage(jzt.i18n.DefaultLanguage);
