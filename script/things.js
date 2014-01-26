@@ -4183,19 +4183,15 @@ jzt.things.Tiger.prototype.doTick = function() {
 jzt.things.Torch = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 157;
-    this.speed = 3;
-    this.torches = [];
     this.glow = true;
-    this.animationIndex = 0;
 };
-jzt.things.Torch.prototype = new jzt.things.UpdateableThing();
+jzt.things.Torch.prototype = new jzt.things.Thing();
 jzt.things.Torch.prototype.constructor = jzt.things.Torch;
 jzt.things.Torch.serializationType = 'Torch';
 
 jzt.things.Torch.prototype.serialize = function() {
-    var result = jzt.things.UpdateableThing.prototype.serialize.call(this);
+    var result = jzt.things.Thing.prototype.serialize.call(this);
     delete result.color;
-    delete result.speed;
     return result;
 };
 
@@ -4212,31 +4208,6 @@ jzt.things.Torch.prototype.deserialize = function(data) {
  */
 jzt.things.Torch.prototype.push = function(direction) {
     this.move(direction);
-    this.torches = [];
-};
-
-jzt.things.Torch.prototype.doTick = function() {
-
-    this.animationIndex += (Math.floor(Math.random() * 3)-1);
-
-    if(this.animationIndex > this.torches.length-1) {
-        this.animationIndex = this.torches.length-1;
-    }
-    else if(this.animationIndex < 0) {
-        this.animationIndex = 0;
-    }
-
-};
-
-jzt.things.Torch.prototype.getTorch = function() {
-
-    if(this.torches.length <= 0) {
-        this.torches.push(jzt.util.generateCircleData(this.point, 1));
-        this.torches.push(jzt.util.generateCircleData(this.point, 2));
-        this.torches.push(jzt.util.generateCircleData(this.point, 3));
-    }
-
-    return this.torches[this.animationIndex];
 };
 
 /**
