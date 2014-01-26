@@ -2274,7 +2274,7 @@ jzt.things.Heart.prototype.deserialize = function(data) {
 jzt.things.Heart.prototype.sendMessage = function(message) {
     if(message === 'TOUCH') {
         this.remove();
-        this.play('te-c+c+c');
+        this.play('tcefg+ceg');
         this.adjustCounter('health_max', 10);
         this.adjustCounter('health', 10);
         this.adjustCounter('score', 500);

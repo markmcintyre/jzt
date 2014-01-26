@@ -183,7 +183,7 @@ jzt.i18n.getLanguage = function() {
 
 jzt.i18n.setLanguage = function(language) {
 	jzt.i18n.language = language;
-	jzt.i18n.Messages.currentLanguage = jzt.i18n.Messages[language];
+	jzt.i18n.Messages.currentLanguage = jzt.i18n.Messages.hasOwnProperty(language) ? jzt.i18n.Messages[language] : jzt.i18n.Messages[jzt.i18n.DefaultLanguage];
 };
 
 jzt.i18n.getBoardMessage = function(board, potentialKey) {
