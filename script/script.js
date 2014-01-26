@@ -158,6 +158,7 @@ jzt.ScriptContext = function(script, owner) {
     this.heap = {};
     this.initializeLabels(script);
     this.scrollContent = [];
+    this.jumpCount = 0;
 };
 
 /**
@@ -303,6 +304,7 @@ jzt.ScriptContext.prototype.executeTick = function() {
                 case undefined:
                 case jzt.commands.CommandResult.NORMAL:
                     this.advanceLine();
+                    this.doneTick();
                     break;
             
                 // Execute a second tick
@@ -313,11 +315,21 @@ jzt.ScriptContext.prototype.executeTick = function() {
 
                 // Normal execution, assuming the counter is at the right location
                 case jzt.commands.CommandResult.CONTINUE_AFTER_JUMP:
-                    //this.executeTick();
+
+                    // If we haven't jumped too much this tick...
+                    if(this.jumpCount <= 5) {
+                        // Execute the next tick
+                        this.executeTick();
+                    }
+                    // Otherwise we're done
+                    else {
+                        this.doneTick();
+                    }
                     break;
             
                 // Execute the same command next tick
                 case jzt.commands.CommandResult.REPEAT:
+                    this.doneTick();
                     break;
             
                 default:
@@ -328,6 +340,13 @@ jzt.ScriptContext.prototype.executeTick = function() {
         
     }
     
+};
+
+/**
+ * Indicates that this script is done executing for this tick.
+ */
+jzt.ScriptContext.prototype.doneTick = function() {
+    this.jumpCount = 0;
 };
 
 /**
@@ -348,6 +367,9 @@ jzt.ScriptContext.prototype.jumpToLabel = function(label) {
             
             // Set our current line to the active label index
             this.commandIndex = labelIndicies[labelIndex];
+
+            // Increment our jump count for this tick
+            this.jumpCount++;
             
         }
 

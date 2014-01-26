@@ -1005,6 +1005,28 @@ jztscript.parsers.TorchParser = function() {
 };
 
 /*
+ * Try Parser
+ * 
+ * command = 'try' DirectionExpression label
+ */
+jztscript.parsers.TryParser = function() {
+    var ns = jzt.parser;
+    var result = new ns.Sequence();
+    result.add(ns.discard(new ns.Literal('try')));
+    result.add(new jztscript.parsers.DirectionExpressionParser());
+    result.add(new ns.Word());
+    result.assembler = {
+        assemble: function(assembly) {
+            var command = new jzt.commands.Try();
+            command.label = assembly.stack.pop().toUpperCase();
+            command.directionExpression = assembly.target;
+            assembly.target = command;
+        }
+    };
+    return result;
+};
+
+/*
  * Restore Parser
  */
 jztscript.parsers.RestoreParser = function() {

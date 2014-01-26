@@ -858,6 +858,30 @@ jzt.commands.Torch.prototype.execute = function(owner) {
 };
 
 /*
+ * Try Command
+ */
+ jzt.commands.Try = function() {
+    this.directionExpression = undefined;
+    this.label = undefined;
+ };
+
+ jzt.commands.Try.prototype.clone = function() {
+    var clone = new jzt.commands.Try();
+    clone.directionExpression = this.directionExpression.clone();
+    clone.label = this.label;
+    return clone;
+ };
+
+ jzt.commands.Try.prototype.execute = function(owner) {
+    var direction = this.directionExpression.getResult(owner);
+    if(! owner.move(direction)) {
+        owner.scriptContext.jumpToLabel(this.label);
+        return jzt.commands.CommandResult.CONTINUE_AFTER_JUMP;
+    }
+    return jzt.commands.CommandResult.CONTINUE;
+ };
+
+/*
  * Unlock Command
  */
 jzt.commands.Unlock = function() {};
