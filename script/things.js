@@ -2446,6 +2446,11 @@ jzt.things.Lava.prototype.updateWhileUnder = function() {
 
     }
 
+    // ScriptableThings get sent a LAVA message
+    else if(thing instanceof jzt.things.ScriptableThing) {
+        thing.sendMessage('LAVA');
+    }
+
     // Any other thing that isn't immune gets damaged immediately
     else if(! thing.lavaWalker) {
         thing.sendMessage('SHOT');
