@@ -2407,6 +2407,64 @@ jzt.things.Key.prototype.push = function(direction, pusher) {
 };
 
 //--------------------------------------------------------------------------------
+jzt.things.Lava = function(board) {
+    jzt.things.Thing.call(this, board);
+    this.background = jzt.colors.BrightRed;
+    this.foreground = jzt.colors.BrightRed;
+    this.cycleCount = 0;
+    this.cycleRate = board.game.CYCLE_RATE * 5;
+    this.spriteIndex = 176;
+};
+jzt.things.Lava.prototype = new jzt.things.Thing();
+jzt.things.Lava.prototype.constructor = jzt.things.Lava;
+jzt.things.Lava.serializationType = 'Lava';
+
+jzt.things.Lava.prototype.serialize = function() {
+    var result = jzt.things.Thing.prototype.serialize.call(this);
+    delete result.color;
+    return result;
+};
+
+jzt.things.Lava.prototype.deserialize = function(data) {
+    jzt.things.Thing.prototype.deserialize.call(this, data);
+    this.background = jzt.colors.BrightRed;
+    this.foreground = jzt.colors.BrightRed;
+};
+
+jzt.things.Lava.prototype.updateWhileUnder = function() {
+    
+    var thing = this.board.getTile(this.point);
+
+    // If a player stepped on the lava...
+    if(thing instanceof jzt.things.Player) {
+
+        // Damage the player every five cycles
+        if(++this.cycleCount > this.cycleRate) {
+            this.cycleCount = 0;
+            thing.sendMessage('SHOT');
+        }
+
+    }
+
+    // Any other thing that isn't immune gets damaged immediately
+    else if(! thing.lavaWalker) {
+        thing.sendMessage('SHOT');
+    }
+
+}
+
+jzt.things.Lava.prototype.sendMessage = function(message) {
+    if(message === 'TOUCH') {
+        this.cycleCount = 0;
+        this.board.player.sendMessage('SHOT');
+    }
+};
+
+jzt.things.Lava.prototype.isSurrenderable = function(thing) {
+    return true;
+};
+
+//--------------------------------------------------------------------------------
 
 /*
  * LineWall is a Thing representing an immoveable obstacle with line decoration.
