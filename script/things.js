@@ -2918,6 +2918,7 @@ jzt.things.Player.prototype.updateTorch = function(timeStamp) {
 
     // If we've already past our torch expiry date
     if(timeStamp > this.torchExpiry) {
+        this.play('tc-c-c');
         this.torch = false;
     }
     
@@ -2928,7 +2929,7 @@ jzt.things.Player.prototype.updateTorch = function(timeStamp) {
         torchLife = this.torchExpiry - timeStamp;
 
         if(torchLife < 20000) {
-            this.torchStrength = Math.round((torchLife * this.MAX_TORCH_STRENGTH) / 20000);
+            this.torchStrength = Math.ceil((torchLife * this.MAX_TORCH_STRENGTH) / 20000);
         }
         
     }
