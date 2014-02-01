@@ -2731,6 +2731,9 @@ jzt.things.Player.prototype.push = function(direction) {
  */
 jzt.things.Player.prototype.move = function(direction) {
 
+    // Remember our current location
+    var startingPoint = this.point.clone();
+
     // Calculate our new location
     var newLocation = this.point.add(direction);
 
@@ -2754,7 +2757,13 @@ jzt.things.Player.prototype.move = function(direction) {
         thing.sendMessage('TOUCH');
     }
 
-    return this.board.moveTile(this.point, newLocation);
+    // If the player wasn't already moved as a result of above actions, do our move
+    if(this.point.equals(startingPoint)) {
+        return this.board.moveTile(this.point, newLocation);
+    }
+
+    // Otherwise this wasn't a typical move anymore
+    return false;
     
 };
 
@@ -2951,8 +2960,8 @@ jzt.things.Player.prototype.sendMessage = function(message) {
 
     if(message === 'SHOT' || message === 'BOMBED') {
         this.play('t--c+c-c+d#', true);
-        this.board.setDisplayMessage(jzt.i18n.getMessage('status.hurt'));
         this.adjustCounter('health', -10);
+        this.board.playerHurt();
     }
 
 };

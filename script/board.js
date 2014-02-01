@@ -25,6 +25,7 @@ jzt.Board = function(boardData, game) {
     this.tiles = [];
     this.scripts = [];
     this.dark = boardData.dark;
+    this.reenter = boardData.reenter;
     this.smartPath = [];
     this.customRenderSet = [];
     this.torches = [];
@@ -44,6 +45,10 @@ jzt.Board = function(boardData, game) {
 
     this.defaultPlayerX = boardData.playerX;
     this.defaultPlayerY = boardData.playerY;
+
+    if(boardData.hasOwnProperty('entryPointX') && boardData.hasOwnProperty('entryPointY')) {
+        this.entryPoint = new jzt.Point(boardData.entryPointX, boardData.entryPointY);
+    }
 
     this.displayMessage = undefined;
     this.displayMessageTick = 0;
@@ -111,6 +116,7 @@ jzt.Board.prototype.serialize = function() {
     jzt.util.storeOption(result, 'eastOffset', this.eastOffset);
     jzt.util.storeOption(result, 'southOffset', this.southOffset);
     jzt.util.storeOption(result, 'westOffset', this.westOffset);
+    jzt.util.storeOption(result, 'reenter', this.reenter);
 
     if(this.maxPlayerBullets !== Infinity) {
         result.maxPlayerBullets = this.maxPlayerBullets;
@@ -123,6 +129,11 @@ jzt.Board.prototype.serialize = function() {
     else {
         result.playerX = this.defaultPlayerX;
         result.playerY = this.defaultPlayerY;
+    }
+
+    if(this.entryPoint) {
+        result.entryPointX = this.entryPoint.x;
+        result.entryPointY = this.entryPoint.y;
     }
 
     result.width = this.width;
@@ -280,6 +291,11 @@ jzt.Board.prototype.initializePlayer = function(player) {
     this.player.board = this;
     this.initializeTorch(this.player);
     this.focusPoint = this.player.point;
+
+    // If we don't have an entry point for this board, set it now
+    if(! this.entryPoint) {
+        this.entryPoint = player.point.clone();
+    }
 
     // If we're not editing, send ScriptableThings the 'enter' message
     if(!this.game.isEditor) {
@@ -643,6 +659,7 @@ jzt.Board.prototype.setTile = function(point, tile) {
 
             tile.point = point.clone();
 
+            // If we're adding a player when we've already got one on the board elsewhere...
             if(tile instanceof jzt.things.Player && (!point.equals(this.player.point))) {
 
                 // Remove the old player
@@ -1280,6 +1297,20 @@ jzt.Board.prototype.getMessageForLanguage = function(language, key) {
     }
 
 }
+
+/**
+ * Indicates to this board that the player has been hurt. This will display 
+ * a message on the screen and re-enter if applicable.
+ */
+jzt.Board.prototype.playerHurt = function() {
+
+    this.setDisplayMessage(jzt.i18n.getMessage('status.hurt'));
+
+    if(this.reenter) {
+        this.moveTile(this.player.point, this.entryPoint);
+    }
+
+};
 
 /**
  * Renders a visual message to a provided graphics context representing this Board's current

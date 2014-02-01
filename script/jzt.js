@@ -242,6 +242,7 @@ jzt.Game.prototype.movePlayerToPassage = function(passageId, boardName) {
     var passage = newBoard.getPassage(passageId);
 
     if(passage) {
+        newBoard.entryPoint = passage.point;
         this.setBoard(newBoard, passage.point);
         this.setState(jzt.GameState.Paused);
     }
@@ -425,6 +426,7 @@ jzt.Game.prototype.movePlayerToBoardEdge = function(edge, boardName, offset) {
     }
 
     // Set the current board to our new board
+    newBoard.entryPoint = newLocation;
     this.setBoard(newBoard, newLocation);
 
 };
