@@ -1200,7 +1200,7 @@ jzt.things.Bullet.prototype.influenceSmartPath = function() {
         // Weight the ten spaces in front of our bullet as aversion points
         for(index = 0; index < 10; ++index) {
             point = point.add(this.direction);
-            this.board.adjustSmartPathWeight(point, 10);
+            this.board.adjustSmartPathWeight(point, 100 - (index * 10));
         }
 
     }
@@ -3482,6 +3482,7 @@ jzt.things.Snake = function(board) {
     this.spriteIndex = 235;
     this.background = undefined;
     this.foreground = jzt.colors.Green;
+    this.conveyable = true;
     this.speed = 3;
 };
 jzt.things.Snake.prototype = new jzt.things.UpdateableThing();

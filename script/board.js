@@ -1103,12 +1103,14 @@ jzt.Board.prototype.render = function(c) {
   
         // Debug rendering...
         //
-        //var p = me.getSmartValue(point);
-        //if(p !== Infinity) {
-        //    c.fillStyle = 'gray';
-        //    var drawpoint = point.subtract(me.windowOrigin);
-        //    c.fillText(me.getSmartValue(point).toString(), drawpoint.x * 16 + 4, drawpoint.y * 32 + 16);
-        //}
+        /*
+        var p = me.getSmartValue(point);
+        if(p !== Infinity) {
+            c.fillStyle = 'gray';
+            var drawpoint = point.subtract(me.windowOrigin);
+            c.fillText(me.getSmartValue(point).toString(), drawpoint.x * 32 + 8, drawpoint.y * 64 + 32);
+        }
+        */
         
 
     });
@@ -1150,18 +1152,24 @@ jzt.Board.prototype.updateSmartPath = function(targetPoint) {
 
     function updatePath(currentX, currentY, currentDistance) {
 
+        var index;
+        var tile;
+        var pathValue;
+        var validTile;
+
         // If our values are within the grid range...
         if(currentDistance < 50 && currentX >= 0 && currentX < me.width && currentY >= 0 && currentY < me.height) {
 
             // Calculate our index
-            var index = currentX + currentY * me.width;
+            index = currentX + currentY * me.width;
 
             // Get our tile and existing path value
-            var tile = me.tiles[index];
-            var pathValue = me.smartPath[index];
+            tile = me.tiles[index];
+            validTile = (tile === undefined || tile instanceof jzt.things.Bullet);
+            pathValue = me.smartPath[index];
 
             // If there is neither a tile, nor an existing value then we're good to go
-            if(currentDistance <= 0 || (tile === undefined && (pathValue === undefined || pathValue > currentDistance))) {
+            if(currentDistance <= 0 || (validTile && (pathValue === undefined || pathValue > currentDistance))) {
 
                 // Assign our path distance at this point
                 me.smartPath[currentX + currentY * me.width] = currentDistance++;

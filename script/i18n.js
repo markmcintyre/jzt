@@ -54,12 +54,12 @@ jzt.i18n.Messages.en = {
 	},
 	pause: {
 		'paused': 'Paused',
-		'health': '   Health:',
-		'ammo': '     Ammo:',
-		'gems': '     Gems:',
-		'torches': '  Torches:',
-		'score': '    Score:',
-		'keys': '     Keys:'
+		'health': '    Health:',
+		'ammo': '      Ammo:',
+		'gems': '      Gems:',
+		'torches': '   Torches:',
+		'score': '     Score:',
+		'keys': '      Keys:'
 	},
 	file: {
 		'new': 'Empty Slot',
@@ -119,12 +119,12 @@ jzt.i18n.Messages.fr = {
 	},
 	pause: {
 		'paused': 'Pause',
-		'health': '       PV:',
-		'ammo': 'Munitions:',
-		'gems': '   Bijous:',
-		'torches': '  Torches:',
-		'score': '    Score:',
-		'keys': '     Clés:'
+		'health': '        PV:',
+		'ammo': ' Munitions:',
+		'gems': '    Bijous:',
+		'torches': '   Torches:',
+		'score': '     Score:',
+		'keys': '      Clés:'
 	},
 	file: {
 		'new': 'Espace Vide',

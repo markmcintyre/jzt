@@ -719,14 +719,24 @@ jzt.Game.prototype.drawPauseScreen = function() {
     var value;
     var sprite;
     var keyValues = ['9', 'A', 'B', 'C', 'D', 'E', 'F'];
+    var pauseWidth = 24;
+    var me = this;
+
+    function getCounterValue(counter) {
+        var result = me.getCounterValue(counter).toString();
+        if(me.getCounterValue(counter + '_max')) {
+            result += '/' + me.getCounterValue(counter + '_max').toString();
+        }
+        return result;
+    }
 
     // If we haven't yet defined a status popup in our language, do it now
     if(this.statusPopup === undefined || this.statusPopup.language !== jzt.i18n.Messages.currentLanguage) {
-        this.statusPopup = new jzt.ui.Popup(new jzt.Point(this.screenWidth - 21,1), new jzt.Point(20,10), this);
+        this.statusPopup = new jzt.ui.Popup(new jzt.Point(this.screenWidth - (pauseWidth+1),1), new jzt.Point(pauseWidth,10), this);
         this.statusPopup.language = jzt.i18n.Messages.currentLanguage;
         spriteGrid = this.statusPopup.spriteGrid;
         value = jzt.i18n.getMessage('pause.paused');
-        spriteGrid.addText(new jzt.Point(Math.floor((20-value.length)/2), 1), value, jzt.colors.White);
+        spriteGrid.addText(new jzt.Point(Math.floor((pauseWidth-value.length)/2), 1), value, jzt.colors.White);
         spriteGrid.addText(new jzt.Point(1, 3), jzt.i18n.getMessage('pause.health'), jzt.colors.Yellow);
         spriteGrid.addText(new jzt.Point(1, 4), jzt.i18n.getMessage('pause.ammo'), jzt.colors.Yellow);
         spriteGrid.addText(new jzt.Point(1, 5), jzt.i18n.getMessage('pause.gems'), jzt.colors.Yellow);
@@ -736,22 +746,22 @@ jzt.Game.prototype.drawPauseScreen = function() {
     }
 
     // Make sure we don't position our popup over the player
-    if(this.player.point.x >= this.currentBoard.windowOrigin.x + (this.screenWidth - 22)) {
+    if(this.player.point.x >= this.currentBoard.windowOrigin.x + (this.screenWidth - pauseWidth - 2)) {
         this.statusPopup.position.x = 1;
     }
     else {
-        this.statusPopup.position.x = this.screenWidth - 21;
+        this.statusPopup.position.x = this.screenWidth - (pauseWidth + 1);
     }
 
     position = this.statusPopup.position;
     this.statusPopup.render(this.context);
 
     // Draw our status values
-    this.resources.graphics.drawString(this.context, position.add(new jzt.Point(12, 3)), this.getCounterValue('health').toString(), jzt.colors.BrightWhite);
-    this.resources.graphics.drawString(this.context, position.add(new jzt.Point(12, 4)), this.getCounterValue('ammo').toString(), jzt.colors.BrightWhite);
-    this.resources.graphics.drawString(this.context, position.add(new jzt.Point(12, 5)), this.getCounterValue('gems').toString(), jzt.colors.BrightWhite);
-    this.resources.graphics.drawString(this.context, position.add(new jzt.Point(12, 6)), this.getCounterValue('torches').toString(), jzt.colors.BrightWhite);
-    this.resources.graphics.drawString(this.context, position.add(new jzt.Point(12, 7)), this.getCounterValue('score').toString(), jzt.colors.BrightWhite);
+    this.resources.graphics.drawString(this.context, position.add(new jzt.Point(13, 3)), getCounterValue('health'), jzt.colors.BrightWhite);
+    this.resources.graphics.drawString(this.context, position.add(new jzt.Point(13, 4)), getCounterValue('ammo'), jzt.colors.BrightWhite);
+    this.resources.graphics.drawString(this.context, position.add(new jzt.Point(13, 5)), getCounterValue('gems'), jzt.colors.BrightWhite);
+    this.resources.graphics.drawString(this.context, position.add(new jzt.Point(13, 6)), getCounterValue('torches'), jzt.colors.BrightWhite);
+    this.resources.graphics.drawString(this.context, position.add(new jzt.Point(13, 7)), getCounterValue('score'), jzt.colors.BrightWhite);
 
     // Draw our keys
     position = position.add(new jzt.Point(12, 8));
