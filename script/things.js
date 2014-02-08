@@ -184,18 +184,35 @@ jzt.things.Thing.prototype.isPlayerVisible = function(distance) {
 
     var line = jzt.util.generateLineData(this.point, this.board.player.point);
     var me = this;
-    var tile;
+    var currentPoint = this.point;
     var result = true;
+
+    function isBlocked(point) {
+        var tile = me.board.getTile(point);
+        return tile && (tile != me) && !(tile instanceof jzt.things.Player);
+    }
 
     if(line.points.length > distance) {
         return false;
     }
 
     line.forEach(function(point) {
-        tile = me.board.getTile(point);
-        if(tile && tile != me && !(tile instanceof jzt.things.Player) ) {
+
+        // If we're doing a diagnoal step, test both paths to that step
+        if(currentPoint.x !== point.x && currentPoint.y !== point.y) {
+
+            if( isBlocked(new jzt.Point(currentPoint.x, point.y)) || isBlocked(new jzt.Point(point.x, currentPoint.y))) {
+                result = false;
+            }
+
+        }
+
+        if(isBlocked(point)) {
             result = false;
         }
+
+        currentPoint = point;
+
     });
 
     return result;

@@ -541,7 +541,7 @@ jztscript.parsers.ChangeParser = function() {
             }
 
             function isValidThing(thingToken) {
-                return jzt.things.ThingFactory.getThingMap().hasOwnProperty(thingToken);
+                return thingToken === 'EMPTY' || jzt.things.ThingFactory.getThingMap().hasOwnProperty(thingToken);
             }
 
             // Assign our new Thing

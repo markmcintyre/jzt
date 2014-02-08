@@ -535,9 +535,9 @@ jzt.Board.prototype.changeTiles = function(targetType, targetColor, newThing) {
 
         if(tile && tile.equals(targetType, targetColor)) {
 
-            clone = newThing.clone();
+            clone = newThing ? newThing.clone() : undefined;
 
-            if(!newThing.foreground) {
+            if(clone && !newThing.foreground) {
                 clone.foreground = tile.foreground;
             }
 
