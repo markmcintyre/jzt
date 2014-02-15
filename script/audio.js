@@ -35,12 +35,27 @@ jzt.Audio = function() {
 
         // Initialize our audio nodes
         this.userVolume = 0.08;
+        this.delay = 0.06;
         this.volume = this.context.createGain ? this.context.createGain() : this.context.createGainNode();
-        this.volume.gain.value = this.userVolume;
+        this.volume.gain.value = 0;
         this.volume.connect(this.context.destination);
+
+        // Create an oscillator
+        this.oscillator = this.context.createOscillator();
+        this.oscillator.type = this.oscillator.SQUARE ? this.oscillator.SQUARE : 'square';
+        this.oscillator.connect(this.volume);
+
+        // Polyfill for oscillator start
+        if(!this.oscillator.start) {
+            this.oscillator.start = this.oscillator.noteOn;
+        }
 
         this.timestamp = this.context.currentTime;
         this.interruptTimestamp = this.context.currentTime;
+
+        // Start our oscillator
+        this.oscillator.start(this.context.currentTime);
+
     }
 
 };
@@ -66,17 +81,14 @@ jzt.Audio.prototype.cancel = function() {
     // If this Audio instance is active and has an oscillator...
     if(this.active && this.oscillator) {
 
+        var cancelTime = this.context.currentTime + this.delay;
+
         // Cancel all scheduled frequency changes on the oscillator
-        this.oscillator.frequency.cancelScheduledValues(0);
+        this.oscillator.frequency.cancelScheduledValues(cancelTime);
 
         // Cancel all scheduled volumne changes on the volumne node
-        this.volume.gain.cancelScheduledValues(0);
-        this.volume.gain.value = this.userVolume;
-
-        // Stop the oscillator
-        // TODO: Once Chrome fixes a certain bug, use stop instead of disconnect
-        this.oscillator.disconnect();
-        this.oscillator = undefined;
+        this.volume.gain.cancelScheduledValues(cancelTime);
+        this.volume.gain.setValueAtTime(0, cancelTime);
 
         // Reset our timestamp and interrupt timestamp to right now
         this.timestamp = this.context.currentTime;
@@ -92,7 +104,7 @@ jzt.Audio.prototype.cancel = function() {
  * @return True if audio is currently playing, false otherwise.
  */
 jzt.Audio.prototype.isPlaying = function() {
-    return this.active && this.context.currentTime < this.timestamp;
+    return this.active && (this.context.currentTime + this.delay) < this.timestamp;
 };
 
 /**
@@ -112,22 +124,9 @@ jzt.Audio.prototype.playAfter = function(notation, uninterruptable) {
         // Create a song from our notation
         var song = new jzt.Audio.Song(notation);
 
-        // Create an oscillator for this play session
-        this.oscillator = this.context.createOscillator();
-        this.oscillator.type = this.oscillator.SQUARE ? this.oscillator.SQUARE : 'square';
-        this.oscillator.connect(this.volume);
-
-        // Polyfill for oscillator start and stop
-        if(!this.oscillator.start) {
-            this.oscillator.start = this.oscillator.noteOn;
-        }
-        if(!this.oscillator.stop) {
-            this.oscillator.stop = this.oscillator.noteOff;
-        }
-
         // Update our starting timestamp
-        if(this.timestamp < this.context.currentTime) {
-            this.timestamp = this.context.currentTime;
+        if(this.timestamp < this.context.currentTime + this.delay) {
+            this.timestamp = this.context.currentTime + this.delay;
         }
 
         var startTime = this.timestamp;
@@ -160,8 +159,8 @@ jzt.Audio.prototype.playAfter = function(notation, uninterruptable) {
         }
 
         // Start our oscillator now, and stop after all notes are done
-        this.oscillator.start(startTime);
-        this.oscillator.stop(this.timestamp);
+        this.volume.gain.setValueAtTime(this.userVolume, startTime);
+        this.volume.gain.setValueAtTime(0, this.timestamp);
 
         // If we're not to be interrupted, upadte the timestamp
         if(uninterruptable) {
@@ -183,7 +182,7 @@ jzt.Audio.prototype.playAfter = function(notation, uninterruptable) {
  * @param uninterruptable A truthy value indicating if the new melody is interruptable
  */
 jzt.Audio.prototype.play = function(notation, uninterruptable) {
-    if(this.active && this.context.currentTime >= this.interruptTimestamp) {
+    if(this.active && this.context.currentTime +this.delay >= this.interruptTimestamp) {
         this.cancel();
         this.playAfter(notation, uninterruptable);
     }

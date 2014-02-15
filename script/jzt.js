@@ -764,7 +764,7 @@ jzt.Game.prototype.drawPauseScreen = function() {
     this.resources.graphics.drawString(this.context, position.add(new jzt.Point(13, 7)), getCounterValue('score'), jzt.colors.BrightWhite);
 
     // Draw our keys
-    position = position.add(new jzt.Point(12, 8));
+    position = position.add(new jzt.Point(13, 8));
     sprite = this.resources.graphics.getSprite(12);
     for(value = 0; value < keyValues.length; ++value) {
         if(this.getCounterValue('key' + keyValues[value]) > 0) {
