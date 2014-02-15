@@ -50,7 +50,8 @@ jzt.i18n.Messages.en = {
 		'noshoot': 'You can\'t shoot here.',
 		'heart': 'Maximum health increased by 10!',
 		'invisible': 'You are blocked by an invisible wall.',
-		'notdark': 'You don\'t need a torch here.'
+		'notdark': 'You don\'t need a torch here.',
+		'loading': 'Loading...'
 	},
 	pause: {
 		'paused': 'Paused',
@@ -115,7 +116,8 @@ jzt.i18n.Messages.fr = {
 		'noshoot': 'Il est interdit de tirer ici.',
 		'heart': 'PV max a augmenté par 10 !',
 		'invisible': 'Vous êtes bloqué par un mur invisible.',
-		'notdark': 'Vous n\'avez pas besoin d\'une torche ici.'
+		'notdark': 'Vous n\'avez pas besoin d\'une torche ici.',
+		'loading': 'Chargement...'
 	},
 	pause: {
 		'paused': 'Pause',

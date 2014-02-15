@@ -15,6 +15,7 @@ var jzt = jzt || {};
  * machine.
  */
 jzt.GameState = {
+    Loading: -1,
     Playing: 0,
     Paused: 1,
     GameOver: 2,
@@ -32,7 +33,7 @@ jzt.GameState = {
  * @param onLoadCallback A callback function to be executed once this Game
  *        and its assets have been loaded and initialized.
  */
-jzt.Game = function(canvasElement, data, onLoadCallback) {
+jzt.Game = function(canvasElement, onLoadCallback) {
     
     var graphicsLoadedCallback;
 
@@ -44,12 +45,18 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     
     this.loopId = undefined;
 
+    this.gameLoaded = false;
+    this.loadingAnimationIndex = 0;
+    this.screenEffectIndex = 0;
+
     this.onLoadCallback = onLoadCallback;
     this.resources = {};
     this.player = undefined;
     this.keyboard = new jzt.KeyboardInput();
     this.canvasElement = canvasElement;
+    this.devicePixelRatio = 1;
     if(window.devicePixelRatio) {
+        this.devicePixelRatio = window.devicePixelRatio;
         canvasElement.style.width = canvasElement.width + 'px';
         canvasElement.style.height = canvasElement.height + 'px';
         canvasElement.width = canvasElement.width * window.devicePixelRatio;
@@ -59,8 +66,6 @@ jzt.Game = function(canvasElement, data, onLoadCallback) {
     this.context.imageSmoothingEnabled = false;
     this.context.webkitImageSmoothingEnabled = false;
     this.context.mozImageSmoothingEnabled = false;
-
-    this.deserialize(data);
 
     this.resources.audio = new jzt.Audio();
     graphicsLoadedCallback = this.onGraphicsLoaded.bind(this);
@@ -109,6 +114,38 @@ jzt.Game.prototype.serialize = function() {
 
 };
 
+jzt.Game.prototype.loadGame = function(game) {
+
+    var me = this;
+    var response;
+    var httpRequest;
+
+    if(typeof game === 'string') {
+
+        httpRequest = new XMLHttpRequest();
+        httpRequest.onreadystatechange = function() {
+            if (httpRequest.readyState === 4) {
+
+                if(httpRequest.status === 200) {
+                    response = JSON.parse(httpRequest.responseText);
+                    me.deserialize(response);
+                }
+                else {
+                    // TODO: Error State
+                }
+
+            }
+        };
+        httpRequest.open('GET', game, true);
+        httpRequest.send(null);
+
+    }
+    else if(typeof game === 'object') {
+        this.deserialize(game);
+    }
+
+};
+
 jzt.Game.prototype.deserialize = function(data) {
 
     var index;
@@ -151,6 +188,9 @@ jzt.Game.prototype.deserialize = function(data) {
         var board = data.boards[index];
         this.boards[board.name] = board;
     }
+
+    // Indicate that our game has loaded
+    this.gameLoaded = true;
 
     // If we were running, resume the game loop
     if(isRunning) {
@@ -523,12 +563,25 @@ jzt.Game.prototype.run = function() {
     if(! this.loopId) {
         this.keyboard.initialize();
 
-        if(this.savedGame) {
-            this.setBoard(this.startingBoard);
-            this.setState(jzt.GameState.Paused);
+        // If we have a game loaded...
+        if(this.gameLoaded) {
+
+            // If we've loaded a saved game, start from a board
+            if(this.savedGame) {
+                this.setBoard(this.startingBoard);
+                this.setState(jzt.GameState.Paused);
+            }
+
+            // Otherwise start from the title screen
+            else {
+                this.setState(jzt.GameState.Title);
+            }
+
         }
+
+        // If no game has loaded, we're in a loading state
         else {
-            this.setState(jzt.GameState.Title);
+            this.setState(jzt.GameState.Loading);
         }
 
         this.boundLoop = this.loop.bind(this);
@@ -670,6 +723,13 @@ jzt.Game.prototype.update = function() {
 
     }
 
+    // If we're loading
+    else if(this.state === jzt.GameState.Loading) {
+        if(++this.loadingAnimationIndex >= jzt.things.Conveyor.animationFrames.length * 4) {
+            this.loadingAnimationIndex = 0;
+        }
+    }
+
 };
 
 /**
@@ -709,6 +769,56 @@ jzt.Game.prototype.oneTimeMessage = function(messageKey) {
         this.currentBoard.setDisplayMessage(message);
 
     }
+
+};
+
+jzt.Game.prototype.drawScreenEffect = function() {
+
+    var line;
+
+    if(++this.screenEffectIndex > 20) {
+        this.screenEffectIndex = 0;
+    }
+
+    this.context.lineWidth = 4 * this.devicePixelRatio;
+    this.context.strokeStyle = 'rgba(0,0,0,0.05)';
+
+    this.context.beginPath();
+    for(line = -20; line < this.context.canvas.height; line = line + 20) {
+        this.context.moveTo(0, line + this.screenEffectIndex + 20);
+        this.context.lineTo(this.context.canvas.width, line + this.screenEffectIndex);
+    }
+    this.context.stroke();
+
+    this.context.beginPath();
+    for(line = -20; line < this.context.canvas.height; line = line + 20) {
+        this.context.moveTo(0, line + (2*this.devicePixelRatio) + this.screenEffectIndex + 20);
+        this.context.lineTo(this.context.canvas.width, line + (2*this.devicePixelRatio) + this.screenEffectIndex);
+    }
+    this.context.stroke();
+
+};
+
+jzt.Game.prototype.drawLoadingScreen = function() {
+
+    var spriteGrid = this.loadingPopup ? this.loadingPopup.spriteGrid : undefined;
+    var position;
+    var popupWidth = 24;
+    var sprite;
+
+    // If we haven't yet defined our loading popup in our language, do it now
+    if(this.loadingPopup === undefined || this.loadingPopup.language !== jzt.i18n.Messages.currentLanguage) {
+        this.loadingPopup = new jzt.ui.Popup(undefined, new jzt.Point(popupWidth, 3), this);
+        this.loadingPopup.setColor(jzt.colors.Blue, jzt.colors.White);
+        spriteGrid = this.loadingPopup.spriteGrid;
+        spriteGrid.addText(new jzt.Point(4, 1), jzt.i18n.getMessage('status.loading'), jzt.colors.BrightWhite);
+        this.loadingPopup.animationPosition = new jzt.Point(2, 1).add(this.loadingPopup.position);
+    }
+
+    this.loadingPopup.render(this.context);
+
+    sprite = this.resources.graphics.getSprite( jzt.things.Conveyor.animationFrames[Math.floor(this.loadingAnimationIndex / 4)] );
+    sprite.draw(this.context, this.loadingPopup.animationPosition, jzt.colors.Cycle);
 
 };
     
@@ -779,11 +889,18 @@ jzt.Game.prototype.drawPauseScreen = function() {
  */
 jzt.Game.prototype.draw = function() {
 
-    // Render the current board
-    this.currentBoard.render(this.context);
+    // Render the current board, if one exists
+    if(this.currentBoard) {
+        this.currentBoard.render(this.context);
+    }
+    else {
+        this.context.fillStyle = jzt.colors.Grey.rgbValue;
+        this.context.fillRect(0, 0, this.context.canvas.width, this.context.canvas.height);
+    }
 
     // If we're paused, draw our status
     if(this.state === jzt.GameState.Paused) {
+        this.drawScreenEffect();
         this.drawPauseScreen();
     }
 
@@ -794,7 +911,14 @@ jzt.Game.prototype.draw = function() {
 
     // If we're in file management, render our file management instance
     if(this.state === jzt.GameState.FileManagement) {
+        this.drawScreenEffect();
         this.fileManagement.render(this.context);
+    }
+
+    // If we're loading, render our loading screen
+    if(this.state === jzt.GameState.Loading) {
+        this.drawScreenEffect();
+        this.drawLoadingScreen();
     }
             
 };
