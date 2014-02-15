@@ -653,6 +653,7 @@ jzt.Game.prototype.update = function() {
 
         // Check if the user wants to pause
         if(this.keyboard.isPressed(this.keyboard.P)) {
+            this.resources.audio.play('++se.tc.e.sc');
             this.setState(jzt.GameState.Paused);
         }
 
@@ -775,8 +776,9 @@ jzt.Game.prototype.oneTimeMessage = function(messageKey) {
 jzt.Game.prototype.drawScreenEffect = function() {
 
     var line;
+    var lineSpacing = 10 * this.devicePixelRatio;
 
-    if(++this.screenEffectIndex > 20) {
+    if(++this.screenEffectIndex > lineSpacing) {
         this.screenEffectIndex = 0;
     }
 
@@ -784,15 +786,15 @@ jzt.Game.prototype.drawScreenEffect = function() {
     this.context.strokeStyle = 'rgba(0,0,0,0.05)';
 
     this.context.beginPath();
-    for(line = -20; line < this.context.canvas.height; line = line + 20) {
-        this.context.moveTo(0, line + this.screenEffectIndex + 20);
+    for(line = -lineSpacing; line < this.context.canvas.height; line = line + lineSpacing) {
+        this.context.moveTo(0, line + this.screenEffectIndex + lineSpacing);
         this.context.lineTo(this.context.canvas.width, line + this.screenEffectIndex);
     }
     this.context.stroke();
 
     this.context.beginPath();
-    for(line = -20; line < this.context.canvas.height; line = line + 20) {
-        this.context.moveTo(0, line + (2*this.devicePixelRatio) + this.screenEffectIndex + 20);
+    for(line = -lineSpacing; line < this.context.canvas.height; line = line + lineSpacing) {
+        this.context.moveTo(0, line + (2*this.devicePixelRatio) + this.screenEffectIndex + lineSpacing);
         this.context.lineTo(this.context.canvas.width, line + (2*this.devicePixelRatio) + this.screenEffectIndex);
     }
     this.context.stroke();
