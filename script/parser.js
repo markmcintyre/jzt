@@ -1,15 +1,24 @@
-window.jzt = window.jzt || {};
+/**
+ * JZT Parser
+ * Copyright © 2014 Orangeline Interactive, Inc.
+ * @author Mark McIntyre
+ */
+
+"use strict";
+
+var jzt = jzt || {};
 jzt.parser = jzt.parser || {};
+
 
 /* 
  * Assembly
  */
 jzt.parser.Assembly = function(text) {
     
-    this.tokens = text != undefined ? text.match(/\w+|"(?:\\"|[^"])+"|""|[^\s]|\n/g) : [];
+    this.tokens = text !== undefined ? text.match(/\w+|"(?:\\"|[^"])+"|""|[^\s]|\n/g) : [];
     
     // If the regex doesn't match, it returns null
-    if(this.tokens == null) {
+    if(this.tokens === null) {
         this.tokens = [];
     }
     
@@ -50,7 +59,7 @@ jzt.parser.Parser = function() {
     this.assembler = undefined;
 };
 
-jzt.parser.Parser.prototype.match = function(assemblies) {
+jzt.parser.Parser.prototype.match = function() {
     return [];
 };
 
@@ -61,7 +70,7 @@ jzt.parser.Parser.prototype.bestMatch = function(assembly) {
 
 jzt.parser.Parser.prototype.completeMatch = function(assembly) {
     var result = this.bestMatch(assembly);
-    if(result != undefined && result.isDone()) {
+    if(result !== undefined && result.isDone()) {
         return result;
     }
     throw 'Unexpected token \'' + result.peek() + '\'';
@@ -85,7 +94,7 @@ jzt.parser.Parser.prototype.matchAndAssemble = function(assemblies) {
 
 jzt.parser.Parser.prototype.findBestAssembly = function(assemblies) {
     
-    var bestAssembly = undefined;
+    var bestAssembly;
     
     for(var index = 0; index < assemblies.length; ++index) {
         
@@ -104,15 +113,15 @@ jzt.parser.Parser.prototype.findBestAssembly = function(assemblies) {
 };
 
 jzt.parser.Parser.prototype.cloneAssemblies = function(assemblies) {
+
+    var result = [];
   
-  var result = [];
+    for(var index = 0; index < assemblies.length; ++index) {
+        var assembly = assemblies[index];
+        result.push(assembly.clone());
+    }
   
-  for(var index = 0; index < assemblies.length; ++index) {
-      var assembly = assemblies[index];
-      result.push(assembly.clone());
-  }
-  
-  return result;
+    return result;
     
 };
 
@@ -133,7 +142,7 @@ jzt.parser.Repetition.prototype.constructor = jzt.parser.Reptition;
 jzt.parser.Repetition.prototype.match = function(assemblies) {
     
     // If we have a preassember, assemble now
-    if(this.preAssembler != undefined) {
+    if(this.preAssembler !== undefined) {
         for(var index = 0; index < assemblies.length; ++index) {
             var assembly = assemblies[index];
             this.preAssembler.assemble(assembly);
@@ -169,12 +178,12 @@ jzt.parser.Empty.prototype.match = function(assemblies) {
 jzt.parser.CollectionParser = function() {
     this.assembler = undefined;
     this.subParsers = [];
-}
+};
 jzt.parser.CollectionParser.prototype = new jzt.parser.Parser();
 jzt.parser.CollectionParser.constructor = jzt.parser.CollectionParser;
 
 jzt.parser.CollectionParser.prototype.add = function(subParser) {
-  this.subParsers.push(subParser);
+    this.subParsers.push(subParser);
 };
  
 /*
@@ -216,7 +225,7 @@ jzt.parser.Sequence.prototype.match = function(assemblies) {
 
 jzt.parser.Sequence.prototype.determineTokenError = function(previousResult) {
     var best = this.findBestAssembly(previousResult);
-    if(best.peek() == undefined) {
+    if(best.peek() === undefined) {
         best.error = 'Token expected';
     }
     else {
@@ -230,13 +239,12 @@ jzt.parser.Sequence.prototype.determineTokenError = function(previousResult) {
 jzt.parser.Alternation = function() {
     this.assembler = undefined;
     this.subParsers = [];
-}
+};
 jzt.parser.Alternation.prototype = new jzt.parser.CollectionParser();
 jzt.parser.Alternation.prototype.constructor = jzt.parser.Alternation;
 
 jzt.parser.Alternation.prototype.match = function(assemblies) {
     
-    var error = undefined;
     var result = [];
     
     for(var index = 0; index < this.subParsers.length; ++index) {
@@ -253,15 +261,15 @@ jzt.parser.Alternation.prototype.match = function(assemblies) {
  * Terminal
  */
 jzt.parser.Terminal = function() {
-     this.assembler = undefined;
-     this.discard = false;
+    this.assembler = undefined;
+    this.discard = false;
 };
 jzt.parser.Terminal.prototype = new jzt.parser.Parser();
 jzt.parser.Terminal.prototype.constructor = jzt.parser.Terminal;
 
 
-jzt.parser.Terminal.prototype.qualifies = function(token) {
-    return true;  
+jzt.parser.Terminal.prototype.qualifies = function() {
+    return true;
 };
 
 jzt.parser.Terminal.prototype.match = function(assemblies) {
@@ -271,7 +279,7 @@ jzt.parser.Terminal.prototype.match = function(assemblies) {
     for(var index = 0; index < assemblies.length; ++index) {
         var assembly = assemblies[index];
         var assemblyResult = this.matchAssembly(assembly);
-        if(assemblyResult != undefined) {
+        if(assemblyResult !== undefined) {
             result.push(assemblyResult);
         }
     }
@@ -303,7 +311,7 @@ jzt.parser.Terminal.prototype.matchAssembly = function(assembly) {
 
 /*
  *  Number
- */ 
+ */
 jzt.parser.Number = function() {
     this.assembler = undefined;
     this.discard = false;
@@ -348,7 +356,7 @@ jzt.parser.Word.prototype = new jzt.parser.Terminal();
 jzt.parser.Word.prototype.constructor = jzt.parser.Word;
 jzt.parser.Word.prototype.qualifies = function(token) {
     if(token) {
-        return token.match(/^[^\d\s][\w]*$/) != null;
+        return token.match(/^[^\d\s][\w]*$/) !== null;
     }
     return false;
 };
@@ -364,7 +372,7 @@ jzt.parser.String.prototype = new jzt.parser.Terminal();
 jzt.parser.String.prototype.constructor = jzt.parser.String;
 jzt.parser.String.prototype.qualifies = function(token) {
     if(token) {
-        return (token.charAt(0) == '"' && token.charAt(token.length-1) == '"');
+        return (token.charAt(0) === '"' && token.charAt(token.length-1) === '"');
     }
     return false;
 };
