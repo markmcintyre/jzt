@@ -4,9 +4,6 @@
  * @author Mark McIntyre
  */
 
-/* jshint globalstrict: true */
-/* global console */
-
 "use strict";
 
 var jzt = jzt || {};
@@ -455,16 +452,16 @@ jzt.Direction.opposite = function(direction) {
     
     return undefined;
 
- };
+};
 
- jzt.DelayedEventScheduler = function(initialDelay, subsequentDelay) {
+jzt.DelayedEventScheduler = function(initialDelay, subsequentDelay) {
     this.initialDelay = initialDelay;
     this.subsequentDelay = subsequentDelay;
     this.event = undefined;
     this.nextAllowableEvent = 0;
- };
+};
 
- jzt.DelayedEventScheduler.prototype.scheduleEvent = function(eventTime, event) {
+jzt.DelayedEventScheduler.prototype.scheduleEvent = function(eventTime, event) {
 
     var now = Date.now();
 
@@ -480,26 +477,26 @@ jzt.Direction.opposite = function(direction) {
         this.event = event;
     }
 
- };
+};
 
- jzt.DelayedEventScheduler.prototype.cancelEvent = function() {
+jzt.DelayedEventScheduler.prototype.cancelEvent = function() {
     this.nextAllowableEvent = 0;
- };
+};
 
- jzt.DelayedEventScheduler.prototype.takeEvent = function() {
+jzt.DelayedEventScheduler.prototype.takeEvent = function() {
     var result = this.event;
     this.event = undefined;
     return result;
- };
+};
  
- /**
-  * If Debug mode is on, logs all provided arguments to a console.
-  */
- jzt.debug.log = function() {
-     if(jzt.debug.on) {
-         console.log.apply(console, arguments);
-     }
- };
+/**
+ * If Debug mode is on, logs all provided arguments to a console.
+ */
+jzt.debug.log = function() {
+    if(jzt.debug.on) {
+        console.log.apply(console, arguments);
+    }
+};
 
 /**
  * Adds a property to a provided destination object as a given name and value,
@@ -626,12 +623,13 @@ jzt.util.generateEllipseData = function(point, rx, ry) {
     while (px < py) {
         x++;
         px += twoRy2;
-        if (p < 0)
-        p += ry2 + px;
+        if (p < 0) {
+            p += ry2 + px;
+        }
         else {
-        y--;
-        py -= twoRx2;
-        p += ry2 + px - py;
+            y--;
+            py -= twoRx2;
+            p += ry2 + px - py;
         }
         minMax = [point.x - x, point.x + x];
         result[point.y + y] = minMax;
@@ -643,12 +641,13 @@ jzt.util.generateEllipseData = function(point, rx, ry) {
     while (y > 0) {
         y--;
         py -= twoRx2;
-        if (p > 0)
-        p += rx2 - py;
+        if (p > 0) {
+            p += rx2 - py;
+        }
         else {
-        x++;
-        px += twoRy2;
-        p += rx2 - py + px;
+            x++;
+            px += twoRy2;
+            p += rx2 - py + px;
         }
         minMax = [point.x - x, point.x + x];
         result[point.y + y] = minMax;

@@ -4,7 +4,6 @@
  * @author Mark McIntyre
  */
 
-/* jshint globalstrict: true */
 /* global AudioContext, webkitAudioContext */
 
 "use strict";
