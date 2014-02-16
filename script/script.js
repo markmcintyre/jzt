@@ -4,8 +4,7 @@
  * @author Mark McIntyre
  */
 
-/* jshint globalstrict: true */
-/* global jztscript, console */
+/* global jztscript */
 
 "use strict";
 
@@ -237,7 +236,7 @@ jzt.ScriptContext.prototype.addScrollContent = function(line, center, lineLabel)
         'text': line,
         'center': center,
         'label': lineLabel
-    }
+    };
     this.scrollContent.push(newLine);
 };
 
