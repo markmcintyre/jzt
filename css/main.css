@@ -1,5 +1,5 @@
 body {
-	background-color: rgb(85,85,85);
+	background-color: #555;
 }
 
 header h1 {
@@ -13,4 +13,14 @@ header h1 {
 	left: 0;
 	bottom: 0;
 	right: 0;
+}
+
+footer {
+	font-family: sans-serif;
+	position: absolute;
+	font-size: 0.6em;
+	bottom: 0;
+	right: 0;
+	margin: 0 5px 0 0;
+	color: #333;
 }
