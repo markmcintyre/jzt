@@ -173,36 +173,36 @@ jzt.commands.Die.prototype.execute = function(owner) {
 /*
  * Not Expression
  */
- jzt.commands.NotExpression = function() {
+jzt.commands.NotExpression = function() {
     this.expression = undefined;
- };
+};
 
- jzt.commands.NotExpression.prototype.clone = function() {
+jzt.commands.NotExpression.prototype.clone = function() {
     var clone = new jzt.commands.NotExpression();
     clone.expression = this.expression.clone();
     return clone;
- };
+};
 
- jzt.commands.NotExpression.prototype.getResult = function(owner) {
+jzt.commands.NotExpression.prototype.getResult = function(owner) {
     return ! this.expression.getResult(owner);
- };
+};
 
 /*
  * Directional Flag Expression
  */
- jzt.commands.DirectionalFlagExpression = function() {
+jzt.commands.DirectionalFlagExpression = function() {
     this.flagType = undefined;
     this.directionExpression = undefined;
- };
+};
 
- jzt.commands.DirectionalFlagExpression.prototype.clone = function() {
+jzt.commands.DirectionalFlagExpression.prototype.clone = function() {
     var clone = new jzt.commands.DirectionalFlagExpression();
     clone.flagType = this.flagType;
     clone.directionExpression = this.directionExpression ? this.directionExpression.clone() : undefined;
     return clone;
- };
+};
 
- jzt.commands.DirectionalFlagExpression.prototype.getResult = function(owner) {
+jzt.commands.DirectionalFlagExpression.prototype.getResult = function(owner) {
     if(this.flagType === 'BLOCKED') {
         return owner.isBlocked(this.directionExpression.getResult(owner));
     }
@@ -212,41 +212,46 @@ jzt.commands.Die.prototype.execute = function(owner) {
     else if(this.flagType === 'ADJACENT') {
         return owner.isPlayerAdjacent(this.directionExpression.getResult(owner));
     }
- };
+};
 
 /*
  * Comparison Expression
  */
- jzt.commands.ComparisonExpression = function() {
+jzt.commands.ComparisonExpression = function() {
     this.counter = undefined;
     this.numericValue = 0;
     this.operator = 'eq';
- };
+};
 
- jzt.commands.ComparisonExpression.prototype.clone = function() {
+jzt.commands.ComparisonExpression.prototype.clone = function() {
     var clone = new jzt.commands.ComparisonExpression();
     clone.counter = this.counter;
     clone.numericValue = this.numericValue;
     clone.operator = this.operator;
     return clone;
- };
+};
 
- jzt.commands.ComparisonExpression.prototype.getResult = function(owner) {
+jzt.commands.ComparisonExpression.prototype.getResult = function(owner) {
 
     // Get our counter value
     var counterValue = owner.getCounterValue(this.counter);
 
     switch(this.operator) {
-        case 'GT': return counterValue > this.numericValue;
-        case 'LT': return counterValue < this.numericValue;
-        case 'GTE': return counterValue >= this.numericValue;
-        case 'LTE': return counterValue <= this.numericValue;
-        case 'EQ': return counterValue === this.numericValue;
+        case 'GT':
+            return counterValue > this.numericValue;
+        case 'LT':
+            return counterValue < this.numericValue;
+        case 'GTE':
+            return counterValue >= this.numericValue;
+        case 'LTE':
+            return counterValue <= this.numericValue;
+        case 'EQ':
+            return counterValue === this.numericValue;
     }
 
     return undefined;
 
- };
+};
 
 /*
  * Direction Expression
@@ -676,19 +681,19 @@ jzt.commands.ScrollC.prototype.execute = function(owner) {
 /*
  * Send Command
  */
- jzt.commands.Send = function() {
+jzt.commands.Send = function() {
     this.message = undefined;
     this.recipient = undefined;
- };
+};
 
- jzt.commands.Send.prototype.clone = function() {
+jzt.commands.Send.prototype.clone = function() {
     var clone = new jzt.commands.Send();
     clone.message = this.message;
     clone.recipient = this.recipient;
     return clone;
- };
+};
 
- jzt.commands.Send.prototype.execute = function(owner) {
+jzt.commands.Send.prototype.execute = function(owner) {
 
     var recipients;
     var index;
@@ -696,7 +701,6 @@ jzt.commands.ScrollC.prototype.execute = function(owner) {
     if(this.recipient === undefined) {
         owner.scriptContext.jumpToLabel(this.message);
         return jzt.commands.CommandResult.CONTINUE_AFTER_JUMP;
-        return;
     }
     else if(this.recipient === 'all') {
         recipients = owner.board.getScripables();
@@ -711,7 +715,7 @@ jzt.commands.ScrollC.prototype.execute = function(owner) {
 
     return jzt.commands.CommandResult.CONTINUE;
 
- };
+};
 
 /*
  * Set Command
@@ -818,17 +822,17 @@ jzt.commands.Take.prototype.execute = function(owner) {
 /*
  * Throwstar Command
  */
- jzt.commands.ThrowStar = function() {
+jzt.commands.ThrowStar = function() {
     this.directionExpression = undefined;
- };
+};
 
- jzt.commands.ThrowStar.prototype.clone = function() {
+jzt.commands.ThrowStar.prototype.clone = function() {
     var clone = new jzt.commands.ThrowStar();
     clone.directionExpression = this.directionExpression.clone();
     return clone;
- };
+};
 
- jzt.commands.ThrowStar.prototype.execute = function(owner) {
+jzt.commands.ThrowStar.prototype.execute = function(owner) {
 
     // Get our final direction
     var direction = this.directionExpression.getResult(owner);
@@ -862,26 +866,26 @@ jzt.commands.Torch.prototype.execute = function(owner) {
 /*
  * Try Command
  */
- jzt.commands.Try = function() {
+jzt.commands.Try = function() {
     this.directionExpression = undefined;
     this.label = undefined;
- };
+};
 
- jzt.commands.Try.prototype.clone = function() {
+jzt.commands.Try.prototype.clone = function() {
     var clone = new jzt.commands.Try();
     clone.directionExpression = this.directionExpression.clone();
     clone.label = this.label;
     return clone;
- };
+};
 
- jzt.commands.Try.prototype.execute = function(owner) {
+jzt.commands.Try.prototype.execute = function(owner) {
     var direction = this.directionExpression.getResult(owner);
     if(! owner.move(direction)) {
         owner.scriptContext.jumpToLabel(this.label);
         return jzt.commands.CommandResult.CONTINUE_AFTER_JUMP;
     }
     return jzt.commands.CommandResult.CONTINUE;
- };
+};
 
 /*
  * Unlock Command
