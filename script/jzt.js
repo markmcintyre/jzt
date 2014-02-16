@@ -130,9 +130,6 @@ jzt.Game.prototype.loadGame = function(game) {
                     response = JSON.parse(httpRequest.responseText);
                     me.deserialize(response);
                 }
-                else {
-                    // TODO: Error State
-                }
 
             }
         };
@@ -171,7 +168,7 @@ jzt.Game.prototype.deserialize = function(data) {
     // Initialize our default counters
     this.counters = {
         health: 50,
-        health_max: 50,
+        'health_max': 50,
         ammo: 0,
         gems: 0,
         torches: 0,
@@ -417,7 +414,7 @@ jzt.Game.prototype.setState = function(state) {
  *
  * @param edge A Direction representing an edge of a board
  * @param boardName A name of a Board to be loaded.
- */ 
+ */
 jzt.Game.prototype.movePlayerToBoardEdge = function(edge, boardName, offset) {
 
     // Retrieve our new board (or the current board if it's the same)
@@ -433,9 +430,9 @@ jzt.Game.prototype.movePlayerToBoardEdge = function(edge, boardName, offset) {
     var newLocation = new jzt.Point(this.player.point.x, this.player.point.y);
 
     // Adjust based on our offset
-    if(offset && (edge === jzt.Direction.North || edge == jzt.Direction.South)) {
+    if(offset && (edge === jzt.Direction.North || edge === jzt.Direction.South)) {
         outsideLocation.x = outsideLocation.x + offset;
-        newLocation.x = newLocation.x + offset
+        newLocation.x = newLocation.x + offset;
     }
     else if(offset && (edge === jzt.Direction.East || edge === jzt.Direction.West)) {
         outsideLocation.y = outsideLocation.y + offset;
@@ -599,7 +596,7 @@ jzt.Game.prototype.run = function() {
  *
  * TODO: Use performance.now() and the parameter passed to this function by 
  * requestAnimationFrame to do timing once browser support improves.
- */  
+ */
 jzt.Game.prototype.loop = function() {
 
     var now = Date.now();
@@ -609,7 +606,7 @@ jzt.Game.prototype.loop = function() {
     this.loopId = requestAnimationFrame(this.boundLoop);
 
     if(delta > this.FPS_INTERVAL) {
-        this.then = now - (delta % this.FPS_INTERVAL)
+        this.then = now - (delta % this.FPS_INTERVAL);
         this.update();
         this.draw();
     }
@@ -629,7 +626,7 @@ jzt.Game.prototype.end = function() {
 
     }
 
-}
+};
 
 /**
  * Updates this Game's state by one execution tick.
@@ -807,7 +804,6 @@ jzt.Game.prototype.drawScreenEffect = function() {
 jzt.Game.prototype.drawLoadingScreen = function() {
 
     var spriteGrid = this.loadingPopup ? this.loadingPopup.spriteGrid : undefined;
-    var position;
     var popupWidth = 24;
     var sprite;
 
@@ -887,7 +883,7 @@ jzt.Game.prototype.drawPauseScreen = function() {
             position.x++;
         }
     }
-}
+};
 
 /**
  * Renders a visual representation of this Game to its associated HTML5 Canvas element.
