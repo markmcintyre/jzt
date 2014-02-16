@@ -652,7 +652,7 @@ jzt.Game.prototype.update = function() {
         this.currentBoard.focusPoint = this.player.point;
 
         // Check if the user wants to pause
-        if(this.keyboard.isPressed(this.keyboard.P)) {
+        if(this.keyboard.isPressed(this.keyboard.P) || this.keyboard.isPressed(this.keyboard.ENTER)) {
             this.resources.audio.play('++se.tc.e.sc');
             this.setState(jzt.GameState.Paused);
         }
@@ -677,6 +677,7 @@ jzt.Game.prototype.update = function() {
         // Unpause on any expected keypress
         if(this.keyboard.isAnyPressed()) {
             this.keyboard.cancelKey(this.keyboard.P);
+            this.keyboard.cancelKey(this.keyboard.ENTER);
             this.setState(jzt.GameState.Playing);
             this.player.foregroundColor = jzt.colors.Colors.F;
         }
@@ -710,8 +711,10 @@ jzt.Game.prototype.update = function() {
         this.currentBoard.setDisplayMessage(jzt.i18n.getMessage('status.title'));
 
         // Also check if the user wants to play
-        if(this.keyboard.isPressed(this.keyboard.P) || this.keyboard.isPressed(this.keyboard.SPACE)) {
+        if(this.keyboard.isPressed(this.keyboard.P) || this.keyboard.isPressed(this.keyboard.SPACE) || this.keyboard.isPressed(this.keyboard.ENTER)) {
             this.keyboard.cancelKey(this.keyboard.P);
+            this.keyboard.cancelKey(this.keyboard.ENTER);
+            this.keyboard.cancelKey(this.keyboard.SPACE);
             this.setState(jzt.GameState.Playing);
         }
 
