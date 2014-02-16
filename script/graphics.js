@@ -85,11 +85,11 @@ jzt.Graphics = function(onLoadCallback) {
                 context.drawImage(this, 0, 0);
 
                 // Grab the raw image data
-                var imageData = context.getImageData(0, 0, this.width, this.height);
-                var rgba = imageData.data;
+                imageData = context.getImageData(0, 0, this.width, this.height);
+                rgba = imageData.data;
 
                 // For each of our pixels...
-                for(var pixel = 0; pixel < pixelCount; pixel += 4) {
+                for(pixel = 0; pixel < pixelCount; pixel += 4) {
 
                     /* For a black and white image, we only need to test one of the
                      * values to determine if we need to write a color or a transparent
@@ -505,9 +505,10 @@ jzt.SpriteGrid.prototype.clear = function() {
  */
 jzt.SpriteGrid.prototype.addText = function(point, text, foreground, background) {
 
-    var text = this.graphics.textToSprites(text);
     var textPoint = point.clone();
     var index;
+
+    text = this.graphics.textToSprites(text);
 
     for(index = 0; index < text.length; ++index) {
         textPoint.x = point.x + index;
@@ -515,7 +516,7 @@ jzt.SpriteGrid.prototype.addText = function(point, text, foreground, background)
             sprite: text[index],
             foreground: foreground,
             background: background
-        }
+        };
     }
 
 };
@@ -537,9 +538,6 @@ jzt.SpriteGrid.prototype.getTile = function(point) {
  * @param point a Point at which to draw our SpriteGrid
  */
 jzt.SpriteGrid.prototype.draw = function(context, point) {
-
-    var destinationX = point.x * this.graphics.TILE_SIZE.x;
-    var destinationY = point.y * this.graphics.TILE_SIZE.y;
 
     var tile;
     var spritePoint = new jzt.Point(0, 0);
@@ -720,7 +718,7 @@ jzt.colors.Colors = [
     new jzt.colors.Color('C', 'BrightRed',     12, 255, 85,  85 ),
     new jzt.colors.Color('D', 'BrightMagenta', 13, 255, 85,  255),
     new jzt.colors.Color('E', 'Yellow',        14, 255, 255, 85 ),
-    new jzt.colors.Color('F', 'BrightWhite',   15, 255, 255, 255)  
+    new jzt.colors.Color('F', 'BrightWhite',   15, 255, 255, 255)
 ];
 
 jzt.colors.getColor = function(hexDigit) {
