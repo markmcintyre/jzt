@@ -4,8 +4,6 @@
  * @author Mark McIntyre
  */
 
-/* jshint globalstrict: true */
-
 "use strict";
 
 var jzt = jzt || {};
@@ -95,7 +93,7 @@ jzt.KeyboardInput.prototype.isAnyPressed = function() {
  * @return The timestamp at which the key was pressed, or undefined if the key is not pressed.
  */
 jzt.KeyboardInput.prototype.isPressed = function(keyCode) {
-    return this.pressed[keyCode];  
+    return this.pressed[keyCode];
 };
 
 /**
