@@ -1,4 +1,12 @@
-﻿var jzt = jzt || {};
+/**
+ * JZT I18N
+ * Copyright © 2014 Orangeline Interactive, Inc.
+ * @author Mark McIntyre
+ */
+
+"use strict";
+
+var jzt = jzt || {};
 jzt.i18n = jzt.i18n || {};
 jzt.i18n.Messages = jzt.i18n.Messages || {};
 
@@ -189,8 +197,6 @@ jzt.i18n.setLanguage = function(language) {
 };
 
 jzt.i18n.getBoardMessage = function(board, potentialKey) {
-
-	var message;
 
 	if(potentialKey.indexOf('i18n:') === 0 ) {
 		return board.getMessage(potentialKey.substring(5));
