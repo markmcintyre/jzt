@@ -3418,7 +3418,7 @@ jzt.things.Signpost.prototype.sendMessage = function(message) {
             this.board.game.scroll.addLine(text);
         }
 
-
+        this.play('tc-c+d-d+e-e+f-f+g-g');
         this.board.game.setState(jzt.GameState.Reading);
 
     }

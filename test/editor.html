@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>JZT</title>
+		<style type="text/css">
+			#jzt {
+				position: relative;
+			}
+			#customizers {
+				position: absolute;
+				top: 0;
+				right: 0;
+				background-color: blue;
+				width: 25%;
+				height: 100%;
+				color: white;
+			}
+			textarea {
+				font-family: monospace;
+			}
+			#color-customizer ol {
+				list-style: none;
+				margin: 5px;
+				padding: 0;
+			}
+			#color-customizer ol li {
+				display: inline-block;
+				width: 0;
+				height: 32px;
+				overflow: hidden;
+				padding-left: 16px;
+				border: 1px solid blue;
+			}
+			#color-customizer ol li.active {
+				border: 2px solid #5555FF;
+			}
+			li.color9 {background-color: #5555FF;}
+			li.colorA {background-color: #55FF55;}
+			li.colorB {background-color: #55FFFF;}
+			li.colorC {background-color: #FF5555;}
+			li.colorD {background-color: #FF55FF;}
+			li.colorE {background-color: #FFFF55;}
+			li.colorF {background-color: #FFFFFF;}
+		</style>
+	</head>
+	<body>
+		
+		<header>
+			<!--<h1>Mark's Test Thing</h1>-->
+		</header>
+		
+		<div id="edit-area">
+		</div>
+
+		<div id="toolbox">
+
+			<label><input type="radio" name="activeTemplate" value="" />Nothing</label>
+			<label><input type="radio" name="activeTemplate" value="Player">Player</label>
+			<label><input type="radio" name="activeTemplate" value="Wall" />Wall</label>
+			<label><input type="radio" name="activeTemplate" value="SolidWall" />Solid Wall</label>
+			<label><input type="radio" name="activeTemplate" value="LineWall" />Line</label>
+			<label><input type="radio" name="activeTemplate" value="InvisibleWall" />Invisible Wall</label>
+			<label><input type="radio" name="activeTemplate" value="BreakableWall" />Breakable Wall</label>
+			<label><input type="radio" name="activeTemplate" value="FakeWall" />Fake Wall</label>
+			<label><input type="radio" name="activeTemplate" value="SpiderWeb" />Spider Web</label>
+			<label><input type="radio" name="activeTemplate" value="Text"/>Text</label>
+			<br/>
+			<label><input type="radio" name="activeTemplate" value="Water" />Water</label>
+			<label><input type="radio" name="activeTemplate" value="Lava" />Lava</label>
+			<label><input type="radio" name="activeTemplate" value="Forest" />Forest</label>
+			<label><input type="radio" name="activeTemplate" value="Signpost">Signpost</label>
+			<label><input type="radio" name="activeTemplate" value="Ricochet" />Ricochet</label>
+			<label><input type="radio" name="activeTemplate" value="Door" />Door</label>
+			<br/>
+			<label><input type="radio" name="activeTemplate" value="Boulder" />Boulder</label>
+			<label><input type="radio" name="activeTemplate" value="SliderNs" />Slider (North/South)</label>
+			<label><input type="radio" name="activeTemplate" value="SliderEw" />Slider (East/West)</label>
+			<br/>
+			<label><input type="radio" name="activeTemplate" value="Teleporter" />Teleporter</label>
+			<label><input type="radio" name="activeTemplate" value="Passage" />Passage</label>
+			<label><input type="radio" name="activeTemplate" value="River" />River</label>
+			<label><input type="radio" name="activeTemplate" value="Blinker" />Blinker</label>
+			<label><input type="radio" name="activeTemplate" value="Conveyor" />Conveyor</label>
+			<label><input type="radio" name="activeTemplate" value="Duplicator" />Duplicator</label>
+			<br/>
+			<label><input type="radio" name="activeTemplate" value="Gem" />Gem</label>
+			<label><input type="radio" name="activeTemplate" value="Ammo" />Ammo</label>
+			<label><input type="radio" name="activeTemplate" value="Torch" />Torch</label>
+			<label><input type="radio" name="activeTemplate" value="Key" />Key</label>
+			<label><input type="radio" name="activeTemplate" value="Heart"/>Heart</label>
+			<label><input type="radio" name="activeTemplate" value="Bomb" />Bomb</label>
+			<br/>
+			<label><input type="radio" name="activeTemplate" value="Pusher" />Pusher</label>
+			<label><input type="radio" name="activeTemplate" value="Lion" />Lion</label>
+			<label><input type="radio" name="activeTemplate" value="Tiger" />Tiger</label>
+			<label><input type="radio" name="activeTemplate" value="Ruffian" />Ruffian</label>
+			<label><input type="radio" name="activeTemplate" value="Centipede" />Centipede</label>
+			<label><input type="radio" name="activeTemplate" value="Bear" />Bear</label>
+			<label><input type="radio" name="activeTemplate" value="SpinningGun" />Spinning Gun</label>
+			<label><input type="radio" name="activeTemplate" value="Spider" />Spider</label>
+			<label><input type="radio" name="activeTemplate" value="Snake" />Snake</label>
+			<label><input type="radio" name="activeTemplate" value="Scriptable" />Scriptable</label>
+			<br/>
+
+
+
+			<label>Boards
+				<select id="board-selector"></select>
+			</label>
+			<button id="new-board">New Board</button>
+			<button id="delete-board">Delete Board</button>
+			<br/>
+
+			<button id="save-game">Save</button>
+			<a download="untitled.jzt" id="download" href="#">Download</a>
+			<input id="load-game" type="file" /><br/>
+
+		</div>
+
+		<div id="customizers">
+			<div id="other-customizers">
+				<select id="mode-selector">
+					<option value="0">Drawing</option>
+					<option value="1">Select</option>
+					<option value="2">Fill</option>
+					<option value="3">Text</option>
+				</select>
+			</div>
+			<div id="template-customizer">
+				
+			</div>
+			<textarea id="active-template-editor" rows="10" style="width: 100%"></textarea>
+			<div id="script-customizer">
+				<select id="script-selector"></select>
+				<button id="new-script-button">New Script</button>
+				<button id="delete-script-button">Delete Script</button>
+				<textarea id="script-editor" rows="20" style="width: 100%"></textarea>
+			</div>
+			<div id="color-customizer">
+				<ol>
+					<li class="color9" data-color="9">Bright&nbsp;Blue</li>
+					<li class="colorA" data-color="A">Bright&nbsp;Green</li>
+					<li class="colorB" data-color="B">Bright&nbsp;Cyan</li>
+					<li class="colorC" data-color="C">Bright&nbsp;Red</li>
+					<li class="colorD" data-color="D">Bright&nbsp;Magenta</li>
+					<li class="colorE" data-color="E">Yellow</li>
+					<li class="colorF" data-color="F">White</li>
+				</ol>
+			</div>
+			
+			<div id="board-customizer">
+				<label>North: <select id="north-selector"><option value="">None</option></select></label><br/>
+				<label>East: <select id="east-selector"><option value="">None</option></select></label><br/>
+				<label>South: <select id="south-selector"><option value="">None</option></select></label><br/>
+				<label>West: <select id="west-selector"><option value="">None</option></select></label><br/>
+				<label><input type="checkbox" id="dark-selector" /> Dark Room</label>
+			</div>
+
+			<div id="game-customizer">
+				<label>Game Title: <input type="text" id="game-name" /></label><br/>
+				<label>Author: <input type="text" id="author-name"/></label><br/>
+				<label>Title Board: <select id="title-board-selector"><option value="">None</option></select></label>
+				<label>Starting Board: <select id="starting-board-selector"></select></label>
+				<label>Victory Board: <select id="victory-board-selector"><option value="">None</option></select></label>
+			</div>
+		</div>
+		
+		<script type="text/javascript" src="../script/jzt.js"></script>
+		<script type="text/javascript" src="../script/board.js"></script>
+		<script type="text/javascript" src="../script/input.js"></script>
+		<script type="text/javascript" src="../script/basic.js"></script>
+		<script type="text/javascript" src="../script/script.js"></script>
+		<script type="text/javascript" src="../script/parser.js"></script>
+		<script type="text/javascript" src="../script/jztscript.js"></script>
+		<script type="text/javascript" src="../script/commands.js"></script>
+		<script type="text/javascript" src="../script/graphics.js"></script>
+		<script type="text/javascript" src="../script/things.js"></script>
+		<script type="text/javascript" src="../script/editor.js"></script>
+		<script type="text/javascript" src="../script/i18n.js"></script>
+		<script type="text/javascript" src="../script/lz-string-1.3.3.js"></script>
+		<script type="text/javascript">
+
+			var templates = {};
+			var boardSelector = document.getElementById('board-selector');
+			var northSelector = document.getElementById('north-selector');
+			var eastSelector = document.getElementById('east-selector');
+			var southSelector = document.getElementById('south-selector');
+			var westSelector = document.getElementById('west-selector');
+			var darkSelector = document.getElementById('dark-selector');
+			var templateEditor = document.getElementById('active-template-editor');
+			var scriptSelector = document.getElementById('script-selector');
+			var newScriptButton = document.getElementById('new-script-button');
+			var deleteScriptButton = document.getElementById('delete-script-button');
+			var scriptEditor = document.getElementById('script-editor');
+			var modeSelector = document.getElementById('mode-selector');
+			var editArea = document.getElementById('edit-area');
+			var toolBox = document.getElementById('toolbox');
+			var download = document.getElementById('download');
+			var loadGame = document.getElementById('load-game');
+			var newBoard = document.getElementById('new-board');
+			var deleteBoard = document.getElementById('delete-board');
+			var gameName = document.getElementById('game-name');
+			var authorName = document.getElementById('author-name');
+			var startingBoardSelector = document.getElementById('starting-board-selector');
+			var titleBoardSelector = document.getElementById('title-board-selector');
+			var victoryBoardSelector = document.getElementById('victory-board-selector');
+			var editor = undefined;
+
+			function onToolSelected(event) {
+
+				var toolType = event.target.value;
+
+				if(toolType) {
+
+					var activeTemplate;
+
+					if(templates.hasOwnProperty(toolType)) {
+						activeTemplate = templates[toolType];
+					}
+					else {
+						activeTemplate = {type: toolType};
+						switch(toolType) {
+							case 'Passage': 
+								activeTemplate.passageId = 1;
+								activeTemplate.targetBoard = 'Untitled';
+								break;
+							case 'Spider':
+								activeTemplate.under = new jzt.things.SpiderWeb().serialize();
+								break;
+							case 'Scriptable':
+								activeTemplate.script = 'Untitled Script';
+								break;
+							case 'River':
+								activeTemplate.direction = 'N';
+								break;
+						}
+						templates[toolType] = activeTemplate;
+					}
+
+					editor.setActiveTemplate(activeTemplate);
+
+				}
+				else {
+					editor.setActiveTemplate(undefined);
+				}
+			};
+
+			function onBoardSelected(event) {
+				editor.switchBoard(event.target.value);
+			};
+
+			function onNewBoardClicked(event) {
+
+				var newName = window.prompt('Please enter a board name.', 'Untitled');
+				var width = parseInt(window.prompt('Please enter a board width.', '40'));
+				var height = parseInt(window.prompt('Please enter a board height.', '20'));
+				if(newName && width && height) {
+					newName = editor.getUniqueBoardName(newName);
+					try {
+						editor.addBoard(newName, width, height);
+					}
+					catch(ex) {
+						alert(ex);
+					}
+				}
+
+			};
+
+			function onBoardAdded(boardName) {
+				boardSelector.options[boardSelector.options.length] = new Option(boardName, boardName);
+				northSelector.options[northSelector.options.length] = new Option(boardName, boardName);
+				southSelector.options[southSelector.options.length] = new Option(boardName, boardName);
+				eastSelector.options[eastSelector.options.length] = new Option(boardName, boardName);
+				westSelector.options[westSelector.options.length] = new Option(boardName, boardName);
+				titleBoardSelector.options[titleBoardSelector.options.length] = new Option(boardName, boardName);
+				startingBoardSelector.options[startingBoardSelector.options.length] = new Option(boardName, boardName);
+				victoryBoardSelector.options[victoryBoardSelector.options.length] = new Option(boardName, boardName);
+			};
+
+			function onBoardRemoved(boardName) {
+
+				function findIndex(element, name) {
+					var index;
+					for(index = 0; index < element.length; ++index) {
+						if(element.options[index].value === name) {
+							return index;
+						}
+					}
+				}
+
+				
+				boardSelector.remove(findIndex(boardSelector, boardName));
+				northSelector.remove(findIndex(northSelector, boardName));
+				eastSelector.remove(findIndex(eastSelector, boardName));
+				southSelector.remove(findIndex(southSelector, boardName));
+				westSelector.remove(findIndex(westSelector, boardName));
+				titleBoardSelector.remove(findIndex(titleBoardSelector, boardName));
+				startingBoardSelector.remove(findIndex(startingBoardSelector, boardName));
+				victoryBoardSelector.remove(findIndex(victoryBoardSelector, boardName));
+			};
+
+			function onModeChanged(mode) {
+				if(parseInt(modeSelector.value) !== mode) {
+					modeSelector.value = mode.toString();
+				}
+			};
+
+			function onBoardChanged(boardName) {
+				boardSelector.value = boardName;
+				scriptSelector.options.length = 0;
+				for(var index = 0; index < editor.currentBoard.scripts.length; ++index) {
+					scriptSelector.options[index] = new Option(editor.currentBoard.scripts[index].name);
+				}
+				selectScript(scriptSelector.value);
+				
+			};
+
+			function onBoardOptionsChanged(options) {
+
+				northSelector.value = options.north ? options.north : '';
+				eastSelector.value = options.east ? options.east : '';
+				southSelector.value = options.south ? options.south : '';
+				westSelector.value = options.west ? options.west : '';
+				darkSelector.checked = options.dark;
+
+			};
+
+			function onGameOptionsChanged(options) {
+				gameName.value = options.title ? options.title : 'Untitled';
+				authorName.value = options.author ? options.author : 'Anonymous';
+				titleBoardSelector.value = options.titleBoard ? options.titleBoard : '';
+				startingBoardSelector.value = options.startingBoard ? options.startingBoard : editor.currentBoard.name;
+				victoryBoardSelector.value = options.victoryBoard ? options.victoryBoard : '';
+			};
+
+			function onTemplateChanged(newTemplate) {
+
+				var element;
+
+				if(newTemplate) {
+					templateEditor.value = JSON.stringify(newTemplate, undefined, 4);
+
+					if(newTemplate.type) {
+						element = toolBox.querySelector('input[value="' + newTemplate.type + '"]');
+						if(element) {
+							element.checked = true;
+						}
+					}
+
+				}
+				else {
+					templateEditor.value = '(None)';
+					toolBox.querySelector('input[value=""]').checked = true;
+				}
+
+			};
+
+			function onTemplateEdited() {
+				if(templateEditor.value !== '') {
+					editor.setActiveTemplate(JSON.parse(templateEditor.value));
+				}
+			};
+
+			function saveGame(event) {
+				editor.save();
+				alert('Game Saved!');
+			};
+
+			function selectScript(scriptName) {
+				var script = editor.currentBoard.getScript(scriptName);
+				if(script) {
+					scriptEditor.value = script.rawScript;
+				}
+				else {
+					scriptEditor.value = '';
+				}
+			}
+
+			function onScriptSelected(event) {
+				selectScript(event.target.value);
+			};
+
+			function onNewScriptClick(event) {
+				var newName = window.prompt('Please enter a script name.', 'Untitled');
+				var script;
+				if(newName) {
+					newName = editor.getUniqueScriptName(newName);
+					script = new jzt.Script({'name': newName, 'rawScript': ''});
+					editor.currentBoard.scripts.push(script);
+					scriptSelector.options[scriptSelector.options.length] = new Option(newName);
+					scriptEditor.value = editor.currentBoard.getScript(newName).rawScript;
+					scriptSelector.value = newName;
+				}
+			};
+
+			function onDeleteScriptClick(event) {
+
+				var index;
+				var scriptName = scriptSelector.value;
+
+				for(index = 0; index < editor.currentBoard.scripts.length; ++index) {
+					if(editor.currentBoard.scripts[index].name === scriptName) {
+						editor.currentBoard.scripts.splice(index, 1);
+					}
+				}
+
+				scriptSelector.remove(scriptSelector.selectedIndex);
+
+				selectScript(scriptSelector.value);
+ 
+			};
+
+			function onScriptChanged(event) {
+				var script = editor.currentBoard.getScript(scriptSelector.value);
+				script.rawScript = scriptEditor.value;
+			};
+
+			function onColorSelected(event) {
+				var color = event.target.dataset['color'];
+				editor.setTemplateForeground(jzt.colors.getColor(color));
+			};
+
+			function onModeSelected(event) {
+				var mode = parseInt(modeSelector.value);
+				editor.setMode(mode);
+			};
+
+			function onBoardOptionsSelected(event) {
+				var options = {
+					north: northSelector.value,
+					south: southSelector.value,
+					east: eastSelector.value,
+					west: westSelector.value,
+					dark: darkSelector.checked
+				};
+				editor.setBoardOptions(options);
+			};
+
+			function onGameOptionsSelected(event) {
+				var options = {
+					title: gameName.value,
+					author: authorName.value,
+					titleBoard: titleBoardSelector.value,
+					startingBoard: startingBoardSelector.value,
+					victoryBoard: victoryBoardSelector.value
+				};
+				editor.setGameOptions(options);
+			};
+
+			function onDownload(event) {
+				var game = editor.serialize();
+				download.download = game.title.replace(/[^a-z0-9_\-]/gi, '-').toLowerCase() + '.jzt';
+				download.href = 'data:application/octet-stream;charset=utf-8;base64,' + LZString.compressToBase64(JSON.stringify(editor.serialize()));
+			};
+
+			function onLoadGame(event) {
+				var fileReader;
+				var result;
+				if(event.target.files && event.target.files[0]) {
+					fileReader = new FileReader();
+					fileReader.onload = function(event) {
+						result = event.target.result.split(',')[1];
+						result = LZString.decompressFromBase64(result);
+						editor.deserialize(JSON.parse(result));
+					};
+					fileReader.readAsDataURL(event.target.files[0]);
+				}
+			};
+
+			function onDeleteBoard(event) {
+				editor.removeBoard(editor.currentBoard.name);
+			};
+
+			var tools = document.getElementsByName('activeTemplate');
+			for( var index = 0; index < tools.length; index++ ) {
+        		tools[index].addEventListener('change', onToolSelected, false);
+    		}	
+
+    		var colors = document.getElementById('color-customizer').getElementsByTagName('li');
+    		for(var index = 0; index < colors.length; ++index) {
+    			colors[index].addEventListener('click', onColorSelected, false);
+    		}
+
+    		var saveButton = document.getElementById('save-game');
+    		saveButton.addEventListener('click', saveGame, false);
+
+			var callbacks = {
+				addBoard: onBoardAdded,
+				removeBoard: onBoardRemoved,
+				changeBoard: onBoardChanged,
+				changeTemplate: onTemplateChanged,
+				changeMode: onModeChanged,
+				changeBoardOptions: onBoardOptionsChanged,
+				changeGameOptions: onGameOptionsChanged
+			};
+
+			editor = new jzt.Editor(editArea, callbacks);
+
+			modeSelector.addEventListener('change', onModeSelected, false);
+			boardSelector.addEventListener('change', onBoardSelected, false);
+			templateEditor.addEventListener('blur', onTemplateEdited, false);
+			scriptSelector.addEventListener('change', onScriptSelected, false);
+			newScriptButton.addEventListener('click', onNewScriptClick, false);
+			deleteScriptButton.addEventListener('click', onDeleteScriptClick, false);
+			scriptEditor.addEventListener('blur', onScriptChanged, false);
+			northSelector.addEventListener('change', onBoardOptionsSelected, false);
+			eastSelector.addEventListener('change', onBoardOptionsSelected, false);
+			southSelector.addEventListener('change', onBoardOptionsSelected, false);
+			westSelector.addEventListener('change', onBoardOptionsSelected, false);
+			darkSelector.addEventListener('click', onBoardOptionsSelected, false);
+			download.addEventListener('click', onDownload, false);
+			loadGame.addEventListener('change', onLoadGame, false);
+			newBoard.addEventListener('click', onNewBoardClicked, false);
+			deleteBoard.addEventListener('click', onDeleteBoard, false);
+			gameName.addEventListener('blur', onGameOptionsSelected, false);
+			authorName.addEventListener('blur', onGameOptionsSelected, false);
+			titleBoardSelector.addEventListener('change', onGameOptionsSelected, false);
+			startingBoardSelector.addEventListener('change', onGameOptionsSelected, false);
+			victoryBoardSelector.addEventListener('change', onGameOptionsSelected, false);
+
+
+		</script>
+		
+	</body>
+</html>
