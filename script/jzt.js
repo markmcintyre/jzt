@@ -254,6 +254,7 @@ jzt.Game.prototype.onGraphicsLoaded = function() {
     this.scroll = new jzt.Scroll(this);
     this.fileManagement = new jzt.FileManagement(this);
     this.DARK_PATTERN = this.context.createPattern(this.resources.graphics.DARK_IMAGE, 'repeat');
+    this.NOISE_PATTERN = this.context.createPattern(this.resources.graphics.NOISE_IMAGE, 'repeat');
     this.onLoadCallback();
 };
 
@@ -778,10 +779,19 @@ jzt.Game.prototype.drawScreenEffect = function() {
 
     var line;
     var lineSpacing = 10 * this.devicePixelRatio;
+    var translateX = Math.round(256 * Math.random());
+    var translateY = Math.round(256 * Math.random());
 
     if(++this.screenEffectIndex > lineSpacing) {
         this.screenEffectIndex = 0;
     }
+
+    this.context.fillStyle = this.NOISE_PATTERN;
+    this.context.save();
+    this.context.translate(translateX, translateY);
+    this.context.scale(2 * this.devicePixelRatio, 2 * this.devicePixelRatio);
+    this.context.fillRect(-translateX,-translateY,this.context.canvas.width, this.context.canvas.height);
+    this.context.restore();
 
     this.context.lineWidth = 4 * this.devicePixelRatio;
     this.context.strokeStyle = 'rgba(0,0,0,0.05)';
