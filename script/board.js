@@ -4,8 +4,6 @@
  * @author Mark McIntyre
  */
 
-/* jshint globalstrict: true */
-
 "use strict";
 
 var jzt = jzt || {};
@@ -506,7 +504,7 @@ jzt.Board.prototype.hasTile = function(type, color, count) {
 
     var tally = 0;
 
-    this.each(function(tile, point) {
+    this.each(function(tile) {
 
         if(tile && tile.equals(type, color)) {
             tally++;
@@ -531,7 +529,7 @@ jzt.Board.prototype.changeTiles = function(targetType, targetColor, newThing) {
     var me = this;
     var clone;
 
-    this.each(function(tile, point) {
+    this.each(function(tile) {
 
         if(tile && tile.equals(targetType, targetColor)) {
 
@@ -554,7 +552,7 @@ jzt.Board.prototype.changeTiles = function(targetType, targetColor, newThing) {
  * tiles.
  *
  * @param point A point on this Board to delete.
- */   
+ */
 jzt.Board.prototype.deleteTile = function(point) {
     
     var thing = this.getTile(point);
@@ -727,7 +725,7 @@ jzt.Board.prototype.isFreeOrSurrenderable = function(point, thing) {
  * @param point A point from which to retrieve a tile.
  * @return a Thing located at a provided Point, or undefined if no such 
  *          this is available at a given Point.
- */    
+ */
 jzt.Board.prototype.getTile = function(point) {
     
     if(point.x >= this.width || point.x < 0 || point.y >= this.height || point.y < 0) {
@@ -921,7 +919,6 @@ jzt.Board.prototype.canPlayerShoot = function(displayMessage) {
 jzt.Board.prototype.update = function() {
 
     var me = this;
-    var torch;
 
     // Update the smart path
     this.updateSmartPath(this.player.point);
@@ -1015,7 +1012,7 @@ jzt.Board.prototype.equals = function(otherBoard) {
  * Assigns a message to be temporarily displayed at the bottom of this Board.
  *
  * @param message a message to be displayed.
- */ 
+ */
 jzt.Board.prototype.setDisplayMessage = function(message, duration) {
 
     if(message !== undefined) {
@@ -1042,7 +1039,6 @@ jzt.Board.prototype.render = function(c) {
     var me = this;
     var canvasWidth = this.game.context.canvas.width;
     var canvasHeight = this.game.context.canvas.height;
-    var torchCircle;
     var index;
 
     // Update our window
@@ -1195,7 +1191,7 @@ jzt.Board.prototype.updateSmartPath = function(targetPoint) {
 
 jzt.Board.prototype.updatePathWeights = function() {
 
-    this.each(function(tile, point) {
+    this.each(function(tile) {
         if(tile instanceof jzt.things.UpdateableThing) {
             tile.influenceSmartPath();
         }
@@ -1304,7 +1300,7 @@ jzt.Board.prototype.getMessageForLanguage = function(language, key) {
         return this.i18n[language][key];
     }
 
-}
+};
 
 /**
  * Indicates to this board that the player has been hurt. This will display 
