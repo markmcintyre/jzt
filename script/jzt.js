@@ -341,6 +341,9 @@ jzt.Game.prototype.setState = function(state) {
         // Remember our pause time
         this.pauseStart = Date.now();
 
+        // Cancel all keyboard input
+        this.keyboard.cancelInput();
+
         this.scroll.open();
 
     }

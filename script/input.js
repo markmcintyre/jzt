@@ -60,7 +60,12 @@ jzt.KeyboardInput.prototype.initialize = function() {
  * Cancels all tracked keyboard input.
  */
 jzt.KeyboardInput.prototype.cancelInput = function() {
-    this.pressed = {};
+    var index;
+    for(index in this.pressed) {
+        if(this.pressed.hasOwnProperty(index)) {
+            this.pressed[index] = -1;
+        }
+    }
     this.pressedKeys = 0;
 };
 
@@ -70,9 +75,11 @@ jzt.KeyboardInput.prototype.cancelInput = function() {
  * @param keyCode A key code.
  */
 jzt.KeyboardInput.prototype.cancelKey = function(keyCode) {
-    delete this.pressed[keyCode];
-    if(--this.pressedKeys < 0) {
-        this.pressedKeys = 0;
+    if(this.pressed[keyCode] !== undefined) {
+        this.pressed[keyCode] = -1;
+        if(--this.pressedKeys < 0) {
+            this.pressedKeys = 0;
+        }
     }
 };
 
@@ -93,7 +100,7 @@ jzt.KeyboardInput.prototype.isAnyPressed = function() {
  * @return The timestamp at which the key was pressed, or undefined if the key is not pressed.
  */
 jzt.KeyboardInput.prototype.isPressed = function(keyCode) {
-    return this.pressed[keyCode];
+    return (this.pressed[keyCode] !== undefined) && (this.pressed[keyCode] > 0) ? this.pressed[keyCode] : undefined;
 };
 
 /**
@@ -137,7 +144,7 @@ jzt.KeyboardInput.prototype.getMostRecentPress = function(keys) {
  */
 jzt.KeyboardInput.prototype.onKeyDown = function(event) {
     if( this.capturableKeys.indexOf(event.keyCode) >= 0) {
-        if(!this.pressed[event.keyCode]) {
+        if(this.pressed[event.keyCode] === undefined) {
             this.pressed[event.keyCode] = Date.now();
             this.pressedKeys++;
         }
