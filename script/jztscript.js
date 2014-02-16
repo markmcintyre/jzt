@@ -4,10 +4,9 @@
  * @author Mark McIntyre
  */
 
-/* jshint globalstrict: true */
-
 "use strict";
 
+var jzt = jzt || {};
 var jztscript = jztscript || {};
   
 jztscript.CommandFactory = function() {
@@ -38,7 +37,7 @@ jztscript.CommandFactory.prototype.parseLine = function(line) {
             throw 'Unknown command';
         }
 
-    };
+    }
 
     // Return the assembly's target
     return result.target;
@@ -48,12 +47,12 @@ jztscript.CommandFactory.prototype.parseLine = function(line) {
 jztscript.createCommandParser = function() {
   
     var result = new jzt.parser.Alternation();
+    var parser;
     
     // Add all our available commands
     for(parser in jztscript.parsers) {
         if(jztscript.parsers.hasOwnProperty(parser)) {
-            var parser = jztscript.parsers[parser];
-            result.add(new parser());
+            result.add(new (jztscript.parsers[parser])());
         }
     }
     
@@ -86,7 +85,7 @@ jztscript.parserhelper.MovementParser = function(command, nameToken, noCount) {
             var token;
             var count;
 
-            result = new command();
+            result = Object.create(command.prototype);
             
             // Get our top token
             token = assembly.stack.pop();
@@ -126,7 +125,7 @@ jztscript.parserhelper.Simple = function(command, nameToken) {
     result.add(ns.discard(new ns.Literal(nameToken)));
     result.assembler = {
         assemble: function(assembly) {
-            assembly.target = new command();
+            assembly.target = Object.create(command.prototype);
         }
     };
     return result;
@@ -146,7 +145,7 @@ jztscript.parsers.NotExpressionParser = function(expressionParser) {
             result.expression = assembly.target;
             assembly.target = result;
         }
-    }
+    };
 
     return result;
 
@@ -156,7 +155,7 @@ jztscript.parsers.NotExpressionParser = function(expressionParser) {
  * Expression Parser
  * expression = (Empty | 'not') (VariableComparisonExpression | DirectionalFlagExpression | NotExpression)
  */
- jztscript.parsers.ExpressionParser = function() {
+jztscript.parsers.ExpressionParser = function() {
 
     var ns = jzt.parser;
     var result = new ns.Sequence();
@@ -173,27 +172,9 @@ jztscript.parsers.NotExpressionParser = function(expressionParser) {
     expression.add(new jztscript.parsers.PeepExpressionParser());
     result.add(expression);
 
-    result.assembler = {
-        assemble: function(assembly) {
-            
-            /*var result;
-
-            // Return a 'Not' expression if applicable
-            if(assembly.stack.length >= 1) {
-                assembly.stack.pop();
-                result = new jzt.commands.NotExpression();
-                result.expression = assembly.target;
-                assembly.target = result;
-            }*/
-
-            // Otherwise, we leave the target as-is.
-
-        }
-    };
-
     return result;
 
- };
+};
 
 /*
  * Adjacent Expression Parser
@@ -376,13 +357,13 @@ jztscript.parsers.ExistsExpressionParser = function() {
 
     return result;
 
-};  
+};
 
 /*
  * Variable Comparison Expression Parser
  * expression = Word ('gt' | 'lt' | 'gte' | 'lte' | 'eq') Number
  */
- jztscript.parsers.VariableComparisonExpressionParser = function() {
+jztscript.parsers.VariableComparisonExpressionParser = function() {
 
     var ns = jzt.parser;
     var result = new ns.Sequence();
@@ -410,7 +391,7 @@ jztscript.parsers.ExistsExpressionParser = function() {
 
     return result;
 
- };
+};
 
 /*
  * Direction Expression Parser
@@ -419,7 +400,7 @@ jztscript.parsers.ExistsExpressionParser = function() {
  * direction = 'n' | 's' | 'e' | 'w' | 'north' | 'south' | 'east' | 'west' | 'seek' | 'smartseek' |
  *             'flow' | 'rand' | 'randf' | 'randb' | 'rndns' | 'rndew' | 'rndne';
  */
- jztscript.parsers.DirectionExpressionParser = function() {
+jztscript.parsers.DirectionExpressionParser = function() {
 
     var ns = jzt.parser;
     var modifiers = jzt.commands.DirectionModifier;
@@ -432,17 +413,17 @@ jztscript.parsers.ExistsExpressionParser = function() {
     // Direction Modifier
     directionModifier = new ns.Alternation();
     for(item in modifiers) {
-      if(modifiers.hasOwnProperty(item)) {
-          directionModifier.add( new ns.Literal(item));
-      }
+        if(modifiers.hasOwnProperty(item)) {
+            directionModifier.add( new ns.Literal(item));
+        }
     }
 
     // Direction
     direction = new ns.Alternation();
     for(item in directions) {
-      if(directions.hasOwnProperty(item)) {
-          direction.add( new ns.Literal(item));
-      }
+        if(directions.hasOwnProperty(item)) {
+            direction.add( new ns.Literal(item));
+        }
     }
 
     result = new ns.Sequence();
@@ -472,14 +453,14 @@ jztscript.parsers.ExistsExpressionParser = function() {
 
     return result;
 
- };
+};
  
 
 /*
  * Become Parser
  * command = 'become' [Word] Word
  */
- jztscript.parsers.BecomeParser = function() {
+jztscript.parsers.BecomeParser = function() {
 
     var ns = jzt.parser;
 
@@ -489,7 +470,7 @@ jztscript.parsers.ExistsExpressionParser = function() {
 
             var thing = assembly.stack.pop().toUpperCase();
             if(jzt.things.ThingFactory.isKnownThing(thing)) {
-               command.thing = thing; 
+                command.thing = thing;
             }
             else {
                 assembly.error = 'Unrecognized thing \'' + thing + '\'';
@@ -517,7 +498,7 @@ jztscript.parsers.ExistsExpressionParser = function() {
     result.assembler = assembler;
     return result;
 
- };
+};
 
 /*
  * Change Parser
@@ -657,7 +638,7 @@ jztscript.parsers.CharParser = function() {
     result.assembler = assembler;
     return result;
     
-}
+};
 
 /**
  * Collect Parser
@@ -720,7 +701,7 @@ jztscript.parsers.GoParser = function() {
  * If Parser
  * command = 'if' Expression Word
  */
- jztscript.parsers.IfParser = function() {
+jztscript.parsers.IfParser = function() {
     var ns = jzt.parser;
     var result = new ns.Sequence();
 
@@ -737,7 +718,7 @@ jztscript.parsers.GoParser = function() {
         }
     };
     return result;
- };
+};
 
 /*
  * Label Parser
@@ -784,7 +765,7 @@ jztscript.parsers.LockParser = function() {
  *             | 'flow' | 'rand' | 'randf' | 'randb' | 'rndns' | 'rndew' | 'rndne';       
  */
 jztscript.parsers.MoveParser = function() {
-    return jztscript.parserhelper.MovementParser(jzt.commands.Move, 'move');    
+    return jztscript.parserhelper.MovementParser(jzt.commands.Move, 'move');
 };
 
 /*
@@ -811,7 +792,7 @@ jztscript.parsers.PlayParser = function() {
  * Put Parser
  * command = 'put' [DirectionExpression] [Word] Word
  */
- jztscript.parsers.PutParser = function() {
+jztscript.parsers.PutParser = function() {
 
     var ns = jzt.parser;
     var result = new ns.Sequence();
@@ -855,7 +836,7 @@ jztscript.parsers.PlayParser = function() {
 
     return result;
 
- };
+};
 
 /*
  * Scroll Parser
@@ -906,7 +887,7 @@ jztscript.parsers.ScrollCParser = function() {
  *
  * command = 'send' Word Word
  */
- jztscript.parsers.SendParser = function() {
+jztscript.parsers.SendParser = function() {
     var ns = jzt.parser;
     var result = new ns.Sequence();
     result.add(ns.discard(new ns.Literal('send')));
@@ -923,7 +904,7 @@ jztscript.parsers.ScrollCParser = function() {
         }
     };
     return result;
- };
+};
 
 /*
  * Set Parser
@@ -945,7 +926,7 @@ jztscript.parsers.SetParser = function() {
             }
             assembly.target = command;
         }
-    }
+    };
     return result;
 };
 
@@ -954,7 +935,7 @@ jztscript.parsers.SetParser = function() {
  *
  * command = 'take' Number Word (Empty | Word)
  */
- jztscript.parsers.TakeParser = function() {
+jztscript.parsers.TakeParser = function() {
     var ns = jzt.parser;
     var result = new ns.Sequence();
     result.add(ns.discard(new ns.Literal('take')));
@@ -973,7 +954,7 @@ jztscript.parsers.SetParser = function() {
         }
     };
     return result;
- };
+};
 
 /*
  * Throwstar Parser
