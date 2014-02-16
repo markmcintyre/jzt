@@ -4,8 +4,6 @@
  * @author Mark McIntyre
  */
 
-/* jshint globalstrict: true */
-
 "use strict";
 
 var jzt = jzt || {};
