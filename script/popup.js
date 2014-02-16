@@ -4,8 +4,6 @@
  * @author Mark McIntyre
  */
 
-/* jshint globalstrict: true */
-
 "use strict";
 
 var jzt = jzt || {};
@@ -20,9 +18,6 @@ jzt.ui = jzt.ui || {};
  * @param game A Game instance to own this Popup
  */
 jzt.ui.Popup = function(position, size, game) {
-
-	var screenWidth;
-	var screenHeight;
 
 	if(position) {
 		this.position = position;
