@@ -4,8 +4,6 @@
  * @author Mark McIntyre
  */
 
-/* jshint globalstrict: true */
-
 "use strict";
 
 var jzt = jzt || {};
@@ -189,7 +187,7 @@ jzt.things.Thing.prototype.isPlayerVisible = function(distance) {
 
     function isBlocked(point) {
         var tile = me.board.getTile(point);
-        return tile && (tile != me) && !(tile instanceof jzt.things.Player);
+        return tile && (tile !== me) && !(tile instanceof jzt.things.Player);
     }
 
     if(line.points.length > distance) {
@@ -287,13 +285,13 @@ jzt.things.Thing.prototype.getAdjacentThing = function(direction) {
  */
 jzt.things.Thing.prototype.equals = function(type, color) {
 
-    var type = type.toUpperCase();
+    type = type.toUpperCase();
 
     if(this.constructor.serializationType && this.constructor.serializationType.toUpperCase() === type) {
 
         return color === undefined ? true : color === this.foreground;
 
-    };
+    }
 
     return false;
 
@@ -442,9 +440,9 @@ jzt.things.UpdateableThing.prototype.getBlockedDirections = function() {
     var instance = this;
     
     jzt.Direction.each(function(direction) {
-       if(instance.isBlocked(direction)) {
-           result.push(direction);
-       }
+        if(instance.isBlocked(direction)) {
+            result.push(direction);
+        }
     });
     
     return result;
@@ -564,7 +562,7 @@ jzt.things.ScriptableThing.prototype.deserialize = function(data) {
             this.scriptContext.deserialize(data.scriptContext);
         }
 
-        if(typeof data.messageQueue === 'array' && data.messageQueue.length > 0) {
+        if(data.messageQueue instanceof Array && data.messageQueue.length > 0) {
             this.messageQueue = data.messageQueue.slice(0);
         }
 
@@ -634,7 +632,7 @@ jzt.things.ScriptableThing.prototype.doTick = function() {
 
 jzt.things.ScriptableThing.prototype.setTorchRadius = function(radius) {
     this.torchRadius = radius;
-}
+};
 
 jzt.things.ScriptableThing.prototype.getTorch = function() {
     if(this.torchRadius > 0) {
@@ -676,7 +674,7 @@ jzt.things.ActiveBomb.prototype.deserialize = function(data) {
     this.radius = jzt.util.getOption(data, 'radius', 4);
 };
 
-jzt.things.ActiveBomb.prototype.push = function(direction, pusher) {
+jzt.things.ActiveBomb.prototype.push = function(direction) {
     this.move(direction);
 };
 
@@ -983,7 +981,7 @@ jzt.things.Blinker.prototype.blink = function() {
 
 };
 
-jzt.things.Blinker.prototype.createBlinkWall = function(point) {
+jzt.things.Blinker.prototype.createBlinkWall = function() {
     var blinkWall = new jzt.things.BlinkWall(this.board);
     blinkWall.horizontal = (this.direction === jzt.Direction.North || this.direction === jzt.Direction.South) ? false : true;
     blinkWall.foreground = this.foreground;
@@ -1034,7 +1032,7 @@ jzt.things.Bomb = function(board) {
     this.radius = 4;
     this.spriteIndex = 11;
     this.conveyable = true;
-}
+};
 jzt.things.Bomb.prototype = new jzt.things.Thing();
 jzt.things.Bomb.prototype.constructor = jzt.things.Bomb;
 jzt.things.Bomb.serializationType = 'Bomb';
@@ -1050,7 +1048,7 @@ jzt.things.Bomb.prototype.serialize = function() {
     return result;
 };
 
-jzt.things.Bomb.prototype.push = function(direction, pusher) {
+jzt.things.Bomb.prototype.push = function(direction) {
     this.move(direction);
 };
 
@@ -1172,7 +1170,7 @@ jzt.things.Bullet.prototype.serialize = function() {
  *
  * @param data An object to be deserialized into this Thing.
  */
- jzt.things.Bullet.prototype.deserialize = function(data) {
+jzt.things.Bullet.prototype.deserialize = function(data) {
     jzt.things.UpdateableThing.prototype.deserialize.call(this, data);
     this.background = undefined;
     this.foreground = jzt.colors.BrightWhite;
@@ -1180,7 +1178,7 @@ jzt.things.Bullet.prototype.serialize = function() {
     if(data.fromPlayer) {
         this.fromPlayer = data.fromPlayer;
     }
- };
+};
 
 /**
  * Sends a provided message to this Bullet instance. If a Touch message is
@@ -1194,7 +1192,7 @@ jzt.things.Bullet.prototype.sendMessage = function(message) {
         this.board.player.sendMessage('SHOT');
         this.remove();
     }
- };
+};
 
 /**
  * Retrieves whether or not this Bullet instance wishes to be updated on its owner Board's
@@ -1321,7 +1319,7 @@ jzt.things.Bullet.prototype.ricochet = function(direction) {
 /**
  * Attempts to push this Bullet.
  */
-jzt.things.Bullet.prototype.push = function(direction, pusher) {
+jzt.things.Bullet.prototype.push = function() {
     this.remove();
 };
 
@@ -2098,7 +2096,7 @@ jzt.things.Explosion.prototype.render = function(context) {
     var radius;
 
     if(this.timeToLive === jzt.things.Explosion.MAX_TTL) {
-        radius = Math.round(this.radius / 2); 
+        radius = Math.round(this.radius / 2);
     }
     else {
         radius = Math.round((this.radius * this.timeToLive) / (jzt.things.Explosion.MAX_TTL - 1));
@@ -2383,7 +2381,6 @@ jzt.things.Key.serializationType = 'Key';
 jzt.things.Key.prototype.sendMessage = function(message) {
 
     var keyType;
-    var keyCode;
 
     if(message === 'TOUCH') {
 
@@ -2473,7 +2470,7 @@ jzt.things.Lava.prototype.updateWhileUnder = function() {
         thing.sendMessage('SHOT');
     }
 
-}
+};
 
 jzt.things.Lava.prototype.sendMessage = function(message) {
     if(message === 'TOUCH') {
@@ -2482,7 +2479,7 @@ jzt.things.Lava.prototype.sendMessage = function(message) {
     }
 };
 
-jzt.things.Lava.prototype.isSurrenderable = function(thing) {
+jzt.things.Lava.prototype.isSurrenderable = function() {
     return true;
 };
 
@@ -2492,7 +2489,7 @@ jzt.things.Lava.prototype.isSurrenderable = function(thing) {
  * LineWall is a Thing representing an immoveable obstacle with line decoration.
  *
  * @param board An owner board for this LineWall.
- */ 
+ */
 jzt.things.LineWall = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = undefined;
@@ -2730,7 +2727,7 @@ jzt.things.Passage.prototype.deserialize = function(data) {
  * the primary action point for gameplay.
  *
  * @param board An owner board for this Player.
- */ 
+ */
 jzt.things.Player = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     
@@ -2911,7 +2908,7 @@ jzt.things.Player.prototype.update = function() {
         }
         else if(key === k.DOWN) {
             this.eventScheduler.scheduleEvent(k.isPressed(k.DOWN), {'type': this.SHOOT_ACTION, 'direction': jzt.Direction.South});
-        } 
+        }
         else if(key === k.LEFT) {
             this.eventScheduler.scheduleEvent(k.isPressed(k.LEFT), {'type': this.SHOOT_ACTION, 'direction': jzt.Direction.West});
         }
@@ -3137,7 +3134,7 @@ jzt.things.Ricochet.serializationType = 'Ricochet';
 /**
  * Serializes this Ricochet to a data object.
  */
- jzt.things.Ricochet.prototype.serialize = function() {
+jzt.things.Ricochet.prototype.serialize = function() {
     var result = jzt.things.Thing.prototype.serialize.call(this);
     delete result.color;
     return result;
@@ -3168,24 +3165,24 @@ jzt.things.River.serializationType = 'River';
 
 jzt.things.River.prototype.initialize = function() {
     switch(jzt.Direction.getShortName(this.direction)) {
-        case 'N': 
+        case 'N':
             this.spriteIndex = 30;
             break;
-        case 'E': 
+        case 'E':
             this.spriteIndex = 16;
             break;
-        case 'S': 
+        case 'S':
             this.spriteIndex = 31;
             break;
-        case 'W': 
+        case 'W':
             this.spriteIndex = 17;
             break;
     }
 };
 
 jzt.things.River.prototype.updateWhileUnder = function() {
-    jzt.things.UpdateableThing.prototype.update.call(this); 
-}
+    jzt.things.UpdateableThing.prototype.update.call(this);
+};
 
 jzt.things.River.prototype.doTick = function() {
 
@@ -3197,7 +3194,7 @@ jzt.things.River.prototype.doTick = function() {
 
 };
 
-jzt.things.River.prototype.isSurrenderable = function(thing) {
+jzt.things.River.prototype.isSurrenderable = function() {
     return true;
 };
 
@@ -3357,7 +3354,7 @@ jzt.things.Ruffian.prototype.doTick = function() {
         }
 
         // Don't attempt to move in the direction of a river
-        else if(thing && thing instanceof jzt.things.River && thing.direction === jzt.Direction.opposite(direction)) {
+        else if(thing && thing instanceof jzt.things.River && thing.direction === jzt.Direction.opposite(this.orientation)) {
             return;
         }
 
@@ -3450,7 +3447,7 @@ jzt.things.SliderEw.serializationType = 'SliderEw';
  *
  * @param direction A direction in which this Thing is requested to move.
  */
-jzt.things.SliderEw.prototype.push = function(direction, pusher) {
+jzt.things.SliderEw.prototype.push = function(direction) {
     if(direction.equals(jzt.Direction.East) || direction.equals(jzt.Direction.West)) {
         if(this.move(direction)) {
             this.play('t--f', false, true);
@@ -3480,7 +3477,7 @@ jzt.things.SliderNs.serializationType = 'SliderNs';
  *
  * @param direction A direction in which this Thing is requested to move.
  */
-jzt.things.SliderNs.prototype.push = function(direction, pusher) {
+jzt.things.SliderNs.prototype.push = function(direction) {
     if(direction.equals(jzt.Direction.North) || direction.equals(jzt.Direction.South)) {
         if(this.move(direction)) {
             this.play('t--f', false, true);
@@ -3576,7 +3573,7 @@ jzt.things.Snake.prototype.doTick = function() {
  * SolidWall is a Thing representing an immoveable obstacle.
  *
  * @param board An owner board for this SolidWall.
- */ 
+ */
 jzt.things.SolidWall = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 219;
@@ -3867,12 +3864,12 @@ jzt.things.SpinningGun.prototype.doTick = function() {
  *
  * @param board An owner Board for this Teleporter.
  */
- jzt.things.Teleporter = function(board) {
+jzt.things.Teleporter = function(board) {
     jzt.things.UpdateableThing.call(this, board);
     this.orientation = jzt.Direction.East;
     this.animationFrame = 2;
     this.speed = 3;
- };
+};
 jzt.things.Teleporter.prototype = new jzt.things.UpdateableThing();
 jzt.things.Teleporter.prototype.constructor = jzt.things.Teleporter;
 jzt.things.Teleporter.serializationType = 'Teleporter';
@@ -4321,7 +4318,7 @@ jzt.things.Torch.prototype.sendMessage = function(message) {
  * Wall is a Thing representing an immoveable obstacle.
  *
  * @param board An owner board for this Wall.
- */ 
+ */
 jzt.things.Wall = function(board) {
     jzt.things.Thing.call(this, board);
     this.spriteIndex = 178;
@@ -4429,7 +4426,7 @@ jzt.things.ThingFactory.isKnownThing = function(thingName) {
  * Lazily fetches a map of Things that have declared themself as serializeable .
  *
  * @return A map of Thing functions indexed by their symbols or serialization types.
- */ 
+ */
 jzt.things.ThingFactory.getThingMap = function() {
 
     if(jzt.things.ThingFactory.thingMap === undefined) {
