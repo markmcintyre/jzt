@@ -93,7 +93,8 @@ ul.toggles li {
 	padding: 0;
 }
 
-.slide-toggle {
+.slide-toggle,
+.side-button {
 	border-radius: 2px;
 	width: 1em;
 	height: 1em;
@@ -119,7 +120,8 @@ ul.toggles li {
 	padding: 3px 1px 1px 3px;
 }
 
-.slide-toggle:hover {
+.slide-toggle:hover,
+.side-button:hover {
 	background-color: #666;
 	box-shadow: 2px 2px 3px rgba(0,0,0,.25);
 	color: white;
