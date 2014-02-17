@@ -506,8 +506,8 @@ jzt.debug.log = function() {
  * @param name A name of a property
  * @param value A value to be stored.
  */
-jzt.util.storeOption = function(destination, name, value) {
-    if(value !== undefined) {
+jzt.util.storeOption = function(destination, name, value, defaultValue) {
+    if(value !== defaultValue) {
         destination[name] = value;
     }
 };

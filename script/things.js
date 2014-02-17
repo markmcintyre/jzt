@@ -496,6 +496,7 @@ jzt.things.ScriptableThing = function(board) {
     this.orientation = undefined;
     this.spriteIndex = 1;
     this.torchRadius = undefined;
+    this.pushable = false;
 };
 jzt.things.ScriptableThing.prototype = new jzt.things.UpdateableThing();
 jzt.things.ScriptableThing.prototype.constructor = jzt.things.ScriptableThing;
@@ -513,6 +514,8 @@ jzt.things.ScriptableThing.prototype.serialize = function() {
     result.spriteIndex = this.spriteIndex;
     result.script = this.scriptName;
 
+    jzt.util.storeOption(result, 'pushable', this.pushable, false);
+
     if(this.torchRadius > 0) {
         result.torchRadius = this.torchRadius;
     }
@@ -526,9 +529,7 @@ jzt.things.ScriptableThing.prototype.serialize = function() {
             result.messageQueue = this.messageQueue.slice(0);
         }
         jzt.util.storeOption(result, 'walkDirection', jzt.Direction.getName(this.walkDirection));
-        if(this.locked) {
-            jzt.util.storeOption(result, 'locked', this.locked);
-        }
+        jzt.util.storeOption(result, 'locked', this.locked, false);
         jzt.util.storeOption(result, 'orientation', jzt.Direction.getName(this.orientation));
     }
 
@@ -547,6 +548,7 @@ jzt.things.ScriptableThing.prototype.deserialize = function(data) {
     this.name = jzt.util.getOption(data, 'name', 'UnknownScriptable');
     this.spriteIndex = jzt.util.getOption(data, 'spriteIndex', 1);
     this.setTorchRadius(jzt.util.getOption(data, 'torchRadius', 0));
+    this.pushable = jzt.util.getOption(data, 'pushable', false);
     this.locked = data.locked;
     if(data.walkDirection) {
         this.walkDirection = jzt.Direction.fromName(data.walkDirection);
@@ -599,6 +601,15 @@ jzt.things.ScriptableThing.prototype.sendMessage = function(message) {
 jzt.things.ScriptableThing.prototype.move = function(direction) {
     this.orientation = direction;
     return jzt.things.UpdateableThing.prototype.move.call(this, direction);
+};
+
+/**
+ * Pushes this ScriptableThing in a provided Direction.
+ */
+jzt.things.ScriptableThing.prototype.push = function(direction, pusher) {
+    if(this.pushable) {
+        this.move(direction);
+    }
 };
 
 /**
