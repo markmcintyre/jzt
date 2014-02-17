@@ -130,6 +130,9 @@ jzt.Game.prototype.loadGame = function(game) {
                         response = JSON.parse(httpRequest.responseText);
                         me.deserialize(response);
                     }
+                    else {
+                        me.catestrophicError(jzt.i18n.getMessage('status.loaderror'));
+                    }
 
                 }
             };
