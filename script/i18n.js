@@ -59,7 +59,9 @@ jzt.i18n.Messages.en = {
 		'heart': 'Maximum health increased by 10!',
 		'invisible': 'You are blocked by an invisible wall.',
 		'notdark': 'You don\'t need a torch here.',
-		'loading': 'Loading...'
+		'loading': 'Loading...',
+		'loaderror': 'Oops! Loading failed.',
+		'fatalerror': 'I has error, Jim.'
 	},
 	pause: {
 		'paused': 'Paused',
@@ -125,7 +127,9 @@ jzt.i18n.Messages.fr = {
 		'heart': 'PV max a augmenté par 10 !',
 		'invisible': 'Vous êtes bloqué par un mur invisible.',
 		'notdark': 'Vous n\'avez pas besoin d\'une torche ici.',
-		'loading': 'Chargement...'
+		'loading': 'Chargement...',
+		'loaderror': 'Oups! Chargement echoué.',
+		'fatalerror': 'J\'ai l\'erreur, Jim.'
 	},
 	pause: {
 		'paused': 'Pause',

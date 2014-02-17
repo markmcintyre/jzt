@@ -14,15 +14,8 @@
 		<script type="text/javascript" src="jzt.min.js" charset="utf-8"></script>
 
 		<script type="text/javascript">
-			var data = localStorage['currentGame'];
-			data = LZString.decompressFromUTF16(data);
-			data = JSON.parse(data);
-		
-			var canvas = document.getElementById('jzt');
-			var game = new jzt.Game(canvas, function() {
-				var me = this;
-				this.run();
-				setTimeout(function(){me.loadGame(data)}, 2000);
+			new jzt.Game(document.getElementById('jzt'), function() {
+				this.run('../village-of-jzt.json');
 			});
 		</script>
 

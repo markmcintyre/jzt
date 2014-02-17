@@ -13,6 +13,7 @@ var jzt = jzt || {};
  * machine.
  */
 jzt.GameState = {
+    Error: -2,
     Loading: -1,
     Playing: 0,
     Paused: 1,
@@ -120,25 +121,35 @@ jzt.Game.prototype.loadGame = function(game) {
 
     if(typeof game === 'string') {
 
-        httpRequest = new XMLHttpRequest();
-        httpRequest.onreadystatechange = function() {
-            if (httpRequest.readyState === 4) {
+        try {
+            httpRequest = new XMLHttpRequest();
+            httpRequest.onreadystatechange = function() {
+                if (httpRequest.readyState === 4) {
 
-                if(httpRequest.status === 200) {
-                    response = JSON.parse(httpRequest.responseText);
-                    me.deserialize(response);
+                    if(httpRequest.status === 200) {
+                        response = JSON.parse(httpRequest.responseText);
+                        me.deserialize(response);
+                    }
+
                 }
-
-            }
-        };
-        httpRequest.open('GET', game, true);
-        httpRequest.send(null);
+            };
+            httpRequest.open('GET', game, true);
+            httpRequest.send(null);
+        }
+        catch(exception) {
+            this.catestrophicError(jzt.i18n.getMessage('status.loaderror'));
+        }
 
     }
     else if(typeof game === 'object') {
         this.deserialize(game);
     }
 
+};
+
+jzt.Game.prototype.catestrophicError = function(message) {
+    this.catestrophicErrorMessage = message;
+    this.setState(jzt.GameState.Error);
 };
 
 jzt.Game.prototype.deserialize = function(data) {
@@ -556,7 +567,7 @@ jzt.Game.prototype.setBoard = function(board, playerPoint) {
 /**
  * Starts this Game's loop, effectively starting this Game.
  */
-jzt.Game.prototype.run = function() {
+jzt.Game.prototype.run = function(game) {
 
     // If our game loop isn't already running
     if(! this.loopId) {
@@ -580,7 +591,13 @@ jzt.Game.prototype.run = function() {
 
         // If no game has loaded, we're in a loading state
         else {
+
             this.setState(jzt.GameState.Loading);
+
+            if(game) {
+                this.loadGame(game);
+            }
+
         }
 
         this.boundLoop = this.loop.bind(this);
@@ -601,16 +618,21 @@ jzt.Game.prototype.run = function() {
  */
 jzt.Game.prototype.loop = function() {
 
-    var now = Date.now();
+    try {
+        var now = Date.now();
 
-    var delta = now - this.then;
+        var delta = now - this.then;
 
-    this.loopId = requestAnimationFrame(this.boundLoop);
+        this.loopId = requestAnimationFrame(this.boundLoop);
 
-    if(delta > this.FPS_INTERVAL) {
-        this.then = now - (delta % this.FPS_INTERVAL);
-        this.update();
-        this.draw();
+        if(delta > this.FPS_INTERVAL) {
+            this.then = now - (delta % this.FPS_INTERVAL);
+            this.update();
+            this.draw();
+        }
+    }
+    catch(exception) {
+        this.catestrophicError(jzt.i18n.getMessage('status.fatalerror'));
     }
 
 };
@@ -812,6 +834,25 @@ jzt.Game.prototype.drawScreenEffect = function() {
 
 };
 
+jzt.Game.prototype.drawErrorScreen = function() {
+
+    var spriteGrid = this.errorPopup ? this.errorPopup.spriteGrid : undefined;
+    var popupWidth = this.catestrophicErrorMessage.length + 7;
+
+    // If we haven't yet defined our error popup
+    if(this.errorPopup === undefined || this.errorPopup.language !== jzt.i18n.Messages.currentLanguage) {
+        this.errorPopup = new jzt.ui.Popup(undefined, new jzt.Point(popupWidth, 3), this);
+        this.errorPopup.setColor(jzt.colors.Red, jzt.colors.White);
+        spriteGrid = this.errorPopup.spriteGrid;
+        spriteGrid.addText(new jzt.Point(2,1), this.catestrophicErrorMessage, jzt.colors.BrightWhite);
+        spriteGrid.setTile(new jzt.Point(popupWidth-4,1), 58, jzt.colors.Cycle);
+        spriteGrid.setTile(new jzt.Point(popupWidth-3,1), 40, jzt.colors.Cycle);
+    }
+
+    this.errorPopup.render(this.context);
+
+};
+
 jzt.Game.prototype.drawLoadingScreen = function() {
 
     var spriteGrid = this.loadingPopup ? this.loadingPopup.spriteGrid : undefined;
@@ -917,20 +958,26 @@ jzt.Game.prototype.draw = function() {
     }
 
     // If we are reading, also render our scroll instance
-    if(this.state === jzt.GameState.Reading) {
+    else if(this.state === jzt.GameState.Reading) {
         this.scroll.render(this.context);
     }
 
     // If we're in file management, render our file management instance
-    if(this.state === jzt.GameState.FileManagement) {
+    else if(this.state === jzt.GameState.FileManagement) {
         this.drawScreenEffect();
         this.fileManagement.render(this.context);
     }
 
     // If we're loading, render our loading screen
-    if(this.state === jzt.GameState.Loading) {
+    else if(this.state === jzt.GameState.Loading) {
         this.drawScreenEffect();
         this.drawLoadingScreen();
+    }
+
+    // If there was a catestropic error...
+    else if(this.state === jzt.GameState.Error) {
+        this.drawScreenEffect();
+        this.drawErrorScreen();
     }
             
 };
