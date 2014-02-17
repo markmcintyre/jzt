@@ -12,9 +12,7 @@ jzt.ux = jzt.ux || {};
 jzt.ux.SlidingPanel = function(container) {
 
 	var index;
-	var toggleName;
 	var slideToggles = container.querySelectorAll('.slide-toggle');
-	var bottomContent = container.querySelector('.jzt-bottom-content');
 
 	this.container = container;
 	this.activePanel = undefined;
@@ -55,7 +53,7 @@ jzt.ux.SlidingPanel.prototype.onButtonClick = function(event, panelName) {
 		this.closePanels();
 	}
 	
-}
+};
 
 jzt.ux.SlidingPanel.prototype.openPanel = function(panelName) {
 
@@ -108,9 +106,9 @@ jzt.ux.SlidingPanel.prototype.closePanels = function() {
 	this.activePanel = undefined;
 	this.removeDecoration();
 	this.container.className = 'jzt-sliding-container';
-}
+};
 
-jzt.ux.SlidingPanel.prototype.onBodyClick = function(event) {
+jzt.ux.SlidingPanel.prototype.onBodyClick = function() {
 	this.closePanels();
 	document.removeEventListener('click', this.bodyClickEvent);
 };
@@ -122,8 +120,6 @@ jzt.ux.setFullScreenButton = function(buttonElement, canvasElement) {
 	}
 
 	function onFullScreenChange() {
-
-		var height;
 
 		if(isFullScreen()) {
 			canvasElement.style.height = '100%';
