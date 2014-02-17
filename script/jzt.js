@@ -945,9 +945,17 @@ jzt.Game.prototype.drawPauseScreen = function() {
  */
 jzt.Game.prototype.draw = function() {
 
-    // Render the current board, if one exists
-    if(this.currentBoard) {
-        this.currentBoard.render(this.context);
+    // If we've got a board and haven't failed to render it before...
+    if(this.currentBoard && !this.errorInRender) {
+
+        try {
+            this.currentBoard.render(this.context);
+        }
+        catch(exception) {
+            this.errorInRender = true;
+            this.catestrophicError(i18n.getMessage('status.fatalerror'));
+        }
+
     }
     else {
         this.context.fillStyle = jzt.colors.Grey.rgbValue;
