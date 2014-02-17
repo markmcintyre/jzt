@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>JZT</title>
+		<link rel="stylesheet" type="text/css" href="css/main.css" />
+	</head>
+	<body>
+		
+		<div class="jzt-sliding-container" id="main-content">
+
+			<aside class="jzt-bottom-content">
+				<div class="help panel">
+					<p>This is just a help test.</p>
+				</div>
+				<div class="settings panel">
+					<p>This is just a settings test.</p>
+				</div>
+			</aside>
+
+			<div class="jzt-top-content">
+
+				<header>
+					<h1>JZT: Nostalgic DOS Game</h1>
+				</header>
+
+				<a class="slide-toggle" data-panel="help">Help</a>
+				<a class="slide-toggle" data-panel="settings">Settings</a>
+				
+				<canvas id="jzt" width="800" height="640"></canvas>
+				<script type="text/javascript" src="js/jzt.min.js" charset="utf-8"></script>
+
+				<script type="text/javascript">
+					new jzt.Game(document.getElementById('jzt'), function() {
+						this.run('../village-of-jzt.json');
+					});
+				</script>
+
+				<footer>
+				<p>&copy; {{JZT:YEAR}} Orangeline Interactive, Inc.</p>
+				</footer>
+
+			</div>
+
+		</div>
+
+		<script type="text/javascript" src="js/jzt-ux.min.js"></script>
+		<script type="text/javascript">
+			new jzt.ux.SlidingPanel(document.getElementById('main-content'));
+		</script>
+
+	</body>
+</html>

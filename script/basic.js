@@ -500,11 +500,12 @@ jzt.debug.log = function() {
 
 /**
  * Adds a property to a provided destination object as a given name and value,
- * only if the value is defined.
+ * only if the value is doesn't match a provided default.
  *
  * @param destination A destination object 
  * @param name A name of a property
  * @param value A value to be stored.
+ * @param defaultValue A default value.
  */
 jzt.util.storeOption = function(destination, name, value, defaultValue) {
     if(value !== defaultValue) {

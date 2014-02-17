@@ -606,7 +606,7 @@ jzt.things.ScriptableThing.prototype.move = function(direction) {
 /**
  * Pushes this ScriptableThing in a provided Direction.
  */
-jzt.things.ScriptableThing.prototype.push = function(direction, pusher) {
+jzt.things.ScriptableThing.prototype.push = function(direction) {
     if(this.pushable) {
         this.move(direction);
     }
