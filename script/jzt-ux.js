@@ -114,3 +114,44 @@ jzt.ux.SlidingPanel.prototype.onBodyClick = function(event) {
 	this.closePanels();
 	document.removeEventListener('click', this.bodyClickEvent);
 };
+
+jzt.ux.setFullScreenButton = function(buttonElement, canvasElement) {
+
+	function isFullScreen() {
+		return document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement;
+	}
+
+	function onFullScreenChange() {
+
+		var height;
+
+		if(isFullScreen()) {
+			canvasElement.style.height = '100%';
+			canvasElement.style.width = Math.round((screen.height * 800) / 640) + 'px';
+		}
+		else {
+			canvasElement.style.width = '800px';
+			canvasElement.style.height = '640px';
+		}
+
+	}
+
+	buttonElement.addEventListener('click', function() {
+		if(canvasElement.requestFullscreen) {
+			canvasElement.requestFullscreen();
+		}
+		else if(canvasElement.webkitRequestFullscreen) {
+			canvasElement.webkitRequestFullscreen();
+		}
+		else if(canvasElement.mozRequestFullScreen) {
+			canvasElement.mozRequestFullScreen();
+		}
+	});
+
+
+	document.addEventListener('fullscreenchange', onFullScreenChange);
+	document.addEventListener('webkitfullscreenchange', onFullScreenChange);
+	document.addEventListener('mozfullscreenchange', onFullScreenChange);
+	document.addEventListener('msfullscreenchange', onFullScreenChange);
+
+};
