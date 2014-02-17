@@ -5,6 +5,10 @@ body {
 	height: 100%;
 }
 
+body {
+	font-family: sans-serif;
+}
+
 header h1 {
 	display: none;
 }
@@ -36,8 +40,7 @@ footer {
 .jzt-top-content {
 	overflow-y: scroll;
 	position: relative;
-	box-shadow: 5px 0 10px rgba(0,0,0,.1);
-	-webkit-box-shadow: 5px 0 10px rgba(0,0,0,.1);
+	box-shadow: 5px 0 10px rgba(0,0,0,.25);
 	left: 0;
 	z-index: 99;
 	height: 100%;
@@ -53,11 +56,13 @@ footer {
 
 .jzt-bottom-content {
 	position: absolute;
+	background-color: white;
 	top: 0;
 	right: 0;
 	z-index: 1;
 	width: 300px;
 	height: 100%;
+	overflow-y: scroll;
 }
 
 .open .jzt-top-content {
@@ -71,5 +76,52 @@ footer {
 }
 
 .jzt-bottom-content .panel {
-	padding: 5px;
+	padding: 1em;
+}
+
+ul.toggles {
+	padding: 5px 2px 0 0;
+	margin: 0;
+	position: absolute;
+	top: 0;
+	right: 0;
+}
+
+ul.toggles li {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.slide-toggle {
+	border-radius: 2px;
+	width: 1em;
+	height: 1em;
+	margin: 5px;
+	color: #AAA;
+	font-weight: bold;
+	font-size: 150%;
+	text-align: center;
+	line-height: 1em;
+	vertical-align: middle;
+	padding: 3px 1px 1px 3px;
+	display: block;
+	cursor: pointer;
+}
+
+.slide-toggle.active {
+	background-color: #444;
+	box-shadow: 2px 2px 3px rgba(0,0,0,.25) inset;
+}
+
+.slide-toggle.active:hover {
+	box-shadow: 2px 2px 3px rgba(0,0,0,.25) inset;
+	padding: 3px 1px 1px 3px;
+}
+
+.slide-toggle:hover {
+	background-color: #666;
+	box-shadow: 2px 2px 3px rgba(0,0,0,.25);
+	color: white;
+	padding: 2px;
 }
