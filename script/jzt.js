@@ -126,11 +126,19 @@ jzt.Game.prototype.loadGame = function(game) {
             httpRequest.onreadystatechange = function() {
                 if (httpRequest.readyState === 4) {
 
-                    if(httpRequest.status === 200) {
-                        response = JSON.parse(httpRequest.responseText);
-                        me.deserialize(response);
+                    try {
+
+                        if(httpRequest.status === 200) {
+                            response = JSON.parse(httpRequest.responseText);
+                            me.deserialize(response);
+                        }
+                        else {
+                            throw 'Unexpected HTTP request status ' + httpRequest.status;
+                        }
+
                     }
-                    else {
+
+                    catch(exception) {
                         me.catestrophicError(jzt.i18n.getMessage('status.loaderror'));
                     }
 
