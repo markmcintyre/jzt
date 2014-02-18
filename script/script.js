@@ -64,8 +64,7 @@ jzt.Script.prototype.assemble = function() {
             // If there was an error parsing, cancel the script and output an error
             catch(ex) {
                 this.commands = [];
-                console.warn('Syntax error in script \'%s\' on line %d.\n> %s\n> %s.', this.name, index, line, ex);
-                return;
+                throw 'Syntax error in script \'' + this.name + '\' on line ' + index + '.\n' + line + '\n' + ex;
             }
 
             // If we got an empty line, skip this iteration

@@ -151,3 +151,41 @@ jzt.ux.setFullScreenButton = function(buttonElement, canvasElement) {
 	document.addEventListener('msfullscreenchange', onFullScreenChange);
 
 };
+
+jzt.ux.DisplayableNotificationListener = function(configuration) {
+	jzt.NotificationListener.call(this);
+	this.warningButton = configuration.warningButton;
+	this.warningElement = configuration.warningListElement;
+};
+jzt.ux.DisplayableNotificationListener.prototype = new jzt.NotificationListener();
+jzt.ux.DisplayableNotificationListener.prototype.constructor = jzt.ux.DisplayableNotificationListener;
+
+jzt.ux.DisplayableNotificationListener.prototype.addNotification = function(type, message) {
+	jzt.NotificationListener.prototype.addNotification.call(this, type, message);
+	if(type === 'warning') {
+		this.warningButton.style.display = 'block';
+	}
+	this.updateListElement();
+};
+
+jzt.ux.DisplayableNotificationListener.prototype.updateListElement = function() {
+
+	var index;
+	var notification;
+
+	// Clear any existing warnings
+	this.warningElement.innerHTML = '';
+
+	for(index = this.notifications.length-1; index >= 0; --index) {
+		notification = this.notifications[index];
+		if(notification.type === 'warning') {
+			this.warningElement.innerHTML += '<li>' + '<p>' + notification.message.split('\n').join('</p><p>') + '</p><p><small>' + new Date(notification.timestamp).toLocaleString() + '</small></p></li>';
+		}
+	}
+
+};
+
+jzt.ux.DisplayableNotificationListener.prototype.clear = function() {
+	this.updateListElement();
+	this.warningButton.style.display = 'none';
+}

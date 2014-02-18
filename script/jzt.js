@@ -27,12 +27,13 @@ jzt.GameState = {
 /**
  * Game represents a playable JZT game, including all Boards and a player.
  *
- * @param canvasElement An HTML5 Canvas element in which to display this Game.
- * @param data Serialized game data to be loaded
- * @param onLoadCallback A callback function to be executed once this Game
- *        and its assets have been loaded and initialized.
+ * @param configuration A configuration object consisting of the following:
+ * - onLoadCallback: A function to be called when the game has loaded
+ * - canvasElement: A Canvas element where this game should be drawn
+ * - notificationListener: A NotificationListener instance to listen for game notifications
+ * - settingNotifier: A settings notifier to notify of settings
  */
-jzt.Game = function(canvasElement, onLoadCallback) {
+jzt.Game = function(configuration) {
     
     var graphicsLoadedCallback;
 
@@ -48,20 +49,21 @@ jzt.Game = function(canvasElement, onLoadCallback) {
     this.loadingAnimationIndex = 0;
     this.screenEffectIndex = 0;
 
-    this.onLoadCallback = onLoadCallback;
+    this.onLoadCallback = configuration.onLoadCallback;
+    this.notificationListener = configuration.notificationListener;
     this.resources = {};
     this.player = undefined;
     this.keyboard = new jzt.KeyboardInput();
-    this.canvasElement = canvasElement;
+    this.canvasElement = configuration.canvasElement;
     this.devicePixelRatio = 1;
     if(window.devicePixelRatio) {
         this.devicePixelRatio = window.devicePixelRatio;
-        canvasElement.style.width = canvasElement.width + 'px';
-        canvasElement.style.height = canvasElement.height + 'px';
-        canvasElement.width = canvasElement.width * window.devicePixelRatio;
-        canvasElement.height = canvasElement.height * window.devicePixelRatio;
+        this.canvasElement.style.width = this.canvasElement.width + 'px';
+        this.canvasElement.style.height = this.canvasElement.height + 'px';
+        this.canvasElement.width = this.canvasElement.width * window.devicePixelRatio;
+        this.canvasElement.height = this.canvasElement.height * window.devicePixelRatio;
     }
-    this.context = canvasElement.getContext('2d');
+    this.context = this.canvasElement.getContext('2d');
     this.context.imageSmoothingEnabled = false;
     this.context.webkitImageSmoothingEnabled = false;
     this.context.mozImageSmoothingEnabled = false;
@@ -804,6 +806,17 @@ jzt.Game.prototype.oneTimeMessage = function(messageKey) {
         // Display it.
         this.currentBoard.setDisplayMessage(message);
 
+    }
+
+};
+
+jzt.Game.prototype.addWarning = function(message) {
+
+    if(this.notificationListener) {
+        this.notificationListener.addNotification('warning', message);
+    }
+    else {
+        console.warn(message);
     }
 
 };

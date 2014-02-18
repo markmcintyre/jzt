@@ -202,8 +202,16 @@ jzt.Board.prototype.initializeScripts = function(scriptData) {
     var index, script;
 
     for(index = 0; index < scriptData.length; ++index) {
-        script = new jzt.Script(scriptData[index]);
-        this.scripts.push(script);
+
+        try {
+            script = new jzt.Script(scriptData[index]);
+            this.scripts.push(script);
+        }
+        catch(exception) {
+            this.game.addWarning(exception);
+        }
+
+        
     }
     
 };

@@ -17,19 +17,13 @@
 				</header>
 
 				<ul class="toggles">
+					<li><a class="slide-toggle warning" data-panel="warnings">⚠</a></li>
 					<li><a class="slide-toggle" data-panel="help">?</a></li>
 					<li><a class="slide-toggle" data-panel="settings">⚙</a></li>
 					<li><a class="side-button" id="full-screen">⿹</a></li>
 				</ul>
 				
 				<canvas id="jzt" width="800" height="640"></canvas>
-				<script type="text/javascript" src="js/jzt.min.js" charset="utf-8"></script>
-
-				<script type="text/javascript">
-					new jzt.Game(document.getElementById('jzt'), function() {
-						this.run('../village-of-jzt.json');
-					});
-				</script>
 
 				<footer>
 				<p>&copy; {{JZT:YEAR}} Orangeline Interactive, Inc.</p>
@@ -38,6 +32,12 @@
 			</div>
 
 			<aside class="jzt-bottom-content">
+
+				<div class="warnings panel">
+					<h3>Game Warnings</h3>
+					<ul class="warning-list">
+					</ul>
+				</div>
 
 				<div class="help panel">
 					<h3>Help</h3>
@@ -58,10 +58,23 @@
 
 		</div>
 
+		<script type="text/javascript" src="js/jzt.min.js" charset="utf-8"></script>
 		<script type="text/javascript" src="js/jzt-ux.min.js"></script>
 		<script type="text/javascript">
+
+			new jzt.Game({
+				canvasElement: document.getElementById('jzt'),
+				notificationListener: new jzt.ux.DisplayableNotificationListener({
+					warningButton: document.getElementById('main-content').querySelector('.slide-toggle.warning'),
+					warningListElement: document.getElementById('main-content').querySelector('.warning-list')
+				}),
+				onLoadCallback: function() {this.run('../village-of-jzt.json');}
+			});
+
 			new jzt.ux.SlidingPanel(document.getElementById('main-content'));
+
 			jzt.ux.setFullScreenButton(document.getElementById('full-screen'), document.getElementById('jzt'));
+
 		</script>
 
 	</body>

@@ -488,6 +488,17 @@ jzt.DelayedEventScheduler.prototype.takeEvent = function() {
     this.event = undefined;
     return result;
 };
+
+/**
+ * NotificationListener
+ */
+jzt.NotificationListener = function() {
+    this.notifications = [];
+};
+
+jzt.NotificationListener.prototype.addNotification = function(type, message) {
+    this.notifications.push({type: type, message: message, timestamp: Date.now()});
+};
  
 /**
  * If Debug mode is on, logs all provided arguments to a console.
