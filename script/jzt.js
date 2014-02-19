@@ -35,26 +35,26 @@ jzt.GameState = {
  */
 jzt.Game = function(configuration) {
     
-    // Ensure our required configuration values were provided.
-    if(typeof configuration.onLoadCallback !== 'function') {
-        throw 'Expected an onload callback in the configuration.';
-    }
-
     // Ensure we were given a valid canvas element
-    if(!configuration.canvasElement || configuration.canvasElement.nodeName !== 'CANVAS') {
+    if(!configuration || !configuration.canvasElement || configuration.canvasElement.nodeName !== 'CANVAS') {
         throw 'Expected a valid canvas element in the configuration.';
     }
 
     /*
      * We perform some sanity checks for feature support. We use the bind function
      * as an acid test for ECMAScript 5 support, since it was one of the last supported
-     * features on some browsers. We also test for Canvas support. If neither of these
-     * criteria are met, we perform the callback with a false value as the parameter.
+     * features on some browsers. We also test for Canvas support.
      */
-    var bindingSupport = typeof Function.prototype.bind === 'function';
-    var canvasSupport = !!window.CanvasRenderingContext2D;
-    if((!bindingSupport) || (!canvasSupport)) {
-        configuration.onLoadCallback(false);
+    if((typeof Function.prototype.bind !== 'function') || (!window.CanvasRenderingContext2D)) {
+
+        // If we were given a callback, tell it that the load was unsuccessful.
+        if(typeof configuration.onLoadCallback === 'function') {
+            configuration.onLoadCallback(false);
+        }
+
+        // Return immediately
+        return;
+
     }
 
     // Start initializing our Game
@@ -301,8 +301,10 @@ jzt.Game.prototype.onGraphicsLoaded = function() {
     this.DARK_PATTERN = this.context.createPattern(this.resources.graphics.DARK_IMAGE, 'repeat');
     this.NOISE_PATTERN = this.context.createPattern(this.resources.graphics.NOISE_IMAGE, 'repeat');
 
-    // Indicate that we've successfully loaded.
-    this.onLoadCallback(true);
+    // If we have a callback, indicate that loading was successful
+    if(typeof this.onLoadCallback === 'function') {
+        this.onLoadCallback(true);
+    }
 
 };
 
