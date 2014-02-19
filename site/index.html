@@ -68,7 +68,14 @@
 					warningButton: document.getElementById('main-content').querySelector('.slide-toggle.warning'),
 					warningListElement: document.getElementById('main-content').querySelector('.warning-list')
 				}),
-				onLoadCallback: function() {this.run('../village-of-jzt.json');}
+				onLoadCallback: function(success) {
+					if(success) {
+						this.run('../village-of-jzt.json');
+					}
+					else {
+						alert('Unsupported browser.')
+					}
+				}
 			});
 
 			new jzt.ux.SlidingPanel(document.getElementById('main-content'));

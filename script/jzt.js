@@ -35,8 +35,29 @@ jzt.GameState = {
  */
 jzt.Game = function(configuration) {
     
-    var graphicsLoadedCallback;
+    // Ensure our required configuration values were provided.
+    if(typeof configuration.onLoadCallback !== 'function') {
+        throw 'Expected an onload callback in the configuration.';
+    }
 
+    // Ensure we were given a valid canvas element
+    if(!configuration.canvasElement || configuration.canvasElement.nodeName !== 'CANVAS') {
+        throw 'Expected a valid canvas element in the configuration.';
+    }
+
+    /*
+     * We perform some sanity checks for feature support. We use the bind function
+     * as an acid test for ECMAScript 5 support, since it was one of the last supported
+     * features on some browsers. We also test for Canvas support. If neither of these
+     * criteria are met, we perform the callback with a false value as the parameter.
+     */
+    var bindingSupport = typeof Function.prototype.bind === 'function';
+    var canvasSupport = !!window.CanvasRenderingContext2D;
+    if((!bindingSupport) || (!canvasSupport)) {
+        configuration.onLoadCallback(false);
+    }
+
+    // Start initializing our Game
     this.FPS = 30;
     this.CPS = 10;
     this.CYCLE_RATE = Math.round(this.FPS / this.CPS);
@@ -69,8 +90,7 @@ jzt.Game = function(configuration) {
     this.context.mozImageSmoothingEnabled = false;
 
     this.resources.audio = new jzt.Audio();
-    graphicsLoadedCallback = this.onGraphicsLoaded.bind(this);
-    this.resources.graphics = new jzt.Graphics(graphicsLoadedCallback);
+    this.resources.graphics = new jzt.Graphics(this.onGraphicsLoaded.bind(this));
 
     if(window.devicePixelRatio) {
         this.resources.graphics.TILE_SIZE.x = this.resources.graphics.TILE_SIZE.x * window.devicePixelRatio;
@@ -275,11 +295,15 @@ jzt.Game.prototype.setCounterValue = function(counter, value) {
  * loaded.
  */
 jzt.Game.prototype.onGraphicsLoaded = function() {
+
     this.scroll = new jzt.Scroll(this);
     this.fileManagement = new jzt.FileManagement(this);
     this.DARK_PATTERN = this.context.createPattern(this.resources.graphics.DARK_IMAGE, 'repeat');
     this.NOISE_PATTERN = this.context.createPattern(this.resources.graphics.NOISE_IMAGE, 'repeat');
-    this.onLoadCallback();
+
+    // Indicate that we've successfully loaded.
+    this.onLoadCallback(true);
+
 };
 
 /**
