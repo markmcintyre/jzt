@@ -14,14 +14,15 @@ var jzt = jzt || {};
  */
 jzt.GameState = {
     Error: -2,
-    Loading: -1,
-    Playing: 0,
-    Paused: 1,
-    GameOver: 2,
-    Reading: 3,
-    Title: 4,
-    Victory: 5,
-    FileManagement: 6
+    Splash: -1,
+    Loading: 0,
+    Playing: 1,
+    Paused: 2,
+    GameOver: 3,
+    Reading: 4,
+    Title: 5,
+    Victory: 6,
+    FileManagement: 7
 };
 
 /**
@@ -66,6 +67,7 @@ jzt.Game = function(configuration) {
     
     this.loopId = undefined;
 
+    this.gameToLoad = undefined;
     this.gameLoaded = false;
     this.loadingAnimationIndex = 0;
     this.screenEffectIndex = 0;
@@ -453,6 +455,13 @@ jzt.Game.prototype.setState = function(state) {
 
     }
 
+    else if(state === jzt.GameState.Splash) {
+
+        // Create our splash
+        this.splash = new jzt.ui.Splash(this);
+
+    }
+
     // Assign our new state
     this.state = state;
 
@@ -602,11 +611,15 @@ jzt.Game.prototype.setBoard = function(board, playerPoint) {
     this.currentBoard.initializePlayer(this.player);
 
 };
-    
+
 /**
  * Starts this Game's loop, effectively starting this Game.
  */
 jzt.Game.prototype.run = function(game) {
+
+    if(game) {
+        this.gameToLoad = game;
+    }
 
     // If our game loop isn't already running
     if(! this.loopId) {
@@ -628,14 +641,10 @@ jzt.Game.prototype.run = function(game) {
 
         }
 
-        // If no game has loaded, we're in a loading state
+        // If no game has loaded, we're in our splash state
         else {
 
-            this.setState(jzt.GameState.Loading);
-
-            if(game) {
-                this.loadGame(game);
-            }
+            this.setState(jzt.GameState.Splash);
 
         }
 
@@ -792,6 +801,40 @@ jzt.Game.prototype.update = function() {
         if(++this.loadingAnimationIndex >= jzt.things.Conveyor.animationFrames.length * 4) {
             this.loadingAnimationIndex = 0;
         }
+    }
+
+    // If we're splashing
+    else if(this.state === jzt.GameState.Splash) {
+
+        this.splash.update();
+
+        // If our splash is done
+        if(this.splash.done) {
+
+            // We no longer need the splash screen
+            delete this.splash;
+
+            // If there was a game to load...
+            if(this.gameToLoad) {
+
+                // Set our state to loading
+                this.setState(jzt.GameState.Loading);
+
+                // Load our game
+                this.loadGame(this.gameToLoad);
+
+                // There's no need to keep it around anymore
+                delete this.gameToLoad;
+
+            }
+
+            // If there was no game to load, we're in error
+            else {
+                this.setState(jzt.GameState.Error);
+            }
+
+        }
+
     }
 
 };
@@ -1030,6 +1073,12 @@ jzt.Game.prototype.draw = function() {
     else if(this.state === jzt.GameState.Loading) {
         this.drawScreenEffect();
         this.drawLoadingScreen();
+    }
+
+    // If we're in our splash state, draw our splash animation
+    else if(this.state === jzt.GameState.Splash) {
+        this.splash.render(this.context);
+        this.drawScreenEffect();
     }
 
     // If there was a catestropic error...

@@ -20,7 +20,7 @@ jzt.ux.SlidingPanel = function(container) {
 	this.bodyClickEvent = this.onBodyClick.bind(this);
 
 	for(index = 0; index < slideToggles.length; ++index) {
-		this.addButton(slideToggles[index], slideToggles[index].dataset.panel);
+		this.addButton(slideToggles[index], slideToggles[index].getAttribute('data-panel'));
 	}
 
 };

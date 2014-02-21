@@ -498,10 +498,25 @@ jzt.SpriteGrid.prototype.setTile = function(point, spriteIndex, foreground, back
 
     this.tiles[point.x + point.y * this.width] = {
         sprite: spriteIndex ? this.graphics.getSprite(spriteIndex) : undefined,
-        foreground: foreground,
+        foreground: foreground ? foreground : jzt.colors.White,
         background: background
     };
 
+};
+
+/**
+ * Assigns a new color to this SpriteGrid's tile at a provided position.
+ *
+ * @param point a Poit to which to assign a new color
+ * @param foreground A foreground color
+ * @param background A background color
+ */
+jzt.SpriteGrid.prototype.setColor = function(point, foreground, background) {
+    var tile = this.tiles[point.x + point.y * this.width];
+    if(tile) {
+        tile.foreground = foreground ? foreground : tile.foreground;
+        tile.background = background ? background : tile.background;
+    }
 };
 
 /**
@@ -533,6 +548,45 @@ jzt.SpriteGrid.prototype.addText = function(point, text, foreground, background)
             foreground: foreground,
             background: background
         };
+    }
+
+};
+
+jzt.SpriteGrid.prototype.addArt = function(startingPoint, artString) {
+
+    var index;
+    var point = startingPoint.clone();
+    var symbol;
+    var color;
+
+    // For each character in our string
+    for(index = 0; index < artString.length; index++) {
+
+        // Grab our next symbol
+        symbol = artString.charAt(index);
+
+        // If it's a newline, break to the next line
+        if(symbol === '\n') {
+            point.x = startingPoint.x;
+            point.y++;
+            continue;
+        }
+
+        // Otherwise add our colored symbol
+        else {
+
+            symbol = this.graphics.convertSpecialCharacter(symbol);
+
+            if(index+1 <= artString.length) {
+                color = jzt.colors.getColor(artString.charAt(++index));
+            }
+
+            this.setTile(point, symbol, color);
+
+            point.x++;
+
+        }
+
     }
 
 };
