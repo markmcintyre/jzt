@@ -142,6 +142,7 @@ jzt.ui.Popup.prototype.createBorder = function(spriteGrid) {
 };
 
 jzt.ui.Splash = function(game) {
+	this.game = game;
 	this.startTime = Date.now();
 	this.done = false;
 	this.animationFrame = undefined;
@@ -194,14 +195,15 @@ jzt.ui.Splash.prototype.setAnimationFrame = function(frame) {
 		else if(frame === 2) {
 			grid.addText(new jzt.Point(1,4), 'Initializing ORNJtel(R) Boot Agent v1.4.14', jzt.colors.White);
 			grid.addText(new jzt.Point(1,5), 'ORNJ Nostalgia Engine (v1.0.0) Loaded.', jzt.colors.White);
+			this.game.resources.audio.play('i++c.');
 		}
 		else if(frame === 3) {
 			grid.addText(new jzt.Point(1,7), 'Starting ORNJ-DOS...', jzt.colors.White);
 		}
 		else if(frame === 4) {
 			grid.addText(new jzt.Point(1,9), 'Running autoexec.bat', jzt.colors.White);
-			grid.addText(new jzt.Point(1,10), 'C:\\> cd JZT', jzt.colors.White);
-			grid.addText(new jzt.Point(1,11), 'C:\\JZT\\> jzt.exe', jzt.colors.White);
+			grid.addText(new jzt.Point(1,10), 'C:\\>cd JZT', jzt.colors.White);
+			grid.addText(new jzt.Point(1,11), 'C:\\JZT\\>jzt.exe', jzt.colors.White);
 		}
 
 		else if(frame === 5) {
