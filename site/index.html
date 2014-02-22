@@ -50,8 +50,15 @@
 					<p>Cupcake gummies sweet roll. Halvah cotton candy wafer jujubes cake. Icing croissant gummi bears donut. Danish tart chupa chups sugar plum. Danish dessert jelly gingerbread. Wafer cotton candy chupa chups cake. Gummi bears tiramisu applicake jelly oat cake cake marshmallow pie. Cupcake caramels sesame snaps gummi bears topping danish. Halvah gummies icing gummi bears bear claw candy canes.</p>
 				</div>
 
-				<div class="settings panel">
-					<p>Language and audio settings will go here.</p>
+				<div class="settings panel" id="settings">
+					<label>Volume: <input type="range" min="0" max="5" step="0.5" name="audio-volume" /></label><br/>
+					<label><input type="checkbox" name="audio-enabled" /> Mute</label><br/>
+					<label>Language: 
+						<select name="language">
+							<option value="en">English</option>
+							<option value="fr">Français</option>
+						</select>
+					</label>
 				</div>
 
 			</aside>
@@ -68,6 +75,7 @@
 					warningButton: document.getElementById('main-content').querySelector('.slide-toggle.warning'),
 					warningListElement: document.getElementById('main-content').querySelector('.warning-list')
 				}),
+				settings: new jzt.ux.Settings(document.getElementById('settings')),
 				onLoadCallback: function(success) {
 					if(success) {
 						this.run('../village-of-jzt.json');

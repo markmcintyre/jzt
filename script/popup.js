@@ -195,7 +195,7 @@ jzt.ui.Splash.prototype.setAnimationFrame = function(frame) {
 		else if(frame === 2) {
 			grid.addText(new jzt.Point(1,4), 'Initializing ORNJtel(R) Boot Agent v1.4.14', jzt.colors.White);
 			grid.addText(new jzt.Point(1,5), 'ORNJ Nostalgia Engine (v1.0.0) Loaded.', jzt.colors.White);
-			this.game.resources.audio.play('i++c.');
+			this.game.resources.audio.play('i++c');
 		}
 		else if(frame === 3) {
 			grid.addText(new jzt.Point(1,7), 'Starting ORNJ-DOS...', jzt.colors.White);

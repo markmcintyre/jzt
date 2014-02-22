@@ -33,7 +33,7 @@ jzt.Audio = function() {
         }
 
         // Initialize our audio nodes
-        this.userVolume = 0.08;
+        this.userVolume = 0.1;
         this.delay = 0.06;
         this.volume = this.context.createGain ? this.context.createGain() : this.context.createGainNode();
         this.volume.gain.value = 0;
@@ -149,7 +149,7 @@ jzt.Audio.prototype.playAfter = function(notation, uninterruptable) {
             // If there's no frequency at all
             else {
                 this.volume.gain.setValueAtTime(0, this.timestamp);
-                this.volume.gain.setValueAtTime(0.08, this.timestamp + note.duration);
+                this.volume.gain.setValueAtTime(this.userVolume, this.timestamp + note.duration);
             }
 
             // Update our timestamp

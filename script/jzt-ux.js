@@ -189,3 +189,54 @@ jzt.ux.DisplayableNotificationListener.prototype.clear = function() {
 	this.updateListElement();
 	this.warningButton.style.display = 'none';
 }
+
+jzt.ux.Settings = function(settingsElement) {
+	this.listenerCallbacks = [];
+	this.audioMuteElement = settingsElement.querySelector('input[name=\'audio-enabled\']');
+	this.audioVolumeElement = settingsElement.querySelector('input[name=\'audio-volume\']');
+	this.languageElement = settingsElement.querySelector('select[name=\'language\']');
+
+	this.audioMuteElement.addEventListener('click', this.onMuteChange.bind(this));
+	this.audioVolumeElement.addEventListener('change', this.onVolumeChange.bind(this));
+	this.languageElement.addEventListener('change', this.onLanguageChange.bind(this));
+
+};
+
+jzt.ux.Settings.prototype.addListener = function(listenerCallback) {
+	this.listenerCallbacks.push(listenerCallback);
+};
+
+jzt.ux.Settings.prototype.notify = function(settings) {
+	var index;
+	for(index = 0; index < this.listenerCallbacks.length; ++index) {
+		this.listenerCallbacks[index](settings);
+	}
+};
+
+jzt.ux.Settings.prototype.initialize = function(initialSettings) {
+
+	if(initialSettings.audioActive) {
+		this.audioMuteElement.checked = initialSettings.audioMute;
+		this.audioVolumeElement.value = initialSettings.audioVolume * 10;
+	}
+	else {
+		this.audioMuteElement.checked = true;
+		this.audioMuteElement.disabled = true;
+		this.audioVolumeElement.disabled = true;
+	}
+
+	this.languageElement.value = initialSettings.language;
+
+};
+
+jzt.ux.Settings.prototype.onMuteChange = function(event) {
+	this.notify({audioMute: event.target.checked});
+};
+
+jzt.ux.Settings.prototype.onVolumeChange = function(event) {
+	this.notify({audioVolume: parseFloat(event.target.value) / 10});
+};
+
+jzt.ux.Settings.prototype.onLanguageChange = function(event) {
+	this.notify({language: event.target.value});
+};

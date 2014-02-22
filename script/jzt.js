@@ -32,7 +32,7 @@ jzt.GameState = {
  * - onLoadCallback: A function to be called when the game has loaded
  * - canvasElement: A Canvas element where this game should be drawn
  * - notificationListener: A NotificationListener instance to listen for game notifications
- * - settingNotifier: A settings notifier to notify of settings
+ * - settings: User-configurable settings object to observe
  */
 jzt.Game = function(configuration) {
     
@@ -101,6 +101,22 @@ jzt.Game = function(configuration) {
 
     this.screenWidth = Math.floor(this.context.canvas.width / this.resources.graphics.TILE_SIZE.x);
     this.screenHeight = Math.floor(this.context.canvas.height / this.resources.graphics.TILE_SIZE.y);
+
+    // If we were given a settings object, set ourselves up as a listener and send our initial values
+    if(configuration.settings) {
+
+        // Assign our callback
+        configuration.settings.addListener(this.onSettingsChanged.bind(this));
+
+        // Send our initial values
+        configuration.settings.initialize({
+            audioActive: this.resources.audio.active,
+            audioVolume: this.resources.audio.userVolume,
+            audioMute: false,
+            language: jzt.i18n.getLanguage()
+        });
+
+    }
 
 };
 
@@ -1087,4 +1103,20 @@ jzt.Game.prototype.draw = function() {
         this.drawErrorScreen();
     }
             
+};
+
+jzt.Game.prototype.onSettingsChanged = function(settings) {
+
+    if(settings.hasOwnProperty('audioMute')) {
+        this.resources.audio.setActive(!settings.audioMute);
+    }
+
+    if(settings.hasOwnProperty('audioVolume')) {
+        this.resources.audio.userVolume = settings.audioVolume;
+    }
+
+    if(settings.hasOwnProperty('language')) {
+        jzt.i18n.setLanguage(settings.language);
+    }
+
 };
