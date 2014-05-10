@@ -697,6 +697,7 @@ jzt.Game.prototype.loop = function() {
     }
     catch(exception) {
         this.catestrophicError(jzt.i18n.getMessage('status.fatalerror'));
+        console.error(exception);
     }
 
 };
