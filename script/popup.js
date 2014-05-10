@@ -212,14 +212,14 @@ jzt.ui.Splash.prototype.setAnimationFrame = function(frame) {
 				' 0 0 0 0 0 0:3\n' +
 				' 0 0 0 0 0 0│3\n' +
 				' 0 0 0 0 0 0│B\n' +
-				'-3 0─3─3─B─B┼F─B─B─3─3 0-3\n' +  
-				' 0 0 0 0 0 0│B 0▒C█C█C█C▒C░C 0▓C█C█C█C 0▓C█C█C█C▒C 0 0▄C\n' +  
+				'-3 0─3─3─B─B┼F─B─B─3─3 0-3\n' +
+				' 0 0 0 0 0 0│B 0▒C█C█C█C▒C░C 0▓C█C█C█C 0▓C█C█C█C▒C 0 0▄C\n' +
 				' 0 0 0 0 0 0│3 0█C█C 0 0█C▒C 0█C█C░C 0 0█C█C▒C 0█C▌C\n' +
-				' 0 0 0 0 0 0:3▐C█C█C 0▐C█C▒C 0█C█C 0 0░C█C█C 0 0█C 0█C▌C\n' + 
+				' 0 0 0 0 0 0:3▐C█C█C 0▐C█C▒C 0█C█C 0 0░C█C█C 0 0█C 0█C▌C\n' +
 				' 0 0 0 0 0 0 0 0▒C█C█C█C▒C░C▐C█C▌C 0 0░C█C▌C 0▐C█C 0█C▌C 0:8\n' +
 				' 0 0 0 0 0 0 0 0▄C▄C▄C▄C▄C▄C▄C▄C▄C▄C▄C▄C▄C▄C▄C▄C▄C▄C█C▌C 0│7\n' +
-				' 0 0 0 0 0 0 0 0 0▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C 0─8─7┼F─7─8\n' + 
-				' 0 0 0 0☻F 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0│7\n' + 
+				' 0 0 0 0 0 0 0 0 0▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C 0─8─7┼F─7─8\n' +
+				' 0 0 0 0☻F 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0│7\n' +
 				' 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0:8'
 			);
 			grid.addText(new jzt.Point(13, 13), 'Orangeline Interactive', jzt.colors.BrightRed);
@@ -230,12 +230,12 @@ jzt.ui.Splash.prototype.setAnimationFrame = function(frame) {
 		else if(frame === 6) {
 			grid.clear();
 			grid.addArt(new jzt.Point(6,5),
-				' 0 0 0 0 0 0 0▄F▄F▀F▀F▀F▀F▀F█F▄F▄F▄F▀F▀F▀F▀F▀F▀F▄F F F▄F▄F▀F▀F▀F▀F▀F▀F▀F▄F\n' + 
+				' 0 0 0 0 0 0 0▄F▄F▀F▀F▀F▀F▀F█F▄F▄F▄F▀F▀F▀F▀F▀F▀F▄F F F▄F▄F▀F▀F▀F▀F▀F▀F▀F▄F\n' +
 				' 0 0 0▄F▄F▀F▀F▄9▄9█9█9█9▀9▄F▀F▄9▄9▄9█9█9█9█9▓9 0█F▀F▀F▄9▄9█9█9█9█9█9▀9 0█F\n' +
-				' 0 0█F 0▄9█9█9█9█9█9▓9 0▄F▀F█9█9▀9▀9▀9▀9 0█9▓9▓F 0█9█9█9▀9█9▓9▀9 0▄F▄F▀F▀F\n' + 
+				' 0 0█F 0▄9█9█9█9█9█9▓9 0▄F▀F█9█9▀9▀9▀9▀9 0█9▓9▓F 0█9█9█9▀9█9▓9▀9 0▄F▄F▀F▀F\n' +
 				' 0 0█F▄F▀9▀9 0▄F 0█9▓9 0▓F▄F▄F▄F▓F█F▀F▄9█9▓9 0▓F 0▀9▀9 0 0█9▓9 0█F\n' +
 				' 0 0 0 0▀F▀F▀F█F 0█9▓9 0█F 0 0█F▀F▄9█9█9▓9 0█F▀F▀F▀F▀F█F 0█9▓9 0▓F\n' +
-				' 0▄F▀F▀F▄F 0 0█F 0█9▓9 0▓F▄F▀F 0█9█9▓9 0▄F█F▄F 0 0 0 0█F 0█9▓9 0▓F\n' + 
+				' 0▄F▀F▀F▄F 0 0█F 0█9▓9 0▓F▄F▀F 0█9█9▓9 0▄F█F▄F 0 0 0 0█F 0█9▓9 0▓F\n' +
 				'█F 0█9█9 0▀F▀F▄9█9▓9▀9 0▓F█F 0█9▓9▀9 0▀F 0▄9▄9▀F▄F 0█F 0█9▓9▀9▄F▀F\n' +
 				'▀F▄F 0█9█9█9█9▓9█9▀9▄F▀F█F 0█9█9█9█9█9█9█9▓9▓9 0▓F 0█F 0█9▓9 0▓F\n' +
 				' 0 0▀F▄F▀9▀9▀9▀9▄F▀F 0▀F▄F▀9▀9▀9▀9▀9▀9▄F▄F▄F▄F▄F▀F F F▀F▄F▄F▄F▀F\n' +
