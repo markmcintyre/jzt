@@ -899,6 +899,8 @@ jzt.colors = (function(my) {
     my.deserializeBackground = deserializeBackground;
     my.serialize = serialize;
     my.Cycle = _cycle;
+    my.Color = Color;
+    my.CyclingColor = CyclingColor;
     my.Colors = _colors;
     
     return my;
