@@ -4,408 +4,469 @@
  * @author Mark McIntyre
  */
 
-"use strict";
-
 var jzt = jzt || {};
-jzt.parser = jzt.parser || {};
-
-
-/* 
- * Assembly
- */
-jzt.parser.Assembly = function(text) {
+jzt.parser = (function(my){
     
-    this.tokens = text !== undefined ? text.match(/\w+|"(?:\\"|[^"])+"|""|[^\s]|\n/g) : [];
+    'use strict';
     
-    // If the regex doesn't match, it returns null
-    if(this.tokens === null) {
-        this.tokens = [];
+    /* 
+     * Assembly
+     */
+    function Assembly(text) {
+        
+        if(!(this instanceof Assembly)) {
+            throw jzt.ConstructorError;
+        }
+
+        this.tokens = text !== undefined ? text.match(/\w+|"(?:\\"|[^"])+"|""|[^\s]|\n/g) : [];
+
+        // If the regex doesn't match, it returns null
+        if(this.tokens === null) {
+            this.tokens = [];
+        }
+
+        this.index = 0;
+        this.stack = [];
+        this.target = undefined;
+
     }
-    
-    this.index = 0;
-    this.stack = [];
-    this.target = undefined;
-    
-};
 
-jzt.parser.Assembly.prototype.clone = function() {
-    var result = new jzt.parser.Assembly();
-    if(this.error) {
-        result.error = this.error;
-    }
-    result.tokens = this.tokens.slice(0);
-    result.index = this.index;
-    result.stack = this.stack.slice(0);
-    result.target = this.target ? this.target.clone() : undefined;
-    return result;
-};
-
-jzt.parser.Assembly.prototype.peek = function() {
-    return this.tokens[this.index];
-};
-
-jzt.parser.Assembly.prototype.isDone = function() {
-    return this.index >= this.tokens.length;
-};
-
-jzt.parser.Assembly.prototype.next = function() {
-    return this.tokens[this.index++];
-};
-
-/*
- * Parser
- */
-jzt.parser.Parser = function() {
-    this.assembler = undefined;
-};
-
-jzt.parser.Parser.prototype.match = function() {
-    return [];
-};
-
-jzt.parser.Parser.prototype.bestMatch = function(assembly) {
-    var result = this.matchAndAssemble([assembly]);
-    return this.findBestAssembly(result);
-};
-
-jzt.parser.Parser.prototype.completeMatch = function(assembly) {
-    var result = this.bestMatch(assembly);
-    if(result !== undefined && result.isDone()) {
+    Assembly.prototype.clone = function() {
+        var result = new Assembly();
+        if(this.error) {
+            result.error = this.error;
+        }
+        result.tokens = this.tokens.slice(0);
+        result.index = this.index;
+        result.stack = this.stack.slice(0);
+        result.target = this.target ? this.target.clone() : undefined;
         return result;
-    }
-    throw 'Unexpected token \'' + result.peek() + '\'';
-};
+    };
 
-jzt.parser.Parser.prototype.matchAndAssemble = function(assemblies) {
-    
-    var result = this.match(assemblies);
+    Assembly.prototype.peek = function() {
+        return this.tokens[this.index];
+    };
 
-    // If we've got an assembler, have it assemble
-    if(this.assembler) {
-        
-        for(var index = 0; index < result.length; ++index) {
-            this.assembler.assemble(result[index]);
+    Assembly.prototype.isDone = function() {
+        return this.index >= this.tokens.length;
+    };
+
+    Assembly.prototype.next = function() {
+        return this.tokens[this.index++];
+    };
+
+    /*
+     * Parser
+     */
+    function Parser() {
+        if(!(this instanceof Parser)) {
+            throw jzt.ConstructorError;
         }
+        this.assembler = undefined;
     }
-    
-    return result;
-    
-};
 
-jzt.parser.Parser.prototype.findBestAssembly = function(assemblies) {
-    
-    var bestAssembly;
-    
-    for(var index = 0; index < assemblies.length; ++index) {
-        
-        var assembly = assemblies[index];
-        
-        if(!bestAssembly) {
-            bestAssembly = assembly;
+    Parser.prototype.match = function() {
+        return [];
+    };
+
+    Parser.prototype.bestMatch = function(assembly) {
+        var result = this.matchAndAssemble([assembly]);
+        return this.findBestAssembly(result);
+    };
+
+    Parser.prototype.completeMatch = function(assembly) {
+        var result = this.bestMatch(assembly);
+        if(result !== undefined && result.isDone()) {
+            return result;
         }
-        else if(assembly.index > bestAssembly.index) {
-            bestAssembly = assembly;
+        throw 'Unexpected token \'' + result.peek() + '\'';
+    };
+
+    Parser.prototype.matchAndAssemble = function(assemblies) {
+
+        var result = this.match(assemblies);
+
+        // If we've got an assembler, have it assemble
+        if(this.assembler) {
+
+            for(var index = 0; index < result.length; ++index) {
+                this.assembler.assemble(result[index]);
+            }
         }
-    }
-    
-    return bestAssembly;
-    
-};
 
-jzt.parser.Parser.prototype.cloneAssemblies = function(assemblies) {
+        return result;
 
-    var result = [];
-  
-    for(var index = 0; index < assemblies.length; ++index) {
-        var assembly = assemblies[index];
-        result.push(assembly.clone());
-    }
-  
-    return result;
-    
-};
+    };
 
-/*
- * Repetition
- */
-jzt.parser.Repetition = function(subParser) {
-    if(!subParser) {
-        throw 'Subparser is required.';
-    }
-    this.subParser = subParser;
-    this.assembler = undefined;
-    this.preAssembler = undefined;
-};
-jzt.parser.Repetition.prototype = new jzt.parser.Parser();
-jzt.parser.Repetition.prototype.constructor = jzt.parser.Reptition;
+    Parser.prototype.findBestAssembly = function(assemblies) {
 
-jzt.parser.Repetition.prototype.match = function(assemblies) {
-    
-    // If we have a preassember, assemble now
-    if(this.preAssembler !== undefined) {
+        var bestAssembly;
+
+        for(var index = 0; index < assemblies.length; ++index) {
+
+            var assembly = assemblies[index];
+
+            if(!bestAssembly) {
+                bestAssembly = assembly;
+            }
+            else if(assembly.index > bestAssembly.index) {
+                bestAssembly = assembly;
+            }
+        }
+
+        return bestAssembly;
+
+    };
+
+    Parser.prototype.cloneAssemblies = function(assemblies) {
+
+        var result = [];
+
         for(var index = 0; index < assemblies.length; ++index) {
             var assembly = assemblies[index];
-            this.preAssembler.assemble(assembly);
+            result.push(assembly.clone());
         }
-    }
-    
-    var result = this.cloneAssemblies(assemblies);
-    while(assemblies.length > 0) {
-        assemblies = this.subParser.matchAndAssemble(assemblies);
-        result = result.concat(assemblies);
-    }
-    
-    return result;
-    
-};
 
-/*
- * Empty
- */
-jzt.parser.Empty = function() {
-    this.assembler = undefined;
-};
-jzt.parser.Empty.prototype = new jzt.parser.Parser();
-jzt.parser.Empty.prototype.constructor = jzt.parser.Empty;
+        return result;
 
-jzt.parser.Empty.prototype.match = function(assemblies) {
-    return this.cloneAssemblies(assemblies);
-};
+    };
 
-/*
- * CollectionParser
- */
-jzt.parser.CollectionParser = function() {
-    this.assembler = undefined;
-    this.subParsers = [];
-};
-jzt.parser.CollectionParser.prototype = new jzt.parser.Parser();
-jzt.parser.CollectionParser.constructor = jzt.parser.CollectionParser;
-
-jzt.parser.CollectionParser.prototype.add = function(subParser) {
-    this.subParsers.push(subParser);
-};
- 
-/*
- * Sequence
- */
-jzt.parser.Sequence = function() {
-    this.assembler = undefined;
-    this.subParsers = [];
-};
-jzt.parser.Sequence.prototype = new jzt.parser.CollectionParser();
-jzt.parser.Sequence.prototype.constructor = jzt.parser.Sequence;
-
-jzt.parser.Sequence.prototype.match = function(assemblies) {
-    
-    var started = false;
-    var previousResult = assemblies;
-    var result = assemblies;
-    
-    for(var index = 0; index < this.subParsers.length; ++index) {
+    /*
+     * Repetition
+     */
+    function Repetition(subParser) {
         
-        var subParser = this.subParsers[index];
+        if(!(this instanceof Repetition)) {
+            throw jzt.ConstructorError;
+        }
         
-        result = subParser.matchAndAssemble(result);
-        if(result.length <= 0) {
-            if(started) {
-                this.determineTokenError(previousResult);
+        if(!subParser) {
+            throw 'Subparser is required.';
+        }
+        this.subParser = subParser;
+        this.assembler = undefined;
+        this.preAssembler = undefined;
+    }
+    Repetition.prototype = new Parser();
+    Repetition.prototype.constructor = Repetition;
+
+    Repetition.prototype.match = function(assemblies) {
+
+        // If we have a preassember, assemble now
+        if(this.preAssembler !== undefined) {
+            for(var index = 0; index < assemblies.length; ++index) {
+                var assembly = assemblies[index];
+                this.preAssembler.assemble(assembly);
+            }
+        }
+
+        var result = this.cloneAssemblies(assemblies);
+        while(assemblies.length > 0) {
+            assemblies = this.subParser.matchAndAssemble(assemblies);
+            result = result.concat(assemblies);
+        }
+
+        return result;
+
+    };
+
+    /*
+     * Empty
+     */
+    function Empty() {
+        if(!(this instanceof Empty)) {
+            throw jzt.ConstructorError;
+        }
+        this.assembler = undefined;
+    }
+    Empty.prototype = new Parser();
+    Empty.prototype.constructor = Empty;
+
+    Empty.prototype.match = function(assemblies) {
+        return this.cloneAssemblies(assemblies);
+    };
+
+    /*
+     * CollectionParser
+     */
+    function CollectionParser() {
+        if(!(this instanceof CollectionParser)) {
+            throw jzt.ConstructorError;
+        }
+        this.assembler = undefined;
+        this.subParsers = [];
+    }
+    CollectionParser.prototype = new Parser();
+    CollectionParser.constructor = CollectionParser;
+
+    CollectionParser.prototype.add = function(subParser) {
+        this.subParsers.push(subParser);
+    };
+
+    /*
+     * Sequence
+     */
+    function Sequence() {
+        if(!(this instanceof Sequence)) {
+            throw jzt.ConstructorError;
+        }
+        this.assembler = undefined;
+        this.subParsers = [];
+    }
+    Sequence.prototype = new CollectionParser();
+    Sequence.prototype.constructor = Sequence;
+
+    Sequence.prototype.match = function(assemblies) {
+
+        var started = false;
+        var previousResult = assemblies;
+        var result = assemblies;
+
+        for(var index = 0; index < this.subParsers.length; ++index) {
+
+            var subParser = this.subParsers[index];
+
+            result = subParser.matchAndAssemble(result);
+            if(result.length <= 0) {
+                if(started) {
+                    this.determineTokenError(previousResult);
+                }
+                return result;
+            }
+
+            started = true;
+            previousResult = result;
+
+        }
+
+        return result;
+
+    };
+
+    Sequence.prototype.determineTokenError = function(previousResult) {
+        var best = this.findBestAssembly(previousResult);
+        if(best.peek() === undefined) {
+            best.error = 'Token expected';
+        }
+        else {
+            best.error = 'Unexpected token \'' + best.peek() + '\'';
+        }
+    };
+
+    /*
+     * Alternation
+     */
+    function Alternation() {
+        if(!(this instanceof Alternation)) {
+            throw jzt.ConstructorError;
+        }
+        this.assembler = undefined;
+        this.subParsers = [];
+    }
+    Alternation.prototype = new CollectionParser();
+    Alternation.prototype.constructor = Alternation;
+
+    Alternation.prototype.match = function(assemblies) {
+
+        var result = [];
+
+        for(var index = 0; index < this.subParsers.length; ++index) {
+            var subParser = this.subParsers[index];
+            var alternationResult = subParser.matchAndAssemble(assemblies);
+            result = result.concat(alternationResult);
+        }
+
+        return result;
+
+    };
+
+    /*
+     * Terminal
+     */
+    function Terminal() {
+        if(!(this instanceof Terminal)) {
+            throw jzt.ConstructorError;
+        }
+        this.assembler = undefined;
+        this.discard = false;
+    }
+    Terminal.prototype = new Parser();
+    Terminal.prototype.constructor = Terminal;
+
+
+    Terminal.prototype.qualifies = function() {
+        return true;
+    };
+
+    Terminal.prototype.match = function(assemblies) {
+
+        var result = [];
+
+        for(var index = 0; index < assemblies.length; ++index) {
+            var assembly = assemblies[index];
+            var assemblyResult = this.matchAssembly(assembly);
+            if(assemblyResult !== undefined) {
+                result.push(assemblyResult);
+            }
+        }
+
+        return result;
+
+    };
+
+    Terminal.prototype.matchAssembly = function(assembly) {
+
+        if(assembly.isDone()) {
+            return undefined;
+        }
+
+        if(this.qualifies(assembly.peek())) {
+
+            var result = assembly.clone();
+
+            var token = result.next();
+            if(!this.discard) {
+                result.stack.push(token);
             }
             return result;
         }
-        
-        started = true;
-        previousResult = result;
-        
-    }
-    
-    return result;
-    
-};
 
-jzt.parser.Sequence.prototype.determineTokenError = function(previousResult) {
-    var best = this.findBestAssembly(previousResult);
-    if(best.peek() === undefined) {
-        best.error = 'Token expected';
-    }
-    else {
-        best.error = 'Unexpected token \'' + best.peek() + '\'';
-    }
-};
-
-/*
- * Alternation
- */
-jzt.parser.Alternation = function() {
-    this.assembler = undefined;
-    this.subParsers = [];
-};
-jzt.parser.Alternation.prototype = new jzt.parser.CollectionParser();
-jzt.parser.Alternation.prototype.constructor = jzt.parser.Alternation;
-
-jzt.parser.Alternation.prototype.match = function(assemblies) {
-    
-    var result = [];
-    
-    for(var index = 0; index < this.subParsers.length; ++index) {
-        var subParser = this.subParsers[index];
-        var alternationResult = subParser.matchAndAssemble(assemblies);
-        result = result.concat(alternationResult);
-    }
-    
-    return result;
-    
-};
-
-/*
- * Terminal
- */
-jzt.parser.Terminal = function() {
-    this.assembler = undefined;
-    this.discard = false;
-};
-jzt.parser.Terminal.prototype = new jzt.parser.Parser();
-jzt.parser.Terminal.prototype.constructor = jzt.parser.Terminal;
-
-
-jzt.parser.Terminal.prototype.qualifies = function() {
-    return true;
-};
-
-jzt.parser.Terminal.prototype.match = function(assemblies) {
-    
-    var result = [];
-    
-    for(var index = 0; index < assemblies.length; ++index) {
-        var assembly = assemblies[index];
-        var assemblyResult = this.matchAssembly(assembly);
-        if(assemblyResult !== undefined) {
-            result.push(assemblyResult);
-        }
-    }
-    
-    return result;
-    
-};
-
-jzt.parser.Terminal.prototype.matchAssembly = function(assembly) {
-    
-    if(assembly.isDone()) {
         return undefined;
-    }
-    
-    if(this.qualifies(assembly.peek())) {
 
-        var result = assembly.clone();
+    };
 
-        var token = result.next();
-        if(!this.discard) {
-            result.stack.push(token);
+    /*
+     *  Number
+     */
+    function Number() {
+        if(!(this instanceof Number)) {
+            throw jzt.ConstructorError;
         }
+        this.assembler = undefined;
+        this.discard = false;
+    }
+    Number.prototype = new Terminal();
+
+    Number.prototype.qualifies = function(token) {
+        return ! isNaN(parseInt(token, 10));
+    };
+
+    /*
+     * Literal
+     */
+    function Literal(literalValue, caseSensitive) {
+        if(!(this instanceof Literal)) {
+            throw jzt.ConstructorError;
+        }
+        this.assembler = undefined;
+        this.caseSensitive = caseSensitive;
+        this.literalValue = literalValue;
+        this.discard = false;
+        if(!caseSensitive) {
+            this.literalValue = this.literalValue.toUpperCase();
+        }
+
+    }
+    Literal.prototype = new Terminal();
+    Literal.prototype.constructor = Literal;
+
+    Literal.prototype.qualifies = function(token) {
+        if(!this.caseSensitive && token) {
+            token = token.toUpperCase();
+        }
+        return this.literalValue === token;
+    };
+
+    /*
+     * Word
+     */
+    function Word(){
+        if(!(this instanceof Word)) {
+            throw jzt.ConstructorError;
+        }
+        this.assembler = undefined;
+        this.discard = false;
+    }
+    Word.prototype = new Terminal();
+    Word.prototype.constructor = Word;
+    Word.prototype.qualifies = function(token) {
+        if(token) {
+            return token.match(/^[^\d\s][\w]*$/) !== null;
+        }
+        return false;
+    };
+
+    /*
+     * String
+     */
+    function String() {
+        if(!(this instanceof String)) {
+            throw jzt.ConstructorError;
+        }
+        this.assembler = undefined;
+        this.discard = false;
+    }
+    String.prototype = new Terminal();
+    String.prototype.constructor = String;
+    String.prototype.qualifies = function(token) {
+        if(token) {
+            return (token.charAt(0) === '"' && token.charAt(token.length-1) === '"');
+        }
+        return false;
+    };
+
+    /*
+     * NewLine
+     */
+    function NewLine(){
+        if(!(this instanceof NewLine)) {
+            throw jzt.ConstructorError;
+        }
+        this.assembler = undefined;
+        this.discard = false;
+    }
+    NewLine.prototype = new Terminal();
+    NewLine.prototype.constructor = NewLine;
+    NewLine.prototype.qualifies = function(token) {
+        return token === '\n';
+    };
+
+    /*
+     * Optional convenience parsers and methods
+     */
+    function optional(parser) {
+        var result = new Alternation();
+        result.add(parser);
+        result.add(new Empty());
         return result;
     }
-    
-    return undefined;
-    
-};
 
-/*
- *  Number
- */
-jzt.parser.Number = function() {
-    this.assembler = undefined;
-    this.discard = false;
-};
-jzt.parser.Number.prototype = new jzt.parser.Terminal();
+    function discard(terminal) {
+        terminal.discard = true;
+        return terminal;
+    }
 
-jzt.parser.Number.prototype.qualifies = function(token) {
-    return ! isNaN(parseInt(token, 10));
-};
-
-/*
- * Literal
- */
-jzt.parser.Literal = function(literalValue, caseSensitive) {
-    this.assembler = undefined;
-    this.caseSensitive = caseSensitive;
-    this.literalValue = literalValue;
-    this.discard = false;
-    if(!caseSensitive) {
-        this.literalValue = this.literalValue.toUpperCase();
+    function processString(token) {
+        // Remove opening quotes, closing quotes and single slashes
+        return token.replace(/^\"|\\(?!\\)|\"$/g, '');
     }
     
-};
-jzt.parser.Literal.prototype = new jzt.parser.Terminal();
-jzt.parser.Literal.prototype.constructor = jzt.parser.Literal;
-
-jzt.parser.Literal.prototype.qualifies = function(token) {
-    if(!this.caseSensitive && token) {
-        token = token.toUpperCase();
-    }
-    return this.literalValue === token;
-};
-
-/*
- * Word
- */
-jzt.parser.Word = function(){
-    this.assembler = undefined;
-    this.discard = false;
-};
-jzt.parser.Word.prototype = new jzt.parser.Terminal();
-jzt.parser.Word.prototype.constructor = jzt.parser.Word;
-jzt.parser.Word.prototype.qualifies = function(token) {
-    if(token) {
-        return token.match(/^[^\d\s][\w]*$/) !== null;
-    }
-    return false;
-};
-
-/*
- * String
- */
-jzt.parser.String = function() {
-    this.assembler = undefined;
-    this.discard = false;
-};
-jzt.parser.String.prototype = new jzt.parser.Terminal();
-jzt.parser.String.prototype.constructor = jzt.parser.String;
-jzt.parser.String.prototype.qualifies = function(token) {
-    if(token) {
-        return (token.charAt(0) === '"' && token.charAt(token.length-1) === '"');
-    }
-    return false;
-};
-
-/*
- * NewLine
- */
-jzt.parser.NewLine = function(){
-    this.assembler = undefined;
-    this.discard = false;
-};
-jzt.parser.NewLine.prototype = new jzt.parser.Terminal();
-jzt.parser.NewLine.prototype.constructor = jzt.parser.NewLine;
-jzt.parser.NewLine.prototype.qualifies = function(token) {
-    return token === '\n';
-};
-
-/*
- * Optional convenience parsers and methods
- */
-jzt.parser.optional = function(parser) {
-    var result = new jzt.parser.Alternation();
-    result.add(parser);
-    result.add(new jzt.parser.Empty());
-    return result;
-};
-
-jzt.parser.discard = function(terminal) {
-    terminal.discard = true;
-    return terminal;
-};
-
-jzt.parser.processString = function(token) {
-    // Remove opening quotes, closing quotes and single slashes
-    return token.replace(/^\"|\\(?!\\)|\"$/g, '');
-};
+    my.optional = optional;
+    my.discard = discard;
+    my.processString = processString;
+    my.Alternation = Alternation;
+    my.Assembly = Assembly;
+    my.Parser = Parser;
+    my.Repetition = Repetition;
+    my.CollectionParser = CollectionParser;
+    my.Sequence = Sequence;
+    my.Empty = Empty;
+    my.Terminal = Terminal;
+    my.Literal = Literal;
+    my.NewLine = NewLine;
+    my.Number = Number;
+    my.String = String;
+    my.Word = Word;
+    return my;
+    
+}(jzt.parser || {}));
