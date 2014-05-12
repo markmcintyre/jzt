@@ -13,6 +13,10 @@ var jzt = (function(my){
      * form that can be used to determine when keys are pressed and when.
      */
     function KeyboardInput() {
+        
+        if(!(this instanceof KeyboardInput)) {
+            throw jzt.ConstructorError;
+        }
 
         this.LEFT = 37;
         this.UP = 38;
