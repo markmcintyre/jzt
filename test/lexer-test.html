@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<head>
+	<title>Lexer Test</title>
+    <link rel="stylesheet" href="qunit.css">
+</head>
+<body>
+	
+    <div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+    <script src="qunit.js"></script>
+    <script type="text/javascript" src="../script/lexer.js"></script>
+    
+	<script type="text/javascript">
+        
+        test("Whitespace", function(){
+            var lexer = new jzt.lexer.Lexer('  \r\t\t \t  ');
+            ok(lexer.nextToken() === undefined, 'No tokens expected'); 
+        });
+        
+        test("Words", function(){
+            var lexer = new jzt.lexer.Lexer('hello world 500 a 1 5ab6c and_so _ _ok');
+            deepEqual(lexer.nextToken(), {position: 0, line: 1, column: 0, name: 'WORD', value: 'hello'}, 'token 1');
+            deepEqual(lexer.nextToken(), {position: 6, line: 1, column: 6, name: 'WORD', value: 'world'}, 'token 2');
+            deepEqual(lexer.nextToken(), {position: 12, line: 1, column: 12, name: 'WORD', value: '500'}, 'token 3');
+            deepEqual(lexer.nextToken(), {position: 16, line: 1, column: 16, name: 'WORD', value: 'a'}, 'token 4');
+            deepEqual(lexer.nextToken(), {position: 18, line: 1, column: 18, name: 'WORD', value: '1'}, 'token 5');
+            deepEqual(lexer.nextToken(), {position: 20, line: 1, column: 20, name: 'WORD', value: '5ab6c'}, 'token 6');
+            deepEqual(lexer.nextToken(), {position: 26, line: 1, column: 26, name: 'WORD', value: 'and_so'}, 'token 7');
+            deepEqual(lexer.nextToken(), {position: 33, line: 1, column: 33, name: 'WORD', value: '_'}, 'token 8');
+            deepEqual(lexer.nextToken(), {position: 35, line: 1, column: 35, name: 'WORD', value: '_ok'}, 'token 9');
+            ok(lexer.nextToken() === undefined, 'No more tokens expected');
+        });
+        
+        test("New lines", function(){
+            var lexer = new jzt.lexer.Lexer('test \n 5 \ntest\n5\n \t\t\n\n6');
+            deepEqual(lexer.nextToken(), {position: 0, line: 1, column: 0, name: 'WORD', value: 'test'}, 'token 1');
+            deepEqual(lexer.nextToken(), {position: 5, line: 1, column: 5, name: 'NEWLINE', value: '\n'}, 'token 2');
+            deepEqual(lexer.nextToken(), {position: 7, line: 2, column: 1, name: 'WORD', value: '5'}, 'token 3');
+            deepEqual(lexer.nextToken(), {position: 9, line: 2, column: 3, name: 'NEWLINE', value: '\n'}, 'token 4');
+            deepEqual(lexer.nextToken(), {position: 10, line: 3, column: 0, name: 'WORD', value: 'test'}, 'token 5');
+            deepEqual(lexer.nextToken(), {position: 14, line: 3, column: 4, name: 'NEWLINE', value: '\n'}, 'token 6');
+            deepEqual(lexer.nextToken(), {position: 15, line: 4, column: 0, name: 'WORD', value: '5'}, 'token 7');
+            deepEqual(lexer.nextToken(), {position: 16, line: 4, column: 1, name: 'NEWLINE', value: '\n'}, 'token 8');
+            deepEqual(lexer.nextToken(), {position: 20, line: 5, column: 3, name: 'NEWLINE', value: '\n'}, 'token 9');
+            deepEqual(lexer.nextToken(), {position: 21, line: 6, column: 0, name: 'NEWLINE', value: '\n'}, 'token 10');
+            deepEqual(lexer.nextToken(), {position: 22, line: 7, column: 0, name: 'WORD', value: '6'}, 'token 11');
+            ok(lexer.nextToken() === undefined, 'No more tokens expected');
+        });
+	
+        test("Comments", function(){
+            var lexer = new jzt.lexer.Lexer('hello world\n//hello world\nhello //world\n//\n');
+            deepEqual(lexer.nextToken(), {position: 0, line: 1, column: 0, name: 'WORD', value: 'hello'}, 'token 1');
+            deepEqual(lexer.nextToken(), {position: 6, line: 1, column: 6, name: 'WORD', value: 'world'}, 'token 2');
+            deepEqual(lexer.nextToken(), {position: 11, line: 1, column: 11, name: 'NEWLINE', value: '\n'}, 'token 3');
+            deepEqual(lexer.nextToken(), {position: 12, line: 2, column: 0, name: 'COMMENT', value: 'hello world'}, 'token 4');
+            deepEqual(lexer.nextToken(), {position: 25, line: 2, column: 13, name: 'NEWLINE', value: '\n'}, 'token 5');
+            deepEqual(lexer.nextToken(), {position: 26, line: 3, column: 0, name: 'WORD', value: 'hello'}, 'token 6');
+            deepEqual(lexer.nextToken(), {position: 32, line: 3, column: 6, name: 'COMMENT', value: 'world'}, 'token 7');
+            deepEqual(lexer.nextToken(), {position: 39, line: 3, column: 13, name: 'NEWLINE', value: '\n'}, 'token 8');
+            deepEqual(lexer.nextToken(), {position: 40, line: 4, column: 0, name: 'COMMENT', value: ''}, 'token 9');
+            deepEqual(lexer.nextToken(), {position: 42, line: 4, column: 2, name: 'NEWLINE', value: '\n'}, 'token 10');
+            ok(lexer.nextToken() === undefined, 'No more tokens expected');
+        });
+        
+        test("Strings", function() {
+            var lexer = new jzt.lexer.Lexer('test "test ok" "test \\"another\\" ok" "test\ntest" "test//ok"');
+            deepEqual(lexer.nextToken(), {position: 0, line: 1, column: 0, name: 'WORD', value: 'test'}, 'token 1');
+            deepEqual(lexer.nextToken(), {position: 5, line: 1, column: 5, name: 'STRING', value: 'test ok'}, 'token 2');
+        });
+        
+	</script>
+	
+</body>
