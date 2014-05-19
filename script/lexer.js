@@ -29,7 +29,7 @@ jzt.lexer = (function(my){
         this.buffer = inputString;
         this.bufferLength = inputString.length;
         this.line = 1;
-        this.column = 0;
+        this.column = 1;
         
     };
     
@@ -80,7 +80,7 @@ jzt.lexer = (function(my){
         // New Line
         else if(isNewLine(c)) {
             token = this.createToken('NEWLINE', '\n');
-            this.column = 0;
+            this.column = 1;
             this.line++;
             return token;
         }
@@ -90,7 +90,7 @@ jzt.lexer = (function(my){
             return this.createWordToken();
         }
         
-        throw 'Unrecognized token starting at position ' + this.position;
+        throw 'Unrecognized token on line ' + this.line + ', column ' + this.column;
     
         
     };
@@ -139,17 +139,51 @@ jzt.lexer = (function(my){
     Lexer.prototype.createStringToken = function() {
         
         var token;
+        var c;
+        var result = '';
         
         // The end position is our position plus the length of our string character
         var endPosition = this.position + 1;
         
         // Loop until we get a non-escaped string terminal
-        while(endPosition < this.bufferLength && this.buffer.charAt(endPosition) === '"' && this.buffer.charAt(endPosition-1) !== '\\') {
-            endPosition++;
+        while(endPosition < this.bufferLength) {
+            
+            // Grab the next character
+            c = this.buffer.charAt(endPosition);
+            
+            // If we encounter an escaped quote, continue
+            if(c === '\\' && this.buffer.charAt(endPosition + 1) === '"') {
+                result += '"';
+                endPosition += 2;
+            }
+            
+            // If we encounter an escaped newline, add it and continue
+            else if(c === '\\' && this.buffer.charAt(endPosition + 1) === 'n') {
+                result += '\n';
+                endPosition += 2;
+            }
+            
+            // Newlines are invalid
+            else if(isNewLine(c)) {
+                throw 'Unterminated string literal on line ' + this.line + ', column ' + this.column;
+            }
+            
+            // If we encounter an end quote, the string is over
+            else if(c === '"') {
+                endPosition++;
+                break;
+            }
+            
+            // Any other character
+            else {
+                result +=c;
+                endPosition++;
+            }
+            
         }
         
         // Create our token
-        token = this.createToken('STRING', this.buffer.substring(this.position + 1, endPosition - 1), endPosition - this.position);
+        token = this.createToken('STRING', result, endPosition - this.position);
         
         return token;
         
