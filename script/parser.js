@@ -12,19 +12,13 @@ jzt.parser = (function(my){
     /* 
      * Assembly
      */
-    function Assembly(text) {
+    function Assembly(tokens) {
         
         if(!(this instanceof Assembly)) {
             throw jzt.ConstructorError;
         }
 
-        this.tokens = text !== undefined ? text.match(/\w+|"(?:\\"|[^"])+"|""|[^\s]|\n/g) : [];
-
-        // If the regex doesn't match, it returns null
-        if(this.tokens === null) {
-            this.tokens = [];
-        }
-
+        this.tokens = tokens;
         this.index = 0;
         this.stack = [];
         this.target = undefined;
@@ -33,9 +27,6 @@ jzt.parser = (function(my){
 
     Assembly.prototype.clone = function() {
         var result = new Assembly();
-        if(this.error) {
-            result.error = this.error;
-        }
         result.tokens = this.tokens.slice(0);
         result.index = this.index;
         result.stack = this.stack.slice(0);
@@ -76,10 +67,13 @@ jzt.parser = (function(my){
 
     Parser.prototype.completeMatch = function(assembly) {
         var result = this.bestMatch(assembly);
+        var token;
         if(result !== undefined && result.isDone()) {
             return result;
         }
-        throw 'Unexpected token \'' + result.peek() + '\'';
+        
+        token = result.peek();
+        throw 'Unexpected token \'' + token.value + '\' on line ' + token.line + ', column ' + token.column;
     };
 
     Parser.prototype.matchAndAssemble = function(assemblies) {
@@ -245,11 +239,13 @@ jzt.parser = (function(my){
 
     Sequence.prototype.determineTokenError = function(previousResult) {
         var best = this.findBestAssembly(previousResult);
+        var token;
         if(best.peek() === undefined) {
-            best.error = 'Token expected';
+            throw 'Token expected';
         }
         else {
-            best.error = 'Unexpected token \'' + best.peek() + '\'';
+            token = best.peek();
+            throw 'Unexpected token \'' + token.value + '\' on line ' + token.line + ', column ' + token.column;
         }
     };
 
@@ -348,7 +344,7 @@ jzt.parser = (function(my){
     Number.prototype = new Terminal();
 
     Number.prototype.qualifies = function(token) {
-        return ! isNaN(parseInt(token, 10));
+        return token.name === 'WORD' && !isNaN(parseInt(token.value, 10));
     };
 
     /*
@@ -371,10 +367,15 @@ jzt.parser = (function(my){
     Literal.prototype.constructor = Literal;
 
     Literal.prototype.qualifies = function(token) {
-        if(!this.caseSensitive && token) {
-            token = token.toUpperCase();
+
+        var value = token.value;
+        
+        if(!this.caseSensitive) {
+            value = value.toUpperCase();
         }
-        return this.literalValue === token;
+        
+        return this.literalValue === value;
+        
     };
 
     /*
@@ -390,10 +391,13 @@ jzt.parser = (function(my){
     Word.prototype = new Terminal();
     Word.prototype.constructor = Word;
     Word.prototype.qualifies = function(token) {
-        if(token) {
-            return token.match(/^[^\d\s][\w]*$/) !== null;
+        
+        if(token.name === 'WORD') {
+            return isNaN(parseInt(token.value, 10));
         }
+        
         return false;
+        
     };
 
     /*
@@ -409,10 +413,7 @@ jzt.parser = (function(my){
     String.prototype = new Terminal();
     String.prototype.constructor = String;
     String.prototype.qualifies = function(token) {
-        if(token) {
-            return (token.charAt(0) === '"' && token.charAt(token.length-1) === '"');
-        }
-        return false;
+        return token.name === 'STRING';
     };
 
     /*
@@ -428,7 +429,7 @@ jzt.parser = (function(my){
     NewLine.prototype = new Terminal();
     NewLine.prototype.constructor = NewLine;
     NewLine.prototype.qualifies = function(token) {
-        return token === '\n';
+        return token.name === 'NEWLINE';
     };
 
     /*
@@ -446,14 +447,8 @@ jzt.parser = (function(my){
         return terminal;
     }
 
-    function processString(token) {
-        // Remove opening quotes, closing quotes and single slashes
-        return token.replace(/^\"|\\(?!\\)|\"$/g, '');
-    }
-    
     my.optional = optional;
     my.discard = discard;
-    my.processString = processString;
     my.Alternation = Alternation;
     my.Assembly = Assembly;
     my.Parser = Parser;

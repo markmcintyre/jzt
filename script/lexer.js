@@ -33,6 +33,19 @@ jzt.lexer = (function(my){
         
     };
     
+    Lexer.prototype.tokenizeAll = function() {
+      
+        var result = [];
+        var token = this.nextToken();
+        while(token) {
+            result.push(token);
+            token = this.nextToken();
+        }
+        
+        return result;
+        
+    };
+    
     /**
      * Retrieves the next token in our input stream and returns it. If no tokens are left,
      * undefined is returned.
