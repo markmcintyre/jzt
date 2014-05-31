@@ -12,13 +12,15 @@ jzt.lexer = (function(my){
     /**
      * Constructs a new Lexer instance
      * @param inputString Input text to be lexed
+     * @param skipComments Whether or not to skip comments from the token stream (default is true)
      */
-    function Lexer(inputString) {
+    function Lexer(inputString, skipComments) {
         
         if(!(this instanceof Lexer)) {
             throw jzt.ConstructorError;
         }
         
+        this.skipComments = typeof skipComments !== 'undefined' ? skipComments : true;
         this.setInput(inputString);
         
     }
@@ -27,7 +29,7 @@ jzt.lexer = (function(my){
         
         this.position = 0;
         this.buffer = inputString;
-        this.bufferLength = inputString.length;
+        this.bufferLength = this.buffer.length;
         this.line = 1;
         this.column = 1;
         
@@ -69,7 +71,8 @@ jzt.lexer = (function(my){
         
         // Comment
         if(c === '/' && this.getCharacter(1) === '/') {
-            return this.createCommentToken();
+            token = this.createCommentToken();
+            return this.skipComments ? this.nextToken() : token;
         }
         
         // String
@@ -78,7 +81,7 @@ jzt.lexer = (function(my){
         }
         
         // Operator
-        else if(c === '<' || c === '>' || c === '=' || c === '!') {
+        else if(c === '<' || c === '>' || c === '=' || c === ':') {
          
             var next = this.getCharacter(1);
             if(next === '=' && c !== '=') {
@@ -92,7 +95,7 @@ jzt.lexer = (function(my){
         
         // New Line
         else if(isNewLine(c)) {
-            token = this.createToken('NEWLINE', '\n');
+            token = this.createToken('NEWLINE', '[New Line]', 1);
             this.column = 1;
             this.line++;
             return token;

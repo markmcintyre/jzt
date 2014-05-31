@@ -1,48 +1,114 @@
 <!DOCTYPE html>
 <head>
 	<title>JZTScript Test</title>
+    <link rel="stylesheet" href="qunit.css">
 </head>
 <body>
 	
-	<script type="text/javascript" src="../script/parser.js"></script>
-	<script type="text/javascript" src="../script/jztscript.js"></script>
-	
+    <div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+    <script src="qunit.js"></script>
+    <script type="text/javascript" src="../script/lexer.js"></script>
+    <script type="text/javascript" src="../script/parser.js"></script>
+    <script type="text/javascript" src="../script/jzt-script.js"></script>
+    
 	<script type="text/javascript">
-	
-		var moveParser = jztscript._createMoveCommandParser();
-		
-		var a = new jzt.parser.Assembly('#move n');
-		var result = moveParser.completeMatch(a);
-		console.assert(result.tokens.length == 3);
-		console.assert(result.stack.length == 1);
-		console.assert(result.stack[0] == 'n');
-		
-		var a = new jzt.parser.Assembly('#move cw opp flow');
-		result = moveParser.completeMatch(a);
-		console.assert(result.tokens.length == 5);
-		console.assert(result.stack.length == 3);
-		console.assert(result.stack[0] == 'cw');
-		console.assert(result.stack[1] == 'opp');
-		console.assert(result.stack[2] == 'flow');
-	
-		a = new jzt.parser.Assembly('#move cw ccw rndp n 5');
-		result = moveParser.completeMatch(a);
-		console.assert(result.tokens.length == 7);
-		console.assert(result.stack.length == 5);
-	
-		a = new jzt.parser.Assembly('#move cw north cw');
-		try {
-			result = moveParser.completeMatch(a);
-			console.assert(false);
-		}
-		catch(ex) {
-			console.assert(ex == 'Unexpected token \'cw\'');
-		}
-		
-		a = new jzt.parser.Assembly('#move 500');
-	
-		console.log("All done!");
-	
+        
+        var JztScript = jzt.jztscript.JztScript;
+        var NEWLINE_ERROR = /Unexpected token \'\[New Line\]\'/;
+        
+        test('Label', function(){
+            var script = new JztScript();
+            ok(script.parseScript(':labelone\n:labeltwo\n') === undefined, ':labelone');
+            throws(function(){script.parseScript(':labelone two');}, /Unexpected token \'two\'/, ':labelone two');
+        });
+        
+        test('Become statement', function(){
+            var script = new JztScript();
+            ok(script.parseScript('become fakewall\n') === undefined, 'become fakewall');
+            ok(script.parseScript('become blue snake\n') === undefined, 'become blue snake');
+            throws(function(){script.parseScript('become teal something\n')}, /Unexpected token \'teal\'/, 'become teal something');
+            throws(function(){script.parseScript('become red cactus\n')}, /Unexpected token \'cactus\'/, 'become red cactus');
+            throws(function(){script.parseScript('become blue red fakewall\n')}, /Unexpected token \'red\'/, 'become blue red fakewall');
+            throws(function(){script.parseScript('become red fakewall otter\n')}, /Unexpected token \'otter\'/, 'become red fakewall otter');
+            throws(function(){script.parseScript('become red\n')}, NEWLINE_ERROR, 'become red');
+        });
+        
+        test('Change Statement', function(){
+            var script = new JztScript();
+            ok(script.parseScript('change fakewall linewall\n') === undefined, 'change fakewall linewall');
+            ok(script.parseScript('change blue fakewall linewall\n') === undefined, 'change blue fakewall linewall');
+            ok(script.parseScript('change fakewall blue linewall\n') === undefined, 'change fakewall blue linewall');
+            ok(script.parseScript('change blue fakewall red linewall\n') === undefined, 'change blue fakewall red linewall');
+            throws(function(){script.parseScript('change fakewall blah\n')}, /Unexpected token \'blah\'/, 'change fakewall blah');
+            throws(function(){script.parseScript('change blah linewall\n')}, /Unexpected token \'blah\'/, 'change blah linewall');
+            throws(function(){script.parseScript('change blue fakewall blah\n')}, /Unexpected token \'blah\'/, 'change blue fakewall blah');
+            throws(function(){script.parseScript('change blue fakewall teal linewall\n')}, /Unexpected token \'teal\'/, 'change blue fakewall teal linewall');
+            throws(function(){script.parseScript('change blue fakewall\n')}, NEWLINE_ERROR, 'change blue fakewall');
+            throws(function(){script.parseScript('change blue red\n')}, /Unexpected token \'red\'/, 'change blue red');
+        });
+        
+        test('Char statement', function() {
+            var script = new JztScript();
+            ok(script.parseScript('char 50\n') === undefined, 'char 50');
+            throws(function(){script.parseScript('char\n')}, NEWLINE_ERROR, 'char');
+        });
+        
+        test('Die statement', function() {
+            var script = new JztScript();
+            ok(script.parseScript('die\n') === undefined, 'die');
+            throws(function(){script.parseScript('die 5\n')}, /Unexpected token \'5\'/, 'die 5');
+        });
+        
+        test('End statement', function() {
+            var script = new JztScript();
+            ok(script.parseScript('end\n') === undefined, 'end');
+            throws(function(){script.parseScript('end 5\n')}, /Unexpected token \'5\'/, 'end 5');
+        });
+        
+        test('Give statement', function(){
+            var script = new JztScript();
+            ok(script.parseScript('give 5 gems\n') === undefined, 'give 5 gems');
+            ok(script.parseScript('give 25 torches\n') === undefined, 'give 25 torches');
+            throws(function(){script.parseScript('give red gems\n')}, /Unexpected token \'red\'/, 'give red gems');
+            throws(function(){script.parseScript('give 5 gems label\n')}, /Unexpected token \'label\'/, 'give 5 gems label');
+            throws(function(){script.parseScript('give 25\n')}, NEWLINE_ERROR, 'give 25');
+            throws(function(){script.parseScript('give gems\n')}, /Unexpected token \'gems\'/, 'give gems');
+            throws(function(){script.parseScript('give\n')}, NEWLINE_ERROR, 'give');
+        });
+        
+        test('Take Statement', function(){
+            var script = new JztScript();
+            ok(script.parseScript('take 5 gems toopoor\n') === undefined, 'take 5 gems toopoor');
+            ok(script.parseScript('take 10 something\n') === undefined, 'take 10 something');
+            throws(function(){script.parseScript('take something\n')}, /Unexpected token \'something\'/, 'take something');
+            throws(function(){script.parseScript('take 1 gems 3\n')}, /Unexpected token \'3\'/, 'take 1 gems 3');
+            throws(function(){script.parseScript('take 5 gems toopoor gems')}, /Unexpected token \'gems\'/, 'take 5 gems toopoor gems');
+        });
+        
+
+/*
+        statementOptions.add(createIfStatementParser(validateOnly));
+        statementOptions.add(createLockStatementParser(validateOnly));
+        statementOptions.add(createMoveStatementParser(validateOnly));
+        statementOptions.add(createPlayStatementParser(validateOnly));
+        statementOptions.add(createPutStatementParser(validateOnly));
+        statementOptions.add(createScrollStatementParser(validateOnly));
+        statementOptions.add(createSendStatementParser(validateOnly));
+        statementOptions.add(createSetStatementParser(validateOnly));
+        statementOptions.add(createTakeStatementParser(validateOnly));
+        statementOptions.add(createThrowStarStatementParser(validateOnly));
+        statementOptions.add(createTorchStatementParser(validateOnly));
+        statementOptions.add(createRestoreStatementParser(validateOnly));
+        statementOptions.add(createSayStatementParser(validateOnly));
+        statementOptions.add(createShootStatementParser(validateOnly));
+        statementOptions.add(createStandStatementParser(validateOnly));
+        statementOptions.add(createUnlockStatementParser(validateOnly));
+        statementOptions.add(createWaitStatementParser(validateOnly));
+        statementOptions.add(createWalkStatementParser(validateOnly));
+        statementOptions.add(createZapStatementParser(validateOnly));
+*/        
+        
 	</script>
 	
 </body>

@@ -196,6 +196,11 @@ jzt.parser = (function(my){
     CollectionParser.prototype.add = function(subParser) {
         this.subParsers.push(subParser);
     };
+    
+    CollectionParser.prototype.addDiscard = function(subParser) {
+        subParser.discard = true;
+        this.subParsers.push(subParser);
+    };
 
     /*
      * Sequence
@@ -432,23 +437,6 @@ jzt.parser = (function(my){
         return token.name === 'NEWLINE';
     };
 
-    /*
-     * Optional convenience parsers and methods
-     */
-    function optional(parser) {
-        var result = new Alternation();
-        result.add(parser);
-        result.add(new Empty());
-        return result;
-    }
-
-    function discard(terminal) {
-        terminal.discard = true;
-        return terminal;
-    }
-
-    my.optional = optional;
-    my.discard = discard;
     my.Alternation = Alternation;
     my.Assembly = Assembly;
     my.Parser = Parser;
