@@ -454,7 +454,7 @@ jzt.jztscript = (function(my){
     
     function createExistsExpressionParser(validateOnly) {
         var existsExpression = new p.Sequence();
-        existsExpression.addDiscard('Exists');
+        existsExpression.addDiscard(new p.Literal('Exists'));
         existsExpression.add(optional(new p.Number()));
         existsExpression.add(choice(createThingParser(), createColorfulThingParser()));
         return existsExpression;

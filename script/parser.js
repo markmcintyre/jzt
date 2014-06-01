@@ -270,13 +270,26 @@ jzt.parser = (function(my){
     Alternation.prototype.match = function(assemblies) {
 
         var result = [];
+        var error;
+        var subParser;
+        var alternationResult;
 
         for(var index = 0; index < this.subParsers.length; ++index) {
-            var subParser = this.subParsers[index];
-            var alternationResult = subParser.matchAndAssemble(assemblies);
+            subParser = this.subParsers[index];
+            try {
+                alternationResult = subParser.matchAndAssemble(assemblies);
+            }
+            catch(tokenError) {
+                error = tokenError;
+                continue;
+            }
             result = result.concat(alternationResult);
         }
 
+        if(result.length <=0 && error !== undefined) {
+            throw error;
+        }
+        
         return result;
 
     };

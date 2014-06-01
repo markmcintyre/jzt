@@ -77,6 +77,50 @@
             throws(function(){script.parseScript('give\n')}, NEWLINE_ERROR, 'give');
         });
         
+        test('If statement', function(){
+            var script = new JztScript();
+            ok(script.parseScript('if gems <= 5 dosomething\n') === undefined, 'if gems <= 5 dosomething');
+            ok(script.parseScript('if gems = 25 somethingelse\n') === undefined, 'if gems = 25 somethingelse');
+            ok(script.parseScript('if torches < 60 blah\n') === undefined, 'if torches < 60 blah');
+            ok(script.parseScript('if ammo >= 25 blahblah\n') === undefined, 'if ammo >= 25 blahblah');
+            ok(script.parseScript('if neato > 2 neat\n') === undefined, 'if neato > 2 neat');
+            ok(script.parseScript('if not gems <= 5 dosomething\n') === undefined, 'if not gems <= 5 dosomething');
+            ok(script.parseScript('if adjacent dosomething\n') === undefined, 'if adjacent dosomething');
+            ok(script.parseScript('if blocked north dosomething\n') === undefined, 'if blocked north dosomething');
+            ok(script.parseScript('if blocked cw ccw rndp opp rndne dosomething\n') === undefined, 'if blocked cw ccw rndp opp rndne dosomething');
+            ok(script.parseScript('if aligned south dosomething\n') === undefined, 'if aligned south dosomething\n');
+            ok(script.parseScript('if aligned ccw cw opp rndp flow dosomething\n') === undefined, 'if aligned ccw cw opp rndp flow dosomething');
+            ok(script.parseScript('if peep 5 dosomething\n') === undefined, 'if peep 5 dosomething');
+            ok(script.parseScript('if exists fakewall dosomething\n') === undefined, 'if fakewall dosomething');
+            ok(script.parseScript('if exists blue lion dosomething\n') === undefined, 'if blue lion dosomething');
+            ok(script.parseScript('if exists 5 fakewall dosomething\n') === undefined, 'if 5 fakewall dosomething');
+            ok(script.parseScript('if exists 5 blue linewall dosomething\n') === undefined, 'if 5 blue linewall dosomething');
+            ok(script.parseScript('if not exists 10 red lion dosomething\n') === undefined, 'if not exists 10 red lion dosomething');
+            ok(script.parseScript('if not not not not gems < 5 dosomething\n') === undefined, 'if not not not not gems < 5 dosomething');
+            throws(function(){script.parseScript('if 5 gems dosomething\n')}, /Unexpected token \'5\'/, 'if 5 gems dosomething');
+            throws(function(){script.parseScript('if gems < five dosomething\n')}, /Unexpected token \'five\'/, 'if sems < five dosomething');
+        });
+        
+        test('Lock statement', function(){
+            var script = new JztScript();
+            ok(script.parseScript('lock\n') === undefined, 'lock');
+            throws(function(){script.parseScript('lock blah\n')}, /Unexpected token \'blah\'/, 'lock blah');
+        });
+        
+        test('Move statement', function(){
+            var script = new JztScript();
+            ok(script.parseScript('move north\n') === undefined, 'move north');
+            ok(script.parseScript('move north otherwise dosomething\n') === undefined, 'move north otherwise dosomething');
+            ok(script.parseScript('move s forcefully\n') === undefined, 'move s forcefully');
+            ok(script.parseScript('move e 5\n') === undefined, 'move e 5');
+            ok(script.parseScript('move e 5 forcefully\n') === undefined, 'move e 5 forcefully');
+            ok(script.parseScript('move e 10 otherwise dosomething\n') === undefined, 'move e 10 otherwise dosomething');
+            ok(script.parseScript('move cw opp rndp ccw w\n') === undefined, 'move cw opp rndp ccw w');
+            ok(script.parseScript('move ccw rndne forcefully\n') === undefined, 'move ccw rndne forcefully');
+            ok(script.parseScript('move opp flow otherwise dosomething\n') === undefined, 'move opp flow otherwise dosomething');
+            ok(script.parseScript('move opp flow 25 otherwise dosomething\n') === undefined, 'move 25 opp flow otherwise dosomething');
+        });
+        
         test('Take Statement', function(){
             var script = new JztScript();
             ok(script.parseScript('take 5 gems toopoor\n') === undefined, 'take 5 gems toopoor');
@@ -88,9 +132,6 @@
         
 
 /*
-        statementOptions.add(createIfStatementParser(validateOnly));
-        statementOptions.add(createLockStatementParser(validateOnly));
-        statementOptions.add(createMoveStatementParser(validateOnly));
         statementOptions.add(createPlayStatementParser(validateOnly));
         statementOptions.add(createPutStatementParser(validateOnly));
         statementOptions.add(createScrollStatementParser(validateOnly));
