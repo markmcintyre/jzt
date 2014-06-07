@@ -17,17 +17,26 @@ jzt.jztscript = (function(my){
             throw jzt.ConstructorError;
         }
         
-        this.jztscript = createJztScriptParser(validateOnly);
+        this.validateOnly = validateOnly;
+        this.jztscript = createJztScriptParser();
         
     }
     
     JztScript.prototype.parseScript = function(script) {
         
-        var lexer = new jzt.lexer.Lexer(script);
-        var tokens = lexer.tokenizeAll();
-        var assembly = new p.Assembly(tokens);
+        var lexer;
+        var tokens;
+        var assembly;
         var result;
         
+        // If our script doesn't already end in a newline, add it now
+        if(script.charAt(script.length-1) !== '\n') {
+            script += '\n';
+        }
+        
+        lexer = new jzt.lexer.Lexer(script);
+        tokens = lexer.tokenizeAll();
+        assembly = new p.Assembly(tokens);
         result = this.jztscript.completeMatch(assembly);
         
         if(result === undefined) {// || result.target === undefined) {
@@ -38,18 +47,19 @@ jzt.jztscript = (function(my){
         
     };
     
-    function createJztScriptParser(validateOnly) {
+    function createJztScriptParser() {
         
         var program;
         var line = new p.Alternation();
-        line.add(createLabelParser(validateOnly));
-        line.add(createStatementParser(validateOnly));
+        line.add(createLabelParser());
+        line.add(createStatementParser());
+        line.add(new p.NewLine());
         program = new p.Repetition(line);
         return program;
         
     }
     
-    function createLabelParser(validateOnly) {
+    function createLabelParser() {
         var label = new p.Sequence();
         label.add(new p.Literal(':'));
         label.add(new p.Word());
@@ -57,47 +67,47 @@ jzt.jztscript = (function(my){
         return label;
     }
     
-    function createStatementParser(validateOnly) {
+    function createStatementParser() {
         var statement = new p.Sequence();
         var statementOptions = new p.Alternation();
-        statementOptions.add(createBecomeStatementParser(validateOnly));
-        statementOptions.add(createChangeStatementParser(validateOnly));
-        statementOptions.add(createCharStatementParser(validateOnly));
-        statementOptions.add(createDieStatementParser(validateOnly));
-        statementOptions.add(createEndStatementParser(validateOnly));
-        statementOptions.add(createGiveStatementParser(validateOnly));
-        statementOptions.add(createIfStatementParser(validateOnly));
-        statementOptions.add(createLockStatementParser(validateOnly));
-        statementOptions.add(createMoveStatementParser(validateOnly));
-        statementOptions.add(createPlayStatementParser(validateOnly));
-        statementOptions.add(createPutStatementParser(validateOnly));
-        statementOptions.add(createScrollStatementParser(validateOnly));
-        statementOptions.add(createSendStatementParser(validateOnly));
-        statementOptions.add(createSetStatementParser(validateOnly));
-        statementOptions.add(createTakeStatementParser(validateOnly));
-        statementOptions.add(createThrowStarStatementParser(validateOnly));
-        statementOptions.add(createTorchStatementParser(validateOnly));
-        statementOptions.add(createRestoreStatementParser(validateOnly));
-        statementOptions.add(createSayStatementParser(validateOnly));
-        statementOptions.add(createShootStatementParser(validateOnly));
-        statementOptions.add(createStandStatementParser(validateOnly));
-        statementOptions.add(createUnlockStatementParser(validateOnly));
-        statementOptions.add(createWaitStatementParser(validateOnly));
-        statementOptions.add(createWalkStatementParser(validateOnly));
-        statementOptions.add(createZapStatementParser(validateOnly));
+        statementOptions.add(createBecomeStatementParser());
+        statementOptions.add(createChangeStatementParser());
+        statementOptions.add(createCharStatementParser());
+        statementOptions.add(createDieStatementParser());
+        statementOptions.add(createEndStatementParser());
+        statementOptions.add(createGiveStatementParser());
+        statementOptions.add(createIfStatementParser());
+        statementOptions.add(createLockStatementParser());
+        statementOptions.add(createMoveStatementParser());
+        statementOptions.add(createPlayStatementParser());
+        statementOptions.add(createPutStatementParser());
+        statementOptions.add(createScrollStatementParser());
+        statementOptions.add(createSendStatementParser());
+        statementOptions.add(createSetStatementParser());
+        statementOptions.add(createTakeStatementParser());
+        statementOptions.add(createThrowStarStatementParser());
+        statementOptions.add(createTorchStatementParser());
+        statementOptions.add(createRestoreStatementParser());
+        statementOptions.add(createSayStatementParser());
+        statementOptions.add(createShootStatementParser());
+        statementOptions.add(createStandStatementParser());
+        statementOptions.add(createUnlockStatementParser());
+        statementOptions.add(createWaitStatementParser());
+        statementOptions.add(createWalkStatementParser());
+        statementOptions.add(createZapStatementParser());
         statement.add(statementOptions);
         statement.add(new p.NewLine());
         return statement;
     }
     
-    function createBecomeStatementParser(validateOnly) {
+    function createBecomeStatementParser() {
         var become = new p.Sequence();
         become.addDiscard(new p.Literal('Become'));
         become.add(choice(createColorfulThingParser(), createThingParser()));
         return become;
     }
     
-    function createChangeStatementParser(validateOnly) {
+    function createChangeStatementParser() {
         var change = new p.Sequence();
         change.addDiscard(new p.Literal('Change'));
         change.add(choice(createColorfulThingParser(), createThingParser()));
@@ -105,27 +115,27 @@ jzt.jztscript = (function(my){
         return change;
     }
     
-    function createCharStatementParser(validateOnly) {
+    function createCharStatementParser() {
         var char = new p.Sequence();
         char.addDiscard(new p.Literal('Char'));
         char.add(new p.Number());
         return char;
     }
     
-    function createDieStatementParser(validateOnly) {
+    function createDieStatementParser() {
         var die = new p.Sequence();
         die.addDiscard(new p.Literal('Die'));
         die.add(optional(new p.Literal('magnetically')));
         return die;
     }
     
-    function createEndStatementParser(validateOnly) {
+    function createEndStatementParser() {
         var endStatement = new p.Literal('End');
         endStatement.discard = true;
         return endStatement;
     }
     
-    function createGiveStatementParser(validateOnly) {
+    function createGiveStatementParser() {
         var give = new p.Sequence();
         give.addDiscard(new p.Literal('Give'));
         give.add(new p.Number());
@@ -133,7 +143,7 @@ jzt.jztscript = (function(my){
         return give;
     }
     
-    function createIfStatementParser(validateOnly) {
+    function createIfStatementParser() {
         var ifStatement = new p.Sequence();
         ifStatement.addDiscard(new p.Literal('If'));
         ifStatement.add(createExpressionParser());
@@ -141,13 +151,13 @@ jzt.jztscript = (function(my){
         return ifStatement;
     }
     
-    function createLockStatementParser(validateOnly) {
+    function createLockStatementParser() {
         var lock = new p.Literal('Lock');
         lock.discard = true;
         return lock;
     }
     
-    function createMoveStatementParser(validateOnly) {
+    function createMoveStatementParser() {
         var move = new p.Sequence();
         var moveOptions = new p.Alternation();
         var otherwise = new p.Sequence();
@@ -165,14 +175,14 @@ jzt.jztscript = (function(my){
         return move;
     }
     
-    function createPlayStatementParser(validateOnly) {
+    function createPlayStatementParser() {
         var play = new p.Sequence();
         play.addDiscard(new p.Literal('Play'));
         play.add(new p.String());
         return play;
     }
     
-    function createPutStatementParser(validateOnly) {
+    function createPutStatementParser() {
         var put = new p.Sequence();
         put.addDiscard(new p.Literal('Put'));
         put.add(createDirectionParser());
@@ -180,7 +190,7 @@ jzt.jztscript = (function(my){
         return put;
     }
     
-    function createScrollStatementParser(validateOnly) {
+    function createScrollStatementParser() {
         var scroll = new p.Sequence();
         scroll.addDiscard(new p.Literal('Scroll'));
         scroll.add(optional(new p.Literal('Bold')));
@@ -189,7 +199,7 @@ jzt.jztscript = (function(my){
         return scroll;
     }
     
-    function createSendStatementParser(validateOnly) {
+    function createSendStatementParser() {
         var send = new p.Sequence();
         send.addDiscard(new p.Literal('Send'));
         send.add(new p.Word());
@@ -197,7 +207,7 @@ jzt.jztscript = (function(my){
         return send;
     }
     
-    function createSetStatementParser(validateOnly) {
+    function createSetStatementParser() {
         var set = new p.Sequence();
         set.addDiscard(new p.Literal('Set'));
         set.add(optional(new p.Number()));
@@ -205,7 +215,7 @@ jzt.jztscript = (function(my){
         return set;
     }
     
-    function createTakeStatementParser(validateOnly) {
+    function createTakeStatementParser() {
         var take = new p.Sequence();
         take.addDiscard(new p.Literal('Take'));
         take.add(new p.Number());
@@ -214,90 +224,90 @@ jzt.jztscript = (function(my){
         return take;
     }
     
-    function createThrowStarStatementParser(validateOnly) {
+    function createThrowStarStatementParser() {
         var throwStar = new p.Sequence();
         throwStar.addDiscard(new p.Literal('ThrowStar'));
         throwStar.add(createDirectionParser());
         return throwStar;
     }
     
-    function createTorchStatementParser(validateOnly) {
+    function createTorchStatementParser() {
         var torch = new p.Sequence();
         torch.addDiscard(new p.Literal('Torch'));
         torch.add(optional(new p.Number()));
         return torch;
     }
     
-    function createRestoreStatementParser(validateOnly) {
+    function createRestoreStatementParser() {
         var restore = new p.Sequence();
         restore.addDiscard(new p.Literal('Restore'));
         restore.add(new p.Word());
         return restore;
     }
     
-    function createSayStatementParser(validateOnly) {
+    function createSayStatementParser() {
         var say = new p.Sequence();
         say.addDiscard(new p.Literal('Say'));
         say.add(new p.String());
         return say;
     }
     
-    function createShootStatementParser(validateOnly) {
+    function createShootStatementParser() {
         var shoot = new p.Sequence();
         shoot.addDiscard(new p.Literal('Shoot'));
         shoot.add(createDirectionParser());
         return shoot;
     }
     
-    function createStandStatementParser(validateOnly) {
+    function createStandStatementParser() {
         var stand = new p.Literal('Stand');
         stand.discard = true;
         return stand;
     }
     
-    function createUnlockStatementParser(validateOnly) {
+    function createUnlockStatementParser() {
         var unlock = new p.Literal('Unlock');
         unlock.discard = true;
         return unlock;
     }
     
-    function createWaitStatementParser(validateOnly) {
+    function createWaitStatementParser() {
         var wait = new p.Sequence();
         wait.addDiscard(new p.Literal('Wait'));
         wait.add(optional(new p.Number()));
         return wait;
     }
     
-    function createWalkStatementParser(validateOnly) {
+    function createWalkStatementParser() {
         var walk = new p.Sequence();
         walk.addDiscard(new p.Literal('Walk'));
         walk.add(createDirectionParser());
         return walk;
     }
     
-    function createZapStatementParser(validateOnly) {
+    function createZapStatementParser() {
         var zap = new p.Sequence();
         zap.addDiscard(new p.Literal('Zap'));
         zap.add(new p.Word());
         return zap;
     }
     
-    function createCountableDirectionParser(validateOnly) {
+    function createCountableDirectionParser() {
         var direction = new p.Sequence();
         direction.add(createDirectionParser());
         direction.add(new p.Number());
         return direction;
     }
     
-    function createDirectionParser(validateOnly) {
+    function createDirectionParser() {
         var direction = new p.Sequence();
-        var modifiers = new p.Repetition(createDirectionModifierParser(validateOnly));
+        var modifiers = new p.Repetition(createDirectionModifierParser());
         direction.add(modifiers);
         direction.add(createDirectionTerminalParser());
         return direction;
     }
     
-    function createDirectionModifierParser(validateOnly) {
+    function createDirectionModifierParser() {
         var directionModifier = new p.Alternation();
         directionModifier.add(new p.Literal('CW'));
         directionModifier.add(new p.Literal('CCW'));
@@ -306,7 +316,7 @@ jzt.jztscript = (function(my){
         return directionModifier;
     }
     
-    function createDirectionTerminalParser(validateOnly) {
+    function createDirectionTerminalParser() {
         var directionTerminal = new p.Alternation();
         directionTerminal.add(new p.Literal('SEEK'));
         directionTerminal.add(new p.Literal('SMART'));
@@ -328,7 +338,7 @@ jzt.jztscript = (function(my){
         return directionTerminal;
     }
     
-    function createColorParser(validateOnly) {
+    function createColorParser() {
         var color = new p.Alternation();
         color.add(new p.Literal('Black'));
         color.add(new p.Literal('Blue'));
@@ -349,7 +359,7 @@ jzt.jztscript = (function(my){
         return color;
     }
     
-    function createThingParser(validateOnly) {
+    function createThingParser() {
         var thing = new p.Alternation();
         thing.add(new p.Literal('ActiveBomb'));
         thing.add(new p.Literal('Ammo'));
@@ -399,60 +409,60 @@ jzt.jztscript = (function(my){
         return thing;
     }
     
-    function createColorfulThingParser(validateOnly) {
+    function createColorfulThingParser() {
         var colorfulThing = new p.Sequence();
         colorfulThing.add(createColorParser());
         colorfulThing.add(createThingParser());
         return colorfulThing;
     }
     
-    function createExpressionParser(validateOnly) {
+    function createExpressionParser() {
         var expression = new p.Alternation();
-        expression.add(createNotExpressionParser(expression, validateOnly));
-        expression.add(createAdjacentExpressionParser(validateOnly));
-        expression.add(createBlockedExpressionParser(validateOnly));
-        expression.add(createAlignedExpressionParser(validateOnly));
-        expression.add(createPeepExpressionParser(validateOnly));
-        expression.add(createExistsExpressionParser(validateOnly));
-        expression.add(createTestingExpressionParser(validateOnly));
+        expression.add(createNotExpressionParser(expression));
+        expression.add(createAdjacentExpressionParser());
+        expression.add(createBlockedExpressionParser());
+        expression.add(createAlignedExpressionParser());
+        expression.add(createPeepExpressionParser());
+        expression.add(createExistsExpressionParser());
+        expression.add(createTestingExpressionParser());
         return expression;
     }
     
-    function createNotExpressionParser(expressionParser, validateOnly) {
+    function createNotExpressionParser(expressionParser) {
         var notExpression = new p.Sequence();
         notExpression.addDiscard(new p.Literal('Not'));
         notExpression.add(expressionParser);
         return notExpression;
     }
     
-    function createAdjacentExpressionParser(validateOnly) {
+    function createAdjacentExpressionParser() {
         var adjacentExpression = new p.Literal('Adjacent');
         adjacentExpression.discard = true;
         return adjacentExpression;
     }
     
-    function createBlockedExpressionParser(validateOnly) {
+    function createBlockedExpressionParser() {
         var blockedExpression = new p.Sequence();
         blockedExpression.addDiscard(new p.Literal('Blocked'));
         blockedExpression.add(createDirectionParser());
         return blockedExpression;
     }
     
-    function createAlignedExpressionParser(validateOnly) {
+    function createAlignedExpressionParser() {
         var alignedExpression = new p.Sequence();
         alignedExpression.addDiscard(new p.Literal('Aligned'));
         alignedExpression.add(createDirectionParser());
         return alignedExpression;
     }
     
-    function createPeepExpressionParser(validateOnly) {
+    function createPeepExpressionParser() {
         var peepExpression = new p.Sequence();
         peepExpression.addDiscard(new p.Literal('Peep'));
         peepExpression.add(optional(new p.Number()));
         return peepExpression;
     }
     
-    function createExistsExpressionParser(validateOnly) {
+    function createExistsExpressionParser() {
         var existsExpression = new p.Sequence();
         existsExpression.addDiscard(new p.Literal('Exists'));
         existsExpression.add(optional(new p.Number()));
@@ -460,7 +470,7 @@ jzt.jztscript = (function(my){
         return existsExpression;
     }
     
-    function createTestingExpressionParser(validateOnly) {
+    function createTestingExpressionParser() {
         var testingExpression = new p.Sequence();
         var operator = new p.Alternation();
         operator.add(new p.Literal('<'));
