@@ -55,8 +55,8 @@
             result = parser.parse('become blue snake');
             command = result.getCommand(0);
             ok(command instanceof commands.BecomeCommand, 'Expecting BecomeCommand');
-            ok(command.thingTemplate.color === jzt.colors.Blue, 'Expecting Blue');
-            ok(command.thingTemplate.id === 'snake', 'Expecting Snake');
+            ok(command.template.color === jzt.colors.Blue, 'Expecting Blue');
+            ok(command.template.id === 'snake', 'Expecting Snake');
             
         });
         
@@ -83,6 +83,8 @@
         test('Die statement', function() {
             var parser = new JztScriptParser();
             ok(parser.parse('die') instanceof JztScript, 'die');
+            ok(parser.parse('die magnetically') instanceof JztScript, 'die magnetically');
+            throws(function(){parser.parse('die red')}, /Unexpected token \'red\'/, 'die red');
             throws(function(){parser.parse('die 5')}, /Unexpected token \'5\'/, 'die 5');
         });
         
@@ -117,10 +119,10 @@
             ok(parser.parse('if aligned south dosomething') instanceof JztScript, 'if aligned south dosomething');
             ok(parser.parse('if aligned ccw cw opp rndp flow dosomething') instanceof JztScript, 'if aligned ccw cw opp rndp flow dosomething');
             ok(parser.parse('if peep 5 dosomething') instanceof JztScript, 'if peep 5 dosomething');
-            ok(parser.parse('if exists fakewall dosomething') instanceof JztScript, 'if fakewall dosomething');
-            ok(parser.parse('if exists blue lion dosomething') instanceof JztScript, 'if blue lion dosomething');
-            ok(parser.parse('if exists 5 fakewall dosomething') instanceof JztScript, 'if 5 fakewall dosomething');
-            ok(parser.parse('if exists 5 blue linewall dosomething') instanceof JztScript, 'if 5 blue linewall dosomething');
+            ok(parser.parse('if exists fakewall dosomething') instanceof JztScript, 'if exists fakewall dosomething');
+            ok(parser.parse('if exists blue lion dosomething') instanceof JztScript, 'if exists blue lion dosomething');
+            ok(parser.parse('if exists 5 fakewall dosomething') instanceof JztScript, 'if exists 5 fakewall dosomething');
+            ok(parser.parse('if exists 5 blue linewall dosomething') instanceof JztScript, 'if exists 5 blue linewall dosomething');
             ok(parser.parse('if not exists 10 red lion dosomething') instanceof JztScript, 'if not exists 10 red lion dosomething');
             ok(parser.parse('if not not not not gems < 5 dosomething') instanceof JztScript, 'if not not not not gems < 5 dosomething');
             throws(function(){parser.parse('if 5 gems dosomething')}, /Unexpected token \'5\'/, 'if 5 gems dosomething');
@@ -269,7 +271,7 @@
         
         test('Multi-line script', function(){
             var parser = new JztScriptParser();
-            ok(parser.parse(':label\nwait 5\nwalk cw seek\nif aligned south label2\nend\n:label2\nsay "Interesting!"\nend') instanceof JztScript, 'Full sript');
+            ok(parser.parse(':label\nwait 5\nwalk cw ccw seek\nmove rndp ccw n\nif aligned south label2\nend\n:label2\nsay "Interesting!"\nend') instanceof JztScript, 'Full sript');
         });
         
 	</script>

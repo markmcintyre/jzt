@@ -101,8 +101,13 @@ jzt.lexer = (function(my){
             return token;
         }
         
+        // Number Token
+        else if(isNumeric(c)) {
+            return this.createNumberToken();
+        }
+        
         // Word Token
-        else if(isAlphaNumeric(c)) {
+        else if(isAlpha(c)) {
             return this.createWordToken();
         }
         
@@ -204,19 +209,26 @@ jzt.lexer = (function(my){
         return token;
         
     };
+    
+    Lexer.prototype.createNumberToken = function() {
+        
+        var endPosition = this.position;
+        while(endPosition < this.bufferLength && isNumeric(this.buffer.charAt(endPosition))) {
+            endPosition++;
+        }
+        
+        return this.createToken('NUMBER', +(this.buffer.substring(this.position, endPosition)), endPosition - this.position);
+        
+    };
                                                   
     Lexer.prototype.createWordToken = function() {
-        
-        var token;
         
         var endPosition = this.position;
         while(endPosition < this.bufferLength && isAlphaNumeric(this.buffer.charAt(endPosition))) {
             endPosition++;
         }
         
-        token = this.createToken('WORD', this.buffer.substring(this.position, endPosition));
-        
-        return token;
+        return this.createToken('WORD', this.buffer.substring(this.position, endPosition));
               
     };
 
@@ -266,9 +278,16 @@ jzt.lexer = (function(my){
         return character === ' ' || character === '\t' || character === '\r';
     }
     
+    function isAlpha(character) {
+        return (character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') || character === '_';
+    }
+    
+    function isNumeric(character) {
+        return (character >= '0' && character <= '9');
+    }
+    
     function isAlphaNumeric(character) {
-        return (character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') ||
-           (character >= '0' && character <= '9') || character === '_';
+        return isAlpha(character) || isNumeric(character);
     }
     
     my.Lexer = Lexer;

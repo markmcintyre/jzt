@@ -114,14 +114,7 @@ var jzt = (function(my){
      * @return A Command instance
      */
     Script.prototype.getCommand = function(commandIndex) {
-
-        var result = this.commands[commandIndex];
-        if(result === undefined) {
-            return undefined;
-        }
-
-        return result.clone();
-
+        return this.commands[commandIndex];
     };
 
     /**

@@ -13,6 +13,9 @@ jzt.jztscript = (function(my){
     var commands = my.commands;
     var colors = jzt.colors;
     
+    /**
+     * JztScript
+     */
     function JztScript() {
         
         if(!(this instanceof JztScript)) {
@@ -42,12 +45,30 @@ jzt.jztscript = (function(my){
         return this.commands[index];
     };
     
+    /**
+     * JztScriptParser
+     */
     function JztScriptParser(validateOnly) {
 
         if(!(this instanceof JztScriptParser)) {
             throw jzt.ConstructorError;
         }
         
+        /**
+         * Creates an Assembler object with a provided assemble function 
+         * definition if validateOnly is not set.
+         */
+        function createAssembler(assemblerFunction) {
+            return validateOnly ? undefined : {
+                assemble: assemblerFunction
+            };
+        }
+        
+        /**
+         * JztScript Parser
+         * Creates and returns a new JztScript parser.
+         * @return A JZT script parser.
+         */
         function createJztScriptParser() {
         
             var program;
@@ -60,27 +81,37 @@ jzt.jztscript = (function(my){
 
         }
         
+        /**
+         * Label Parser
+         * Creates and returns a new label parser
+         * @return A label parser.
+         */
         function createLabelParser() {
             var label = new p.Sequence();
-            label.add(new p.Literal(':'));
+            
+            // Add sequence items
+            label.addDiscard(new p.Literal(':'));
             label.add(new p.Word());
-            label.add(new p.NewLine());
-            label.assembler = createLabelAssembler();
+            label.addDiscard(new p.NewLine());
+            
+            // Define assembler
+            label.assembler = createAssembler(function(assembly){
+                assembly.push(new commands.Label(assembly.pop()));
+            });
+            
             return label;
         }
-        
-        function createLabelAssembler() {
-            return validateOnly ? undefined : {
-                assemble: function(assembly) {
-                    var label = new commands.Label(assembly.stack.pop());
-                    assembly.stack.push(label);
-                }
-            };
-        }
 
+        /**
+         * Statement Parser
+         * Creates and returns a new statement parser.
+         * @return A statement parser.
+         */
         function createStatementParser() {
             var statement = new p.Sequence();
             var statementOptions = new p.Alternation();
+            
+            // Add statement items
             statementOptions.add(createBecomeStatementParser());
             statementOptions.add(createChangeStatementParser());
             statementOptions.add(createCharStatementParser());
@@ -108,238 +139,610 @@ jzt.jztscript = (function(my){
             statementOptions.add(createZapStatementParser());
             statement.add(statementOptions);
             statement.addDiscard(new p.NewLine());
+            
             return statement;
         }
 
+        /**
+         * Become Statement Parser
+         * Creates and returns a new 'become' statement parser
+         * @return A 'become' statement parser.
+         */
         function createBecomeStatementParser() {
             var become = new p.Sequence();
+            
+            // Add sequence tokens
             become.addDiscard(new p.Literal('Become'));
             become.add(choice(createColorfulThingParser(), createThingParser()));
-            become.assembler = createBecomeAssembler();
+            
+            // Define assembler
+            become.assembler = createAssembler(function(assembly) {
+                assembly.push(new commands.BecomeCommand(assembly.pop()));
+            });
+            
             return become;
         }
-
-        function createBecomeAssembler() {
-            return validateOnly ? undefined : {
-                assemble: function(assembly) {
-                    var command = new commands.BecomeCommand();
-                    command.thingTemplate = assembly.stack.pop();
-                    assembly.stack.push(command);
-                }
-            };
-        }
         
+        /**
+         * Change Statement Parser
+         * Creates and returns a new 'change' statement parser
+         * @return A 'change' statement parser
+         */
         function createChangeStatementParser() {
             var change = new p.Sequence();
+            
+            // Add sequence tokens
             change.addDiscard(new p.Literal('Change'));
             change.add(choice(createColorfulThingParser(), createThingParser()));
             change.add(choice(createColorfulThingParser(), createThingParser()));
+            
+            // Define assembler
+            change.assembler = createAssembler(function(assembly) {
+                assembly.push(new commands.ChangeCommand(assembly.pop(), assembly.pop()));
+            });
+            
             return change;
         }
 
+        /**
+         * Char Statement Parser
+         * Creates and returns a new 'char' statement parser.
+         * @return A 'char' statement parser
+         */
         function createCharStatementParser() {
             var char = new p.Sequence();
+            
+            // Add sequence tokens
             char.addDiscard(new p.Literal('Char'));
             char.add(new p.Number());
+            
+            // Define assembler
+            char.assembler = createAssembler(function(assembly) {
+                assembly.push(new commands.CharCommand(assembly.pop().value));
+            });
+            
             return char;
         }
 
+        /**
+         * Die Statement Parser
+         * Creates and returns a new 'die' statement parser.
+         * @return A 'die' statement parser.
+         */
         function createDieStatementParser() {
             var die = new p.Sequence();
+            
+            // Add sequence tokens
             die.addDiscard(new p.Literal('Die'));
-            die.add(optional(new p.Literal('magnetically')));
+            die.add(optional(new p.Literal('Magnetically')));
+            
+            // Define assembler
+            die.assembler = createAssembler(function(assembly) {
+                var nextToken = assembly.peek();
+                if(nextToken && nextToken.value.toUpperCase() === 'MAGNETICALLY') {
+                    assembly.pop();
+                    assembly.push(new commands.DieCommand(true));
+                }
+                else {
+                    assembly.push(new commands.DieCommand());
+                }
+            });
+            
             return die;
         }
 
+        /**
+         * End Statement Parser
+         * Creates and returns a new 'end' statement parser.
+         * @return A 'end' statement parser
+         */
         function createEndStatementParser() {
             var endStatement = new p.Literal('End');
+            
+            // Add sequence tokens
             endStatement.discard = true;
+            
+            // Define assembler
+            endStatement.assembler = createAssembler(function(assembly) {
+                assembly.push(new commands.EndCommand());
+            });
+            
             return endStatement;
         }
 
+        /**
+         * Give Statement Parser
+         * Creates and returns a new 'give' statement parser.
+         * @return A 'give' statement parser
+         */
         function createGiveStatementParser() {
             var give = new p.Sequence();
+            
+            // Add sequence tokens
             give.addDiscard(new p.Literal('Give'));
             give.add(new p.Number());
             give.add(new p.Word());
+            
+            // Define assembler
+            give.assembler = createAssembler(function(assembly) {
+                assembly.push(new commands.GiveCommand(assembly.pop().value, assembly.pop().value));
+            });
+            
             return give;
         }
 
+        /**
+         * If Statement Parser
+         * Creates and returns a new 'if' statement parser
+         * @return An 'if' statement parser
+         */
         function createIfStatementParser() {
             var ifStatement = new p.Sequence();
+            
+            // Add sequence tokens
             ifStatement.addDiscard(new p.Literal('If'));
             ifStatement.add(createExpressionParser());
             ifStatement.add(new p.Word());
+            
+            // Define assembler
+            ifStatement.assembler = createAssembler(function(assembly) {
+                assembly.push(new commands.IfCommand(assembly.pop().value, assembly.pop()));
+            });
+            
             return ifStatement;
         }
 
+        /**
+         * Lock Statement Parser
+         * Creates and returns a new 'lock' statment parser.
+         * @return A 'lock' statement parser.
+         */
         function createLockStatementParser() {
+                
+            // Create lock parser
             var lock = new p.Literal('Lock');
             lock.discard = true;
+                
+            // Define assembler
+            lock.assembler = createAssembler(function(assembly) {
+                assembly.push(new commands.LockCommand());
+            });
+                
             return lock;
         }
 
+        /**
+         * Move Statement Parser
+         * Creates and returns a new 'move' statement paser.
+         * @return A 'move' statement parser.
+         */
         function createMoveStatementParser() {
             var move = new p.Sequence();
             var moveOptions = new p.Alternation();
             var otherwise = new p.Sequence();
 
-            otherwise.add(new p.Literal('Otherwise'));
+            // Add otherwise items
+            otherwise.addDiscard(new p.Literal('Otherwise'));
             otherwise.add(new p.Word());
 
-            moveOptions.add(new p.Literal('Forcefully'));
+            // Add move option items
+            moveOptions.addDiscard(new p.Literal('Forcefully'));
             moveOptions.add(otherwise);
+            moveOptions.assembler = createAssembler(function(assembly){
+                assembly.push(assembly.peek().name === 'WORD' ? {jumpTo: assembly.pop().value.toUpperCase()} : {forceful: true});
+            });
 
+            // Add move command sequence
             move.addDiscard(new p.Literal('Move'));
             move.add(choice(createDirectionParser(), createCountableDirectionParser()));
             move.add(optional(moveOptions));
+            
+            // Define assembler
+            move.assembler = createAssembler(function(assembly){
+                
+                var options;
+                
+                if(! (assembly.peek() instanceof commands.DirectionExpression)) {
+                    options = assembly.pop();
+                }
+                
+                assembly.push(new commands.MoveCommand(assembly.pop(), options));
+
+            });
 
             return move;
         }
 
+        /**
+         * Play Statement Parser
+         * Creates and returns a new 'play' statement paser.
+         * @return A 'play' statement parser.
+         */
         function createPlayStatementParser() {
             var play = new p.Sequence();
+            
+            // Add play items
             play.addDiscard(new p.Literal('Play'));
             play.add(new p.String());
+            
+            // Define assembler
+            play.assembler = createAssembler(function(assembly){
+                assembly.push(new commands.PlayCommand(assembly.pop().value));
+            });
+            
             return play;
         }
 
+        /**
+         * Put Statement Parser
+         * Creates and returns a new 'put' statement parser.
+         * @return A 'put' statement paser.
+         */
         function createPutStatementParser() {
             var put = new p.Sequence();
+            
+            // Add put items
             put.addDiscard(new p.Literal('Put'));
             put.add(createDirectionParser());
             put.add(choice(createThingParser(), createColorfulThingParser()));
+            
+            // Define assembler
+            put.assembler = createAssembler(function(assembly){
+                assembly.push(new commands.PutCommand(assembly.pop(), assembly.pop()));
+            });
+            
             return put;
         }
 
+        /**
+         * Scroll Statement Parser
+         * Creates and returns a 'scroll' statement paser.
+         * @return A 'scroll' statment paser.
+         */
         function createScrollStatementParser() {
             var scroll = new p.Sequence();
+            
+            // Add scroll sequence items
             scroll.addDiscard(new p.Literal('Scroll'));
             scroll.add(optional(new p.Literal('Bold')));
             scroll.add(new p.String());
             scroll.add(optional(new p.Word()));
+            
+            // Define assembler
+            scroll.assembler = createAssembler(function(assembly){
+                var jumpLabel = assembly.peek().name === 'WORD' ? assembly.pop().value.toUpperCase() : undefined;
+                var text = assembly.pop().value;
+                var boldOption = assembly.peek() && assembly.peek().value.toUpperCase() === 'BOLD' ? assembly.pop() : false;
+                assembly.push(new commands.ScrollCommand(text, !!boldOption, jumpLabel));
+            });
+            
             return scroll;
         }
 
+        /**
+         * Send Statement Parser
+         * Creates and returns a 'send' statement parser
+         * @return A 'send' statement paser.
+         */
         function createSendStatementParser() {
             var send = new p.Sequence();
+            
+            // Add send sequence items
             send.addDiscard(new p.Literal('Send'));
             send.add(new p.Word());
             send.add(new p.Word());
+            
+            // Define assembler
+            send.assembler = createAssembler(function(assembly){
+                var label = assembly.pop().value.toUpperCase();
+                assembly.push(new commands.SendCommand(assembly.pop().value.toUpperCase(), label));
+            });
+            
             return send;
         }
 
+        /**
+         * Set Statement Parser
+         * Creates and returns a 'set' statement paser
+         * @return A 'set' statement parser.
+         */
         function createSetStatementParser() {
             var set = new p.Sequence();
+            
+            // Add set sequence items
             set.addDiscard(new p.Literal('Set'));
             set.add(optional(new p.Number()));
             set.add(new p.Word());
+            
+            // Define assembler
+            set.assembler = createAssembler(function(assembly){
+                var counter = assembly.pop().value.toUpperCase();
+                var value = assembly.peek() && assembly.peek().name === 'NUMBER' ? assembly.pop().value : 1;
+                assembly.push(new commands.SetCommand(counter, value));
+            });
+            
             return set;
         }
 
+        /**
+         * Take Statement Parser
+         * Creates and returns a 'take' statement parser.
+         * @return A 'take' statement parser.
+         */
         function createTakeStatementParser() {
             var take = new p.Sequence();
+            
+            // Add take sequence items
             take.addDiscard(new p.Literal('Take'));
             take.add(new p.Number());
             take.add(new p.Word());
             take.add(optional(new p.Word()));
+            
+            // Define assembler
+            take.assembler = createAssembler(function(assembly){
+                var token1 = assembly.pop().value;
+                var token2 = assembly.peek().name === 'WORD' ? assembly.pop().value : undefined;
+                var count = assembly.pop().value;
+                assembly.push(new commands.TakeCommand(token2 ? token2 : token1, count, token2));
+            });
+
             return take;
         }
 
+        /**
+         * ThrowStar Statement Parser
+         * Creates and returns a 'throwstar' statement parser.
+         * @return A 'throwstar' statment parser.
+         */
         function createThrowStarStatementParser() {
             var throwStar = new p.Sequence();
+            
+            // Add throwstar sequence items
             throwStar.addDiscard(new p.Literal('ThrowStar'));
             throwStar.add(createDirectionParser());
+            
+            // Define assembler
+            throwStar.assembler = createAssembler(function(assembly){
+                assembly.push(new commands.ThrowStarCommand(assembly.pop()));
+            });
+            
             return throwStar;
         }
 
+        /**
+         * Torch Statement Parser
+         * Creates and returns a 'torch' statement parser.
+         * @return A 'torch' statement parser.
+         */
         function createTorchStatementParser() {
             var torch = new p.Sequence();
+            
+            // Add torch sequence items
             torch.addDiscard(new p.Literal('Torch'));
             torch.add(optional(new p.Number()));
+            
+            // Define assembler
+            torch.assembler = createAssembler(function(assembly){
+                var radius = assembly.peek() && assembly.peek().name === 'NUMBER' ? assembly.pop().value : 0;
+                assembly.push(new commands.TorchCommand(radius));
+            });
+            
             return torch;
         }
 
+        /**
+         * Restore Statement Parser
+         * Creates and returns a 'restore' statement parser.
+         * @return A 'restore' statement parser.
+         */
         function createRestoreStatementParser() {
             var restore = new p.Sequence();
+            
+            // Add restore sequence items
             restore.addDiscard(new p.Literal('Restore'));
             restore.add(new p.Word());
+            
+            // Define assembler
+            restore.assembler = createAssembler(function(assembly){
+                assembly.push(new commands.RestoreCommand(assembly.pop().value.toUpperCase()));
+            });
+            
             return restore;
         }
 
+        /**
+         * Say Statement Parser
+         * Creates and returns a 'say' statement parser.
+         * @return A 'say' statement parser.
+         */
         function createSayStatementParser() {
             var say = new p.Sequence();
+            
+            // Add say sequence items
             say.addDiscard(new p.Literal('Say'));
             say.add(new p.String());
+            
+            // Define assembler
+            say.assembler = createAssembler(function(assembly){
+                assembly.push(new commands.SayCommand(assembly.pop().value));
+            });
+            
             return say;
         }
 
+        /**
+         * Shoot Statement Parser
+         * Creates and returns a 'shoot' statement parser.
+         * @return A 'shoot' statement parser.
+         */
         function createShootStatementParser() {
             var shoot = new p.Sequence();
+            
+            // Add shoot sequence items
             shoot.addDiscard(new p.Literal('Shoot'));
             shoot.add(createDirectionParser());
+            
+            // Define assembler
+            shoot.assembler = createAssembler(function(assembly){
+                assembly.push(new commands.ShootCommand(assembly.pop()));
+            });
+            
             return shoot;
         }
 
+        /**
+         * Stand Statement Parser
+         * Creates and returns a 'stand' statement parser.
+         * @return A 'stand' statement parser.
+         */
         function createStandStatementParser() {
             var stand = new p.Literal('Stand');
             stand.discard = true;
+            stand.assembler = createAssembler(function(assembly){
+                assembly.push(new commands.StandCommand());
+            });
             return stand;
         }
 
+        /**
+         * Unlock Statement Parser
+         * Creates and returns an 'unlock' statement parser.
+         * @return An 'unlock' statement parser.
+         */
         function createUnlockStatementParser() {
             var unlock = new p.Literal('Unlock');
             unlock.discard = true;
+            unlock.assembler = createAssembler(function(assembly){
+                assembly.push(new commands.UnlockCommand());
+            });
             return unlock;
         }
 
+        /**
+         * Wait Statement Parser
+         * Creates and returns a 'wait' statement parser.
+         * @return A 'wait' statement parser.
+         */
         function createWaitStatementParser() {
             var wait = new p.Sequence();
+            
+            // Add wait sequence items
             wait.addDiscard(new p.Literal('Wait'));
             wait.add(optional(new p.Number()));
+            
+            // Define assembler
+            wait.assembler = createAssembler(function(assembly) {
+                var cycles = assembly.peek() && assembly.peek().name === 'NUMBER' ? assembly.pop().value : undefined;
+                assembly.push(new commands.WaitCommand(cycles));
+            });
             return wait;
         }
 
+        /**
+         * Walk Statement Parser
+         * Creates and returns a 'walk' statement parser.
+         * @return A 'walk' statement parser.
+         */
         function createWalkStatementParser() {
             var walk = new p.Sequence();
             walk.addDiscard(new p.Literal('Walk'));
             walk.add(createDirectionParser());
+            walk.assembler = createAssembler(function(assembly){
+                assembly.push(new commands.WalkCommand(assembly.pop()));
+            });
             return walk;
         }
 
+        /**
+         * Zap Statement Parser
+         * Creates and returns a 'zap' statement parser.
+         * @return A 'zap' statement parser.
+         */
         function createZapStatementParser() {
             var zap = new p.Sequence();
             zap.addDiscard(new p.Literal('Zap'));
             zap.add(new p.Word());
+            zap.assembler = createAssembler(function(assembly){
+                assembly.push(new commands.ZapCommand(assembly.pop().value.toUpperCase()));
+            });
             return zap;
         }
 
+        /**
+         * Countable Direction Parser
+         * Creates and returns a 'countable direction' parser.
+         * @return A 'countable direction' parser.
+         */
         function createCountableDirectionParser() {
             var direction = new p.Sequence();
             direction.add(createDirectionParser());
             direction.add(new p.Number());
+            direction.assembler = createAssembler(function(assembly){
+                var count = assembly.pop().value;
+                assembly.peek().count = count;
+            });
             return direction;
         }
 
+        /**
+         * Direction Parser
+         * Creates and returns a 'direction' parser.
+         * @return A 'direction' parser.
+         */
         function createDirectionParser() {
             var direction = new p.Sequence();
             var modifiers = new p.Repetition(createDirectionModifierParser());
             direction.add(modifiers);
             direction.add(createDirectionTerminalParser());
+            
+            // Add assembler
+            direction.assembler = createAssembler(function(assembly){
+                
+                var directionExpression = new commands.DirectionExpression(assembly.pop());
+                
+                while(assembly.peek() in commands.DirectionModifier) {
+                    directionExpression.modifiers.push(assembly.pop());
+                }
+                
+                assembly.push(directionExpression);
+                
+            });
+            
             return direction;
         }
 
+        /**
+         * Direction Modifier Parser
+         * Creates and returns a 'direction modifier' parser.
+         * @return A 'direction modifier' parser.
+         */
         function createDirectionModifierParser() {
             var directionModifier = new p.Alternation();
+            
+            // Add direction modifier options
             directionModifier.add(new p.Literal('CW'));
             directionModifier.add(new p.Literal('CCW'));
             directionModifier.add(new p.Literal('OPP'));
             directionModifier.add(new p.Literal('RNDP'));
+            
+            // Create assembler
+            directionModifier.assembler = createAssembler(function(assembly){
+                assembly.push(commands.DirectionModifier[assembly.pop().value.toUpperCase()]);
+            });
+            
             return directionModifier;
         }
 
+        /**
+         * Direction Terminal Parser
+         * Creates and returns a 'direction terminal' parser.
+         * @return A 'direction terminal' parser.
+         */
         function createDirectionTerminalParser() {
             var directionTerminal = new p.Alternation();
+            
+            // Add direction terminal options
+            // TODO: Can we get this from basic.js?
             directionTerminal.add(new p.Literal('SEEK'));
             directionTerminal.add(new p.Literal('SMART'));
             directionTerminal.add(new p.Literal('FLOW'));
@@ -357,11 +760,24 @@ jzt.jztscript = (function(my){
             directionTerminal.add(new p.Literal('E'));
             directionTerminal.add(new p.Literal('S'));
             directionTerminal.add(new p.Literal('W'));
+            
+            // Create assembler
+            directionTerminal.assembler = createAssembler(function(assembly) {
+                assembly.push(commands.Direction[assembly.pop().value.toUpperCase()]);
+            });
+            
             return directionTerminal;
         }
 
+        /**
+         * Color Parser
+         * Creates and returns a 'color' parser.
+         * @return A 'color' parser.
+         */
         function createColorParser() {
             var color = new p.Alternation();
+            
+            // Add alternation values
             color.add(new p.Literal('Black'));
             color.add(new p.Literal('Blue'));
             color.add(new p.Literal('Green'));
@@ -378,20 +794,27 @@ jzt.jztscript = (function(my){
             color.add(new p.Literal('BrightMagenta'));
             color.add(new p.Literal('Yellow'));
             color.add(new p.Literal('BrightWhite'));
-            color.assembler = createColorAssembler();
-            return color;
-        }
-        
-        function createColorAssembler() {
-            return validateOnly ? undefined : {
+            
+            // Define assembler
+            color.assembler = validateOnly ? undefined : {
                 assemble: function(assembly) {
-                    assembly.stack.push(colors[assembly.stack.pop().value.toUpperCase()]);
+                    assembly.push(colors[assembly.pop().value.toUpperCase()]);
                 }
             };
+            
+            return color;
         }
 
+        /**
+         * Thing parser
+         * Creates and returns a 'thing' parser.
+         * @return A 'thing' parser.
+         */
         function createThingParser() {
             var thing = new p.Alternation();
+            
+            // Add alternation values
+            // TODO: Can we get these from jzt.things directly?
             thing.add(new p.Literal('ActiveBomb'));
             thing.add(new p.Literal('Ammo'));
             thing.add(new p.Literal('Bear'));
@@ -437,38 +860,48 @@ jzt.jztscript = (function(my){
             thing.add(new p.Literal('Wall'));
             thing.add(new p.Literal('Water'));
             thing.add(new p.Literal('ThingFactory'));
-            thing.assembler = createThingAssembler();
-            return thing;
-        }
-        
-        function createThingAssembler() {
-            return validateOnly ? undefined : {
+            
+            // Define assembler
+            thing.assembler = validateOnly ? undefined : {
                 assemble: function(assembly) {
-                    assembly.stack.push({
-                        id: assembly.stack.pop().value
+                    assembly.push({
+                        id: assembly.pop().value
                     });
                 }
             };
+            
+            return thing;
         }
 
+        /**
+         * Colorful Thing Parser
+         * Creates and returns a 'colorful thing' parser.
+         * @return A 'colorful thing' parser.
+         */
         function createColorfulThingParser() {
             var colorfulThing = new p.Sequence();
+            
+            // Add sequence items
             colorfulThing.add(createColorParser());
             colorfulThing.add(createThingParser());
-            colorfulThing.assembler = createColorfulThingAssembler();
-            return colorfulThing;
-        }
-        
-        function createColorfulThingAssembler() {
-            return validateOnly ? undefined : {
+            
+            // Define assembler
+            colorfulThing.assembler = validateOnly ? undefined : {
                 assemble: function(assembly) {
-                    var thing = assembly.stack.pop();
-                    thing.color = assembly.stack.pop();
-                    assembly.stack.push(thing);
+                    var thing = assembly.pop();
+                    thing.color = assembly.pop();
+                    assembly.push(thing);
                 }
             };
+            
+            return colorfulThing;
         }
 
+        /**
+         * Expression Parser
+         * Creates and returns an expression parser.
+         * @return An expression parser.
+         */
         function createExpressionParser() {
             var expression = new p.Alternation();
             expression.add(createNotExpressionParser(expression));

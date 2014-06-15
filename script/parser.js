@@ -34,8 +34,20 @@ jzt.parser = (function(my){
         return result;
     };
 
-    Assembly.prototype.peek = function() {
+    Assembly.prototype.current = function() {
         return this.tokens[this.index];
+    };
+    
+    Assembly.prototype.peek = function() {
+        return this.stack[this.stack.length-1];
+    };
+    
+    Assembly.prototype.pop = function() {
+        return this.stack.pop();
+    };
+    
+    Assembly.prototype.push = function(item) {
+        this.stack.push(item);
     };
 
     Assembly.prototype.isDone = function() {
@@ -72,7 +84,7 @@ jzt.parser = (function(my){
             return result;
         }
         
-        token = result.peek();
+        token = result.current();
         throw 'Unexpected token \'' + token.value + '\' on line ' + token.line + ', column ' + token.column;
     };
 
@@ -245,11 +257,11 @@ jzt.parser = (function(my){
     Sequence.prototype.determineTokenError = function(previousResult) {
         var best = this.findBestAssembly(previousResult);
         var token;
-        if(best.peek() === undefined) {
+        if(best.current() === undefined) {
             throw 'Token expected';
         }
         else {
-            token = best.peek();
+            token = best.current();
             throw 'Unexpected token \'' + token.value + '\' on line ' + token.line + ', column ' + token.column;
         }
     };
@@ -334,7 +346,7 @@ jzt.parser = (function(my){
             return undefined;
         }
 
-        if(this.qualifies(assembly.peek())) {
+        if(this.qualifies(assembly.current())) {
 
             var result = assembly.clone();
 
@@ -362,7 +374,7 @@ jzt.parser = (function(my){
     Number.prototype = new Terminal();
 
     Number.prototype.qualifies = function(token) {
-        return token.name === 'WORD' && !isNaN(parseInt(token.value, 10));
+        return token.name === 'NUMBER' && !isNaN(token.value);
     };
 
     /*
@@ -388,7 +400,7 @@ jzt.parser = (function(my){
 
         var value = token.value;
         
-        if(!this.caseSensitive) {
+        if(typeof value === 'string' && !this.caseSensitive) {
             value = value.toUpperCase();
         }
         
