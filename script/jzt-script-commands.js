@@ -396,7 +396,88 @@ jzt.jztscript.commands = (function(my){
         this.todo = owner;
     };
     
-    // Reveal public items
+    // EXPRESSIONS ------------------------------------------------
+    
+    /**
+     * NotExpression
+     */
+    function NotExpression(expression) {
+        this.subExpression = expression;
+    }
+    
+    NotExpression.prototype.getResult = function(owner) {
+        this.todo = owner;
+    };
+    
+    /**
+     * AdjacentExpression
+     */
+    function AdjacentExpression() {}
+    
+    AdjacentExpression.prototype.getResult = function(owner) {
+        this.todo = owner;
+    };
+    
+    /**
+     * BlockedExpression
+     */
+    function BlockedExpression(directionExpression) {
+        this.directionExpression = directionExpression;
+    }
+    
+    BlockedExpression.prototype.getResult = function(owner) {
+        this.todo = owner;
+    };
+    
+    /**
+     * AlignedExpression
+     */
+    function AlignedExpression(directionExpression) {
+        this.directionExpression = directionExpression;
+    }
+    
+    AlignedExpression.prototype.getResult = function(owner) {
+        this.todo = owner;
+    };
+    
+    /**
+     * PeepExpression
+     */
+    function PeepExpression(radius) {
+        this.radius = radius ? radius : 5;
+    }
+    
+    PeepExpression.prototype.getResult = function(owner) {
+        this.todo = owner;
+    };
+    
+    /**
+     * ExistsExpression
+     */
+    function ExistsExpression(thingTemplate, count) {
+        this.thingTemplate = thingTemplate;
+        this.count = count ? count : 1;
+    }
+    
+    ExistsExpression.prototype.getResult = function(owner) {
+        this.todo = owner;
+    };
+    
+    /**
+     * TestingExpression
+     */
+    function TestingExpression(counter, operand, value) {
+        this.counter = counter;
+        this.operand = operand;
+        this.value = value;
+    }
+    
+    TestingExpression.prototype.getResult = function(owner) {
+        this.todo = owner;
+    };
+    
+    // PUBLIC INTERFACE -------------------------------------------
+    
     my.DirectionModifier = DirectionModifier;
     my.Direction = Direction;
     
@@ -429,6 +510,14 @@ jzt.jztscript.commands = (function(my){
     my.WaitCommand = WaitCommand;
     my.WalkCommand = WalkCommand;
     my.ZapCommand = ZapCommand;
+    
+    my.NotExpression = NotExpression;
+    my.AdjacentExpression = AdjacentExpression;
+    my.BlockedExpression = BlockedExpression;
+    my.AlignedExpression = AlignedExpression;
+    my.PeepExpression = PeepExpression;
+    my.ExistsExpression = ExistsExpression;
+    my.TestingExpression = TestingExpression;
     
     return my;
     

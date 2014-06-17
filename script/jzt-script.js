@@ -914,48 +914,109 @@ jzt.jztscript = (function(my){
             return expression;
         }
 
+        /**
+         * Not Expression Parser
+         * Creates and returns a Not expression parser.
+         * @return A not expression parser.
+         */
         function createNotExpressionParser(expressionParser) {
             var notExpression = new p.Sequence();
+            
+            // Add not expression parser elements
             notExpression.addDiscard(new p.Literal('Not'));
             notExpression.add(expressionParser);
+            
+            // Define assembler
+            notExpression.assembler = createAssembler(function(assembly){
+                assembly.push(new commands.NotExpression(assembly.pop()));
+            });
+            
             return notExpression;
         }
 
+        /**
+         * Adjacent Expression Parser
+         * Creates and returns an adjacent expression parser
+         * @return An adjacent expression parser
+         */
         function createAdjacentExpressionParser() {
             var adjacentExpression = new p.Literal('Adjacent');
             adjacentExpression.discard = true;
+            adjacentExpression.assembler = createAssembler(function(assembly) {
+                assembly.push(new commands.AdjacentExpression());
+            });
             return adjacentExpression;
         }
 
+        /**
+         * Blocked Expression Parser
+         * Creates and returns a blocked expression parser
+         * @return A blocked expression parser
+         */
         function createBlockedExpressionParser() {
             var blockedExpression = new p.Sequence();
             blockedExpression.addDiscard(new p.Literal('Blocked'));
             blockedExpression.add(createDirectionParser());
+            blockedExpression.assembler = createAssembler(function(assembly){
+                assembly.push(new commands.BlockedExpression(assembly.pop()));
+            });
             return blockedExpression;
         }
 
+        /**
+         * Aligned Expression Parser
+         * Creates and returns an aligned expression parser.
+         * @return An aligned expression parser.
+         */
         function createAlignedExpressionParser() {
             var alignedExpression = new p.Sequence();
             alignedExpression.addDiscard(new p.Literal('Aligned'));
             alignedExpression.add(createDirectionParser());
+            alignedExpression.assembler = createAssembler(function(assembly){
+                assembly.push(new commands.AlignedExpression(assembly.pop));
+            });
             return alignedExpression;
         }
 
+        /**
+         * Peep Expression Parser
+         * Creates and returns a peep expression parser.
+         * @return A peep expression parser
+         */
         function createPeepExpressionParser() {
             var peepExpression = new p.Sequence();
             peepExpression.addDiscard(new p.Literal('Peep'));
             peepExpression.add(optional(new p.Number()));
+            peepExpression.assembler = createAssembler(function(assembly){
+                var count = assembly.peek() && assembly.peek().name === 'NUMBER' ? assembly.pop().value : undefined;
+                assembly.push(new commands.PeepExpression(count));
+            });
             return peepExpression;
         }
 
+        /**
+         * Exists Expression Parser
+         * Creates and returns an exists expression parser.
+         * @return An exists expression parser.
+         */
         function createExistsExpressionParser() {
             var existsExpression = new p.Sequence();
             existsExpression.addDiscard(new p.Literal('Exists'));
             existsExpression.add(optional(new p.Number()));
             existsExpression.add(choice(createThingParser(), createColorfulThingParser()));
+            existsExpression.assembler = createAssembler(function(assembly){
+                var thingTemplate = assembly.pop();
+                var count = assembly.peek() && assembly.peek().name === 'NUMBER' ? assembly.pop().value : undefined;
+                assembly.push(new commands.ExistsExpression(thingTemplate, count));
+            });
             return existsExpression;
         }
 
+        /**
+         * Testing Expression Parser
+         * Creates and returns a testing expression parser.
+         * @return A testing expression parser.
+         */
         function createTestingExpressionParser() {
             var testingExpression = new p.Sequence();
             var operator = new p.Alternation();
@@ -967,6 +1028,12 @@ jzt.jztscript = (function(my){
             testingExpression.add(new p.Word());
             testingExpression.add(operator);
             testingExpression.add(new p.Number());
+            testingExpression.assembler = createAssembler(function(assembly){
+                var value = assembly.pop().value;
+                var operand = assembly.pop().value;
+                var counter = assembly.pop().value.toUpperCase();
+                assembly.push(new commands.TestingExpression(counter, operand, value));
+            });
             return testingExpression;
         }
 
@@ -981,7 +1048,6 @@ jzt.jztscript = (function(my){
             return result;
         }
         
-        this.assemble = !validateOnly;
         this.jztscript = createJztScriptParser();
         
     }
