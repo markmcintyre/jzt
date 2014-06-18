@@ -22,19 +22,25 @@ jzt.jztscript = (function(my){
             throw jzt.ConstructorError;
         }
         
-        this.labels = [];
+        this.labelIndicies = {};
         this.commands = [];
     }
     
-    JztScript.prototype.clone = function() {
-        var result = new JztScript();
-        result.labels = this.labels.slice(0);
-        result.commands = this.commands.slice(0);
-        return result;
-    };
-    
-    JztScript.prototype.addLabel = function(label) {
-        this.labels.push(label);
+    JztScript.prototype.addLabel = function(label, commandIndex) {
+        
+        // If no command index was provided, use the current command position
+        commandIndex = commandIndex === undefined ? this.commands.length : commandIndex;
+        
+        // If the label already exists, push the new label to the stack
+        if(this.labelIndicies.hasOwnProperty(label.name)) {
+            this.labelIndicies[label.name].push(commandIndex);
+        }
+
+        // Otherwise we've got a new label
+        else {
+            this.labelIndicies[label.name] = [commandIndex];
+        }
+        
     };
     
     JztScript.prototype.addCommand = function(command) {
@@ -75,7 +81,7 @@ jzt.jztscript = (function(my){
             var line = new p.Alternation();
             line.add(createLabelParser());
             line.add(createStatementParser());
-            line.add(new p.NewLine());
+            line.addDiscard(new p.NewLine());
             program = new p.Repetition(line);
             return program;
 
@@ -96,7 +102,7 @@ jzt.jztscript = (function(my){
             
             // Define assembler
             label.assembler = createAssembler(function(assembly){
-                assembly.push(new commands.Label(assembly.pop()));
+                assembly.push(new commands.Label(assembly.pop().value.toUpperCase()));
             });
             
             return label;
@@ -286,7 +292,7 @@ jzt.jztscript = (function(my){
             
             // Define assembler
             ifStatement.assembler = createAssembler(function(assembly) {
-                assembly.push(new commands.IfCommand(assembly.pop().value, assembly.pop()));
+                assembly.push(new commands.IfCommand(assembly.pop().value.toUpperCase(), assembly.pop()));
             });
             
             return ifStatement;
@@ -700,7 +706,7 @@ jzt.jztscript = (function(my){
                 
                 var directionExpression = new commands.DirectionExpression(assembly.pop());
                 
-                while(assembly.peek() in commands.DirectionModifier) {
+                while(assembly.peek() && assembly.peek().type === 'modifier') {
                     directionExpression.modifiers.push(assembly.pop());
                 }
                 
@@ -973,7 +979,7 @@ jzt.jztscript = (function(my){
             alignedExpression.addDiscard(new p.Literal('Aligned'));
             alignedExpression.add(createDirectionParser());
             alignedExpression.assembler = createAssembler(function(assembly){
-                assembly.push(new commands.AlignedExpression(assembly.pop));
+                assembly.push(new commands.AlignedExpression(assembly.pop()));
             });
             return alignedExpression;
         }
@@ -1058,6 +1064,9 @@ jzt.jztscript = (function(my){
         var tokens;
         var assembly;
         var result;
+        var index;
+        var element;
+        var scriptResult = new JztScript();
         
         // If our script doesn't already end in a newline, add it now
         if(script.charAt(script.length-1) !== '\n') {
@@ -1067,16 +1076,36 @@ jzt.jztscript = (function(my){
         lexer = new jzt.lexer.Lexer(script);
         tokens = lexer.tokenizeAll();
         assembly = new p.Assembly(tokens);
-        assembly.target = new JztScript();
         result = this.jztscript.completeMatch(assembly);
         
         if(result === undefined) {
-            throw 'Catestrophic script error.';
+            throw 'Catestrophic script error. No result.';
         }
         
-        result.target.addCommand( result.stack.pop() );
+        // Put the commands into our target
+        for(index = 0; index < result.stack.length; ++index) {
         
-        return result.target;
+            // Grab our next element
+            element = result.stack[index];
+            
+            // If it's a label...
+            if(element instanceof commands.Label) {
+                scriptResult.addLabel(element);
+            }
+            
+            // If it's an executable item...
+            else if(typeof element.execute === 'function') {
+                scriptResult.addCommand(element);
+            }
+            
+            // If it's anything else...
+            else {
+                throw 'Catestrophic script error. Unexpected object in result stack.';
+            }
+            
+        }
+
+        return scriptResult;
         
     };
     

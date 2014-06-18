@@ -17,10 +17,10 @@ jzt.jztscript.commands = (function(my){
      * The process function takes a direction and returns a final, calculated direction value.
      */
     var DirectionModifier = {
-        CW:   {name: 'Clockwise',              process: function(d) {return jzt.Direction.clockwise(d);}},
-        CCW:  {name: 'Counter-clockwise',      process: function(d) {return jzt.Direction.counterClockwise(d);}},
-        OPP:  {name: 'Opposite',               process: function(d) {return jzt.Direction.opposite(d);}},
-        RNDP: {name: 'Perpendicularly Random', process: function(d) {return jzt.Direction.randomPerpendicular(d);}}
+        CW:   {name: 'Clockwise',              type: 'modifier', process: function(d) {return jzt.Direction.clockwise(d);}},
+        CCW:  {name: 'Counter-clockwise',      type: 'modifier', process: function(d) {return jzt.Direction.counterClockwise(d);}},
+        OPP:  {name: 'Opposite',               type: 'modifier', process: function(d) {return jzt.Direction.opposite(d);}},
+        RNDP: {name: 'Perpendicularly Random', type: 'modifier', process: function(d) {return jzt.Direction.randomPerpendicular(d);}}
     };
     Object.freeze(DirectionModifier);
 
@@ -31,23 +31,23 @@ jzt.jztscript.commands = (function(my){
      * The process function takes a JztObject and returns a final, calculated direction value.
      */
     var Direction = {
-        SEEK:  {name: 'Toward player',            process: function(o) {return o.getPlayerDirection();}},
-        SMART: {name: 'Smart seek',               process: function(o) {return o.getSmartDirection() || o.getPlayerDirection();}},
-        FLOW:  {name: 'Current orientation',      process: function(o) {return o.orientation;}},
-        RAND:  {name: 'Random direction',         process: function()  {return jzt.Direction.random();}},
-        RANDF: {name: 'Random free direction',    process: function(o) {return jzt.Direction.random(o.getFreeDirections());}},
-        RANDB: {name: 'Random blocked direction', process: function(o) {return jzt.Direction.random(o.getBlockedDirections());}},
-        RNDEW: {name: 'Randomly East or West',    process: function()  {return jzt.Direction.randomEastWest();}},
-        RNDNS: {name: 'Randomly North or South',  process: function()  {return jzt.Direction.randomNorthSouth();}},
-        RNDNE: {name: 'Randomly North or East',   process: function()  {return jzt.Direction.randomNorthEast();}},
-        NORTH: {name: 'North',                    process: function()  {return jzt.Direction.North;}},
-        EAST:  {name: 'East',                     process: function()  {return jzt.Direction.East;}},
-        SOUTH: {name: 'South',                    process: function()  {return jzt.Direction.South;}},
-        WEST:  {name: 'West',                     process: function()  {return jzt.Direction.West;}},
-        N:     {name: 'North shorthand',          process: function()  {return jzt.Direction.North;}},
-        E:     {name: 'East shorthand',           process: function()  {return jzt.Direction.East;}},
-        S:     {name: 'South shorthand',          process: function()  {return jzt.Direction.South;}},
-        W:     {name: 'West shorthand',           process: function()  {return jzt.Direction.West;}}
+        SEEK:  {name: 'Toward player',            type: 'terminal', process: function(o) {return o.getPlayerDirection();}},
+        SMART: {name: 'Smart seek',               type: 'terminal', process: function(o) {return o.getSmartDirection() || o.getPlayerDirection();}},
+        FLOW:  {name: 'Current orientation',      type: 'terminal', process: function(o) {return o.orientation;}},
+        RAND:  {name: 'Random direction',         type: 'terminal', process: function()  {return jzt.Direction.random();}},
+        RANDF: {name: 'Random free direction',    type: 'terminal', process: function(o) {return jzt.Direction.random(o.getFreeDirections());}},
+        RANDB: {name: 'Random blocked direction', type: 'terminal', process: function(o) {return jzt.Direction.random(o.getBlockedDirections());}},
+        RNDEW: {name: 'Randomly East or West',    type: 'terminal', process: function()  {return jzt.Direction.randomEastWest();}},
+        RNDNS: {name: 'Randomly North or South',  type: 'terminal', process: function()  {return jzt.Direction.randomNorthSouth();}},
+        RNDNE: {name: 'Randomly North or East',   type: 'terminal', process: function()  {return jzt.Direction.randomNorthEast();}},
+        NORTH: {name: 'North',                    type: 'terminal', process: function()  {return jzt.Direction.North;}},
+        EAST:  {name: 'East',                     type: 'terminal', process: function()  {return jzt.Direction.East;}},
+        SOUTH: {name: 'South',                    type: 'terminal', process: function()  {return jzt.Direction.South;}},
+        WEST:  {name: 'West',                     type: 'terminal', process: function()  {return jzt.Direction.West;}},
+        N:     {name: 'North shorthand',          type: 'terminal', process: function()  {return jzt.Direction.North;}},
+        E:     {name: 'East shorthand',           type: 'terminal', process: function()  {return jzt.Direction.East;}},
+        S:     {name: 'South shorthand',          type: 'terminal', process: function()  {return jzt.Direction.South;}},
+        W:     {name: 'West shorthand',           type: 'terminal', process: function()  {return jzt.Direction.West;}}
     };
     Object.freeze(Direction);
     

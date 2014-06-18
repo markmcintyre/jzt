@@ -271,7 +271,8 @@
         
         test('Multi-line script', function(){
             var parser = new JztScriptParser();
-            ok(parser.parse(':label\nwait 5\nwalk cw ccw seek\nmove rndp ccw n\nif aligned south label2\nend\n:label2\nsay "Interesting!"\nend') instanceof JztScript, 'Full sript');
+            var result = parser.parse(':label\nwait 5\nwalk cw ccw seek\n:label2\nmove rndp ccw n\nif aligned south label2\nend\n:label2\nsay "Interesting!"\nend');
+            ok(result instanceof JztScript, 'Full sript');
         });
         
 	</script>
