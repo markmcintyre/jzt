@@ -173,7 +173,7 @@ jzt.jztscript.commands = (function(my){
         if(!(this instanceof GiveCommand)) {
             throw jzt.ConstructorError;
         }
-        this.counter = counter.toLowerCase();
+        this.counter = counter.toUpperCase();
         this.amount = amount;
     }
 
@@ -210,7 +210,10 @@ jzt.jztscript.commands = (function(my){
      */
     function MoveCommand(directionExpression, options) {
         this.directionExpression = directionExpression;
-        this.options = options;
+        if(options) {
+            this.label = options.jumpTo;
+            this.forceful = options.forceful;
+        }
     }
     
     MoveCommand.prototype.execute = function(owner) {
@@ -231,8 +234,8 @@ jzt.jztscript.commands = (function(my){
     /**
      * PutCommand
      */
-    function PutCommand(template, directionExpression) {
-        this.template = template;
+    function PutCommand(thingTemplate, directionExpression) {
+        this.thingTemplate = thingTemplate;
         this.directionExpression = directionExpression;
     }
     
@@ -243,10 +246,10 @@ jzt.jztscript.commands = (function(my){
     /**
      * ScrollCommand
      */
-    function ScrollCommand(text, bold, jumpLabel) {
+    function ScrollCommand(text, bold, label) {
         this.text = text;
         this.bold = bold;
-        this.jumpLabel = jumpLabel;
+        this.label = label;
     }
     
     ScrollCommand.prototype.execute = function(owner) {
@@ -280,9 +283,9 @@ jzt.jztscript.commands = (function(my){
     /**
      * TakeCommand
      */
-    function TakeCommand(counter, count, label) {
+    function TakeCommand(counter, value, label) {
         this.counter = counter;
-        this.count = count;
+        this.value = value;
         this.label = label;
     }
     
@@ -366,8 +369,8 @@ jzt.jztscript.commands = (function(my){
     /**
      * WaitCommand
      */
-    function WaitCommand(cycles) {
-        this.cycles = cycles;
+    function WaitCommand(count) {
+        this.count = count;
     }
     
     WaitCommand.prototype.execute = function(owner) {

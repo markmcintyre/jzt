@@ -321,7 +321,7 @@ var jzt = (function(my){
                         break;
 
                     default:
-                        throw "Unexpected command execution.";
+                        throw 'Unexpected command execution.';
                 }
 
             }
