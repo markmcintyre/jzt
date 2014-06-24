@@ -208,7 +208,7 @@ var jzt = (function(my) {
         for(index = 0; index < scriptData.length; ++index) {
 
             try {
-                script = new jzt.jztscript.JztScript(scriptData[index]);
+                script = new jzt.jztscript.JztScript(scriptData[index].name, scriptData[index].script);
                 this.scripts.push(script);
             }
             catch(exception) {

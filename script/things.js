@@ -557,7 +557,7 @@ jzt.things = (function(my){
         this.scriptName = data.script;
         var script = this.board.getScript(this.scriptName);
         if(script) {
-            this.scriptContext = script.newContext(this);
+            this.scriptContext = new jzt.jztscript.JztScriptContext(script, this);
             if(data.scriptContext) {
                 this.scriptContext.deserialize(data.scriptContext);
             }

@@ -382,7 +382,7 @@ jzt.jztscript = (function(my){
             scroll.assembler = createAssembler(function(assembly){
                 var jumpLabel = assembly.peek().name === 'WORD' ? assembly.pop().value.toUpperCase() : undefined;
                 var text = assembly.pop().value;
-                var boldOption = assembly.peek() && assembly.peek().value.toUpperCase() === 'BOLD' ? assembly.pop() : false;
+                var boldOption = assembly.peek() && assembly.peek().name === 'WORD' && assembly.peek().value.toUpperCase() === 'BOLD' ? assembly.pop() : false;
                 assembly.push(new commands.ScrollCommand(text, !!boldOption, jumpLabel));
             });
             

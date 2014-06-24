@@ -797,6 +797,8 @@ jzt.jztscript.commands = (function(my){
     
     // PUBLIC INTERFACE -------------------------------------------
     
+    my.CommandResult = CommandResult;
+    
     my.DirectionModifier = DirectionModifier;
     my.Direction = Direction;
     

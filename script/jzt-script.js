@@ -253,19 +253,19 @@ jzt.jztscript = (function(my){
 
                     // Normal execution, advance line
                     case undefined:
-                    case jzt.commands.CommandResult.NORMAL:
+                    case my.commands.CommandResult.NORMAL:
                         this.advanceLine();
                         this.doneTick();
                         break;
 
                     // Execute a second tick
-                    case jzt.commands.CommandResult.CONTINUE:
+                    case my.commands.CommandResult.CONTINUE:
                         this.advanceLine();
                         this.executeTick();
                         break;
 
                     // Normal execution, assuming the counter is at the right location
-                    case jzt.commands.CommandResult.CONTINUE_AFTER_JUMP:
+                    case my.commands.CommandResult.CONTINUE_AFTER_JUMP:
 
                         // If we haven't jumped too much this tick...
                         if(this.jumpCount <= 5) {
@@ -279,7 +279,7 @@ jzt.jztscript = (function(my){
                         break;
 
                     // Execute the same command next tick
-                    case jzt.commands.CommandResult.REPEAT:
+                    case my.commands.CommandResult.REPEAT:
                         this.doneTick();
                         break;
 
