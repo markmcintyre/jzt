@@ -189,7 +189,7 @@ jzt.jztscript = (function(my){
             // Define assembler
             die.assembler = createAssembler(function(assembly) {
                 var nextToken = assembly.peek();
-                if(nextToken && nextToken.value.toUpperCase() === 'MAGNETICALLY') {
+                if(nextToken && nextToken.name === 'WORD' && nextToken.value.toUpperCase() === 'MAGNETICALLY') {
                     assembly.pop();
                     assembly.push(new commands.DieCommand(true));
                 }
