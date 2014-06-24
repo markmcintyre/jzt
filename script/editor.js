@@ -33,6 +33,7 @@ jzt.Editor = function(editorElement, configuration) {
     var mockGame = {
         resources: {},
         isEditor: true,
+        addWarning: function(){},
         context: {
             canvas: {
                 width: 1,
