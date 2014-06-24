@@ -13,7 +13,7 @@ jzt.things = (function(my){
     
     /*
      * Thing represents a single 'thing' that can be associated with a Board. This can
-     * range from players, to walls, to ScriptableThings. Each Thing has a location,
+     * range from players, to walls, to Scriptables. Each Thing has a location,
      * sprite index, and foreground and background color. Each Thing should also
      * be able to handle its own serialization and deserialization. Things may also
      * receive messages and take actions accordingly, either altering its own state
@@ -38,9 +38,7 @@ jzt.things = (function(my){
      */
     Thing.prototype.serialize = function() {
         var result = {};
-        if(this.constructor.hasOwnProperty('serializationType')) {
-            result.type = this.constructor.serializationType;
-        }
+        result.type = this.constructor.name;
         result.color = jzt.colors.serialize(this.background, this.foreground);
         if(this.under) {
             result.under = this.under.serialize();
@@ -289,7 +287,7 @@ jzt.things = (function(my){
 
         type = type.toUpperCase();
 
-        if(this.constructor.serializationType && this.constructor.serializationType.toUpperCase() === type) {
+        if(this.constructor.name.toUpperCase() === type) {
 
             return color === undefined ? true : color === this.foreground;
 
@@ -336,7 +334,6 @@ jzt.things = (function(my){
         this.speed = 3;
     }
     UpdateableThing.prototype = new Thing();
-    UpdateableThing.prototype.constructor = UpdateableThing;
 
     /**
      * Serializes this Thing to an object and returns it.
@@ -484,11 +481,11 @@ jzt.things = (function(my){
     /*
      * Scriptable Thing is an UpdateableThing capable of executing a Script instance
      * for its update cycles. This Script will be updated in a ScriptContext unique
-     * to this ScriptableThing.
+     * to this Scriptable.
      *
-     * @param board An owner board for this ScriptableThing.
+     * @param board An owner board for this Scriptable.
      */
-    function ScriptableThing(board) {
+    function Scriptable(board) {
         UpdateableThing.call(this, board);
         this.name = 'UnknownScriptable';
         this.scriptContext = undefined;
@@ -500,16 +497,15 @@ jzt.things = (function(my){
         this.torchRadius = undefined;
         this.pushable = false;
     }
-    ScriptableThing.prototype = new UpdateableThing();
-    ScriptableThing.prototype.constructor = ScriptableThing;
-    ScriptableThing.serializationType = 'Scriptable';
+    Scriptable.prototype = new UpdateableThing();
+    Scriptable.prototype.constructor = Scriptable;
 
     /**
      * Serializes this Thing to an object and returns it.
      *
      * @return A serialized version of this Thing.
      */
-    ScriptableThing.prototype.serialize = function() {
+    Scriptable.prototype.serialize = function() {
         var result = UpdateableThing.prototype.serialize.call(this) || {};
 
         result.name = this.name;
@@ -545,7 +541,7 @@ jzt.things = (function(my){
      *
      * @param data An object to be deserialized into this Thing.
      */
-    ScriptableThing.prototype.deserialize = function(data) {
+    Scriptable.prototype.deserialize = function(data) {
         UpdateableThing.prototype.deserialize.call(this, data);
         this.name = jzt.util.getOption(data, 'name', 'UnknownScriptable');
         this.spriteIndex = jzt.util.getOption(data, 'spriteIndex', 1);
@@ -574,13 +570,13 @@ jzt.things = (function(my){
     };
 
     /**
-     * Delivers a message to this ScriptableThing. This message will be passed 
+     * Delivers a message to this Scriptable. This message will be passed 
      * on to its Script during its next execution cycle if this ScriptableInstance
      * is not in a locked state.
      *
-     * @param message A message to be delivered to this ScriptableThing.
+     * @param message A message to be delivered to this Scriptable.
      */
-    ScriptableThing.prototype.sendMessage = function(message) {
+    Scriptable.prototype.sendMessage = function(message) {
 
         // If we are ready to receive a message...
         if(!this.locked) {
@@ -600,27 +596,27 @@ jzt.things = (function(my){
      * @param direction A Direction in which to move this Thing.
      * @return true if the move was successful, false otherwise.
      */
-    ScriptableThing.prototype.move = function(direction) {
+    Scriptable.prototype.move = function(direction) {
         this.orientation = direction;
         return UpdateableThing.prototype.move.call(this, direction);
     };
 
     /**
-     * Pushes this ScriptableThing in a provided Direction.
+     * Pushes this Scriptable in a provided Direction.
      */
-    ScriptableThing.prototype.push = function(direction) {
+    Scriptable.prototype.push = function(direction) {
         if(this.pushable) {
             this.move(direction);
         }
     };
 
     /**
-     * Makes this ScriptableThing walk in its current walking direction.
-     * ScriptableThings can walk while executing other instructions. If this
-     * ScriptableThing walks into an obsticle and cannot continue walking,
+     * Makes this Scriptable walk in its current walking direction.
+     * Scriptables can walk while executing other instructions. If this
+     * Scriptable walks into an obsticle and cannot continue walking,
      * it will receive a 'THUD' message and halt its walking direction.
      */
-    ScriptableThing.prototype.walk = function() {
+    Scriptable.prototype.walk = function() {
         if(this.walkDirection) {
 
             if(!this.move(this.walkDirection)) {
@@ -631,10 +627,10 @@ jzt.things = (function(my){
     };
 
     /**
-     * Updates this ScriptableThing for a single execution cycle, including its
+     * Updates this Scriptable for a single execution cycle, including its
      * associated Script.
      */
-    ScriptableThing.prototype.doTick = function() {
+    Scriptable.prototype.doTick = function() {
 
         this.walk();
         if(this.scriptContext) {
@@ -643,11 +639,11 @@ jzt.things = (function(my){
 
     };
 
-    ScriptableThing.prototype.setTorchRadius = function(radius) {
+    Scriptable.prototype.setTorchRadius = function(radius) {
         this.torchRadius = radius;
     };
 
-    ScriptableThing.prototype.getTorch = function() {
+    Scriptable.prototype.getTorch = function() {
         if(this.torchRadius > 0) {
             return jzt.util.generateCircleData(this.point, this.torchRadius);
         }
@@ -672,7 +668,6 @@ jzt.things = (function(my){
     }
     ActiveBomb.prototype = new UpdateableThing();
     ActiveBomb.prototype.constructor = ActiveBomb;
-    ActiveBomb.serializationType = 'ActiveBomb';
 
     ActiveBomb.prototype.serialize = function() {
         var result = UpdateableThing.prototype.serialize.call(this);
@@ -726,7 +721,6 @@ jzt.things = (function(my){
     }
     Ammo.prototype = new Thing();
     Ammo.prototype.constructor = Ammo;
-    Ammo.serializationType = 'Ammo';
 
     Ammo.prototype.serialize = function() {
         var result = Thing.prototype.serialize.call(this);
@@ -782,7 +776,6 @@ jzt.things = (function(my){
     }
     Bear.prototype = new UpdateableThing();
     Bear.prototype.constructor = Bear;
-    Bear.serializationType = 'Bear';
 
     /**
      * Serializes this Bear to an Object.
@@ -897,7 +890,6 @@ jzt.things = (function(my){
     }
     Blinker.prototype = new UpdateableThing();
     Blinker.prototype.constructor = Blinker;
-    Blinker.serializationType = 'Blinker';
 
     Blinker.prototype.serialize = function() {
         var result = UpdateableThing.prototype.serialize.call(this);
@@ -1014,7 +1006,6 @@ jzt.things = (function(my){
     }
     BlinkWall.prototype = new Thing();
     BlinkWall.prototype.constructor = BlinkWall;
-    BlinkWall.serializationType = 'BlinkWall';
 
     BlinkWall.prototype.serialize = function() {
         var result = Thing.prototype.serialize.call(this);
@@ -1048,7 +1039,6 @@ jzt.things = (function(my){
     }
     Bomb.prototype = new Thing();
     Bomb.prototype.constructor = Bomb;
-    Bomb.serializationType = 'Bomb';
 
     Bomb.prototype.deserialize = function(data) {
         Thing.prototype.deserialize.call(this, data);
@@ -1091,7 +1081,6 @@ jzt.things = (function(my){
     }
     Boulder.prototype = new Thing();
     Boulder.prototype.constructor = Boulder;
-    Boulder.serializationType = 'Boulder';
 
     /**
      * Receives a request to be pushed in a given direction.
@@ -1125,7 +1114,6 @@ jzt.things = (function(my){
     }
     BreakableWall.prototype = new Thing();
     BreakableWall.prototype.constructor = BreakableWall;
-    BreakableWall.serializationType = 'BreakableWall';
 
     /**
      * Sends a provided message to this BreakableWall. If a SHOT message
@@ -1160,7 +1148,6 @@ jzt.things = (function(my){
     }
     Bullet.prototype = new UpdateableThing();
     Bullet.prototype.constructor = Bullet;
-    Bullet.serializationType = 'Bullet';
 
     /**
      * Serializes this Thing to an object and returns it.
@@ -1250,7 +1237,7 @@ jzt.things = (function(my){
     };
 
     /**
-     * Attempts to Attack a Thing in this Bullet's path. If a player, ScriptableThing, or BreakableWall is in 
+     * Attempts to Attack a Thing in this Bullet's path. If a player, Scriptable, or BreakableWall is in 
      * its path, that Thing will be sent a SHOT message.
      */
     Bullet.prototype.attack = function() {
@@ -1260,10 +1247,10 @@ jzt.things = (function(my){
 
         /*
          * Send a SHOT message if the bullet was from the player 
-         * otherwise we only send the SHOT message to the player, ScriptableThings, and BreakableWalls.
+         * otherwise we only send the SHOT message to the player, Scriptables, and BreakableWalls.
          */
         if(thing && this.fromPlayer ||
-                thing instanceof Player || thing instanceof ScriptableThing || thing instanceof BreakableWall) {
+                thing instanceof Player || thing instanceof Scriptable || thing instanceof BreakableWall) {
             thing.sendMessage('SHOT');
         }
 
@@ -1361,7 +1348,6 @@ jzt.things = (function(my){
     }
     Centipede.prototype = new UpdateableThing();
     Centipede.prototype.constructor = Centipede;
-    Centipede.serializationType = 'Centipede';
 
     /**
      * Serializes this Thing to an object and returns it.
@@ -1739,7 +1725,6 @@ jzt.things = (function(my){
     }
     Conveyor.prototype = new UpdateableThing();
     Conveyor.prototype.constructor = Conveyor;
-    Conveyor.serializationType = 'Conveyor';
     Conveyor.animationFrames = [179, 47, 45, 92];
     Conveyor.MoveAction = {MOVE: 1, TENTATIVE: 2};
 
@@ -1908,7 +1893,6 @@ jzt.things = (function(my){
     }
     Door.prototype = new Thing();
     Door.prototype.constructor = Door;
-    Door.serializationType = 'Door';
 
     Door.prototype.deserialize = function(data) {
         Thing.prototype.deserialize.call(this, data);
@@ -1966,7 +1950,6 @@ jzt.things = (function(my){
     }
     Duplicator.prototype = new UpdateableThing();
     Duplicator.prototype.constructor = Duplicator;
-    Duplicator.serializationType = 'Duplicator';
     Duplicator.animationFrames = [250, 249, 7, 9, 111, 79];
 
     Duplicator.prototype.serialize = function() {
@@ -2053,7 +2036,6 @@ jzt.things = (function(my){
     }
     Explosion.prototype = new UpdateableThing();
     Explosion.prototype.constructor = Explosion;
-    Explosion.serializationType = 'Explosion';
     Explosion.MAX_TTL = 5;
 
     Explosion.prototype.deserialize = function(data) {
@@ -2139,7 +2121,6 @@ jzt.things = (function(my){
     }
     FakeWall.prototype = new Thing();
     FakeWall.prototype.constructor = FakeWall;
-    FakeWall.serializationType = 'FakeWall';
 
     /**
      * Returns whether or not this FakeWall is surrenderable to another thing.
@@ -2175,10 +2156,9 @@ jzt.things = (function(my){
         this.background = jzt.colors.Green;
     }
     Forest.prototype = new Thing();
-    Forest.prototype.constructor = Forest;
     Forest.noteCycle = ['e','-b','f#','b','f','c','g','+c'];
     Forest.noteIndex = 0;
-    Forest.serializationType = 'Forest';
+    Forest.prototype.constructor = Forest;
 
     /**
      * Serializes this Forest into a data object.
@@ -2212,9 +2192,9 @@ jzt.things = (function(my){
 
             this.oneTimeMessage('status.forest');
 
-            this.play(this.constructor.noteCycle[this.constructor.noteIndex++]);
-            if(this.constructor.noteIndex >= this.constructor.noteCycle.length) {
-                this.constructor.noteIndex = 0;
+            this.play(Forest.noteCycle[Forest.noteIndex++]);
+            if(Forest.noteIndex >= Forest.noteCycle.length) {
+                Forest.noteIndex = 0;
             }
 
             this.board.deleteTile(this.point);
@@ -2232,7 +2212,6 @@ jzt.things = (function(my){
     }
     Gem.prototype = new Thing();
     Gem.prototype.constructor = Gem;
-    Gem.serializationType = 'Gem';
 
     /**
      * Delivers a provided message to this Thing. If a TOUCH message is received,
@@ -2285,7 +2264,6 @@ jzt.things = (function(my){
     }
     Heart.prototype = new Thing();
     Heart.prototype.constructor = Heart;
-    Heart.serializationType = 'Heart';
 
     Heart.prototype.serialize = function() {
         var result = Thing.prototype.serialize.call(this);
@@ -2336,7 +2314,6 @@ jzt.things = (function(my){
     }
     InvisibleWall.prototype = new Thing();
     InvisibleWall.prototype.constructor = InvisibleWall;
-    InvisibleWall.serializationType = 'InvisibleWall';
 
     /**
      * Delivers a provided message to this Thing. If a TOUCH message is received,
@@ -2382,7 +2359,6 @@ jzt.things = (function(my){
     }
     Key.prototype = new Thing();
     Key.prototype.constructor = Key;
-    Key.serializationType = 'Key';
 
     /**
      * Delivers a provided message to this Thing. If a TOUCH message is 
@@ -2444,7 +2420,6 @@ jzt.things = (function(my){
     }
     Lava.prototype = new Thing();
     Lava.prototype.constructor = Lava;
-    Lava.serializationType = 'Lava';
 
     Lava.prototype.serialize = function() {
         var result = Thing.prototype.serialize.call(this);
@@ -2473,8 +2448,8 @@ jzt.things = (function(my){
 
         }
 
-        // ScriptableThings get sent a LAVA message
-        else if(thing instanceof ScriptableThing) {
+        // Scriptables get sent a LAVA message
+        else if(thing instanceof Scriptable) {
             thing.sendMessage('LAVA');
         }
 
@@ -2509,7 +2484,6 @@ jzt.things = (function(my){
     }
     LineWall.prototype = new Thing();
     LineWall.prototype.constructor = LineWall;
-    LineWall.serializationType = 'LineWall';
     LineWall.lineMap = {
         '': 249,
         'N': 208,
@@ -2572,7 +2546,6 @@ jzt.things = (function(my){
     }
     Lion.prototype = new UpdateableThing();
     Lion.prototype.constructor = Lion;
-    Lion.serializationType = 'Lion';
 
     /**
      * Serializes this Lion to an Object.
@@ -2694,7 +2667,6 @@ jzt.things = (function(my){
     }
     Passage.prototype = new Thing();
     Passage.prototype.constructor = Passage;
-    Passage.serializationType = 'Passage';
 
     /**
      * Delivers a provided message to this Thing. If a TOUCH message is received,
@@ -2770,7 +2742,6 @@ jzt.things = (function(my){
     }
     Player.prototype = new UpdateableThing();
     Player.prototype.constructor = Player;
-    Player.serializationType = 'Player';
 
     /**
      * Serializes this Player instance. Note that serializing a Player does not
@@ -3072,7 +3043,6 @@ jzt.things = (function(my){
     }
     Pusher.prototype = new UpdateableThing();
     Pusher.prototype.constructor = Pusher;
-    Pusher.serializationType = 'Pusher';
 
     /**
      * Initializes a spriteIndex for this Pusher based on its defined
@@ -3142,7 +3112,6 @@ jzt.things = (function(my){
     }
     Ricochet.prototype = new Thing();
     Ricochet.prototype.constructor = Ricochet;
-    Ricochet.serializationType = 'Ricochet';
 
     /**
      * Serializes this Ricochet to a data object.
@@ -3174,7 +3143,6 @@ jzt.things = (function(my){
     }
     River.prototype = new Thing();
     River.prototype.constructor = River;
-    River.serializationType = 'River';
 
     River.prototype.initialize = function() {
         switch(jzt.Direction.getShortName(this.direction)) {
@@ -3251,7 +3219,6 @@ jzt.things = (function(my){
     }
     Ruffian.prototype = new UpdateableThing();
     Ruffian.prototype.constructor = Ruffian;
-    Ruffian.serializationType = 'Ruffian';
 
     /**
      * Serializes this Ruffian to a data object.
@@ -3394,7 +3361,6 @@ jzt.things = (function(my){
     }
     Signpost.prototype = new Thing();
     Signpost.prototype.constructor = Signpost;
-    Signpost.serializationType = 'Signpost';
 
     Signpost.prototype.serialize = function() {
         var result = Thing.prototype.serialize.call(this);
@@ -3453,7 +3419,6 @@ jzt.things = (function(my){
     }
     SliderEw.prototype = new Thing();
     SliderEw.prototype.constructor = SliderEw;
-    SliderEw.serializationType = 'SliderEw';
 
     /**
      * Receives a request to be pushed in a given direction.
@@ -3483,7 +3448,6 @@ jzt.things = (function(my){
     }
     SliderNs.prototype = new Thing();
     SliderNs.prototype.constructor = SliderNs;
-    SliderNs.serializationType = 'SliderNs';
 
     /**
      * Receives a request to be pushed in a given direction.
@@ -3514,7 +3478,6 @@ jzt.things = (function(my){
     }
     Snake.prototype = new UpdateableThing();
     Snake.prototype.constructor = Snake;
-    Snake.serializationType = 'Snake';
 
     Snake.prototype.serialize = function() {
         var result = UpdateableThing.prototype.serialize.call(this);
@@ -3593,7 +3556,6 @@ jzt.things = (function(my){
     }
     SolidWall.prototype = new Thing();
     SolidWall.prototype.constructor = SolidWall;
-    SolidWall.serializationType = 'SolidWall';
 
     //--------------------------------------------------------------------------------
 
@@ -3612,7 +3574,6 @@ jzt.things = (function(my){
     }
     Spider.prototype = new UpdateableThing();
     Spider.prototype.constructor = Spider;
-    Spider.serializationType = 'Spider';
 
     /**
      * Serializes this Spider instance into a data object.
@@ -3738,7 +3699,6 @@ jzt.things = (function(my){
     }
     SpiderWeb.prototype = new Thing();
     SpiderWeb.prototype.constructor = SpiderWeb;
-    SpiderWeb.serializationType = 'SpiderWeb';
     SpiderWeb.lineMap = {
         '': 249,
         'N': 179,
@@ -3814,7 +3774,6 @@ jzt.things = (function(my){
     }
     SpinningGun.prototype = new UpdateableThing();
     SpinningGun.prototype.constructor = SpinningGun;
-    SpinningGun.serializationType = 'SpinningGun';
     SpinningGun.animationFrames = [24, 26, 25, 27];
 
     /**
@@ -3885,7 +3844,6 @@ jzt.things = (function(my){
     }
     Teleporter.prototype = new UpdateableThing();
     Teleporter.prototype.constructor = Teleporter;
-    Teleporter.serializationType = 'Teleporter';
     Teleporter.animationFrames = {
         'North': [196, 126, 94, 126],
         'East': [179, 41, 62, 41],
@@ -4005,7 +3963,6 @@ jzt.things = (function(my){
     }
     Text.prototype = new Thing();
     Text.prototype.constructor = Text;
-    Text.serializationType = 'Text';
 
     /**
      * Serializes this Text into a data object.
@@ -4067,7 +4024,6 @@ jzt.things = (function(my){
     }
     ThrowingStar.prototype = new UpdateableThing();
     ThrowingStar.prototype.constructor = ThrowingStar;
-    ThrowingStar.serializationType = 'ThrowingStar';
     ThrowingStar.animationFrames = [179, 47, 196, 92];
 
     /**
@@ -4157,7 +4113,6 @@ jzt.things = (function(my){
     }
     Tiger.prototype = new UpdateableThing();
     Tiger.prototype.constructor = Tiger;
-    Tiger.serializationType = 'Tiger';
 
     /**
      * Serializes this Tiger into a data object.
@@ -4288,7 +4243,6 @@ jzt.things = (function(my){
     }
     Torch.prototype = new Thing();
     Torch.prototype.constructor = Torch;
-    Torch.serializationType = 'Torch';
 
     Torch.prototype.serialize = function() {
         var result = Thing.prototype.serialize.call(this);
@@ -4338,7 +4292,6 @@ jzt.things = (function(my){
     }
     Wall.prototype = new Thing();
     Wall.prototype.constructor = Wall;
-    Wall.serializationType = 'Wall';
 
     //--------------------------------------------------------------------------------
 
@@ -4354,7 +4307,6 @@ jzt.things = (function(my){
     }
     Water.prototype = new Thing();
     Water.prototype.constructor = Water;
-    Water.serializationType = 'Water';
 
     Water.prototype.serialize = function() {
         var result = Thing.prototype.serialize.call(this);
@@ -4409,7 +4361,7 @@ jzt.things = (function(my){
 
             var thingMap = ThingFactory.getThingMap();
 
-            var ThingFunction = thingMap[data.type];
+            var ThingFunction = thingMap[data.type.toUpperCase()];
             if(ThingFunction) {
                 var result = new ThingFunction(board);
                 result.deserialize(data);
@@ -4430,7 +4382,7 @@ jzt.things = (function(my){
 
         var thingMap = ThingFactory.getThingMap();
 
-        return (thingMap[thingName] !== undefined);
+        return (thingMap[thingName.toUpperCase()] !== undefined);
 
     };
 
@@ -4440,25 +4392,23 @@ jzt.things = (function(my){
      * @return A map of Thing functions indexed by their symbols or serialization types.
      */
     ThingFactory.getThingMap = function() {
+        
+        var thing;
 
+        // If we haven't yet constructed our thing map...
         if(ThingFactory.thingMap === undefined) {
 
+            // Create a new thing map
             ThingFactory.thingMap = {};
 
-            for(var thing in jzt.things) {
-                if(jzt.things.hasOwnProperty(thing)) {
+            // For each thing defined in this module...
+            for(thing in my) {
+                
+                // If it's a thing (but not Thing) whose constructor has been defined as itself...
+                if(my.hasOwnProperty(thing) && my[thing].prototype && my[thing].prototype.constructor === my[thing]) {
 
-                    var thingProperty = jzt.things[thing];
-
-                    if(thingProperty.hasOwnProperty('serializationType')) {
-
-                        // Regulard version
-                        ThingFactory.thingMap[thingProperty.serializationType] = thingProperty;
-
-                        // Uppercase version
-                        ThingFactory.thingMap[thingProperty.serializationType.toUpperCase()] = thingProperty;
-
-                    }
+                    // Add it to our thing map by its uppercase name
+                    ThingFactory.thingMap[my[thing].prototype.constructor.name.toUpperCase()] = my[thing];
 
                 }
             }
@@ -4500,9 +4450,9 @@ jzt.things = (function(my){
             board.player.sendMessage('SHOT');
         }
 
-        // Otherwise, if the bullet is from the player, or the tile is a Player or ScriptableThing
+        // Otherwise, if the bullet is from the player, or the tile is a Player or Scriptable
         else if(fromPlayer ||
-            tile instanceof Player || tile instanceof ScriptableThing || tile instanceof BreakableWall) {
+            tile instanceof Player || tile instanceof Scriptable || tile instanceof BreakableWall) {
             if(fromPlayer) {
                 board.game.resources.audio.play('t+c-c-c');
             }
@@ -4513,7 +4463,7 @@ jzt.things = (function(my){
     
     my.Thing = Thing;
     my.UpdateableThing = UpdateableThing;
-    my.ScriptableThing = ScriptableThing;
+    my.Scriptable = Scriptable;
     my.ActiveBomb = ActiveBomb;
     my.Ammo = Ammo;
     my.Bear = Bear;
@@ -4558,6 +4508,7 @@ jzt.things = (function(my){
     my.Torch = Torch;
     my.Wall = Wall;
     my.Water = Water;
+    
     my.ThingFactory = ThingFactory;
     
     return my;

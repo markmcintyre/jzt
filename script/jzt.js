@@ -701,7 +701,6 @@ var jzt = (function(my) {
         }
         catch(exception) {
             this.catestrophicError(jzt.i18n.getMessage('status.fatalerror'));
-            console.error(exception);
         }
 
     };
@@ -904,9 +903,6 @@ var jzt = (function(my) {
 
         if(this.notificationListener) {
             this.notificationListener.addNotification('warning', message);
-        }
-        else {
-            console.warn(message);
         }
 
     };

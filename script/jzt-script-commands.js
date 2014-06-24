@@ -10,6 +10,23 @@ jzt.jztscript.commands = (function(my){
     
     'use strict';
     
+    var ThingFactory = jzt.things.ThingFactory;
+    
+    /**
+     * {@code CommandResult} is an object containing definitions of
+     * command results. The values are NORMAL, CONTINUE, and REPEAT.
+     * NORMAL: Returned when a Command executes normally.
+     * CONTINUE: Requests that the next command be executed immediately.
+     * REPEAT: Requests that the same command be executed again next cycle.
+     */
+    var CommandResult = {
+        NORMAL: 0,
+        CONTINUE: 1,
+        CONTINUE_AFTER_JUMP: 2,
+        REPEAT: 3
+    };
+    Object.freeze(CommandResult);
+    
     /**
      * Direction Modifier Enumerated Types
      * 
@@ -53,6 +70,10 @@ jzt.jztscript.commands = (function(my){
     
     /** 
      * Label
+     *
+     * A label is a named line identifier used to jump to instruction locations within
+     * a script. A label isn't strictly a command and can't be executed; instead, it's 
+     * used as a marker in a parsed script result.
      */
     function Label(name) {
         
@@ -65,6 +86,9 @@ jzt.jztscript.commands = (function(my){
     
     /**
      * DirectionExpression
+     *
+     * A DirectionExpression consists of a direction terminal and a series of optional
+     * modifiers that transform the direction into a final result.
      */
     function DirectionExpression(terminal) {
         
@@ -77,6 +101,9 @@ jzt.jztscript.commands = (function(my){
         this.count = 1;
     }
     
+    /**
+     * Executes this DirectionExpression and returns a concrete Direction instance.
+     */
     DirectionExpression.prototype.execute = function(owner) {
         
         // Get our direction from our expression
@@ -94,23 +121,39 @@ jzt.jztscript.commands = (function(my){
     
     /**
      * BecomeCommand
+     *
+     * When executed, a provided owner Thing will be replaced with another Thing specified
+     * by this command's template.
      */
-    function BecomeCommand(template) {
+    function BecomeCommand(thingTemplate) {
         
         if(!(this instanceof BecomeCommand)) {
             throw jzt.ConstructorError;
         }
         
-        this.template = template;
+        this.thingTemplate = thingTemplate;
         
     }
 
+    /**
+     * Replace a provided owner with another Thing based on this command's
+     * associated thing template.
+     */
     BecomeCommand.prototype.execute = function(owner) {
-        this.todo = owner;
+        
+        // Create our new thing
+        var newThing = ThingFactory.deserialize(this.thingTemplate, owner.board);
+
+        // Replace our owner's tile with the new thing
+        owner.board.replaceTile(owner.point, newThing);
+        
     };
     
     /**
      * ChangeCommand
+     *
+     * When executed, a board will have all instances of things
+     * specified by this commands template by another type of Thing.
      */
     function ChangeCommand(fromTemplate, toTemplate) {
         if(!(this instanceof ChangeCommand)) {
@@ -121,12 +164,18 @@ jzt.jztscript.commands = (function(my){
         this.toTemplate = toTemplate;
     }
     
+    /** 
+     * Replaces all things on a provided owner's board matching this command's fromTemplate.
+     */
     ChangeCommand.prototype.execute = function(owner) {
-        this.todo = owner;
+        owner.board.changeTiles(this.fromTemplate, this.toTemplate);
+        return CommandResult.CONTINUE;
     };
     
     /**
      * CharCommand
+     *
+     * A command that changes an owner's character code to a specified value.
      */
     function CharCommand(value) {
         if(!(this instanceof CharCommand)) {
@@ -135,12 +184,17 @@ jzt.jztscript.commands = (function(my){
         this.value = value;
     }
 
+    /**
+     * Changes a provided owner's character value.
+     */
     CharCommand.prototype.execute = function(owner) {
-        this.todo = owner;
+        owner.spriteIndex = this.character;
     };
     
     /**
      * DieCommand
+     *
+     * A Command that removes an owner from its board.
      */
     function DieCommand(magnetically) {
         if(!(this instanceof DieCommand)) {
@@ -149,12 +203,17 @@ jzt.jztscript.commands = (function(my){
         this.magnetically = magnetically;
     }
     
+    /**
+     * Removes a provided owner from its associated board.
+     */
     DieCommand.prototype.execute = function(owner) {
-        this.todo = owner;
+        owner.remove();
     };
     
     /**
      * EndCommand
+     *
+     * A command that halts script execution on its owner's script context.
      */
     function EndCommand() {
         if(!(this instanceof EndCommand)) {
@@ -162,12 +221,17 @@ jzt.jztscript.commands = (function(my){
         }
     }
 
+    /**
+     * Halt script execution on a provided owner's script context.
+     */
     EndCommand.prototype.execute = function(owner) {
-        this.todo = owner;
+        owner.scriptContext.stop();
     };
     
     /**
      * GiveCommand
+     *
+     * Increases a game counter by a specified amount.
      */
     function GiveCommand(counter, amount) {
         if(!(this instanceof GiveCommand)) {
@@ -177,12 +241,19 @@ jzt.jztscript.commands = (function(my){
         this.amount = amount;
     }
 
+    /**
+     * Increases a counter on this owner's game by an amount specified
+     * by this command.
+     */
     GiveCommand.prototype.execute = function(owner) {
-        this.todo = owner;
+        owner.board.game.adjustCounter(this.counter, this.amount);
+        return CommandResult.CONTINUE;
     };
     
     /**
      * IfCommand
+     *
+     * Jumps to a new execution location if an expression evaluates to true.
      */
     function IfCommand(label, expression) {
         if(!(this instanceof IfCommand)) {
@@ -192,21 +263,38 @@ jzt.jztscript.commands = (function(my){
         this.expression = expression;
     }
 
+    /**
+     * Jumps to an owner's label if this command's expression evaluates to true.
+     */
     IfCommand.prototype.execute = function(owner) {
-        this.todo = owner;
+        if(this.expression.getResult(owner)) {
+            owner.scriptContext.jumpToLabel(this.label);
+            return CommandResult.CONTINUE_AFTER_JUMP;
+        }
+        return CommandResult.CONTINUE;
     };
     
     /**
      * LockCommand
+     * 
+     * When executed, an owner will no longer be able to receive messages
+     * from other scripts.
      */
     function LockCommand() {}
     
+    /**
+     * Locks the provided owner so that it can no longer receive messages from other scripts.
+     */
     LockCommand.prototype.execute = function(owner) {
-        this.todo = owner;
+        owner.locked = true;
+        return CommandResult.CONTINUE;
     };
     
     /**
      * MoveCommand
+     *
+     * When executed, an owner will be moved according to this command's
+     * direction expression and options.
      */
     function MoveCommand(directionExpression, options) {
         this.directionExpression = directionExpression;
@@ -216,35 +304,231 @@ jzt.jztscript.commands = (function(my){
         }
     }
     
+    /**
+     * Executes this MoveCommand, moving a provided owner on the board
+     * according to the result of this command's direction expression and
+     * options.
+     */
     MoveCommand.prototype.execute = function(owner) {
-        this.todo = owner;
+        
+        if(this.forceful) {
+            this.forcefulMove();
+        }
+        else {
+            this.move();
+        }
+        
     };
     
     /**
+     * Moves a provided owner gently in a direction according to
+     * this command's direction expression result.
+     */
+    MoveCommand.prototype.move = function(owner) {
+        
+        var heap = owner.scriptContext.heap;
+        var direction = this.directionExpression.getResult(owner);
+        var count = '<count>';
+        var success;
+    
+        if(!heap[count]) {
+            heap[count] = this.directionExpression.count;
+        }
+
+        // If a direction is available
+        if(direction) {
+
+            success = owner.move(direction)
+
+            // If we are to go a number of times...
+            if(--heap[count] > 0) {
+                if(success) {
+                    return CommandResult.REPEAT;
+                }
+                else if(this.label) {
+                    delete heap[count];
+                    owner.jumpToLabel(this.label);
+                }
+            }
+            else {
+                delete heap[count];
+            }
+
+        }
+                                
+    };
+          
+    /**
+     * Moves a provided owner forcefully in a direction according to
+     * this command's direction expression result.
+     */
+    MoveCommand.prototype.forcefulMove = function(owner) {
+        
+        var direction;
+        var heap = owner.scriptContext.heap;
+        var count = '<count>';
+        var stuck = '<stuck>';
+        var success;
+
+        if(!heap[count]) {
+            heap[count] = this.directionExpression.count;
+        }
+
+        // If we aren't stuck, calculate our next direction
+        if(!heap[stuck]) {
+            direction = this.directionExpression.getResult(owner);
+        }
+
+        // If we are stuck, we will continue trying that direction
+        else {
+            direction = jzt.Direction.fromName(heap[stuck]);
+        }
+
+        // If a direction is available
+        if(direction) {
+
+            success = owner.move(direction);
+
+            // If we were not successful, we're stuck
+            if(!success) {
+
+                heap[stuck] = jzt.Direction.getShortName(direction);
+
+                // We will try again until we're free
+                return CommandResult.REPEAT;
+
+            }
+
+            // If we are to move a number of times...
+            else if(--heap[count] > 0) {
+                delete heap[stuck];
+                return CommandResult.REPEAT;
+            }
+            else {
+                delete heap[count];
+                delete heap[stuck];
+            }
+
+        }
+        
+    };
+                                
+    /**
      * PlayCommand
+     *
+     * When executed, has the owner play a specified audio sequence.
      */
     function PlayCommand(sequence) {
         this.sequence = sequence;
     }
     
+    /**
+     * Play this command's audio sequence with the owner.
+     */
     PlayCommand.prototype.execute = function(owner) {
-        this.todo = owner;
+        owner.play(this.sequence, true);
     };
     
     /**
      * PutCommand
+     *
+     * Put is a command that, when executed, adds a new instance of a provided
+     * template at a space in a provided direction relative to an owner.
      */
     function PutCommand(thingTemplate, directionExpression) {
         this.thingTemplate = thingTemplate;
         this.directionExpression = directionExpression;
     }
     
+    /**
+     * Inserts a new instance of this command's thing template at a location
+     * directly adjacent to a provided owner, if the space isn't already occupied.
+     */
     PutCommand.prototype.execute = function(owner) {
-        this.todo = owner;
+        
+        var newThing;
+        var direction = this.directionExpression.getResult(owner);
+        var point = owner.point.add(direction);
+        var obstacle;
+        var isFreeSpace;
+
+        // If our point is off the board, return immediately
+        if(owner.board.isOutside(point)) {
+            return;
+        }
+
+        // Otherwise, if we're putting a Thing...
+        else {
+
+            // Get the tile in the way, if applicable
+            obstacle = owner.board.getTile(point);
+
+            // Determine if there is free space, or if we can make some by pushing an obstacle
+            isFreeSpace = obstacle ? owner.board.moveTile(owner.point, point, false, true) : true;
+
+            // If there is free space
+            if(isFreeSpace) {
+
+                // Create our new thing
+                newThing = ThingFactory.deserialize(this.thingTemplate, owner.board);
+
+                // If we created a thing, add it...
+                if(newThing) {
+                    owner.board.addThing(point, newThing);
+                }
+                
+                // Otherwise, we're putting an empty thing...
+                else {
+                    owner.board.deleteTile(point);
+                }
+                
+            }
+        }
+    };
+    
+    /**
+     * Restore Command
+     *
+     * When executed, an associated label is restored in a provided
+     * owner's script context.
+     */
+    function RestoreCommand(label) {
+        this.label = label;
+    }
+    
+    /**
+     * Restores this command's associated label in a provided owner's
+     * script context.
+     */
+    RestoreCommand.prototype.execute = function(owner) {
+        owner.scriptContext.restoreLabel(this.label);
+        return CommandResult.CONTINUE;
+    };
+    
+    /**
+     * Say Command
+     * When executed, a textual alert is requested to be displayed by 
+     * a provided owner.
+     */
+    function SayCommand(text) {
+        this.text = text;
+    }
+    
+    /**
+     * Display this command's textual alert via a provided owner.
+     */
+    SayCommand.prototype.execute = function(owner) {
+        var message = jzt.i18n.getBoardMessage(owner.board, this.text);
+        owner.board.setDisplayMessage(message);
+        return CommandResult.CONTINUE;
     };
     
     /**
      * ScrollCommand
+     *
+     * When executed, adds a line of text to a provided owner's
+     * script context's scroll queue, with optional bold formatting
+     * and an optional jump label for creating command options.
      */
     function ScrollCommand(text, bold, label) {
         this.text = text;
@@ -252,20 +536,54 @@ jzt.jztscript.commands = (function(my){
         this.label = label;
     }
     
+    /**
+     * Adds a line of text based on this command's configuration to
+     * a provided owner's script context's scroll queue.
+     */
     ScrollCommand.prototype.execute = function(owner) {
-        this.todo = owner;
+        var message = jzt.i18n.getBoardMessage(owner.board, this.text);
+        owner.scriptContext.addScrollContent(message, this.bold, this.label);
+        return CommandResult.CONTINUE;
     };
     
     /**
      * SendCommand
+     *
+     * When executed, sends a message to a provided recipient via a
+     * specified owner. If a recipient is SELF, then the message is
+     * delivered to the owner directly. If a recipient is ALL, then
+     * the message is delivered to all scriptable things on the board.
      */
     function SendCommand(recipient, message) {
-        this.recipient = recipient;
+        this.recipient = recipient === 'SELF' ? undefined : recipient;
         this.message = message;
     }
     
+    /**
+     * Sends a message to a provided recipient via a specified owner.
+     */
     SendCommand.prototype.execute = function(owner) {
-        this.todo = owner;
+        
+        var recipients;
+        var index;
+
+        if(this.recipient === undefined) {
+            owner.scriptContext.jumpToLabel(this.message);
+            return CommandResult.CONTINUE_AFTER_JUMP;
+        }
+        else if(this.recipient === 'ALL') {
+            recipients = owner.board.getScripables();
+        }
+        else {
+            recipients = owner.board.getScriptables(this.recipient);
+        }
+
+        for(index = 0; index < recipients.length; ++index) {
+            recipients[index].sendMessage(this.message);
+        }
+
+        return CommandResult.CONTINUE;
+        
     };
     
     /**
@@ -277,6 +595,46 @@ jzt.jztscript.commands = (function(my){
     }
     
     SetCommand.prototype.execute = function(owner) {
+        this.todo = owner;
+    };
+    
+    /**
+     * ShootCommand
+     *
+     * When executed, adds a directed bullet to an owner's board relative
+     * to the position of the owner.
+     */
+    function ShootCommand(directionExpression) {
+        this.directionExpression = directionExpression;
+    }
+    
+    /**
+     * Places a directed bullet relative to the position of a provided owner.
+     */
+    ShootCommand.prototype.execute = function(owner) {
+        
+        // Get our final direction
+        var direction = this.directionExpression.getResult(owner);
+
+        // If a direction is available
+        if(direction) {
+
+            // Play a shooting noise
+            owner.play('c-f#');
+
+            // Shoot
+            ThingFactory.shoot(owner.board, owner.point.add(direction), direction, false);
+
+        }
+        
+    };
+    
+    /**
+     * StandCommand
+     */
+    function StandCommand() {}
+    
+    StandCommand.prototype.execute = function(owner) {
         this.todo = owner;
     };
     
@@ -312,48 +670,6 @@ jzt.jztscript.commands = (function(my){
     }
     
     TorchCommand.prototype.execute = function(owner) {
-        this.todo = owner;
-    };
-    
-    /**
-     * Restore Command
-     */
-    function RestoreCommand(label) {
-        this.label = label;
-    }
-    
-    RestoreCommand.prototype.execute = function(owner) {
-        this.todo = owner;
-    };
-    
-    /**
-     * Say Command
-     */
-    function SayCommand(text) {
-        this.text = text;
-    }
-    
-    SayCommand.prototype.execute = function(owner) {
-        this.todo = owner;
-    };
-    
-    /**
-     * ShootCommand
-     */
-    function ShootCommand(directionExpression) {
-        this.directionExpression = directionExpression;
-    }
-    
-    ShootCommand.prototype.execute = function(owner) {
-        this.todo = owner;
-    };
-    
-    /**
-     * StandCommand
-     */
-    function StandCommand() {}
-    
-    StandCommand.prototype.execute = function(owner) {
         this.todo = owner;
     };
     

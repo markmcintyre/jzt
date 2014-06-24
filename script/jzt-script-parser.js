@@ -785,6 +785,7 @@ jzt.jztscript = (function(my){
             
             // Add alternation values
             // TODO: Can we get these from jzt.things directly?
+            thing.add(new p.Literal('Empty'));
             thing.add(new p.Literal('ActiveBomb'));
             thing.add(new p.Literal('Ammo'));
             thing.add(new p.Literal('Bear'));
@@ -835,7 +836,7 @@ jzt.jztscript = (function(my){
             thing.assembler = validateOnly ? undefined : {
                 assemble: function(assembly) {
                     assembly.push({
-                        id: assembly.pop().value.toUpperCase()
+                        type: assembly.pop().value.toUpperCase()
                     });
                 }
             };
@@ -859,7 +860,7 @@ jzt.jztscript = (function(my){
             colorfulThing.assembler = validateOnly ? undefined : {
                 assemble: function(assembly) {
                     var thing = assembly.pop();
-                    thing.color = assembly.pop();
+                    thing.color = colors.serialize(undefined, assembly.pop());
                     assembly.push(thing);
                 }
             };

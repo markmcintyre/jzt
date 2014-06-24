@@ -208,7 +208,7 @@ var jzt = (function(my) {
         for(index = 0; index < scriptData.length; ++index) {
 
             try {
-                script = new jzt.Script(scriptData[index]);
+                script = new jzt.jztscript.JztScript(scriptData[index]);
                 this.scripts.push(script);
             }
             catch(exception) {
@@ -263,7 +263,7 @@ var jzt = (function(my) {
         var result = [];
 
         this.each(function(tile) {
-            if(tile && tile instanceof jzt.things.ScriptableThing) {
+            if(tile && tile instanceof jzt.things.Scriptable) {
 
                 if(!name || (tile.name && tile.name.toUpperCase() === name)) {
                     result.push(tile);
@@ -307,7 +307,7 @@ var jzt = (function(my) {
             this.entryPoint = player.point.clone();
         }
 
-        // If we're not editing, send ScriptableThings the 'enter' message
+        // If we're not editing, send Scriptables the 'enter' message
         if(!this.game.isEditor) {
             scriptables = this.getScriptables();
             for(index = 0; index < scriptables.length; ++index) {
@@ -529,29 +529,29 @@ var jzt = (function(my) {
     };
 
     /**
-     * Changes all instances of tiles matching a target type and (optionally) color to
-     * a clone of a provided Thing.
+     * Changes all instances of tiles matching a provided template with a new instance based
+     * on another provided template.
      *
-     * @param targetType a type of Thing to be changed
-     * @param targetColor a color of Thing to be changed
-     * @param newThing a Thing to be cloned in place of the target type
+     * @param fromTemplate A template to match existing things
+     * @param toTemplate A template with which to replace matched things
      */
-    Board.prototype.changeTiles = function(targetType, targetColor, newThing) {
+    Board.prototype.changeTiles = function(fromTemplate, toTemplate) {
 
         var me = this;
-        var clone;
+        var newThing;
+        var color = fromTemplate.color ? jzt.colors.deserializeForeground(fromTemplate.color) : undefined;
 
         this.each(function(tile) {
 
-            if(tile && tile.equals(targetType, targetColor)) {
+            if(tile && tile.equals(fromTemplate.type, color)) {
 
-                clone = newThing ? newThing.clone() : undefined;
+                newThing = jzt.things.ThingFactory.deserialize(toTemplate);
 
-                if(clone && !newThing.foreground) {
-                    clone.foreground = tile.foreground;
+                if(newThing && toTemplate.color === undefined) {
+                    newThing.foreground = tile.foreground;
                 }
 
-                me.replaceTile(tile.point, clone);
+                me.replaceTile(tile.point, newThing);
             }
 
         });

@@ -12,6 +12,8 @@
     <script type="text/javascript" src="../script/parser.js"></script>
     <script type="text/javascript" src="../script/script.js"></script>
     <script type="text/javascript" src="../script/graphics.js"></script>
+    <script type="text/javascript" src="../script/basic.js"></script>
+    <script type="text/javascript" src="../script/things.js"></script>
     <script type="text/javascript" src="../script/jzt-script-commands.js"></script>
     <script type="text/javascript" src="../script/jzt-script-parser.js"></script>
     <script type="text/javascript" src="../script/jzt-script.js"></script>
@@ -57,8 +59,8 @@
             
             command = parser.parse('become blue snake')[0];
             ok(command instanceof commands.BecomeCommand, 'Expecting BecomeCommand');
-            equal(command.template.color, jzt.colors.Blue, 'Expecting Blue');
-            equal(command.template.id, 'SNAKE', 'Expecting Snake');
+            equal(command.thingTemplate.color, '*1', 'Expecting Blue');
+            equal(command.thingTemplate.type, 'SNAKE', 'Expecting Snake');
             
         });
         
@@ -76,10 +78,10 @@
             throws(function(){parser.parse('change blue red')}, /Unexpected token \'red\'/, 'change blue red');
             command = parser.parse('change blue fakewall red linewall')[0];
             ok(command instanceof commands.ChangeCommand, 'Expecting ChangeCommand');
-            equal(command.fromTemplate.color, jzt.colors.Blue, 'Expecting Blue');
-            equal(command.fromTemplate.id, 'FAKEWALL', 'Expecting fakewall');
-            equal(command.toTemplate.color, jzt.colors.Red, 'Expecting Red');
-            equal(command.toTemplate.id, 'LINEWALL', 'Expecting LineWall');
+            equal(command.fromTemplate.color, '*1', 'Expecting Blue');
+            equal(command.fromTemplate.type, 'FAKEWALL', 'Expecting fakewall');
+            equal(command.toTemplate.color, '*4', 'Expecting Red');
+            equal(command.toTemplate.type, 'LINEWALL', 'Expecting LineWall');
             
         });
         
@@ -152,8 +154,8 @@
             ok(command instanceof commands.IfCommand, 'Expecting IfCommand');
             ok(command.expression instanceof commands.ExistsExpression, 'Expecting ExistsExpression');
             equal(command.expression.count, 5, 'Expecting 5');
-            equal(command.expression.thingTemplate.color, jzt.colors.Blue, 'Expecting blue');
-            equal(command.expression.thingTemplate.id, 'LION', 'Expecting lion');
+            equal(command.expression.thingTemplate.color, '*1', 'Expecting blue');
+            equal(command.expression.thingTemplate.type, 'LION', 'Expecting lion');
             equal(command.label, 'DOSOMETHING', 'Expecting dosomething');
             
             command = parser.parse('if gems < 5 dosomething')[0];
@@ -250,7 +252,7 @@
             ok(command instanceof commands.PutCommand, 'Expecting PutCommand');
             ok(command.directionExpression instanceof commands.DirectionExpression, 'Expecting DirectionExpression');
             equal(command.directionExpression.terminal, commands.Direction.NORTH, 'Expecting NORTH');
-            equal(command.thingTemplate.id, 'FAKEWALL', 'Expecting FAKEWALL');
+            equal(command.thingTemplate.type, 'FAKEWALL', 'Expecting FAKEWALL');
         });
         
         test('Scroll statement', function(){
