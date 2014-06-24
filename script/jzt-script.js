@@ -315,7 +315,10 @@ jzt.jztscript = (function(my){
 
             // If all labels aren't zapped...
             if(labelIndex < labelIndicies.length) {
-
+                
+                // We're about to jump successfully, so clear out temporary heap items
+                this.clearTemporaryHeapItems();
+                
                 // Set our current line to the active label index
                 this.commandIndex = labelIndicies[labelIndex];
 
@@ -326,6 +329,15 @@ jzt.jztscript = (function(my){
 
         }
 
+    };
+    
+    JztScriptContext.prototype.clearTemporaryHeapItems = function() {
+        var heapItem;
+        for(heapItem in this.heap) {
+            if(this.heap.hasOwnProperty(heapItem) && heapItem[0] === '<' && heapItem[heapItem.length-1] === '>') {
+                delete this.heap[heapItem];
+            }
+        }
     };
 
     /**

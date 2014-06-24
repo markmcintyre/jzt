@@ -555,19 +555,22 @@ jzt.jztscript.commands = (function(my){
      * the message is delivered to all scriptable things on the board.
      */
     function SendCommand(recipient, message) {
-        this.recipient = recipient === 'SELF' ? undefined : recipient;
+        this.recipient = recipient;
         this.message = message;
     }
     
     /**
      * Sends a message to a provided recipient via a specified owner.
+     * If a recipient is SELF, then the message is delivered to the owner
+     * directly. If a recipient is ALL, then the message is delivered
+     * to all scriptable things on the board.
      */
     SendCommand.prototype.execute = function(owner) {
         
         var recipients;
         var index;
 
-        if(this.recipient === undefined) {
+        if(this.recipient === 'SELF') {
             owner.scriptContext.jumpToLabel(this.message);
             return CommandResult.CONTINUE_AFTER_JUMP;
         }
@@ -588,14 +591,19 @@ jzt.jztscript.commands = (function(my){
     
     /**
      * SetCommand
+     *
+     * When executed, sets a counter to a provided value.
      */
     function SetCommand(counter, value) {
         this.counter = counter;
         this.value = value;
     }
     
+    /**
+     * Sets a counter to this command's associated value.
+     */
     SetCommand.prototype.execute = function(owner) {
-        this.todo = owner;
+        owner.board.game.setCounterValue(this.counter, this.value);
     };
     
     /**
@@ -631,15 +639,24 @@ jzt.jztscript.commands = (function(my){
     
     /**
      * StandCommand
+     *
+     * When executed, halts an owner from walking.
      */
     function StandCommand() {}
     
+    /**
+     * Halts a provided owner from walking.
+     */
     StandCommand.prototype.execute = function(owner) {
-        this.todo = owner;
+        owner.walkDirection = undefined;
     };
     
     /**
      * TakeCommand
+     *
+     * When executed, subtracts a provided value from a given counter.
+     * If it is not possible to subtract the required amount, then execution
+     * should jump to a specified label instead.
      */
     function TakeCommand(counter, value, label) {
         this.counter = counter;
@@ -647,72 +664,164 @@ jzt.jztscript.commands = (function(my){
         this.label = label;
     }
     
+    /**
+     * Subtracts a provided value from a given counter.
+     * If it is not possible to subtract the required amount, then execution
+     * should jump to a specified label within a provided owner's context instead.
+     */
     TakeCommand.prototype.execute = function(owner) {
-        this.todo = owner;
+        // If we can't take an amount...
+        if(owner.board.game.getCounterValue(this.counter) < this.value) {
+
+            // If we have a label, jump to it
+            if(this.label) {
+                owner.scriptContext.jumpToLabel(this.label);
+                return CommandResult.CONTINUE_AFTER_JUMP;
+            }
+
+        }
+
+        // If there is enough of the counter to take...
+        else {
+
+            // Take that amount
+            owner.board.game.adjustCounter(this.counter, -1 * this.value);
+            return CommandResult.CONTINUE;
+
+        }
     };
     
     /**
      * ThrowStar Command
+     *
+     * When executed, launches a throwing star in a direction relative
+     * to this command's provided owner.
      */
     function ThrowStarCommand(directionExpression) {
         this.directionExpression = directionExpression;
     }
     
+    /**
+     * Launches a throwing star in a direction relative to a provided owner.
+     */
     ThrowStarCommand.prototype.execute = function(owner) {
-        this.todo = owner;
+        // Get our final direction
+        var direction = this.directionExpression.getResult(owner);
+
+        // If a direction is available
+        if(direction) {
+
+            // Shoot
+            jzt.things.ThingFactory.shoot(owner.board, owner.point.add(direction), direction, false, true);
+
+        }
     };
     
     /**
      * Torch Command
+     *
+     * When executes, sets an owner's torch radius to this command's associated
+     * radius.
      */
     function TorchCommand(radius) {
         this.radius = radius;
     }
     
+    /**
+     * Sets an owner's torch radius to this command's associated
+     * radius.
+     */
     TorchCommand.prototype.execute = function(owner) {
-        this.todo = owner;
+        owner.setTorchRadius(this.radius);
     };
     
     /**
      * UnlockCommand
+     * 
+     * When executed, sets a provided owner's locked state to false,
+     * allowing it to once again receive messages from other
+     * Scriptables.
      */
     function UnlockCommand() {}
     
+    /**
+     * Sets a provided owner's locked state to false,
+     * allowing it to once again receive messages from other
+     * Scriptables.
+     */
     UnlockCommand.prototype.execute = function(owner) {
-        this.todo = owner;
+        owner.locked = false;
+        return CommandResult.CONTINUE;
     };
     
     /**
      * WaitCommand
+     *
+     * When executed, pauses script execution for a number
+     * of specified cycles.
      */
     function WaitCommand(count) {
         this.count = count;
     }
     
+    /**
+     * Pauses script execution for a number
+     * of specified cycles.
+     */
     WaitCommand.prototype.execute = function(owner) {
-        this.todo = owner;
+        
+        var heap = owner.scriptContext.heap;
+        var cycles = '<cycles>';
+        
+        if(!heap[cycles]) {
+            heap[cycles] = this.count;
+        }
+
+        if(--heap[cycles] > 0) {
+            return CommandResult.REPEAT;
+        }
+        else {
+            delete heap[cycles];
+        }
     };
     
     /**
      * WalkCommand
+     *
+     * When executed, instructs a provided owner to begin walking
+     * in a direction as evaluated by this command's provided
+     * direction expression;
      */
     function WalkCommand(directionExpression) {
         this.directionExpression = directionExpression;
     }
     
+    /**
+     * Instructs a provided owner to begin walking
+     * in a direction as evaluated by this command's provided
+     * direction expression;
+     */
     WalkCommand.prototype.execute = function(owner) {
-        this.todo = owner;
+        var direction = this.directionExpression.getResult(owner);
+        owner.walkDirection = direction;
     };
     
     /**
      * ZapCommand
+     *
+     * When executed, zaps a provided label from an owner's script
+     * context.
      */
     function ZapCommand(label) {
         this.label = label;
     }
     
+    /**
+     * Zaps a provided label from an owner's script context.
+     */
     ZapCommand.prototype.execute = function(owner) {
-        this.todo = owner;
+        owner.scriptContext.zapLabel(this.label);
+        return CommandResult.CONTINUE;
     };
     
     // EXPRESSIONS ------------------------------------------------
@@ -725,7 +834,7 @@ jzt.jztscript.commands = (function(my){
     }
     
     NotExpression.prototype.getResult = function(owner) {
-        this.todo = owner;
+        return ! this.subExpresion.getResult(owner);
     };
     
     /**
@@ -734,7 +843,7 @@ jzt.jztscript.commands = (function(my){
     function AdjacentExpression() {}
     
     AdjacentExpression.prototype.getResult = function(owner) {
-        this.todo = owner;
+        return owner.isPlayerAdjacent();
     };
     
     /**
@@ -745,7 +854,7 @@ jzt.jztscript.commands = (function(my){
     }
     
     BlockedExpression.prototype.getResult = function(owner) {
-        this.todo = owner;
+        return owner.isBlocked(this.directionExpression.getResult(owner));
     };
     
     /**
@@ -756,7 +865,7 @@ jzt.jztscript.commands = (function(my){
     }
     
     AlignedExpression.prototype.getResult = function(owner) {
-        this.todo = owner;
+        return this.directionExpression ? owner.isPlayerAligned(1, this.directionExpression.getResult(owner)) : owner.isPlayerAligned(1);
     };
     
     /**
@@ -767,7 +876,7 @@ jzt.jztscript.commands = (function(my){
     }
     
     PeepExpression.prototype.getResult = function(owner) {
-        this.todo = owner;
+        return owner.isPlayerVisible(this.distance);
     };
     
     /**
@@ -779,7 +888,7 @@ jzt.jztscript.commands = (function(my){
     }
     
     ExistsExpression.prototype.getResult = function(owner) {
-        this.todo = owner;
+        return owner.board.hasTile(this.thing, this.color, this.count);
     };
     
     /**
@@ -792,7 +901,24 @@ jzt.jztscript.commands = (function(my){
     }
     
     TestingExpression.prototype.getResult = function(owner) {
-        this.todo = owner;
+        
+        // Get our counter value
+        var counterValue = owner.getCounterValue(this.counter);
+
+        switch(this.operand) {
+            case '>':
+                return counterValue > this.numericValue;
+            case '<':
+                return counterValue < this.numericValue;
+            case '>=':
+                return counterValue >= this.numericValue;
+            case '<=':
+                return counterValue <= this.numericValue;
+            case '=':
+                return counterValue === this.numericValue;
+        }
+
+        return undefined;
     };
     
     // PUBLIC INTERFACE -------------------------------------------
