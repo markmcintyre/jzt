@@ -12,40 +12,10 @@ jzt.jztscript = (function(my){
     var commands = my.commands;
     var scriptParser = new my.JztScriptParser();
     
-    function populateScript(script, commandStack) {
-        
-        var index;
-        var element;
-        
-        // Put the commands into our target
-        for(index = 0; index < commandStack.length; ++index) {
-        
-            // Grab our next element
-            element = commandStack[index];
-            
-            // If it's a label...
-            if(element instanceof commands.Label) {
-                script.addLabel(element);
-            }
-            
-            // If it's an executable item...
-            else if(typeof element.execute === 'function') {
-                script.addCommand(element);
-            }
-            
-            // If it's anything else...
-            else {
-                throw 'Catestrophic script error. Unexpected object in command stack.';
-            }
-            
-        }
-
-    }
-    
     /**
      * JztScript
      */
-    function JztScript(name, rawScript) {
+    function JztScript(name, rawScript, compileImmediately) {
         
         if(!(this instanceof JztScript)) {
             throw jzt.ConstructorError;
@@ -56,31 +26,63 @@ jzt.jztscript = (function(my){
         this.labelIndicies = {};
         this.commands = [];
         
-        if(rawScript) {
-            populateScript(this, scriptParser.parse(rawScript));
+        if(compileImmediately) {
+            this.compile();
         }
         
     }
     
-    JztScript.prototype.addLabel = function(label, commandIndex) {
+    JztScript.prototype.compile = function() {
+          
+        var index;
+        var element;
+        var commandStack = scriptParser.parse(this.rawScript);
         
-        // If no command index was provided, use the current command position
-        commandIndex = commandIndex === undefined ? this.commands.length : commandIndex;
+        /**
+         * Adds a provided label to this JztScript to be associated with a provided
+         * command index.
+         *
+         * @param label A name of a label
+         * @param commandIndex A numeric index
+         */
+        function addLabel(owner, label, commandIndex) {
+            // If no command index was provided, use the current command position
+            commandIndex = commandIndex === undefined ? owner.commands.length : commandIndex;
         
-        // If the label already exists, push the new label to the stack
-        if(this.labelIndicies.hasOwnProperty(label.name)) {
-            this.labelIndicies[label.name].push(commandIndex);
-        }
+            // If the label already exists, push the new label to the stack
+            if(owner.labelIndicies.hasOwnProperty(label.name)) {
+                owner.labelIndicies[label.name].push(commandIndex);
+            }
 
-        // Otherwise we've got a new label
-        else {
-            this.labelIndicies[label.name] = [commandIndex];
+            // Otherwise we've got a new label
+            else {
+                owner.labelIndicies[label.name] = [commandIndex];
+            }
         }
         
-    };
-    
-    JztScript.prototype.addCommand = function(command) {
-        this.commands.push(command);
+        // Put the commands into our target
+        for(index = 0; index < commandStack.length; ++index) {
+        
+            // Grab our next element
+            element = commandStack[index];
+            
+            // If it's a label...
+            if(element instanceof commands.Label) {
+                addLabel(this, element);
+            }
+            
+            // If it's an executable item...
+            else if(typeof element.execute === 'function') {
+                this.commands.push(element);
+            }
+            
+            // If it's anything else...
+            else {
+                throw 'Catestrophic script error. Unexpected object in command stack.';
+            }
+            
+        }
+        
     };
     
     JztScript.prototype.getCommand = function(index) {
