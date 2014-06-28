@@ -92,7 +92,7 @@ jzt.jztscript = (function(my){
     JztScript.prototype.serialize = function() {
         return {
             name: this.name,
-            script: this.rawScript
+            rawScript: this.rawScript
         };
     };
     

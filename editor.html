@@ -370,7 +370,7 @@
 			function selectScript(scriptName) {
 				var script = editor.currentBoard.getScript(scriptName);
 				if(script) {
-					scriptEditor.value = script.rawScript;
+					scriptEditor.value = script.rawScript || script.script;
 				}
 				else {
 					scriptEditor.value = '';
@@ -451,7 +451,7 @@
 			function onDownload(event) {
 				var game = editor.serialize();
 				download.download = game.title.replace(/[^a-z0-9_\-]/gi, '-').toLowerCase() + '.jzt';
-				download.href = 'data:application/octet-stream;charset=utf-8;base64,' + LZString.compressToBase64(JSON.stringify(editor.serialize()));
+                download.href = 'data:application/octet-stream;charset=utf-8;base64,' + LZString.compressToBase64(JSON.stringify(editor.serialize()));
 			};
 
 			function onLoadGame(event) {

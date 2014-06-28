@@ -188,7 +188,7 @@ jzt.jztscript.commands = (function(my){
      * Changes a provided owner's character value.
      */
     CharCommand.prototype.execute = function(owner) {
-        owner.spriteIndex = this.character;
+        owner.spriteIndex = this.value;
     };
     
     /**
@@ -338,7 +338,7 @@ jzt.jztscript.commands = (function(my){
         // If a direction is available
         if(direction) {
 
-            success = owner.move(direction)
+            success = owner.move(direction);
 
             // If we are to go a number of times...
             if(--heap[count] > 0) {
@@ -534,6 +534,7 @@ jzt.jztscript.commands = (function(my){
         this.text = text;
         this.bold = bold;
         this.label = label;
+        this.modifiesScroll = true;
     }
     
     /**
@@ -872,7 +873,7 @@ jzt.jztscript.commands = (function(my){
      * PeepExpression
      */
     function PeepExpression(radius) {
-        this.radius = radius ? radius : 5;
+        this.radius = radius || 5;
     }
     
     PeepExpression.prototype.getResult = function(owner) {
@@ -884,7 +885,7 @@ jzt.jztscript.commands = (function(my){
      */
     function ExistsExpression(thingTemplate, count) {
         this.thingTemplate = thingTemplate;
-        this.count = count ? count : 1;
+        this.count = count || 1;
     }
     
     ExistsExpression.prototype.getResult = function(owner) {

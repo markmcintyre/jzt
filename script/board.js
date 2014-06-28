@@ -156,7 +156,11 @@ var jzt = (function(my) {
         // Store scripts
         for(index = 0; index < this.scripts.length; ++index) {
             script = this.scripts[index];
-            result.scripts.push( script.serialize() );
+            if(this.game.isEditor) {
+                result.scripts.push({'name': script.name, 'rawScript': script.rawScript || script.script});
+            } else {
+                result.scripts.push( script.serialize() );
+            }
         }
 
         // Store i18n data
@@ -204,15 +208,21 @@ var jzt = (function(my) {
     Board.prototype.initializeScripts = function(scriptData) {
 
         var index, script;
+        
+        // If we're in editor mode, there's no need to compile
+        if (this.game.isEditor) {
+            this.scripts = scriptData;
+            return;
+        }
 
         for(index = 0; index < scriptData.length; ++index) {
 
             try {
-                script = new jzt.jztscript.JztScript(scriptData[index].name, scriptData[index].script, true);
+                script = new jzt.jztscript.JztScript(scriptData[index].name, scriptData[index].rawScript, true);
                 this.scripts.push(script);
             }
             catch(exception) {
-                this.game.addWarning(exception);
+                this.game.addWarning(scriptData[index].name + ': ' + exception);
             }
 
 
