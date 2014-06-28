@@ -40,10 +40,10 @@ var jzt = (function(my) {
         this.east = boardData.east;
         this.south = boardData.south;
         this.west = boardData.west;
-        this.northOffset = boardData.northOffset ? boardData.northOffset : 0;
-        this.eastOffset = boardData.eastOffset ? boardData.eastOffset : 0;
-        this.southOffset = boardData.southOffset ? boardData.southOffset : 0;
-        this.westOffset = boardData.westOffset ? boardData.westOffset : 0;
+        this.northOffset = boardData.northOffset || 0;
+        this.eastOffset = boardData.eastOffset || 0;
+        this.southOffset = boardData.southOffset || 0;
+        this.westOffset = boardData.westOffset || 0;
 
         this.defaultPlayerX = boardData.playerX;
         this.defaultPlayerY = boardData.playerY;
@@ -327,11 +327,14 @@ var jzt = (function(my) {
 
         var x = 0;
         var y = 0;
+        var index;
+        var tile;
+        var thing;
 
-        for(var index in tileDataCollection) {
+        for(index in tileDataCollection) {
             if(tileDataCollection.hasOwnProperty(index)) {
-                var tile = tileDataCollection[index];
-                var thing = jzt.things.ThingFactory.deserialize(tile, this);
+                tile = tileDataCollection[index];
+                thing = jzt.things.ThingFactory.deserialize(tile, this);
                 if(thing !== undefined) {
                     this.setTile(new my.Point(x,y), thing);
                     this.initializeTorch(thing);
@@ -418,10 +421,12 @@ var jzt = (function(my) {
      */
     Board.prototype.getScript = function(scriptName) {
 
+        var index, script;
+        
         if(scriptName && this.scripts) {
 
-            for(var index = 0; index < this.scripts.length; ++index) {
-                var script = this.scripts[index];
+            for(index = 0; index < this.scripts.length; ++index) {
+                script = this.scripts[index];
                 if(scriptName === script.name) {
                     return script;
                 }
@@ -858,9 +863,11 @@ var jzt = (function(my) {
      */
     Board.prototype.getPassage = function(passageId) {
 
-        for(var row = 0; row < this.height; ++row) {
-            for(var column = 0; column < this.width; ++column) {
-                var tile = this.getTile(new my.Point(column, row));
+        var row, column, tile;
+        
+        for(row = 0; row < this.height; ++row) {
+            for(column = 0; column < this.width; ++column) {
+                tile = this.getTile(new my.Point(column, row));
                 if(tile instanceof jzt.things.Passage && tile.passageId === passageId) {
                     return tile;
                 }
@@ -1064,8 +1071,8 @@ var jzt = (function(my) {
 
         // Draw our board background
         c.fillStyle = !me.game.isEditor && me.dark ? this.game.DARK_PATTERN : jzt.colors.Black.rgbValue;
-        var startX = Math.max(0 - this.windowOrigin.x * this.game.resources.graphics.TILE_SIZE.x, 0);
-        var startY = Math.max(0 - this.windowOrigin.y * this.game.resources.graphics.TILE_SIZE.y, 0);
+        var startX = Math.max(-this.windowOrigin.x * this.game.resources.graphics.TILE_SIZE.x, 0);
+        var startY = Math.max(-this.windowOrigin.y * this.game.resources.graphics.TILE_SIZE.y, 0);
         var endX = Math.min(this.width * this.game.resources.graphics.TILE_SIZE.x, this.windowSize.x * this.game.resources.graphics.TILE_SIZE.x);
         var endY = Math.min(this.height * this.game.resources.graphics.TILE_SIZE.y, this.windowSize.y * this.game.resources.graphics.TILE_SIZE.y);
         c.fillRect(startX, startY, endX, endY);
