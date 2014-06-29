@@ -113,6 +113,7 @@
 
 			<button id="save-game">Save</button>
 			<a download="untitled.jzt" id="download" href="#">Download</a>
+            <a download="untitled.jzt.json" id="download-json" href="#">Download JSON</a>
 			<input id="load-game" type="file" /><br/>
 
 		</div>
@@ -179,6 +180,7 @@
 		<script type="text/javascript" src="script/editor.js"></script>
 		<script type="text/javascript" src="script/i18n.js"></script>
 		<script type="text/javascript" src="script/lz-string-1.3.3.js"></script>
+        <script type="text/javascript" src="script/base-64-tools.js"></script>
 		<script type="text/javascript">
 
 			var templates = {};
@@ -197,6 +199,7 @@
 			var editArea = document.getElementById('edit-area');
 			var toolBox = document.getElementById('toolbox');
 			var download = document.getElementById('download');
+            var downloadJson = document.getElementById('download-json');
 			var loadGame = document.getElementById('load-game');
 			var newBoard = document.getElementById('new-board');
 			var deleteBoard = document.getElementById('delete-board');
@@ -451,8 +454,14 @@
 			function onDownload(event) {
 				var game = editor.serialize();
 				download.download = game.title.replace(/[^a-z0-9_\-]/gi, '-').toLowerCase() + '.jzt';
-                download.href = 'data:application/octet-stream;charset=utf-8;base64,' + LZString.compressToBase64(JSON.stringify(editor.serialize()));
+                download.href = 'data:application/octet-stream;charset=utf-8;base64,' + LZString.compressToBase64(JSON.stringify(game));
 			};
+            
+            function onDownloadJson(event) {
+                var game = editor.serialize();
+                downloadJson.download = game.title.replace(/[^a-z0-9_\-]/gi, '-').toLowerCase() + '.jzt';
+                downloadJson.href = 'data:application/json;charset=utf-8;base64,' + Base64.encode(JSON.stringify(game));
+            }
 
 			function onLoadGame(event) {
 				var fileReader;
@@ -510,6 +519,7 @@
 			westSelector.addEventListener('change', onBoardOptionsSelected, false);
 			darkSelector.addEventListener('click', onBoardOptionsSelected, false);
 			download.addEventListener('click', onDownload, false);
+            downloadJson.addEventListener('click', onDownloadJson, false);
 			loadGame.addEventListener('change', onLoadGame, false);
 			newBoard.addEventListener('click', onNewBoardClicked, false);
 			deleteBoard.addEventListener('click', onDeleteBoard, false);

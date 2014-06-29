@@ -91,11 +91,12 @@ jzt.parser = (function(my){
     Parser.prototype.matchAndAssemble = function(assemblies) {
 
         var result = this.match(assemblies);
+        var index;
 
         // If we've got an assembler, have it assemble
         if(this.assembler) {
 
-            for(var index = 0; index < result.length; ++index) {
+            for(index = 0; index < result.length; ++index) {
                 this.assembler.assemble(result[index]);
             }
         }
@@ -107,10 +108,12 @@ jzt.parser = (function(my){
     Parser.prototype.findBestAssembly = function(assemblies) {
 
         var bestAssembly;
+        var index;
+        var assembly;
 
-        for(var index = 0; index < assemblies.length; ++index) {
+        for(index = 0; index < assemblies.length; ++index) {
 
-            var assembly = assemblies[index];
+            assembly = assemblies[index];
 
             if(!bestAssembly) {
                 bestAssembly = assembly;
@@ -126,10 +129,10 @@ jzt.parser = (function(my){
 
     Parser.prototype.cloneAssemblies = function(assemblies) {
 
-        var result = [];
+        var result = [], index, assembly;
 
-        for(var index = 0; index < assemblies.length; ++index) {
-            var assembly = assemblies[index];
+        for(index = 0; index < assemblies.length; ++index) {
+            assembly = assemblies[index];
             result.push(assembly.clone());
         }
 
@@ -158,15 +161,17 @@ jzt.parser = (function(my){
 
     Repetition.prototype.match = function(assemblies) {
 
+        var index, assembly, result, error;
+        
         // If we have a preassember, assemble now
         if(this.preAssembler !== undefined) {
-            for(var index = 0; index < assemblies.length; ++index) {
-                var assembly = assemblies[index];
+            for(index = 0; index < assemblies.length; ++index) {
+                assembly = assemblies[index];
                 this.preAssembler.assemble(assembly);
             }
         }
 
-        var result = this.cloneAssemblies(assemblies);
+        result = this.cloneAssemblies(assemblies);
         while(assemblies.length > 0) {
             assemblies = this.subParser.matchAndAssemble(assemblies);
             result = result.concat(assemblies);
@@ -232,10 +237,12 @@ jzt.parser = (function(my){
         var started = false;
         var previousResult = assemblies;
         var result = assemblies;
+        var index;
+        var subParser;
 
-        for(var index = 0; index < this.subParsers.length; ++index) {
+        for(index = 0; index < this.subParsers.length; ++index) {
 
-            var subParser = this.subParsers[index];
+            subParser = this.subParsers[index];
 
             result = subParser.matchAndAssemble(result);
             if(result.length <= 0) {
@@ -285,17 +292,17 @@ jzt.parser = (function(my){
         var error;
         var subParser;
         var alternationResult;
+        var index;
 
-        for(var index = 0; index < this.subParsers.length; ++index) {
+        for(index = 0; index < this.subParsers.length; ++index) {
             subParser = this.subParsers[index];
             try {
                 alternationResult = subParser.matchAndAssemble(assemblies);
+                result = result.concat(alternationResult);
             }
             catch(tokenError) {
                 error = tokenError;
-                continue;
             }
-            result = result.concat(alternationResult);
         }
 
         if(result.length <=0 && error !== undefined) {
@@ -326,11 +333,11 @@ jzt.parser = (function(my){
 
     Terminal.prototype.match = function(assemblies) {
 
-        var result = [];
+        var result = [], index, assembly, assemblyResult;
 
-        for(var index = 0; index < assemblies.length; ++index) {
-            var assembly = assemblies[index];
-            var assemblyResult = this.matchAssembly(assembly);
+        for(index = 0; index < assemblies.length; ++index) {
+            assembly = assemblies[index];
+            assemblyResult = this.matchAssembly(assembly);
             if(assemblyResult !== undefined) {
                 result.push(assemblyResult);
             }

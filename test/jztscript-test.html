@@ -10,7 +10,6 @@
     <script src="qunit.js"></script>
     <script type="text/javascript" src="../script/lexer.js"></script>
     <script type="text/javascript" src="../script/parser.js"></script>
-    <script type="text/javascript" src="../script/script.js"></script>
     <script type="text/javascript" src="../script/graphics.js"></script>
     <script type="text/javascript" src="../script/basic.js"></script>
     <script type="text/javascript" src="../script/things.js"></script>
@@ -112,6 +111,48 @@
             ok(command instanceof commands.EndCommand, 'Expecting EndCommand');
         });
         
+        test('Go Statement', function(){
+            var result;
+            var command;
+            ok(parser.parse('go n'), 'go n');
+            ok(parser.parse('go n 5'), 'go n 5');
+            ok(parser.parse('go n, s'), 'go n, s');
+            ok(parser.parse('go n 5, s'), 'go n 5, s');
+            ok(parser.parse('go n 5, s 10'), 'go n 5, s 10');
+            ok(parser.parse('go cw n, s'), 'go cw n, s');
+            ok(parser.parse('go cw ccw opp n 5, s'), 'go cw ccw opp n 5, s');
+            ok(parser.parse('go rndp ccw flow 50, opp rndp cw s 40, n, n, s, e, cw west, opp seek 12'), 'complicated');
+            throws(function(){parser.parse('go opp 5')}, /Unexpected token \'5\'/, 'go opp 5');
+            throws(function(){parser.parse('go cw opp seek 12, opp')}, NEWLINE_ERROR, 'go cw opp seek 12, opp');
+            throws(function(){parser.parse('go n s')}, /Unexpected token \'s\'/, 'go n s');
+            result = parser.parse('go cw n, ccw s 2, opp rndp e 3, w 4');
+            equal(result.length, 4, 'Expecting 4 commands');
+            command = result[0];
+            ok(command.forceful, 'Expecting forceful');
+            equal(command.directionExpression.terminal, commands.Direction.N, 'Expecting north');
+            equal(command.directionExpression.count, 1, 'Expecting 1 count');
+            equal(command.directionExpression.modifiers.length, 1, 'Expecting 1 modifier');
+            equal(command.directionExpression.modifiers[0], commands.DirectionModifier.CW, 'Expecting CW');
+            command = result[1];
+            ok(command.forceful, 'Expecting forceful');
+            equal(command.directionExpression.terminal, commands.Direction.S, 'Expecting south');
+            equal(command.directionExpression.count, 2, 'Expecting 2 count');
+            equal(command.directionExpression.modifiers.length, 1, 'Expecting 1 modifier');
+            equal(command.directionExpression.modifiers[0], commands.DirectionModifier.CCW, 'Expecting CCW');
+            command = result[2];
+            ok(command.forceful, 'Expecting forceful');
+            equal(command.directionExpression.terminal, commands.Direction.E, 'Expecting east');
+            equal(command.directionExpression.count, 3, 'Expecting 3 count');
+            equal(command.directionExpression.modifiers.length, 2, 'Expecting 2 modifiers');
+            equal(command.directionExpression.modifiers[0], commands.DirectionModifier.OPP, 'Expecting OPP');
+            equal(command.directionExpression.modifiers[1], commands.DirectionModifier.RNDP, 'Expecting RNDP');
+            command = result[3];
+            ok(command.forceful, 'Expecting forceful');
+            equal(command.directionExpression.terminal, commands.Direction.W, 'Expecting west');
+            equal(command.directionExpression.count, 4, 'Expecting 4 count');
+            equal(command.directionExpression.modifiers.length, 0, 'Expecting no modifiers');
+        });
+        
         test('Give statement', function(){
             var command;
             ok(parser.parse('give 5 gems'), 'give 5 gems');
@@ -202,29 +243,6 @@
             
             command = parser.parse('lock')[0];
             ok(command instanceof commands.LockCommand, 'Expecting LockCommand');
-            
-        });
-        
-        test('Move statement', function(){
-            var command;
-            ok(parser.parse('move north'), 'move north');
-            ok(parser.parse('move north otherwise dosomething'), 'move north otherwise dosomething');
-            ok(parser.parse('move s forcefully'), 'move s forcefully');
-            ok(parser.parse('move e 5'), 'move e 5');
-            ok(parser.parse('move e 5 forcefully'), 'move e 5 forcefully');
-            ok(parser.parse('move e 10 otherwise dosomething'), 'move e 10 otherwise dosomething');
-            ok(parser.parse('move cw opp rndp ccw w'), 'move cw opp rndp ccw w');
-            ok(parser.parse('move ccw rndne forcefully'), 'move ccw rndne forcefully');
-            ok(parser.parse('move opp flow otherwise dosomething'), 'move opp flow otherwise dosomething');
-            ok(parser.parse('move opp flow 25 otherwise dosomething'), 'move 25 opp flow otherwise dosomething');
-            
-            command = parser.parse('move opp flow 25 otherwise dosomething')[0];
-            ok(command instanceof commands.MoveCommand, 'Expecting MoveCommand');
-            ok(command.directionExpression instanceof commands.DirectionExpression, 'Expecting DirectionExpression');
-            equal(command.directionExpression.count, 25, 'Expecting 25 spaces');
-            equal(command.directionExpression.terminal, commands.Direction.FLOW, 'Expecting flow');
-            equal(command.directionExpression.modifiers[0], commands.DirectionModifier.OPP, 'Expecting opp');
-            equal(command.label, 'DOSOMETHING', 'Expecting dosomething');
             
         });
         
@@ -339,6 +357,48 @@
             ok(command instanceof commands.TorchCommand, 'Expecting TorchCommand');
             equal(command.radius, 546, 'Expecting 546');
         });
+        
+         test('Try Statement', function(){
+            var result;
+            var command;
+            ok(parser.parse('try n'), 'try n');
+            ok(parser.parse('try n 5'), 'try n 5');
+            ok(parser.parse('try n, s'), 'try n, s');
+            ok(parser.parse('try n 5, s'), 'try n 5, s');
+            ok(parser.parse('try n 5, s 10'), 'try n 5, s 10');
+            ok(parser.parse('try cw n, s'), 'try cw n, s');
+            ok(parser.parse('try cw ccw opp n 5, s'), 'try cw ccw opp n 5, s');
+            ok(parser.parse('try rndp ccw flow 50, opp rndp cw s 40, n, n, s, e, cw west, opp seek 12'), 'complicated');
+            throws(function(){parser.parse('try opp 5')}, /Unexpected token \'5\'/, 'try opp 5');
+            throws(function(){parser.parse('try cw opp seek 12, opp')}, NEWLINE_ERROR, 'try cw opp seek 12, opp');
+            throws(function(){parser.parse('try n s')}, /Unexpected token \'s\'/, 'try n s');
+            result = parser.parse('try cw n, ccw s 2, opp rndp e 3, w 4');
+            equal(result.length, 4, 'Expecting 4 commands');
+            command = result[0];
+            ok(!command.forceful, 'Not expecting forceful');
+            equal(command.directionExpression.terminal, commands.Direction.N, 'Expecting north');
+            equal(command.directionExpression.count, 1, 'Expecting 1 count');
+            equal(command.directionExpression.modifiers.length, 1, 'Expecting 1 modifier');
+            equal(command.directionExpression.modifiers[0], commands.DirectionModifier.CW, 'Expecting CW');
+            command = result[1];
+            ok(!command.forceful, 'Not expecting forceful');
+            equal(command.directionExpression.terminal, commands.Direction.S, 'Expecting south');
+            equal(command.directionExpression.count, 2, 'Expecting 2 count');
+            equal(command.directionExpression.modifiers.length, 1, 'Expecting 1 modifier');
+            equal(command.directionExpression.modifiers[0], commands.DirectionModifier.CCW, 'Expecting CCW');
+            command = result[2];
+            ok(!command.forceful, 'Not expecting forceful');
+            equal(command.directionExpression.terminal, commands.Direction.E, 'Expecting east');
+            equal(command.directionExpression.count, 3, 'Expecting 3 count');
+            equal(command.directionExpression.modifiers.length, 2, 'Expecting 2 modifiers');
+            equal(command.directionExpression.modifiers[0], commands.DirectionModifier.OPP, 'Expecting OPP');
+            equal(command.directionExpression.modifiers[1], commands.DirectionModifier.RNDP, 'Expecting RNDP');
+            command = result[3];
+            ok(!command.forceful, 'Not expecting forceful');
+            equal(command.directionExpression.terminal, commands.Direction.W, 'Expecting west');
+            equal(command.directionExpression.count, 4, 'Expecting 4 count');
+            equal(command.directionExpression.modifiers.length, 0, 'Expecting no modifiers');
+        });
             
         test('Restore statement', function(){
             var command;
@@ -429,7 +489,7 @@
             equal(command.label, 'ALABEL', 'Expecting alabel');
         });
         
-        test('Multi-line script', function(){
+        /*test('Multi-line script', function(){
             var result = parser.parse(':label\nwait 5\nwalk cw ccw seek\n:label2\nmove rndp ccw n\nif aligned south label2\nend\n:label2\nsay "Interesting!"\nend');
             ok(result.length, 10, 'Expecting 10 commands');
             ok(result[0] instanceof commands.Label, 'Expecting Label');
@@ -442,7 +502,7 @@
             ok(result[7] instanceof commands.Label, 'Expecting Label');
             ok(result[8] instanceof commands.SayCommand, 'Expecting SayCommand');
             ok(result[9] instanceof commands.EndCommand, 'Expecting EndCommand');
-        });
+        });*/
         
 	</script>
 	

@@ -9,6 +9,26 @@ jzt.lexer = (function(my){
  
     'use strict';
     
+    function isNewLine(character) {
+        return character === '\r' || character === '\n';
+    }
+    
+    function isWhiteSpace(character) {
+        return character === ' ' || character === '\t' || character === '\r';
+    }
+    
+    function isAlpha(character) {
+        return (character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') || character === '_';
+    }
+    
+    function isNumeric(character) {
+        return (character >= '0' && character <= '9');
+    }
+    
+    function isAlphaNumeric(character) {
+        return isAlpha(character) || isNumeric(character);
+    }
+    
     /**
      * Constructs a new Lexer instance
      * @param inputString Input text to be lexed
@@ -91,6 +111,11 @@ jzt.lexer = (function(my){
                 return this.createToken('OPERATOR', c);
             }
             
+        }
+        
+        // Punctuation
+        else if(c === ',') {
+            return this.createToken('PUNCTUATION', c);
         }
         
         // New Line
@@ -269,26 +294,6 @@ jzt.lexer = (function(my){
         return token;
         
     };
-    
-    function isNewLine(character) {
-        return character === '\r' || character === '\n';
-    }
-    
-    function isWhiteSpace(character) {
-        return character === ' ' || character === '\t' || character === '\r';
-    }
-    
-    function isAlpha(character) {
-        return (character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') || character === '_';
-    }
-    
-    function isNumeric(character) {
-        return (character >= '0' && character <= '9');
-    }
-    
-    function isAlphaNumeric(character) {
-        return isAlpha(character) || isNumeric(character);
-    }
     
     my.Lexer = Lexer;
     return my;

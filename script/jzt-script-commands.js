@@ -296,12 +296,9 @@ jzt.jztscript.commands = (function(my){
      * When executed, an owner will be moved according to this command's
      * direction expression and options.
      */
-    function MoveCommand(directionExpression, options) {
+    function MoveCommand(directionExpression, forceful) {
         this.directionExpression = directionExpression;
-        if(options) {
-            this.label = options.jumpTo;
-            this.forceful = options.forceful;
-        }
+        this.forceful = forceful;
     }
     
     /**
@@ -338,16 +335,10 @@ jzt.jztscript.commands = (function(my){
         // If a direction is available
         if(direction) {
 
-            success = owner.move(direction);
-
             // If we are to go a number of times...
             if(--heap[count] > 0) {
-                if(success) {
+                if(owner.move(direction)) {
                     return CommandResult.REPEAT;
-                }
-                else if(this.label) {
-                    delete heap[count];
-                    owner.jumpToLabel(this.label);
                 }
             }
             else {

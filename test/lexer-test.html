@@ -91,6 +91,14 @@
             throws(function(){lexer.nextToken()}, /Unrecognized token/, 'Expected unrecognized token');
         });
         
+        test("Punctuation", function() {
+            var lexer = new jzt.lexer.Lexer(', ,,');
+            deepEqual(lexer.nextToken(), {position: 0, line: 1, column: 1, name: 'PUNCTUATION', value: ','}, 'token 1');
+            deepEqual(lexer.nextToken(), {position: 2, line: 1, column: 3, name: 'PUNCTUATION', value: ','}, 'token 2');
+            deepEqual(lexer.nextToken(), {position: 3, line: 1, column: 4, name: 'PUNCTUATION', value: ','}, 'token 3');
+            ok(lexer.nextToken() === undefined, 'No more tokens expected');
+        });
+        
 	</script>
 	
 </body>

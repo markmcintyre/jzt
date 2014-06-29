@@ -23,6 +23,39 @@ jzt.jztscript = (function(my){
             throw jzt.ConstructorError;
         }
         
+        function popAllTokensUntil(assembly, tokenName, tokenValue, discardFence) {
+         
+            var result = [];
+            var top = assembly.peek();
+            
+            function matches(token, tokenName, tokenValue) {
+                return token && token.name === tokenName.toUpperCase() && token.value && token.value.toUpperCase() === tokenValue.toUpperCase();
+            }
+            
+            while(!matches(top, tokenName, tokenValue)) {
+                result.push(assembly.pop());
+                top = assembly.peek();
+            }
+            
+            if(matches(top, tokenName, tokenValue) && discardFence) {
+                assembly.pop();   
+            }
+            
+            return result;
+            
+        }
+        
+        function choice(parserOne, parserTwo) {
+            var result = new p.Alternation();
+            result.add(parserOne);
+            result.add(parserTwo);
+            return result;
+        }
+        
+        function optional(parser) {
+            return choice(parser, new p.Empty());
+        }
+        
         /**
          * Creates an Assembler object with a provided assemble function 
          * definition if validateOnly is not set.
@@ -34,22 +67,375 @@ jzt.jztscript = (function(my){
         }
         
         /**
-         * JztScript Parser
-         * Creates and returns a new JztScript parser.
-         * @return A JZT script parser.
+         * Direction Modifier Parser
+         * Creates and returns a 'direction modifier' parser.
+         * @return A 'direction modifier' parser.
          */
-        function createJztScriptParser() {
-        
-            var program;
-            var line = new p.Alternation();
-            line.add(createLabelParser());
-            line.add(createStatementParser());
-            line.addDiscard(new p.NewLine());
-            program = new p.Repetition(line);
-            return program;
-
+        function createDirectionModifierParser() {
+            var directionModifier = new p.Alternation();
+            
+            // Add direction modifier options
+            directionModifier.add(new p.Literal('CW'));
+            directionModifier.add(new p.Literal('CCW'));
+            directionModifier.add(new p.Literal('OPP'));
+            directionModifier.add(new p.Literal('RNDP'));
+            
+            // Create assembler
+            directionModifier.assembler = createAssembler(function(assembly){
+                assembly.push(commands.DirectionModifier[assembly.pop().value.toUpperCase()]);
+            });
+            
+            return directionModifier;
         }
         
+        /**
+         * Direction Terminal Parser
+         * Creates and returns a 'direction terminal' parser.
+         * @return A 'direction terminal' parser.
+         */
+        function createDirectionTerminalParser() {
+            var directionTerminal = new p.Alternation();
+            
+            // Add direction terminal options
+            // TODO: Can we get this from basic.js?
+            directionTerminal.add(new p.Literal('SEEK'));
+            directionTerminal.add(new p.Literal('SMART'));
+            directionTerminal.add(new p.Literal('FLOW'));
+            directionTerminal.add(new p.Literal('RAND'));
+            directionTerminal.add(new p.Literal('RANDF'));
+            directionTerminal.add(new p.Literal('RANDB'));
+            directionTerminal.add(new p.Literal('RNDEW'));
+            directionTerminal.add(new p.Literal('RNDNS'));
+            directionTerminal.add(new p.Literal('RNDNE'));
+            directionTerminal.add(new p.Literal('NORTH'));
+            directionTerminal.add(new p.Literal('EAST'));
+            directionTerminal.add(new p.Literal('SOUTH'));
+            directionTerminal.add(new p.Literal('WEST'));
+            directionTerminal.add(new p.Literal('N'));
+            directionTerminal.add(new p.Literal('E'));
+            directionTerminal.add(new p.Literal('S'));
+            directionTerminal.add(new p.Literal('W'));
+            
+            // Create assembler
+            directionTerminal.assembler = createAssembler(function(assembly) {
+                assembly.push(commands.Direction[assembly.pop().value.toUpperCase()]);
+            });
+            
+            return directionTerminal;
+        }
+        
+        /**
+         * Direction Parser
+         * Creates and returns a 'direction' parser.
+         * @return A 'direction' parser.
+         */
+        function createDirectionParser() {
+            var direction = new p.Sequence();
+            var modifiers = new p.Repetition(createDirectionModifierParser());
+            direction.add(modifiers);
+            direction.add(createDirectionTerminalParser());
+            
+            // Add assembler
+            direction.assembler = createAssembler(function(assembly){
+                
+                var directionExpression = new commands.DirectionExpression(assembly.pop());
+                
+                while(assembly.peek() && assembly.peek().type === 'modifier') {
+                    directionExpression.modifiers.unshift(assembly.pop());
+                }
+                
+                assembly.push(directionExpression);
+                
+            });
+            
+            return direction;
+        }
+        
+        /**
+         * Countable Direction Parser
+         * Creates and returns a 'countable direction' parser.
+         * @return A 'countable direction' parser.
+         */
+        function createCountableDirectionParser() {
+            var direction = new p.Sequence();
+            direction.add(createDirectionParser());
+            direction.add(new p.Number());
+            direction.assembler = createAssembler(function(assembly){
+                var count = assembly.pop().value;
+                assembly.peek().count = count;
+            });
+            return direction;
+        }
+
+        /**
+         * Color Parser
+         * Creates and returns a 'color' parser.
+         * @return A 'color' parser.
+         */
+        function createColorParser() {
+            var color = new p.Alternation();
+            
+            // Add alternation values
+            color.add(new p.Literal('Black'));
+            color.add(new p.Literal('Blue'));
+            color.add(new p.Literal('Green'));
+            color.add(new p.Literal('Cyan'));
+            color.add(new p.Literal('Red'));
+            color.add(new p.Literal('Magenta'));
+            color.add(new p.Literal('Brown'));
+            color.add(new p.Literal('White'));
+            color.add(new p.Literal('Grey'));
+            color.add(new p.Literal('BrightBlue'));
+            color.add(new p.Literal('BrightGreen'));
+            color.add(new p.Literal('BrightCyan'));
+            color.add(new p.Literal('BrightRed'));
+            color.add(new p.Literal('BrightMagenta'));
+            color.add(new p.Literal('Yellow'));
+            color.add(new p.Literal('BrightWhite'));
+            
+            // Define assembler
+            color.assembler = validateOnly ? undefined : {
+                assemble: function(assembly) {
+                    assembly.push(colors[assembly.pop().value.toUpperCase()]);
+                }
+            };
+            
+            return color;
+        }
+
+        /**
+         * Thing parser
+         * Creates and returns a 'thing' parser.
+         * @return A 'thing' parser.
+         */
+        function createThingParser() {
+            var thing = new p.Alternation();
+            
+            // Add alternation values
+            // TODO: Can we get these from jzt.things directly?
+            thing.add(new p.Literal('Empty'));
+            thing.add(new p.Literal('ActiveBomb'));
+            thing.add(new p.Literal('Ammo'));
+            thing.add(new p.Literal('Bear'));
+            thing.add(new p.Literal('Blinker'));
+            thing.add(new p.Literal('BlinkWall'));
+            thing.add(new p.Literal('Bomb'));
+            thing.add(new p.Literal('Boulder'));
+            thing.add(new p.Literal('BreakableWall'));
+            thing.add(new p.Literal('Bullet'));
+            thing.add(new p.Literal('Centipede'));
+            thing.add(new p.Literal('Conveyor'));
+            thing.add(new p.Literal('Door'));
+            thing.add(new p.Literal('Duplicator'));
+            thing.add(new p.Literal('Explosion'));
+            thing.add(new p.Literal('FakeWall'));
+            thing.add(new p.Literal('Forest'));
+            thing.add(new p.Literal('Gem'));
+            thing.add(new p.Literal('Heart'));
+            thing.add(new p.Literal('InvisibleWall'));
+            thing.add(new p.Literal('Key'));
+            thing.add(new p.Literal('Lava'));
+            thing.add(new p.Literal('LineWall'));
+            thing.add(new p.Literal('Lion'));
+            thing.add(new p.Literal('Passage'));
+            thing.add(new p.Literal('Player'));
+            thing.add(new p.Literal('Pusher'));
+            thing.add(new p.Literal('Ricochet'));
+            thing.add(new p.Literal('River'));
+            thing.add(new p.Literal('Ruffian'));
+            thing.add(new p.Literal('Signpost'));
+            thing.add(new p.Literal('SliderEw'));
+            thing.add(new p.Literal('SliderNs'));
+            thing.add(new p.Literal('Snake'));
+            thing.add(new p.Literal('SolidWall'));
+            thing.add(new p.Literal('Spider'));
+            thing.add(new p.Literal('SpiderWeb'));
+            thing.add(new p.Literal('SpinningGun'));
+            thing.add(new p.Literal('Teleporter'));
+            thing.add(new p.Literal('Text'));
+            thing.add(new p.Literal('ThrowingStar'));
+            thing.add(new p.Literal('Tiger'));
+            thing.add(new p.Literal('Torch'));
+            thing.add(new p.Literal('Wall'));
+            thing.add(new p.Literal('Water'));
+            thing.add(new p.Literal('ThingFactory'));
+            
+            // Define assembler
+            thing.assembler = validateOnly ? undefined : {
+                assemble: function(assembly) {
+                    assembly.push({
+                        type: assembly.pop().value.toUpperCase()
+                    });
+                }
+            };
+            
+            return thing;
+        }
+
+        /**
+         * Colorful Thing Parser
+         * Creates and returns a 'colorful thing' parser.
+         * @return A 'colorful thing' parser.
+         */
+        function createColorfulThingParser() {
+            var colorfulThing = new p.Sequence();
+            
+            // Add sequence items
+            colorfulThing.add(createColorParser());
+            colorfulThing.add(createThingParser());
+            
+            // Define assembler
+            colorfulThing.assembler = validateOnly ? undefined : {
+                assemble: function(assembly) {
+                    var thing = assembly.pop();
+                    thing.color = colors.serialize(undefined, assembly.pop());
+                    assembly.push(thing);
+                }
+            };
+            
+            return colorfulThing;
+        }
+
+        /**
+         * Not Expression Parser
+         * Creates and returns a Not expression parser.
+         * @return A not expression parser.
+         */
+        function createNotExpressionParser(expressionParser) {
+            var notExpression = new p.Sequence();
+            
+            // Add not expression parser elements
+            notExpression.addDiscard(new p.Literal('Not'));
+            notExpression.add(expressionParser);
+            
+            // Define assembler
+            notExpression.assembler = createAssembler(function(assembly){
+                assembly.push(new commands.NotExpression(assembly.pop()));
+            });
+            
+            return notExpression;
+        }
+
+        /**
+         * Adjacent Expression Parser
+         * Creates and returns an adjacent expression parser
+         * @return An adjacent expression parser
+         */
+        function createAdjacentExpressionParser() {
+            var adjacentExpression = new p.Literal('Adjacent');
+            adjacentExpression.discard = true;
+            adjacentExpression.assembler = createAssembler(function(assembly) {
+                assembly.push(new commands.AdjacentExpression());
+            });
+            return adjacentExpression;
+        }
+
+        /**
+         * Blocked Expression Parser
+         * Creates and returns a blocked expression parser
+         * @return A blocked expression parser
+         */
+        function createBlockedExpressionParser() {
+            var blockedExpression = new p.Sequence();
+            blockedExpression.addDiscard(new p.Literal('Blocked'));
+            blockedExpression.add(createDirectionParser());
+            blockedExpression.assembler = createAssembler(function(assembly){
+                assembly.push(new commands.BlockedExpression(assembly.pop()));
+            });
+            return blockedExpression;
+        }
+
+        /**
+         * Aligned Expression Parser
+         * Creates and returns an aligned expression parser.
+         * @return An aligned expression parser.
+         */
+        function createAlignedExpressionParser() {
+            var alignedExpression = new p.Sequence();
+            alignedExpression.addDiscard(new p.Literal('Aligned'));
+            alignedExpression.add(createDirectionParser());
+            alignedExpression.assembler = createAssembler(function(assembly){
+                assembly.push(new commands.AlignedExpression(assembly.pop()));
+            });
+            return alignedExpression;
+        }
+
+        /**
+         * Peep Expression Parser
+         * Creates and returns a peep expression parser.
+         * @return A peep expression parser
+         */
+        function createPeepExpressionParser() {
+            var peepExpression = new p.Sequence();
+            peepExpression.addDiscard(new p.Literal('Peep'));
+            peepExpression.add(optional(new p.Number()));
+            peepExpression.assembler = createAssembler(function(assembly){
+                var count = assembly.peek() && assembly.peek().name === 'NUMBER' ? assembly.pop().value : undefined;
+                assembly.push(new commands.PeepExpression(count));
+            });
+            return peepExpression;
+        }
+
+        /**
+         * Exists Expression Parser
+         * Creates and returns an exists expression parser.
+         * @return An exists expression parser.
+         */
+        function createExistsExpressionParser() {
+            var existsExpression = new p.Sequence();
+            existsExpression.addDiscard(new p.Literal('Exists'));
+            existsExpression.add(optional(new p.Number()));
+            existsExpression.add(choice(createThingParser(), createColorfulThingParser()));
+            existsExpression.assembler = createAssembler(function(assembly){
+                var thingTemplate = assembly.pop();
+                var count = assembly.peek() && assembly.peek().name === 'NUMBER' ? assembly.pop().value : undefined;
+                assembly.push(new commands.ExistsExpression(thingTemplate, count));
+            });
+            return existsExpression;
+        }
+
+        /**
+         * Testing Expression Parser
+         * Creates and returns a testing expression parser.
+         * @return A testing expression parser.
+         */
+        function createTestingExpressionParser() {
+            var testingExpression = new p.Sequence();
+            var operator = new p.Alternation();
+            operator.add(new p.Literal('<'));
+            operator.add(new p.Literal('<='));
+            operator.add(new p.Literal('>'));
+            operator.add(new p.Literal('>='));
+            operator.add(new p.Literal('='));
+            testingExpression.add(new p.Word());
+            testingExpression.add(operator);
+            testingExpression.add(new p.Number());
+            testingExpression.assembler = createAssembler(function(assembly){
+                var value = assembly.pop().value;
+                var operand = assembly.pop().value;
+                var counter = assembly.pop().value.toUpperCase();
+                assembly.push(new commands.TestingExpression(counter, operand, value));
+            });
+            return testingExpression;
+        }
+        
+        /**
+         * Expression Parser
+         * Creates and returns an expression parser.
+         * @return An expression parser.
+         */
+        function createExpressionParser() {
+            var expression = new p.Alternation();
+            expression.add(createNotExpressionParser(expression));
+            expression.add(createAdjacentExpressionParser());
+            expression.add(createBlockedExpressionParser());
+            expression.add(createAlignedExpressionParser());
+            expression.add(createPeepExpressionParser());
+            expression.add(createExistsExpressionParser());
+            expression.add(createTestingExpressionParser());
+            return expression;
+        }
+
         /**
          * Label Parser
          * Creates and returns a new label parser
@@ -69,47 +455,6 @@ jzt.jztscript = (function(my){
             });
             
             return label;
-        }
-
-        /**
-         * Statement Parser
-         * Creates and returns a new statement parser.
-         * @return A statement parser.
-         */
-        function createStatementParser() {
-            var statement = new p.Sequence();
-            var statementOptions = new p.Alternation();
-            
-            // Add statement items
-            statementOptions.add(createBecomeStatementParser());
-            statementOptions.add(createChangeStatementParser());
-            statementOptions.add(createCharStatementParser());
-            statementOptions.add(createDieStatementParser());
-            statementOptions.add(createEndStatementParser());
-            statementOptions.add(createGiveStatementParser());
-            statementOptions.add(createIfStatementParser());
-            statementOptions.add(createLockStatementParser());
-            statementOptions.add(createMoveStatementParser());
-            statementOptions.add(createPlayStatementParser());
-            statementOptions.add(createPutStatementParser());
-            statementOptions.add(createScrollStatementParser());
-            statementOptions.add(createSendStatementParser());
-            statementOptions.add(createSetStatementParser());
-            statementOptions.add(createTakeStatementParser());
-            statementOptions.add(createThrowStarStatementParser());
-            statementOptions.add(createTorchStatementParser());
-            statementOptions.add(createRestoreStatementParser());
-            statementOptions.add(createSayStatementParser());
-            statementOptions.add(createShootStatementParser());
-            statementOptions.add(createStandStatementParser());
-            statementOptions.add(createUnlockStatementParser());
-            statementOptions.add(createWaitStatementParser());
-            statementOptions.add(createWalkStatementParser());
-            statementOptions.add(createZapStatementParser());
-            statement.add(statementOptions);
-            statement.addDiscard(new p.NewLine());
-            
-            return statement;
         }
 
         /**
@@ -218,6 +563,51 @@ jzt.jztscript = (function(my){
             });
             
             return endStatement;
+        }
+        
+        /**
+         * Go Statement Parser
+         *
+         * Creates and returns a new 'go' statement parser.
+         * @param {string} [alias] - An optional alias to use for the parser instead of GO
+         * @param {boolean} [forceful] - Whether or not this parser should result in a forceful move command
+         * @returns {object} - A 'go' statement parser.
+         */
+        function createGoStatementParser(alias, forceful) {
+            
+            var go = new p.Sequence();
+            var subsequentDirections = new p.Sequence();
+            var direction = choice(createDirectionParser(), createCountableDirectionParser());
+            
+            // Forceful defaults to true
+            forceful = forceful === undefined ? true : forceful;
+            
+            subsequentDirections.addDiscard(new p.Literal(','));
+            subsequentDirections.add(direction);
+            
+            // Add sequence tokens
+            go.add(new p.Literal(alias || 'Go'));
+            go.add(direction);
+            go.add(new p.Repetition(subsequentDirections));
+            
+            // Define assembler
+            go.assembler = createAssembler(function(assembly){
+                
+                var command;
+                var expression;
+                var expressions = popAllTokensUntil(assembly, 'WORD', alias || 'GO', true);
+                
+                while(expressions.length > 0) {
+                 
+                    expression = expressions.pop();
+                    assembly.push(new commands.MoveCommand(expression, forceful));
+                     
+                }
+                
+            });
+            
+            return go;
+            
         }
 
         /**
@@ -453,7 +843,7 @@ jzt.jztscript = (function(my){
                 var token1 = assembly.pop().value.toUpperCase();
                 var token2 = assembly.peek().name === 'WORD' ? assembly.pop().value.toUpperCase() : undefined;
                 var count = +(assembly.pop().value);
-                assembly.push(new commands.TakeCommand(token2 ? token2 : token1, count, token2 ? token1 : undefined));
+                assembly.push(new commands.TakeCommand(token2 || token1, count, token2 ? token1 : undefined));
             });
 
             return take;
@@ -637,388 +1027,66 @@ jzt.jztscript = (function(my){
             });
             return zap;
         }
-
+        
         /**
-         * Countable Direction Parser
-         * Creates and returns a 'countable direction' parser.
-         * @return A 'countable direction' parser.
+         * Statement Parser
+         * Creates and returns a new statement parser.
+         * @return A statement parser.
          */
-        function createCountableDirectionParser() {
-            var direction = new p.Sequence();
-            direction.add(createDirectionParser());
-            direction.add(new p.Number());
-            direction.assembler = createAssembler(function(assembly){
-                var count = assembly.pop().value;
-                assembly.peek().count = count;
-            });
-            return direction;
-        }
-
-        /**
-         * Direction Parser
-         * Creates and returns a 'direction' parser.
-         * @return A 'direction' parser.
-         */
-        function createDirectionParser() {
-            var direction = new p.Sequence();
-            var modifiers = new p.Repetition(createDirectionModifierParser());
-            direction.add(modifiers);
-            direction.add(createDirectionTerminalParser());
+        function createStatementParser() {
+            var statement = new p.Sequence();
+            var statementOptions = new p.Alternation();
             
-            // Add assembler
-            direction.assembler = createAssembler(function(assembly){
-                
-                var directionExpression = new commands.DirectionExpression(assembly.pop());
-                
-                while(assembly.peek() && assembly.peek().type === 'modifier') {
-                    directionExpression.modifiers.unshift(assembly.pop());
-                }
-                
-                assembly.push(directionExpression);
-                
-            });
+            // Add statement items
+            statementOptions.add(createBecomeStatementParser());
+            statementOptions.add(createChangeStatementParser());
+            statementOptions.add(createCharStatementParser());
+            statementOptions.add(createDieStatementParser());
+            statementOptions.add(createEndStatementParser());
+            statementOptions.add(createGoStatementParser());
+            statementOptions.add(createGiveStatementParser());
+            statementOptions.add(createIfStatementParser());
+            statementOptions.add(createLockStatementParser());
+            statementOptions.add(createPlayStatementParser());
+            statementOptions.add(createPutStatementParser());
+            statementOptions.add(createScrollStatementParser());
+            statementOptions.add(createSendStatementParser());
+            statementOptions.add(createSetStatementParser());
+            statementOptions.add(createTakeStatementParser());
+            statementOptions.add(createThrowStarStatementParser());
+            statementOptions.add(createTorchStatementParser());
+            statementOptions.add(createGoStatementParser('Try', false));
+            statementOptions.add(createRestoreStatementParser());
+            statementOptions.add(createSayStatementParser());
+            statementOptions.add(createShootStatementParser());
+            statementOptions.add(createStandStatementParser());
+            statementOptions.add(createUnlockStatementParser());
+            statementOptions.add(createWaitStatementParser());
+            statementOptions.add(createWalkStatementParser());
+            statementOptions.add(createZapStatementParser());
+            statement.add(statementOptions);
+            statement.addDiscard(new p.NewLine());
             
-            return direction;
-        }
-
-        /**
-         * Direction Modifier Parser
-         * Creates and returns a 'direction modifier' parser.
-         * @return A 'direction modifier' parser.
-         */
-        function createDirectionModifierParser() {
-            var directionModifier = new p.Alternation();
-            
-            // Add direction modifier options
-            directionModifier.add(new p.Literal('CW'));
-            directionModifier.add(new p.Literal('CCW'));
-            directionModifier.add(new p.Literal('OPP'));
-            directionModifier.add(new p.Literal('RNDP'));
-            
-            // Create assembler
-            directionModifier.assembler = createAssembler(function(assembly){
-                assembly.push(commands.DirectionModifier[assembly.pop().value.toUpperCase()]);
-            });
-            
-            return directionModifier;
-        }
-
-        /**
-         * Direction Terminal Parser
-         * Creates and returns a 'direction terminal' parser.
-         * @return A 'direction terminal' parser.
-         */
-        function createDirectionTerminalParser() {
-            var directionTerminal = new p.Alternation();
-            
-            // Add direction terminal options
-            // TODO: Can we get this from basic.js?
-            directionTerminal.add(new p.Literal('SEEK'));
-            directionTerminal.add(new p.Literal('SMART'));
-            directionTerminal.add(new p.Literal('FLOW'));
-            directionTerminal.add(new p.Literal('RAND'));
-            directionTerminal.add(new p.Literal('RANDF'));
-            directionTerminal.add(new p.Literal('RANDB'));
-            directionTerminal.add(new p.Literal('RNDEW'));
-            directionTerminal.add(new p.Literal('RNDNS'));
-            directionTerminal.add(new p.Literal('RNDNE'));
-            directionTerminal.add(new p.Literal('NORTH'));
-            directionTerminal.add(new p.Literal('EAST'));
-            directionTerminal.add(new p.Literal('SOUTH'));
-            directionTerminal.add(new p.Literal('WEST'));
-            directionTerminal.add(new p.Literal('N'));
-            directionTerminal.add(new p.Literal('E'));
-            directionTerminal.add(new p.Literal('S'));
-            directionTerminal.add(new p.Literal('W'));
-            
-            // Create assembler
-            directionTerminal.assembler = createAssembler(function(assembly) {
-                assembly.push(commands.Direction[assembly.pop().value.toUpperCase()]);
-            });
-            
-            return directionTerminal;
-        }
-
-        /**
-         * Color Parser
-         * Creates and returns a 'color' parser.
-         * @return A 'color' parser.
-         */
-        function createColorParser() {
-            var color = new p.Alternation();
-            
-            // Add alternation values
-            color.add(new p.Literal('Black'));
-            color.add(new p.Literal('Blue'));
-            color.add(new p.Literal('Green'));
-            color.add(new p.Literal('Cyan'));
-            color.add(new p.Literal('Red'));
-            color.add(new p.Literal('Magenta'));
-            color.add(new p.Literal('Brown'));
-            color.add(new p.Literal('White'));
-            color.add(new p.Literal('Grey'));
-            color.add(new p.Literal('BrightBlue'));
-            color.add(new p.Literal('BrightGreen'));
-            color.add(new p.Literal('BrightCyan'));
-            color.add(new p.Literal('BrightRed'));
-            color.add(new p.Literal('BrightMagenta'));
-            color.add(new p.Literal('Yellow'));
-            color.add(new p.Literal('BrightWhite'));
-            
-            // Define assembler
-            color.assembler = validateOnly ? undefined : {
-                assemble: function(assembly) {
-                    assembly.push(colors[assembly.pop().value.toUpperCase()]);
-                }
-            };
-            
-            return color;
-        }
-
-        /**
-         * Thing parser
-         * Creates and returns a 'thing' parser.
-         * @return A 'thing' parser.
-         */
-        function createThingParser() {
-            var thing = new p.Alternation();
-            
-            // Add alternation values
-            // TODO: Can we get these from jzt.things directly?
-            thing.add(new p.Literal('Empty'));
-            thing.add(new p.Literal('ActiveBomb'));
-            thing.add(new p.Literal('Ammo'));
-            thing.add(new p.Literal('Bear'));
-            thing.add(new p.Literal('Blinker'));
-            thing.add(new p.Literal('BlinkWall'));
-            thing.add(new p.Literal('Bomb'));
-            thing.add(new p.Literal('Boulder'));
-            thing.add(new p.Literal('BreakableWall'));
-            thing.add(new p.Literal('Bullet'));
-            thing.add(new p.Literal('Centipede'));
-            thing.add(new p.Literal('Conveyor'));
-            thing.add(new p.Literal('Door'));
-            thing.add(new p.Literal('Duplicator'));
-            thing.add(new p.Literal('Explosion'));
-            thing.add(new p.Literal('FakeWall'));
-            thing.add(new p.Literal('Forest'));
-            thing.add(new p.Literal('Gem'));
-            thing.add(new p.Literal('Heart'));
-            thing.add(new p.Literal('InvisibleWall'));
-            thing.add(new p.Literal('Key'));
-            thing.add(new p.Literal('Lava'));
-            thing.add(new p.Literal('LineWall'));
-            thing.add(new p.Literal('Lion'));
-            thing.add(new p.Literal('Passage'));
-            thing.add(new p.Literal('Player'));
-            thing.add(new p.Literal('Pusher'));
-            thing.add(new p.Literal('Ricochet'));
-            thing.add(new p.Literal('River'));
-            thing.add(new p.Literal('Ruffian'));
-            thing.add(new p.Literal('Signpost'));
-            thing.add(new p.Literal('SliderEw'));
-            thing.add(new p.Literal('SliderNs'));
-            thing.add(new p.Literal('Snake'));
-            thing.add(new p.Literal('SolidWall'));
-            thing.add(new p.Literal('Spider'));
-            thing.add(new p.Literal('SpiderWeb'));
-            thing.add(new p.Literal('SpinningGun'));
-            thing.add(new p.Literal('Teleporter'));
-            thing.add(new p.Literal('Text'));
-            thing.add(new p.Literal('ThrowingStar'));
-            thing.add(new p.Literal('Tiger'));
-            thing.add(new p.Literal('Torch'));
-            thing.add(new p.Literal('Wall'));
-            thing.add(new p.Literal('Water'));
-            thing.add(new p.Literal('ThingFactory'));
-            
-            // Define assembler
-            thing.assembler = validateOnly ? undefined : {
-                assemble: function(assembly) {
-                    assembly.push({
-                        type: assembly.pop().value.toUpperCase()
-                    });
-                }
-            };
-            
-            return thing;
-        }
-
-        /**
-         * Colorful Thing Parser
-         * Creates and returns a 'colorful thing' parser.
-         * @return A 'colorful thing' parser.
-         */
-        function createColorfulThingParser() {
-            var colorfulThing = new p.Sequence();
-            
-            // Add sequence items
-            colorfulThing.add(createColorParser());
-            colorfulThing.add(createThingParser());
-            
-            // Define assembler
-            colorfulThing.assembler = validateOnly ? undefined : {
-                assemble: function(assembly) {
-                    var thing = assembly.pop();
-                    thing.color = colors.serialize(undefined, assembly.pop());
-                    assembly.push(thing);
-                }
-            };
-            
-            return colorfulThing;
-        }
-
-        /**
-         * Expression Parser
-         * Creates and returns an expression parser.
-         * @return An expression parser.
-         */
-        function createExpressionParser() {
-            var expression = new p.Alternation();
-            expression.add(createNotExpressionParser(expression));
-            expression.add(createAdjacentExpressionParser());
-            expression.add(createBlockedExpressionParser());
-            expression.add(createAlignedExpressionParser());
-            expression.add(createPeepExpressionParser());
-            expression.add(createExistsExpressionParser());
-            expression.add(createTestingExpressionParser());
-            return expression;
-        }
-
-        /**
-         * Not Expression Parser
-         * Creates and returns a Not expression parser.
-         * @return A not expression parser.
-         */
-        function createNotExpressionParser(expressionParser) {
-            var notExpression = new p.Sequence();
-            
-            // Add not expression parser elements
-            notExpression.addDiscard(new p.Literal('Not'));
-            notExpression.add(expressionParser);
-            
-            // Define assembler
-            notExpression.assembler = createAssembler(function(assembly){
-                assembly.push(new commands.NotExpression(assembly.pop()));
-            });
-            
-            return notExpression;
-        }
-
-        /**
-         * Adjacent Expression Parser
-         * Creates and returns an adjacent expression parser
-         * @return An adjacent expression parser
-         */
-        function createAdjacentExpressionParser() {
-            var adjacentExpression = new p.Literal('Adjacent');
-            adjacentExpression.discard = true;
-            adjacentExpression.assembler = createAssembler(function(assembly) {
-                assembly.push(new commands.AdjacentExpression());
-            });
-            return adjacentExpression;
-        }
-
-        /**
-         * Blocked Expression Parser
-         * Creates and returns a blocked expression parser
-         * @return A blocked expression parser
-         */
-        function createBlockedExpressionParser() {
-            var blockedExpression = new p.Sequence();
-            blockedExpression.addDiscard(new p.Literal('Blocked'));
-            blockedExpression.add(createDirectionParser());
-            blockedExpression.assembler = createAssembler(function(assembly){
-                assembly.push(new commands.BlockedExpression(assembly.pop()));
-            });
-            return blockedExpression;
-        }
-
-        /**
-         * Aligned Expression Parser
-         * Creates and returns an aligned expression parser.
-         * @return An aligned expression parser.
-         */
-        function createAlignedExpressionParser() {
-            var alignedExpression = new p.Sequence();
-            alignedExpression.addDiscard(new p.Literal('Aligned'));
-            alignedExpression.add(createDirectionParser());
-            alignedExpression.assembler = createAssembler(function(assembly){
-                assembly.push(new commands.AlignedExpression(assembly.pop()));
-            });
-            return alignedExpression;
-        }
-
-        /**
-         * Peep Expression Parser
-         * Creates and returns a peep expression parser.
-         * @return A peep expression parser
-         */
-        function createPeepExpressionParser() {
-            var peepExpression = new p.Sequence();
-            peepExpression.addDiscard(new p.Literal('Peep'));
-            peepExpression.add(optional(new p.Number()));
-            peepExpression.assembler = createAssembler(function(assembly){
-                var count = assembly.peek() && assembly.peek().name === 'NUMBER' ? assembly.pop().value : undefined;
-                assembly.push(new commands.PeepExpression(count));
-            });
-            return peepExpression;
-        }
-
-        /**
-         * Exists Expression Parser
-         * Creates and returns an exists expression parser.
-         * @return An exists expression parser.
-         */
-        function createExistsExpressionParser() {
-            var existsExpression = new p.Sequence();
-            existsExpression.addDiscard(new p.Literal('Exists'));
-            existsExpression.add(optional(new p.Number()));
-            existsExpression.add(choice(createThingParser(), createColorfulThingParser()));
-            existsExpression.assembler = createAssembler(function(assembly){
-                var thingTemplate = assembly.pop();
-                var count = assembly.peek() && assembly.peek().name === 'NUMBER' ? assembly.pop().value : undefined;
-                assembly.push(new commands.ExistsExpression(thingTemplate, count));
-            });
-            return existsExpression;
-        }
-
-        /**
-         * Testing Expression Parser
-         * Creates and returns a testing expression parser.
-         * @return A testing expression parser.
-         */
-        function createTestingExpressionParser() {
-            var testingExpression = new p.Sequence();
-            var operator = new p.Alternation();
-            operator.add(new p.Literal('<'));
-            operator.add(new p.Literal('<='));
-            operator.add(new p.Literal('>'));
-            operator.add(new p.Literal('>='));
-            operator.add(new p.Literal('='));
-            testingExpression.add(new p.Word());
-            testingExpression.add(operator);
-            testingExpression.add(new p.Number());
-            testingExpression.assembler = createAssembler(function(assembly){
-                var value = assembly.pop().value;
-                var operand = assembly.pop().value;
-                var counter = assembly.pop().value.toUpperCase();
-                assembly.push(new commands.TestingExpression(counter, operand, value));
-            });
-            return testingExpression;
-        }
-
-        function optional(parser) {
-            return choice(parser, new p.Empty());
-        }
-
-        function choice(parserOne, parserTwo) {
-            var result = new p.Alternation();
-            result.add(parserOne);
-            result.add(parserTwo);
-            return result;
+            return statement;
         }
         
+        /**
+         * JztScript Parser
+         * Creates and returns a new JztScript parser.
+         * @return A JZT script parser.
+         */
+        function createJztScriptParser() {
+        
+            var program;
+            var line = new p.Alternation();
+            line.add(createLabelParser());
+            line.add(createStatementParser());
+            line.addDiscard(new p.NewLine());
+            program = new p.Repetition(line);
+            return program;
+
+        }
+
         this.parser = createJztScriptParser();
         
     }
