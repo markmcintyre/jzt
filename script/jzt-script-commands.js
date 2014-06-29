@@ -309,10 +309,10 @@ jzt.jztscript.commands = (function(my){
     MoveCommand.prototype.execute = function(owner) {
         
         if(this.forceful) {
-            this.forcefulMove(owner);
+            return this.forcefulMove(owner);
         }
         else {
-            this.move(owner);
+            return this.move(owner);
         }
         
     };
@@ -876,11 +876,11 @@ jzt.jztscript.commands = (function(my){
      */
     function ExistsExpression(thingTemplate, count) {
         this.thingTemplate = thingTemplate;
-        this.count = count || 1;
+        this.count = count;
     }
     
     ExistsExpression.prototype.getResult = function(owner) {
-        return owner.board.hasTile(this.thingTemplate.type, this.thingTemplate.color, this.count);
+        return owner.board.hasTile(this.thingTemplate, this.count);
     };
     
     /**

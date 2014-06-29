@@ -231,12 +231,12 @@ var jzt = (function(my) {
 
         // Initialize our default counters
         this.counters = {
-            health: 50,
-            'health_max': 50,
-            ammo: 0,
-            gems: 0,
-            torches: 0,
-            score: 0
+            HEALTH: 50,
+            'HEALTH_MAX': 50,
+            AMMO: 0,
+            GEMS: 0,
+            TORCHES: 0,
+            SCORE: 0
         };
 
         for(index in data.counters) {
@@ -288,7 +288,7 @@ var jzt = (function(my) {
      */
     Game.prototype.setCounterValue = function(counter, value) {
 
-        var maxCounter = counter + '_max';
+        var maxCounter = counter + '_MAX';
 
         // If the counter doesn't already exist, create it now
         if(this.counters[counter] === undefined) {
@@ -865,7 +865,7 @@ var jzt = (function(my) {
     Game.prototype.checkCounters = function() {
 
         // If our player is dead, and it's not already GameOver state
-        if(this.getCounterValue('health') <= 0 && this.state !== GameState.GameOver) {
+        if(this.getCounterValue('HEALTH') <= 0 && this.state !== GameState.GameOver) {
 
             // Assign our state to be GameOVer
             this.setState(GameState.GameOver);
@@ -997,8 +997,8 @@ var jzt = (function(my) {
 
         function getCounterValue(counter) {
             var result = me.getCounterValue(counter).toString();
-            if(me.getCounterValue(counter + '_max')) {
-                result += '/' + me.getCounterValue(counter + '_max').toString();
+            if(me.getCounterValue(counter + '_MAX')) {
+                result += '/' + me.getCounterValue(counter + '_MAX').toString();
             }
             return result;
         }
@@ -1030,17 +1030,17 @@ var jzt = (function(my) {
         this.statusPopup.render(this.context);
 
         // Draw our status values
-        this.resources.graphics.drawString(this.context, position.add(new jzt.Point(13, 3)), getCounterValue('health'), jzt.colors.BrightWhite);
-        this.resources.graphics.drawString(this.context, position.add(new jzt.Point(13, 4)), getCounterValue('ammo'), jzt.colors.BrightWhite);
-        this.resources.graphics.drawString(this.context, position.add(new jzt.Point(13, 5)), getCounterValue('gems'), jzt.colors.BrightWhite);
-        this.resources.graphics.drawString(this.context, position.add(new jzt.Point(13, 6)), getCounterValue('torches'), jzt.colors.BrightWhite);
-        this.resources.graphics.drawString(this.context, position.add(new jzt.Point(13, 7)), getCounterValue('score'), jzt.colors.BrightWhite);
+        this.resources.graphics.drawString(this.context, position.add(new jzt.Point(13, 3)), getCounterValue('HEALTH'), jzt.colors.BrightWhite);
+        this.resources.graphics.drawString(this.context, position.add(new jzt.Point(13, 4)), getCounterValue('AMMO'), jzt.colors.BrightWhite);
+        this.resources.graphics.drawString(this.context, position.add(new jzt.Point(13, 5)), getCounterValue('GEMS'), jzt.colors.BrightWhite);
+        this.resources.graphics.drawString(this.context, position.add(new jzt.Point(13, 6)), getCounterValue('TORCHES'), jzt.colors.BrightWhite);
+        this.resources.graphics.drawString(this.context, position.add(new jzt.Point(13, 7)), getCounterValue('SCORE'), jzt.colors.BrightWhite);
 
         // Draw our keys
         position = position.add(new jzt.Point(13, 8));
         sprite = this.resources.graphics.getSprite(12);
         for(value = 0; value < keyValues.length; ++value) {
-            if(this.getCounterValue('key' + keyValues[value]) > 0) {
+            if(this.getCounterValue('KEY' + keyValues[value]) > 0) {
                 sprite.draw(this.context, position, jzt.colors.deserializeForeground(keyValues[value]));
                 position.x++;
             }

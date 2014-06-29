@@ -283,9 +283,10 @@ jzt.things = (function(my){
      * @param color An optional color
      * @return true if this Thing has a matching serializable type and color (if provided) 
      */
-    Thing.prototype.equals = function(type, color) {
+    Thing.prototype.equals = function(template) {
 
-        type = type.toUpperCase();
+        var type = template.type.toUpperCase();
+        var color = template.color ? jzt.colors.deserializeForeground(template.color) : undefined;
 
         if(this.constructor.name.toUpperCase() === type) {
 
@@ -752,7 +753,7 @@ jzt.things = (function(my){
         if(message === 'TOUCH') {
             this.oneTimeMessage('status.ammo');
             this.play('tcc#d');
-            this.adjustCounter('ammo', 5);
+            this.adjustCounter('AMMO', 5);
             this.remove();
         }
     };
@@ -831,7 +832,7 @@ jzt.things = (function(my){
 
         if(message === 'SHOT' || message === 'BOMBED') {
             this.play('t+c---c++++c--c', true);
-            this.adjustCounter('score', 10);
+            this.adjustCounter('SCORE', 10);
             this.remove();
         }
         else if(message === 'TOUCH') {
@@ -1597,7 +1598,7 @@ jzt.things = (function(my){
     Centipede.prototype.sendMessage = function(message) {
         if(message === 'SHOT' || message === 'BOMBED') {
             this.play('t+c---c++++c--c', true);
-            this.adjustCounter('score', 10);
+            this.adjustCounter('SCORE', 10);
             this.remove();
         }
         if(message === 'TOUCH') {
@@ -1916,7 +1917,7 @@ jzt.things = (function(my){
             doorType = jzt.i18n.getMessage('doors.' + this.background.code);
 
             // Determine a matching key code
-            matchingKeyCode = 'key' + this.background.lighten().code;
+            matchingKeyCode = 'KEY' + this.background.lighten().code;
 
             // If the player has the corresponding key type...
             if(this.getCounterValue(matchingKeyCode) > 0) {
@@ -2224,9 +2225,9 @@ jzt.things = (function(my){
         if(message === 'TOUCH') {
             this.oneTimeMessage('status.gem');
             this.remove();
-            this.adjustCounter('health', 1);
-            this.adjustCounter('gems', 1);
-            this.adjustCounter('score', 10);
+            this.adjustCounter('HEALTH', 1);
+            this.adjustCounter('GEMS', 1);
+            this.adjustCounter('SCORE', 10);
             this.play('t+c-gec');
         }
         else if(message === 'SHOT' || message === 'BOMBED') {
@@ -2281,9 +2282,9 @@ jzt.things = (function(my){
         if(message === 'TOUCH') {
             this.remove();
             this.play('tcefg+ceg');
-            this.adjustCounter('health_max', 10);
-            this.adjustCounter('health', 10);
-            this.adjustCounter('score', 500);
+            this.adjustCounter('HEALTH_MAX', 10);
+            this.adjustCounter('HEALTH', 10);
+            this.adjustCounter('SCORE', 500);
             this.board.setDisplayMessage(jzt.i18n.getMessage('status.heart'));
         }
     };
@@ -2377,7 +2378,7 @@ jzt.things = (function(my){
             keyType = jzt.i18n.getMessage('keys.' + this.foreground.code);
 
             // If the player already has this key type...
-            if(this.getCounterValue('key' + this.foreground.code) > 0) {
+            if(this.getCounterValue('KEY' + this.foreground.code) > 0) {
                 this.board.setDisplayMessage(jzt.i18n.getMessage('keys.toomany', keyType));
                 this.play('sc-c');
             }
@@ -2385,7 +2386,7 @@ jzt.things = (function(my){
             // If the player does not yet have this key type...
             else {
                 this.remove();
-                this.adjustCounter('key' + this.foreground.code, 1);
+                this.adjustCounter('KEY' + this.foreground.code, 1);
                 this.board.setDisplayMessage(jzt.i18n.getMessage('keys.collect', keyType));
                 this.play('t+cegcegceg+sc');
             }
@@ -2582,7 +2583,7 @@ jzt.things = (function(my){
 
         if(message === 'SHOT' || message === 'BOMBED') {
             this.play('t+c---c++++c--c', true);
-            this.adjustCounter('score', 10);
+            this.adjustCounter('SCORE', 10);
             this.remove();
         }
         else if(message === 'TOUCH') {
@@ -2840,8 +2841,8 @@ jzt.things = (function(my){
             return;
         }
 
-        if(this.getCounterValue('ammo') > 0) {
-            this.adjustCounter('ammo', -1);
+        if(this.getCounterValue('AMMO') > 0) {
+            this.adjustCounter('AMMO', -1);
             ThingFactory.shoot(this.board, this.point.add(direction), direction, true);
         }
         else {
@@ -2938,7 +2939,7 @@ jzt.things = (function(my){
     Player.prototype.useTorch = function() {
 
         // If the player has torches available...
-        if(this.game.getCounterValue('torches') > 0) {
+        if(this.game.getCounterValue('TORCHES') > 0) {
 
             // If the room isn't dark, let the player keep the torch
             if(!this.board.dark) {
@@ -2947,7 +2948,7 @@ jzt.things = (function(my){
             }
 
             // Decrease our torch count
-            this.game.adjustCounter('torches', -1);
+            this.game.adjustCounter('TORCHES', -1);
 
             // Specify that we're now using a torch
             this.torch = true;
@@ -3021,7 +3022,7 @@ jzt.things = (function(my){
 
         if(message === 'SHOT' || message === 'BOMBED') {
             this.play('t--c+c-c+d#', true);
-            this.adjustCounter('health', -10);
+            this.adjustCounter('HEALTH', -10);
             this.board.playerHurt();
         }
 
@@ -3273,7 +3274,7 @@ jzt.things = (function(my){
     Ruffian.prototype.sendMessage = function(message) {
         if(message === 'SHOT' || message === 'BOMBED') {
             this.play('t+c---c++++c--c', true);
-            this.adjustCounter('score', 10);
+            this.adjustCounter('SCORE', 10);
             this.remove();
         }
         else if(message === 'TOUCH') {
@@ -3503,7 +3504,7 @@ jzt.things = (function(my){
     Snake.prototype.sendMessage = function(message) {
         if(message === 'SHOT' || message === 'BOMBED') {
             this.play('t+c---c++++c--c', true);
-            this.adjustCounter('score', 10);
+            this.adjustCounter('SCORE', 10);
             this.remove();
         }
         else if(message === 'TOUCH') {
@@ -3633,7 +3634,7 @@ jzt.things = (function(my){
 
         if(message === 'SHOT' || message === 'BOMBED') {
             this.play('t+c---c++++c--c', true);
-            this.adjustCounter('score', 10);
+            this.adjustCounter('SCORE', 10);
             this.remove();
         }
         else if(message === 'TOUCH') {
@@ -4151,7 +4152,7 @@ jzt.things = (function(my){
 
         if(message === 'SHOT' || message === 'BOMBED') {
             this.play('t+c---c++++c--c', true);
-            this.adjustCounter('score', 10);
+            this.adjustCounter('SCORE', 10);
             this.remove();
         }
         else if(message === 'TOUCH') {
@@ -4274,7 +4275,7 @@ jzt.things = (function(my){
         if(message === 'TOUCH') {
             this.oneTimeMessage('status.torch');
             this.play('tcase');
-            this.adjustCounter('torches', 1);
+            this.adjustCounter('TORCHES', 1);
             this.remove();
         }
     };

@@ -12,34 +12,36 @@
 		
 		<canvas id="jzt" width="800" height="640"></canvas>
 		
-		<script type="text/javascript" src="../script/jzt.js"></script>
-		<script type="text/javascript" src="../script/basic.js"></script>
-		<script type="text/javascript" src="../script/graphics.js"></script>
-		<script type="text/javascript" src="../script/board.js"></script>
-		<script type="text/javascript" src="../script/input.js"></script>
-		<script type="text/javascript" src="../script/lexer.js"></script>
-		<script type="text/javascript" src="../script/parser.js"></script>
-		<script type="text/javascript" src="../script/things.js"></script>
-		<script type="text/javascript" src="../script/jzt-script-commands.js"></script>
-		<script type="text/javascript" src="../script/jzt-script-parser.js"></script>
-		<script type="text/javascript" src="../script/jzt-script.js"></script>
-		<script type="text/javascript" src="../script/audio.js"></script>
-		<script type="text/javascript" src="../script/scroll.js"></script>
-		<script type="text/javascript" src="../script/i18n.js"></script>
-		<script type="text/javascript" src="../script/popup.js"></script>
-		<script type="text/javascript" src="../script/file-management.js"></script>
-		<script type="text/javascript" src="../script/lz-string-1.3.3.js"></script>
+		<script type="text/javascript" src="../script/jzt.js" charset="utf-8"></script>
+		<script type="text/javascript" src="../script/basic.js" charset="utf-8"></script>
+		<script type="text/javascript" src="../script/graphics.js" charset="utf-8"></script>
+		<script type="text/javascript" src="../script/board.js" charset="utf-8"></script>
+		<script type="text/javascript" src="../script/input.js" charset="utf-8"></script>
+		<script type="text/javascript" src="../script/lexer.js" charset="utf-8"></script>
+		<script type="text/javascript" src="../script/parser.js" charset="utf-8"></script>
+		<script type="text/javascript" src="../script/things.js" charset="utf-8"></script>
+		<script type="text/javascript" src="../script/jzt-script-commands.js" charset="utf-8"></script>
+		<script type="text/javascript" src="../script/jzt-script-parser.js" charset="utf-8"></script>
+		<script type="text/javascript" src="../script/jzt-script.js" charset="utf-8"></script>
+		<script type="text/javascript" src="../script/audio.js" charset="utf-8"></script>
+		<script type="text/javascript" src="../script/scroll.js" charset="utf-8"></script>
+		<script type="text/javascript" src="../script/i18n.js" charset="utf-8"></script>
+		<script type="text/javascript" src="../script/popup.js" charset="utf-8"></script>
+		<script type="text/javascript" src="../script/file-management.js" charset="utf-8"></script>
+		<script type="text/javascript" src="../script/lz-string-1.3.3.js" charset="utf-8"></script>
 		<!--<script type="text/javascript" src="jzt.min.js" charset="utf-8"></script>-->
 		<script type="text/javascript">
 			var data = localStorage['currentGame'];
 			data = LZString.decompressFromUTF16(data);
 			data = JSON.parse(data);
-		
-			var canvas = document.getElementById('jzt');
-			var game = new jzt.Game(canvas, function() {
-				var me = this;
-				this.run();
-				setTimeout(function(){me.loadGame(data)}, 2000);
+
+            var game = new jzt.Game({
+				canvasElement: document.getElementById('jzt'),
+				onLoadCallback: function(success) {
+					if(success) {
+						this.run(data);
+					}
+				}
 			});
 		</script>
 		

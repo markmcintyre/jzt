@@ -523,17 +523,16 @@ var jzt = (function(my) {
      * Retrieves whether or not this Board has a provided number (or any) of a
      * specific tile type.
      *
-     * @param type A type of tile to test for
-     * @param color A color of tile to test for
-     * @param count A minimum number of tiles on the board to test for, or undefined to test for any number
+     * @param {object} template - A Thing template object
+     * @param {number} [count] - A minimum number of tiles on the board to test for, or undefined to test for any number
      */
-    Board.prototype.hasTile = function(type, color, count) {
+    Board.prototype.hasTile = function(template, count) {
 
         var tally = 0;
 
         this.each(function(tile) {
 
-            if(tile && tile.equals(type, color)) {
+            if(tile && tile.equals(template)) {
                 tally++;
             }
 
@@ -554,13 +553,12 @@ var jzt = (function(my) {
 
         var me = this;
         var newThing;
-        var color = fromTemplate.color ? jzt.colors.deserializeForeground(fromTemplate.color) : undefined;
 
         this.each(function(tile) {
 
-            if(tile && tile.equals(fromTemplate.type, color)) {
+            if(tile && tile.equals(fromTemplate)) {
 
-                newThing = jzt.things.ThingFactory.deserialize(toTemplate);
+                newThing = jzt.things.ThingFactory.deserialize(toTemplate, me);
 
                 if(newThing && toTemplate.color === undefined) {
                     newThing.foreground = tile.foreground;
