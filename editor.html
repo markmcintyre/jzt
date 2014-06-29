@@ -41,6 +41,7 @@
 			li.colorD {background-color: #FF55FF;}
 			li.colorE {background-color: #FFFF55;}
 			li.colorF {background-color: #FFFFFF;}
+            #script-warning {background-color: yellow; color: red;}
 		</style>
 	</head>
 	<body>
@@ -136,6 +137,7 @@
 				<button id="new-script-button">New Script</button>
 				<button id="delete-script-button">Delete Script</button>
 				<textarea id="script-editor" rows="20" style="width: 100%"></textarea>
+                <div id="script-warning"></div>
 			</div>
 			<div id="color-customizer">
 				<ol>
@@ -208,8 +210,10 @@
 			var startingBoardSelector = document.getElementById('starting-board-selector');
 			var titleBoardSelector = document.getElementById('title-board-selector');
 			var victoryBoardSelector = document.getElementById('victory-board-selector');
+            var scriptWarning = document.getElementById('script-warning');
 			var editor = undefined;
-
+            var parser = new jzt.jztscript.JztScriptParser(true);
+            
 			function onToolSelected(event) {
 
 				var toolType = event.target.value;
@@ -416,7 +420,15 @@
 
 			function onScriptChanged(event) {
 				var script = editor.currentBoard.getScript(scriptSelector.value);
+                try {
+                    parser.parse(scriptEditor.value);
+                    scriptWarning.innerHTML = '';
+                }
+                catch(exception) {
+                    scriptWarning.innerHTML = exception;
+                }
 				script.rawScript = scriptEditor.value;
+                
 			};
 
 			function onColorSelected(event) {

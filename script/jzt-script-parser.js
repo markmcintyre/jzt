@@ -33,7 +33,7 @@ jzt.jztscript = (function(my){
             }
             
             while(!matches(top, tokenName, tokenValue)) {
-                result.push(assembly.pop());
+                result.unshift(assembly.pop());
                 top = assembly.peek();
             }
             
@@ -593,15 +593,13 @@ jzt.jztscript = (function(my){
             // Define assembler
             go.assembler = createAssembler(function(assembly){
                 
-                var command;
+                var index;
                 var expression;
                 var expressions = popAllTokensUntil(assembly, 'WORD', alias || 'GO', true);
                 
-                while(expressions.length > 0) {
-                 
-                    expression = expressions.pop();
+                for(index = 0; index < expressions.length; ++index) {
+                    expression = expressions[index];
                     assembly.push(new commands.MoveCommand(expression, forceful));
-                     
                 }
                 
             });
@@ -788,14 +786,16 @@ jzt.jztscript = (function(my){
             var send = new p.Sequence();
             
             // Add send sequence items
-            send.addDiscard(new p.Literal('Send'));
-            send.add(new p.Word());
+            send.add(new p.Literal('Send'));
+            send.add(optional(new p.Word()));
             send.add(new p.Word());
             
             // Define assembler
             send.assembler = createAssembler(function(assembly){
-                var label = assembly.pop().value.toUpperCase();
-                assembly.push(new commands.SendCommand(assembly.pop().value.toUpperCase(), label));
+                var parameters = popAllTokensUntil(assembly, 'WORD', 'SEND', true);
+                var label = parameters.pop().value.toUpperCase();
+                var recipient = parameters.length > 0 ? parameters.pop().value.toUpperCase() : 'SELF';
+                assembly.push(new commands.SendCommand(recipient, label));
             });
             
             return send;

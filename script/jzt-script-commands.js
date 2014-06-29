@@ -104,10 +104,10 @@ jzt.jztscript.commands = (function(my){
     /**
      * Executes this DirectionExpression and returns a concrete Direction instance.
      */
-    DirectionExpression.prototype.execute = function(owner) {
+    DirectionExpression.prototype.getResult = function(owner) {
         
         // Get our direction from our expression
-        var direction = this.direction.process(owner);
+        var direction = this.terminal.process(owner);
 
         // Evaluate our modifiers into a direction
         var modifiers = this.modifiers.slice(0);
@@ -309,10 +309,10 @@ jzt.jztscript.commands = (function(my){
     MoveCommand.prototype.execute = function(owner) {
         
         if(this.forceful) {
-            this.forcefulMove();
+            this.forcefulMove(owner);
         }
         else {
-            this.move();
+            this.move(owner);
         }
         
     };
@@ -826,7 +826,7 @@ jzt.jztscript.commands = (function(my){
     }
     
     NotExpression.prototype.getResult = function(owner) {
-        return ! this.subExpresion.getResult(owner);
+        return ! this.subExpression.getResult(owner);
     };
     
     /**
@@ -880,7 +880,7 @@ jzt.jztscript.commands = (function(my){
     }
     
     ExistsExpression.prototype.getResult = function(owner) {
-        return owner.board.hasTile(this.thing, this.color, this.count);
+        return owner.board.hasTile(this.thingTemplate.type, this.thingTemplate.color, this.count);
     };
     
     /**

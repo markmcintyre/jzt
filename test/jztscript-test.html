@@ -293,12 +293,17 @@
             var command;
             ok(parser.parse('send bob dosomething'), 'send bob dosomething');
             ok(parser.parse('send self dosomething'), 'send self dosomething');
-            throws(function(){parser.parse('send dosomething')}, NEWLINE_ERROR, 'send dosomething');
+            ok(parser.parse('send dosomething'), 'send dosomething');
+            throws(function(){parser.parse('send')}, NEWLINE_ERROR, 'send');
             
             command = parser.parse('send bob something')[0];
             ok(command instanceof commands.SendCommand, 'Expecting SendCommand');
             equal(command.recipient, 'BOB', 'Expecting BOB');
             equal(command.message, 'SOMETHING', 'Expecting SOMETHING');
+            command = parser.parse('send ok')[0];
+            ok(command instanceof commands.SendCommand, 'Expecting SendCommand');
+            equal(command.recipient, 'SELF', 'Expecting SELF');
+            equal(command.message, 'OK', 'Expecting OK');
         });
         
         test('Set Statement', function(){
