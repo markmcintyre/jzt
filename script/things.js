@@ -1250,8 +1250,8 @@ jzt.things = (function(my){
          * Send a SHOT message if the bullet was from the player 
          * otherwise we only send the SHOT message to the player, Scriptables, and BreakableWalls.
          */
-        if(thing && this.fromPlayer ||
-                thing instanceof Player || thing instanceof Scriptable || thing instanceof BreakableWall) {
+        if(thing && (this.fromPlayer ||
+                thing instanceof Player || thing instanceof Scriptable || thing instanceof BreakableWall)) {
             thing.sendMessage('SHOT');
         }
 
@@ -4000,7 +4000,7 @@ jzt.things = (function(my){
             result = this.i18n[jzt.i18n.DefaultLanguage];
         }
 
-        return result ? result : 0;
+        return result || 0;
 
     };
 
