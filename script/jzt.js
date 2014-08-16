@@ -3,6 +3,7 @@
  * Copyright © 2014 Orangeline Interactive, Inc.
  * @author Mark McIntyre
  */
+/*global requestAnimationFrame, cancelAnimationFrame */
 
 var jzt = (function(my) {
     
@@ -36,12 +37,12 @@ var jzt = (function(my) {
      */
     function Game(configuration) {
         
-        if(!(this instanceof Game)) {
+        if (!(this instanceof Game)) {
             throw jzt.ConstructorError;
         }
 
         // Ensure we were given a valid canvas element
-        if(!configuration || !configuration.canvasElement || configuration.canvasElement.nodeName !== 'CANVAS') {
+        if (!configuration || !configuration.canvasElement || configuration.canvasElement.nodeName !== 'CANVAS') {
             throw 'Expected a valid canvas element in the configuration.';
         }
 
@@ -50,7 +51,7 @@ var jzt = (function(my) {
          * as an acid test for ECMAScript 5 support, since it was one of the last supported
          * features on some browsers. We also test for Canvas support.
          */
-        if((typeof Function.prototype.bind !== 'function') || (!window.CanvasRenderingContext2D)) {
+        if ((typeof Function.prototype.bind !== 'function') || (!window.CanvasRenderingContext2D)) {
 
             // If we were given a callback, tell it that the load was unsuccessful.
             if(typeof configuration.onLoadCallback === 'function') {
@@ -83,7 +84,7 @@ var jzt = (function(my) {
         this.keyboard = new jzt.KeyboardInput();
         this.canvasElement = configuration.canvasElement;
         this.devicePixelRatio = 1;
-        if(window.devicePixelRatio) {
+        if (window.devicePixelRatio) {
             this.devicePixelRatio = window.devicePixelRatio;
             this.canvasElement.style.width = this.canvasElement.width + 'px';
             this.canvasElement.style.height = this.canvasElement.height + 'px';
@@ -98,7 +99,7 @@ var jzt = (function(my) {
         this.resources.audio = new jzt.Audio();
         this.resources.graphics = new jzt.Graphics(this.onGraphicsLoaded.bind(this));
 
-        if(window.devicePixelRatio) {
+        if (window.devicePixelRatio) {
             this.resources.graphics.TILE_SIZE.x = this.resources.graphics.TILE_SIZE.x * window.devicePixelRatio;
             this.resources.graphics.TILE_SIZE.y = this.resources.graphics.TILE_SIZE.y * window.devicePixelRatio;
         }
@@ -107,7 +108,7 @@ var jzt = (function(my) {
         this.screenHeight = Math.floor(this.context.canvas.height / this.resources.graphics.TILE_SIZE.y);
 
         // If we were given a settings object, set ourselves up as a listener and send our initial values
-        if(configuration.settings) {
+        if (configuration.settings) {
 
             // Assign our callback
             configuration.settings.addListener(this.onSettingsChanged.bind(this));
@@ -138,8 +139,8 @@ var jzt = (function(my) {
         result.counters = {};
         result.savedGame = true;
 
-        for(index in this.counters) {
-            if(this.counters.hasOwnProperty(index) && !isNaN(this.counters[index])) {
+        for (index in this.counters) {
+            if (this.counters.hasOwnProperty(index) && !isNaN(this.counters[index])) {
                 result.counters[index] = this.counters[index];
             }
         }
@@ -147,8 +148,8 @@ var jzt = (function(my) {
         // Serialize our current board
         this.boards[this.currentBoard.name] = this.currentBoard.serialize();
 
-        for(index in this.boards) {
-            if(this.boards.hasOwnProperty(index)) {
+        for (index in this.boards) {
+            if (this.boards.hasOwnProperty(index)) {
                 result.boards.push(this.boards[index]);
             }
         }
@@ -163,7 +164,7 @@ var jzt = (function(my) {
         var response;
         var httpRequest;
 
-        if(typeof game === 'string') {
+        if (typeof game === 'string') {
 
             try {
                 httpRequest = new XMLHttpRequest();
@@ -191,12 +192,12 @@ var jzt = (function(my) {
                 httpRequest.open('GET', game, true);
                 httpRequest.send(null);
             }
-            catch(exception) {
+            catch (exception) {
                 this.catestrophicError(jzt.i18n.getMessage('status.loaderror'));
             }
 
         }
-        else if(typeof game === 'object') {
+        else if (typeof game === 'object') {
             this.deserialize(game);
         }
 
@@ -213,7 +214,7 @@ var jzt = (function(my) {
         var isRunning;
 
         // If we're already running, end the game loop
-        if(this.loopId) {
+        if (this.loopId) {
             isRunning = true;
             this.end();
         }
@@ -239,13 +240,13 @@ var jzt = (function(my) {
             SCORE: 0
         };
 
-        for(index in data.counters) {
-            if(data.counters.hasOwnProperty(index) && !isNaN(data.counters[index])) {
+        for (index in data.counters) {
+            if (data.counters.hasOwnProperty(index) && !isNaN(data.counters[index])) {
                 this.counters[index] = data.counters[index];
             }
         }
 
-        for(index = 0; index < data.boards.length; ++index) {
+        for (index = 0; index < data.boards.length; ++index) {
             var board = data.boards[index];
             this.boards[board.name] = board;
         }
@@ -254,7 +255,7 @@ var jzt = (function(my) {
         this.gameLoaded = true;
 
         // If we were running, resume the game loop
-        if(isRunning) {
+        if (isRunning) {
             this.run();
         }
 
@@ -272,7 +273,7 @@ var jzt = (function(my) {
     };
 
     Game.prototype.getCounterValue = function(counter) {
-        if(this.counters[counter] === undefined) {
+        if (this.counters[counter] === undefined) {
             return 0;
         }
         else {
@@ -291,17 +292,17 @@ var jzt = (function(my) {
         var maxCounter = counter + '_MAX';
 
         // If the counter doesn't already exist, create it now
-        if(this.counters[counter] === undefined) {
+        if (this.counters[counter] === undefined) {
             this.counters[counter] = 0;
         }
 
         // If we have a corresponding maximum, ensure we don't exceed it
-        if(this.counters[maxCounter] && (value > this.counters[maxCounter])) {
+        if (this.counters[maxCounter] && (value > this.counters[maxCounter])) {
             value = this.counters[maxCounter];
         }
 
         // If our value is less or equal to zero, remove the counter entirely
-        if(value <= 0) {
+        if (value <= 0) {
             delete this.counters[counter];
         }
 
@@ -324,7 +325,7 @@ var jzt = (function(my) {
         this.NOISE_PATTERN = this.context.createPattern(this.resources.graphics.NOISE_IMAGE, 'repeat');
 
         // If we have a callback, indicate that loading was successful
-        if(typeof this.onLoadCallback === 'function') {
+        if (typeof this.onLoadCallback === 'function') {
             this.onLoadCallback(true);
         }
 
@@ -343,13 +344,13 @@ var jzt = (function(my) {
         var newBoard = (boardName === this.currentBoard.name) ? this.currentBoard : this.getBoard(boardName);
 
         // If the specified board does not exist, return
-        if(newBoard === undefined) {
+        if (newBoard === undefined) {
             return;
         }
 
         var passage = newBoard.getPassage(passageId);
 
-        if(passage) {
+        if (passage) {
             newBoard.entryPoint = passage.point;
             this.setBoard(newBoard, passage.point);
             this.setState(GameState.Paused);
@@ -366,7 +367,7 @@ var jzt = (function(my) {
     Game.prototype.setState = function(state) {
 
         // If we are to pause the game...
-        if(state === GameState.Paused) {
+        if (state === GameState.Paused) {
 
             // Blink the player
             this.player.background = this.player.background.lighten();
@@ -380,13 +381,13 @@ var jzt = (function(my) {
         }
 
         // If we are to resume playing...
-        else if(state === GameState.Playing) {
+        else if (state === GameState.Playing) {
 
             // Forget if P was pressed
             this.keyboard.cancelKey(this.keyboard.P);
 
             // If we were previously on the title screen...
-            if(this.state === GameState.Title) {
+            if (this.state === GameState.Title) {
 
                 // Forget everything about our current board
                 this.currentBoard = undefined;
@@ -397,7 +398,7 @@ var jzt = (function(my) {
             }
 
             // Calculate our pause duration and notify our player
-            if(this.pauseStart) {
+            if (this.pauseStart) {
                 this.player.onUnpause(Date.now() - this.pauseStart);
                 delete this.pauseStart;
             }
@@ -409,7 +410,7 @@ var jzt = (function(my) {
         }
 
         // If we are to start reading
-        else if(state === GameState.Reading) {
+        else if (state === GameState.Reading) {
 
             // Remember our pause time
             this.pauseStart = Date.now();
@@ -422,7 +423,7 @@ var jzt = (function(my) {
         }
 
         // If we are to enter file management
-        else if(state === GameState.FileManagement) {
+        else if (state === GameState.FileManagement) {
 
             // Remember our pause time
             this.pauseStart = Date.now();
@@ -432,7 +433,7 @@ var jzt = (function(my) {
         }
 
         // If it's game over
-        else if(state === GameState.GameOver) {
+        else if (state === GameState.GameOver) {
 
             // Stop all scheduled audio
             this.resources.audio.cancel();
@@ -446,9 +447,9 @@ var jzt = (function(my) {
         }
 
         // If it's the title screen
-        else if(state === GameState.Title) {
+        else if (state === GameState.Title) {
 
-            if(this.titleBoard) {
+            if (this.titleBoard) {
                 this.setBoard(this.titleBoard);
             }
             else {
@@ -456,7 +457,7 @@ var jzt = (function(my) {
             }
 
             // The player shouldn't be on the board
-            if(this.player) {
+            if (this.player) {
                 this.player.remove();
                 this.player.point.x = -1;
                 this.player.point.y = -1;
@@ -465,9 +466,9 @@ var jzt = (function(my) {
         }
 
         // If it's a victory
-        else if(state === GameState.Victory) {
+        else if (state === GameState.Victory) {
 
-            if(this.victoryBoard) {
+            if (this.victoryBoard) {
                 this.setBoard(this.victoryBoard);
             }
 
@@ -475,7 +476,7 @@ var jzt = (function(my) {
 
         }
 
-        else if(state === GameState.Splash) {
+        else if (state === GameState.Splash) {
 
             // Create our splash
             this.splash = new jzt.ui.Splash(this);
@@ -502,7 +503,7 @@ var jzt = (function(my) {
         var newBoard = (boardName === this.currentBoard.name) ? this.currentBoard : this.getBoard(boardName);
 
         // If the board specified does not exist, return
-        if(newBoard === undefined) {
+        if (newBoard === undefined) {
             return;
         }
 
@@ -511,16 +512,16 @@ var jzt = (function(my) {
         var newLocation = new jzt.Point(this.player.point.x, this.player.point.y);
 
         // Adjust based on our offset
-        if(offset && (edge === jzt.Direction.North || edge === jzt.Direction.South)) {
+        if (offset && (edge === jzt.Direction.North || edge === jzt.Direction.South)) {
             outsideLocation.x = outsideLocation.x + offset;
             newLocation.x = newLocation.x + offset;
         }
-        else if(offset && (edge === jzt.Direction.East || edge === jzt.Direction.West)) {
+        else if (offset && (edge === jzt.Direction.East || edge === jzt.Direction.West)) {
             outsideLocation.y = outsideLocation.y + offset;
             newLocation.y = newLocation.y + offset;
         }
 
-        switch(edge) {
+        switch (edge) {
             case jzt.Direction.North:
                 outsideLocation.y = -1;
                 newLocation.y = 0;
@@ -536,10 +537,11 @@ var jzt = (function(my) {
             case jzt.Direction.West:
                 outsideLocation.x = -1;
                 newLocation.x = 0;
+                break;
         }
 
         // If the player cannot move to this location, return immediately
-        if(!newBoard.moveTile(outsideLocation, newLocation, false, true)) {
+        if (!newBoard.moveTile(outsideLocation, newLocation, false, true)) {
             return;
         }
 
@@ -556,7 +558,7 @@ var jzt = (function(my) {
      */
     Game.prototype.getBoard = function(name) {
 
-        if(this.boards.hasOwnProperty(name)) {
+        if (this.boards.hasOwnProperty(name)) {
             return new jzt.Board(this.boards[name], this);
         }
 
@@ -578,20 +580,20 @@ var jzt = (function(my) {
         var properties;
 
         // First, erase the old player position if applicable
-        if(this.currentBoard) {
+        if (this.currentBoard) {
             this.currentBoard.setTile(this.player.point, this.player.under);
         }
 
         // If we aren't moving to the same board as before...
-        if(!(this.currentBoard && this.currentBoard.equals(board))) {
+        if (!(this.currentBoard && this.currentBoard.equals(board))) {
 
             // Serialize the old board, if applicable
-            if(this.currentBoard !== undefined) {
+            if (this.currentBoard !== undefined) {
                 this.boards[this.currentBoard.name] = this.currentBoard.serialize();
             }
 
             // If we were given an actual board, assign that
-            if(board instanceof jzt.Board) {
+            if (board instanceof jzt.Board) {
                 this.currentBoard = board;
             }
 
@@ -601,7 +603,7 @@ var jzt = (function(my) {
             }
 
             // Export our old player properties, if applicable
-            if(this.player) {
+            if (this.player) {
                 properties = this.player.getProperties();
             }
 
@@ -610,21 +612,21 @@ var jzt = (function(my) {
             this.player.game = this;
 
             // Assign our exported properties, if applicable
-            if(properties) {
+            if (properties) {
                 this.player.setProperties(properties);
             }
 
         }
 
         // Assign the player to our new board
-        if(playerPoint) {
+        if (playerPoint) {
             this.player.point.x = playerPoint.x;
             this.player.point.y = playerPoint.y;
             this.player.under = this.currentBoard.getTile(playerPoint);
         }
 
         // If the board is dark, tell the player
-        if(this.currentBoard.dark) {
+        if (this.currentBoard.dark) {
             this.oneTimeMessage('status.dark');
         }
 
@@ -637,19 +639,19 @@ var jzt = (function(my) {
      */
     Game.prototype.run = function(game) {
 
-        if(game) {
+        if (game) {
             this.gameToLoad = game;
         }
 
         // If our game loop isn't already running
-        if(! this.loopId) {
+        if (! this.loopId) {
             this.keyboard.initialize();
 
             // If we have a game loaded...
-            if(this.gameLoaded) {
+            if (this.gameLoaded) {
 
                 // If we've loaded a saved game, start from a board
-                if(this.savedGame) {
+                if (this.savedGame) {
                     this.setBoard(this.startingBoard);
                     this.setState(GameState.Paused);
                 }
@@ -699,7 +701,7 @@ var jzt = (function(my) {
                 this.draw();
             }
         }
-        catch(exception) {
+        catch (exception) {
             this.catestrophicError(jzt.i18n.getMessage('status.fatalerror'));
         }
 
@@ -708,7 +710,7 @@ var jzt = (function(my) {
     /**
      * Ends the game completely.
      */
-    Game.prototype.end = function() {
+    Game.prototype.end = function () {
 
         // Stop the game loop if it's running
         if(this.loopId) {
@@ -723,13 +725,13 @@ var jzt = (function(my) {
     /**
      * Updates this Game's state by one execution tick.
      */
-    Game.prototype.update = function() {
+    Game.prototype.update = function () {
 
         // Update our graphics resource
         this.resources.graphics.update();
 
         // If we're playing...
-        if(this.state === GameState.Playing) {
+        if (this.state === GameState.Playing) {
 
             this.currentBoard.update();
             this.checkCounters();
@@ -741,19 +743,19 @@ var jzt = (function(my) {
             this.currentBoard.focusPoint = this.player.point;
 
             // Check if the user wants to pause
-            if(this.keyboard.isPressed(this.keyboard.P) || this.keyboard.isPressed(this.keyboard.ENTER)) {
+            if (this.keyboard.isPressed(this.keyboard.P) || this.keyboard.isPressed(this.keyboard.ENTER)) {
                 this.resources.audio.play('++se.tc.e.sc');
                 this.setState(GameState.Paused);
             }
 
             // Check if the user wants to save
-            else if(this.keyboard.isPressed(this.keyboard.S)) {
+            else if (this.keyboard.isPressed(this.keyboard.S)) {
                 this.fileManagement.dialogType = jzt.FileManagement.Type.SAVE;
                 this.setState(GameState.FileManagement);
             }
 
             // Check if the user wants to restore
-            else if(this.keyboard.isPressed(this.keyboard.R)) {
+            else if (this.keyboard.isPressed(this.keyboard.R)) {
                 this.fileManagement.dialogType = jzt.FileManagement.Type.OPEN;
                 this.setState(GameState.FileManagement);
             }
@@ -761,10 +763,10 @@ var jzt = (function(my) {
         }
 
         // If we're paused...
-        else if(this.state === GameState.Paused) {
+        else if (this.state === GameState.Paused) {
 
             // Unpause on any expected keypress
-            if(this.keyboard.isAnyPressed()) {
+            if (this.keyboard.isAnyPressed()) {
                 this.keyboard.cancelKey(this.keyboard.P);
                 this.keyboard.cancelKey(this.keyboard.ENTER);
                 this.setState(GameState.Playing);
@@ -774,33 +776,33 @@ var jzt = (function(my) {
         }
 
         // If we're reading...
-        else if(this.state === GameState.Reading) {
+        else if (this.state === GameState.Reading) {
 
             this.scroll.update();
 
         }
 
         // If it's file management...
-        else if(this.state === GameState.FileManagement) {
+        else if (this.state === GameState.FileManagement) {
 
             this.fileManagement.update();
 
         }
 
         // If it's game over, say so!
-        else if(this.state === GameState.GameOver) {
+        else if (this.state === GameState.GameOver) {
             this.currentBoard.update();
             this.currentBoard.setDisplayMessage(jzt.i18n.getMessage('status.gameover'));
         }
 
         // If we're on the title screen...
-        else if(this.state === GameState.Title) {
+        else if (this.state === GameState.Title) {
 
             this.currentBoard.update();
             this.currentBoard.setDisplayMessage(jzt.i18n.getMessage('status.title'));
 
             // Also check if the user wants to play
-            if(this.keyboard.isPressed(this.keyboard.P) || this.keyboard.isPressed(this.keyboard.SPACE) || this.keyboard.isPressed(this.keyboard.ENTER)) {
+            if (this.keyboard.isPressed(this.keyboard.P) || this.keyboard.isPressed(this.keyboard.SPACE) || this.keyboard.isPressed(this.keyboard.ENTER)) {
                 this.keyboard.cancelKey(this.keyboard.P);
                 this.keyboard.cancelKey(this.keyboard.ENTER);
                 this.keyboard.cancelKey(this.keyboard.SPACE);
@@ -810,32 +812,32 @@ var jzt = (function(my) {
         }
 
         // If we've won
-        else if(this.state === GameState.Victory) {
+        else if (this.state === GameState.Victory) {
 
             this.currentBoard.update();
 
         }
 
         // If we're loading
-        else if(this.state === GameState.Loading) {
-            if(++this.loadingAnimationIndex >= jzt.things.Conveyor.animationFrames.length * 4) {
+        else if (this.state === GameState.Loading) {
+            if (++this.loadingAnimationIndex >= jzt.things.Conveyor.animationFrames.length * 4) {
                 this.loadingAnimationIndex = 0;
             }
         }
 
         // If we're splashing
-        else if(this.state === GameState.Splash) {
+        else if (this.state === GameState.Splash) {
 
             this.splash.update();
 
             // If our splash is done
-            if(this.splash.done) {
+            if (this.splash.done) {
 
                 // We no longer need the splash screen
                 delete this.splash;
 
                 // If there was a game to load...
-                if(this.gameToLoad) {
+                if (this.gameToLoad) {
 
                     // Set our state to loading
                     this.setState(GameState.Loading);
@@ -862,10 +864,10 @@ var jzt = (function(my) {
     /**
      * Checks this Game instance's counters and updates the game state as necessary.
      */
-    Game.prototype.checkCounters = function() {
+    Game.prototype.checkCounters = function () {
 
         // If our player is dead, and it's not already GameOver state
-        if(this.getCounterValue('HEALTH') <= 0 && this.state !== GameState.GameOver) {
+        if (this.getCounterValue('HEALTH') <= 0 && this.state !== GameState.GameOver) {
 
             // Assign our state to be GameOVer
             this.setState(GameState.GameOver);
@@ -879,12 +881,12 @@ var jzt = (function(my) {
      *
      * @param messageKey A localization key for a message to display.
      */
-    Game.prototype.oneTimeMessage = function(messageKey) {
+    Game.prototype.oneTimeMessage = function (messageKey) {
 
         var message;
 
         // If we haven't already shown this message...
-        if(!this.readMessages.hasOwnProperty(messageKey)) {
+        if (!this.readMessages.hasOwnProperty(messageKey)) {
 
             // Remember that we've shown this message now.
             this.readMessages[messageKey] = true;
@@ -899,22 +901,22 @@ var jzt = (function(my) {
 
     };
 
-    Game.prototype.addWarning = function(message) {
+    Game.prototype.addWarning = function (message) {
 
-        if(this.notificationListener) {
+        if (this.notificationListener) {
             this.notificationListener.addNotification('warning', message);
         }
 
     };
 
-    Game.prototype.drawScreenEffect = function() {
+    Game.prototype.drawScreenEffect = function () {
 
         var line;
         var lineSpacing = 10 * this.devicePixelRatio;
         var translateX = Math.round(256 * Math.random());
         var translateY = Math.round(256 * Math.random());
 
-        if(++this.screenEffectIndex > lineSpacing) {
+        if (++this.screenEffectIndex > lineSpacing) {
             this.screenEffectIndex = 0;
         }
 
@@ -929,14 +931,14 @@ var jzt = (function(my) {
         this.context.strokeStyle = 'rgba(0,0,0,0.05)';
 
         this.context.beginPath();
-        for(line = -lineSpacing; line < this.context.canvas.height; line = line + lineSpacing) {
+        for (line = -lineSpacing; line < this.context.canvas.height; line = line + lineSpacing) {
             this.context.moveTo(0, line + this.screenEffectIndex + lineSpacing);
             this.context.lineTo(this.context.canvas.width, line + this.screenEffectIndex);
         }
         this.context.stroke();
 
         this.context.beginPath();
-        for(line = -lineSpacing; line < this.context.canvas.height; line = line + lineSpacing) {
+        for (line = -lineSpacing; line < this.context.canvas.height; line = line + lineSpacing) {
             this.context.moveTo(0, line + (2*this.devicePixelRatio) + this.screenEffectIndex + lineSpacing);
             this.context.lineTo(this.context.canvas.width, line + (2*this.devicePixelRatio) + this.screenEffectIndex);
         }
@@ -944,13 +946,13 @@ var jzt = (function(my) {
 
     };
 
-    Game.prototype.drawErrorScreen = function() {
+    Game.prototype.drawErrorScreen = function () {
 
         var spriteGrid = this.errorPopup ? this.errorPopup.spriteGrid : undefined;
         var popupWidth = this.catestrophicErrorMessage.length + 7;
 
         // If we haven't yet defined our error popup
-        if(this.errorPopup === undefined || this.errorPopup.language !== jzt.i18n.Messages.currentLanguage) {
+        if (this.errorPopup === undefined || this.errorPopup.language !== jzt.i18n.Messages.currentLanguage) {
             this.errorPopup = new jzt.ui.Popup(undefined, new jzt.Point(popupWidth, 3), this);
             this.errorPopup.setColor(jzt.colors.Red, jzt.colors.White);
             spriteGrid = this.errorPopup.spriteGrid;
@@ -963,14 +965,14 @@ var jzt = (function(my) {
 
     };
 
-    Game.prototype.drawLoadingScreen = function() {
+    Game.prototype.drawLoadingScreen = function () {
 
         var spriteGrid = this.loadingPopup ? this.loadingPopup.spriteGrid : undefined;
         var popupWidth = 24;
         var sprite;
 
         // If we haven't yet defined our loading popup in our language, do it now
-        if(this.loadingPopup === undefined || this.loadingPopup.language !== jzt.i18n.Messages.currentLanguage) {
+        if (this.loadingPopup === undefined || this.loadingPopup.language !== jzt.i18n.Messages.currentLanguage) {
             this.loadingPopup = new jzt.ui.Popup(undefined, new jzt.Point(popupWidth, 3), this);
             this.loadingPopup.setColor(jzt.colors.Blue, jzt.colors.White);
             spriteGrid = this.loadingPopup.spriteGrid;
@@ -985,7 +987,7 @@ var jzt = (function(my) {
 
     };
 
-    Game.prototype.drawPauseScreen = function() {
+    Game.prototype.drawPauseScreen = function () {
 
         var spriteGrid;
         var position;
@@ -997,14 +999,14 @@ var jzt = (function(my) {
 
         function getCounterValue(counter) {
             var result = me.getCounterValue(counter).toString();
-            if(me.getCounterValue(counter + '_MAX')) {
+            if (me.getCounterValue(counter + '_MAX')) {
                 result += '/' + me.getCounterValue(counter + '_MAX').toString();
             }
             return result;
         }
 
         // If we haven't yet defined a status popup in our language, do it now
-        if(this.statusPopup === undefined || this.statusPopup.language !== jzt.i18n.Messages.currentLanguage) {
+        if (this.statusPopup === undefined || this.statusPopup.language !== jzt.i18n.Messages.currentLanguage) {
             this.statusPopup = new jzt.ui.Popup(new jzt.Point(this.screenWidth - (pauseWidth+1),1), new jzt.Point(pauseWidth,10), this);
             this.statusPopup.language = jzt.i18n.Messages.currentLanguage;
             spriteGrid = this.statusPopup.spriteGrid;
@@ -1019,7 +1021,7 @@ var jzt = (function(my) {
         }
 
         // Make sure we don't position our popup over the player
-        if(this.player.point.x >= this.currentBoard.windowOrigin.x + (this.screenWidth - pauseWidth - 2)) {
+        if (this.player.point.x >= this.currentBoard.windowOrigin.x + (this.screenWidth - pauseWidth - 2)) {
             this.statusPopup.position.x = 1;
         }
         else {
@@ -1039,8 +1041,8 @@ var jzt = (function(my) {
         // Draw our keys
         position = position.add(new jzt.Point(13, 8));
         sprite = this.resources.graphics.getSprite(12);
-        for(value = 0; value < keyValues.length; ++value) {
-            if(this.getCounterValue('KEY' + keyValues[value]) > 0) {
+        for (value = 0; value < keyValues.length; ++value) {
+            if (this.getCounterValue('KEY' + keyValues[value]) > 0) {
                 sprite.draw(this.context, position, jzt.colors.deserializeForeground(keyValues[value]));
                 position.x++;
             }
@@ -1053,12 +1055,12 @@ var jzt = (function(my) {
     Game.prototype.draw = function() {
 
         // If we've got a board and haven't failed to render it before...
-        if(this.currentBoard && !this.errorInRender) {
+        if (this.currentBoard && !this.errorInRender) {
 
             try {
                 this.currentBoard.render(this.context);
             }
-            catch(exception) {
+            catch (exception) {
                 this.errorInRender = true;
                 this.catestrophicError(jzt.i18n.getMessage('status.fatalerror'));
             }
@@ -1070,53 +1072,53 @@ var jzt = (function(my) {
         }
 
         // If we're paused, draw our status
-        if(this.state === GameState.Paused) {
+        if (this.state === GameState.Paused) {
             this.drawScreenEffect();
             this.drawPauseScreen();
         }
 
         // If we are reading, also render our scroll instance
-        else if(this.state === GameState.Reading) {
+        else if (this.state === GameState.Reading) {
             this.scroll.render(this.context);
         }
 
         // If we're in file management, render our file management instance
-        else if(this.state === GameState.FileManagement) {
+        else if (this.state === GameState.FileManagement) {
             this.drawScreenEffect();
             this.fileManagement.render(this.context);
         }
 
         // If we're loading, render our loading screen
-        else if(this.state === GameState.Loading) {
+        else if (this.state === GameState.Loading) {
             this.drawScreenEffect();
             this.drawLoadingScreen();
         }
 
         // If we're in our splash state, draw our splash animation
-        else if(this.state === GameState.Splash) {
+        else if (this.state === GameState.Splash) {
             this.splash.render(this.context);
             this.drawScreenEffect();
         }
 
         // If there was a catestropic error...
-        else if(this.state === GameState.Error) {
+        else if (this.state === GameState.Error) {
             this.drawScreenEffect();
             this.drawErrorScreen();
         }
 
     };
 
-    Game.prototype.onSettingsChanged = function(settings) {
+    Game.prototype.onSettingsChanged = function (settings) {
 
-        if(settings.hasOwnProperty('audioMute')) {
+        if (settings.hasOwnProperty('audioMute')) {
             this.resources.audio.setActive(!settings.audioMute);
         }
 
-        if(settings.hasOwnProperty('audioVolume')) {
+        if (settings.hasOwnProperty('audioVolume')) {
             this.resources.audio.userVolume = settings.audioVolume;
         }
 
-        if(settings.hasOwnProperty('language')) {
+        if (settings.hasOwnProperty('language')) {
             jzt.i18n.setLanguage(settings.language);
         }
 

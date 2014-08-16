@@ -334,11 +334,11 @@
 			};
 
 			function onGameOptionsChanged(options) {
-				gameName.value = options.title ? options.title : 'Untitled';
-				authorName.value = options.author ? options.author : 'Anonymous';
-				titleBoardSelector.value = options.titleBoard ? options.titleBoard : '';
-				startingBoardSelector.value = options.startingBoard ? options.startingBoard : editor.currentBoard.name;
-				victoryBoardSelector.value = options.victoryBoard ? options.victoryBoard : '';
+				gameName.value = options.name || 'Untitled';
+				authorName.value = options.author || 'Anonymous';
+				titleBoardSelector.value = options.titleBoard || '';
+				startingBoardSelector.value = options.startingBoard || editor.currentBoard.name;
+				victoryBoardSelector.value = options.victoryBoard || '';
 			};
 
 			function onTemplateChanged(newTemplate) {
@@ -454,7 +454,7 @@
 
 			function onGameOptionsSelected(event) {
 				var options = {
-					title: gameName.value,
+					name: gameName.value,
 					author: authorName.value,
 					titleBoard: titleBoardSelector.value,
 					startingBoard: startingBoardSelector.value,
@@ -465,13 +465,13 @@
 
 			function onDownload(event) {
 				var game = editor.serialize();
-				download.download = game.title.replace(/[^a-z0-9_\-]/gi, '-').toLowerCase() + '.jzt';
+				download.download = game.name.replace(/[^a-z0-9_\-]/gi, '-').toLowerCase() + '.jzt';
                 download.href = 'data:application/octet-stream;charset=utf-8;base64,' + LZString.compressToBase64(JSON.stringify(game));
 			};
             
             function onDownloadJson(event) {
                 var game = editor.serialize();
-                downloadJson.download = game.title.replace(/[^a-z0-9_\-]/gi, '-').toLowerCase() + '.jzt';
+                downloadJson.download = game.name.replace(/[^a-z0-9_\-]/gi, '-').toLowerCase() + '.jzt';
                 downloadJson.href = 'data:application/json;charset=utf-8;base64,' + Base64.encode(JSON.stringify(game));
             }
 

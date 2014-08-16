@@ -359,7 +359,8 @@ jzt.Editor.prototype.setBoardOptions = function(options) {
 };
 
 jzt.Editor.prototype.setGameOptions = function(options) {
-    this.game.title = options.title;
+    this.game.name = options.name;
+    this.game.id = options.id;
     this.game.author = options.author;
     this.game.titleBoard = options.titleBoard;
     this.game.startingBoard = options.startingBoard;
@@ -469,7 +470,8 @@ jzt.Editor.prototype.deserialize = function(data) {
     }
     
 
-    options.title = data.title;
+    options.name = data.name;
+    options.id = data.id;
     options.author = data.author;
     options.titleBoard = data.titleBoard;
     options.startingBoard = data.startingBoard;
@@ -483,7 +485,8 @@ jzt.Editor.prototype.deserialize = function(data) {
 
 jzt.Editor.prototype.serialize = function() {
     var result = {};
-    result.title = this.game.title;
+    result.name = this.game.name;
+    result.id = this.game.id;
     result.titleBoard = this.game.titleBoard;
     result.startingBoard = this.game.startingBoard;
     result.victoryBoard = this.game.victoryBoard;
