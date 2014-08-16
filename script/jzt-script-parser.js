@@ -979,6 +979,20 @@ jzt.jztscript = (function(my){
         }
 
         /**
+         * Victory Statement Parser
+         * Creates and returns a 'victory' statement parser.
+         * @return A 'victory' statement parser.
+         */
+        function createVictoryStatementParser() {
+            var victory = new p.Literal('Victory');
+            victory.discard = true;
+            victory.assembler = createAssembler(function(assembly){
+                assembly.push(new commands.VictoryCommand());
+            });
+            return victory;
+        }
+        
+        /**
          * Wait Statement Parser
          * Creates and returns a 'wait' statement parser.
          * @return A 'wait' statement parser.
@@ -1061,6 +1075,7 @@ jzt.jztscript = (function(my){
             statementOptions.add(createShootStatementParser());
             statementOptions.add(createStandStatementParser());
             statementOptions.add(createUnlockStatementParser());
+            statementOptions.add(createVictoryStatementParser());
             statementOptions.add(createWaitStatementParser());
             statementOptions.add(createWalkStatementParser());
             statementOptions.add(createZapStatementParser());

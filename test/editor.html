@@ -393,7 +393,7 @@
 				var script;
 				if(newName) {
 					newName = editor.getUniqueScriptName(newName);
-					script = new jzt.Script({'name': newName, 'rawScript': ''});
+					script = new jzt.jztscript.JztScript(newName);
 					editor.currentBoard.scripts.push(script);
 					scriptSelector.options[scriptSelector.options.length] = new Option(newName);
 					scriptEditor.value = editor.currentBoard.getScript(newName).rawScript;

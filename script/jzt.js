@@ -404,7 +404,6 @@ var jzt = (function(my) {
             }
 
             // Reset our player display
-            this.player.hidden = false;
             this.player.background = this.player.background.darken();
 
         }
@@ -471,8 +470,13 @@ var jzt = (function(my) {
             if (this.victoryBoard) {
                 this.setBoard(this.victoryBoard);
             }
-
-            this.player.hidden = true;
+            
+            // The player shouldn't be on the board
+            if (this.player) {
+                this.player.remove();
+                this.player.point.x = -1;
+                this.player.point.y = -1;
+            }
 
         }
 

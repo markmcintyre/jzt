@@ -747,6 +747,20 @@ jzt.jztscript.commands = (function(my){
     };
     
     /**
+     * VictoryCommand
+     *
+     * When executed, sets the owner's game's state to Victory.
+     */
+    function VictoryCommand() {}
+    
+    /**
+     * Sets a provided owner's game's state to victory.
+     */
+    VictoryCommand.prototype.execute = function(owner) {
+        owner.board.game.setState(jzt.GameState.Victory);
+    };
+    
+    /**
      * WaitCommand
      *
      * When executed, pauses script execution for a number
@@ -899,15 +913,15 @@ jzt.jztscript.commands = (function(my){
 
         switch(this.operand) {
             case '>':
-                return counterValue > this.numericValue;
+                return counterValue > this.value;
             case '<':
-                return counterValue < this.numericValue;
+                return counterValue < this.value;
             case '>=':
-                return counterValue >= this.numericValue;
+                return counterValue >= this.value;
             case '<=':
-                return counterValue <= this.numericValue;
+                return counterValue <= this.value;
             case '=':
-                return counterValue === this.numericValue;
+                return counterValue === this.value;
         }
 
         return undefined;
@@ -946,6 +960,7 @@ jzt.jztscript.commands = (function(my){
     my.ShootCommand = ShootCommand;
     my.StandCommand = StandCommand;
     my.UnlockCommand = UnlockCommand;
+    my.VictoryCommand = VictoryCommand;
     my.WaitCommand = WaitCommand;
     my.WalkCommand = WalkCommand;
     my.ZapCommand = ZapCommand;
