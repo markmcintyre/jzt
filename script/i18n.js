@@ -5,7 +5,7 @@
  */
 
 var jzt = jzt || {};
-jzt.i18n = (function(my){
+jzt.i18n = (function (my) {
     
     'use strict';
     
@@ -60,7 +60,8 @@ jzt.i18n = (function(my){
                 'notdark': 'You don\'t need a torch here.',
                 'loading': 'Loading...',
                 'loaderror': 'Oops! Loading failed.',
-                'fatalerror': 'I has error, Jim.'
+                'fatalerror': 'I has error, Jim.',
+                'incompatible': 'Um, this file isn\'t compatible.'
             },
             pause: {
                 'paused': 'Paused',
@@ -127,7 +128,8 @@ jzt.i18n = (function(my){
                 'notdark': 'Vous n\'avez pas besoin d\'une torche ici.',
                 'loading': 'Chargement...',
                 'loaderror': 'Oups! Chargement echoué.',
-                'fatalerror': 'J\'ai l\'erreur, Jim.'
+                'fatalerror': 'J\'ai l\'erreur, Jim.',
+                'incompatible': 'Mais, ce fichier est incompatible...'
             },
             pause: {
                 'paused': 'Pause',
@@ -148,24 +150,42 @@ jzt.i18n = (function(my){
     
     };
     
-    var _currentLanguage;
-    var _currentMessages;
+    var currentLanguage;
+    var currentMessages;
+    
+    function findMessage(source, key) {
+
+        var path = key.split('.');
+        var current = source;
+        var index;
+
+        for (index = 0; index < path.length; index += 1) {
+            if (current[path[index]] === undefined) {
+                return undefined;
+            } else {
+                current = current[path[index]];
+            }
+        }
+
+        return current;
+
+    }
     
     function getMessage(key) {
 
         var argumentIndex;
-        var result = findMessage(_currentMessages, key);
+        var result = findMessage(currentMessages, key);
         var regEx;
 
-        if(result === undefined && _currentMessages !== DEFAULT_LANGUAGE) {
+        if (result === undefined && currentMessages !== DEFAULT_LANGUAGE) {
             result = findMessage(MESSAGES[DEFAULT_LANGUAGE], key);
         }
 
-        if(result === undefined) {
+        if (result === undefined) {
             return key;
         }
 
-        for(argumentIndex = 1; argumentIndex < arguments.length; ++argumentIndex) {
+        for (argumentIndex = 1; argumentIndex < arguments.length; argumentIndex += 1) {
             regEx = new RegExp('\\{' + (argumentIndex - 1) + '\\}', 'g');
             result = result.replace(regEx, arguments[argumentIndex]);
         }
@@ -174,37 +194,18 @@ jzt.i18n = (function(my){
 
     }
 
-    function findMessage(source, key) {
-
-        var path = key.split('.');
-        var current = source;
-        var index;
-
-        for(index = 0; index < path.length; ++index) {
-            if(current[path[index]] === undefined) {
-                return undefined;
-            }
-            else {
-                current = current[path[index]];
-            }
-        }
-
-        return current;
-
-    }
-
     function getLanguage() {
-        return _currentLanguage;
+        return currentLanguage;
     }
 
     function setLanguage(language) {
-        _currentLanguage = language;
-        _currentMessages = MESSAGES.hasOwnProperty(language) ? MESSAGES[language] : MESSAGES[DEFAULT_LANGUAGE];
+        currentLanguage = language;
+        currentMessages = MESSAGES.hasOwnProperty(language) ? MESSAGES[language] : MESSAGES[DEFAULT_LANGUAGE];
     }
 
     function getBoardMessage(board, potentialKey) {
 
-        if(potentialKey.indexOf('i18n:') === 0 ) {
+        if (potentialKey.indexOf('i18n:') === 0) {
             return board.getMessage(potentialKey.substring(5));
         }
 

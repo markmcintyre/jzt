@@ -13,6 +13,8 @@ var jzt = jzt || {};
 jzt.Editor = function(editorElement, configuration) {
     
     var me = this;
+    
+    this.formatVersion = '1.0.0';
 
     this.editorElement = editorElement;
     this.templateCustomizer = document.getElementById('template-customizer');
@@ -33,6 +35,7 @@ jzt.Editor = function(editorElement, configuration) {
     var mockGame = {
         resources: {},
         isEditor: true,
+        version: this.formatVersion,
         addWarning: function(){},
         context: {
             canvas: {
@@ -454,6 +457,10 @@ jzt.Editor.prototype.deserialize = function(data) {
     var index;
     var board;
     var options = {};
+    
+    if (!data.version || data.version !== this.formatVersion) {
+        throw 'Incompatible version';
+    }
 
     for(index = 0; index < this.boards.length; ++index) {
         this.removeBoardCallback.call(this, this.boards[index].name);
@@ -486,6 +493,7 @@ jzt.Editor.prototype.deserialize = function(data) {
 jzt.Editor.prototype.serialize = function() {
     var result = {};
     result.name = this.game.name;
+    result.version = this.game.version;
     result.id = this.game.id;
     result.titleBoard = this.game.titleBoard;
     result.startingBoard = this.game.startingBoard;

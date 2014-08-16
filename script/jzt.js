@@ -5,9 +5,14 @@
  */
 /*global requestAnimationFrame, cancelAnimationFrame */
 
-var jzt = (function(my) {
+var jzt = (function (my) {
     
     'use strict';
+    
+    /**
+     * Format version represents the version of the game format that can be loaded.
+     */
+    var formatVersion = '1.0.0';
     
     /**
      * GameState is an enumerated type representing a state in our game's finite state
@@ -69,6 +74,7 @@ var jzt = (function(my) {
         this.CYCLE_RATE = Math.round(this.FPS / this.CPS);
         this.CYCLE_TICKS = Math.floor(1000 / this.FPS) * this.CYCLE_RATE;
         this.FPS_INTERVAL = 1000 / this.FPS;
+        this.version = formatVersion;
 
         this.loopId = undefined;
 
@@ -124,13 +130,14 @@ var jzt = (function(my) {
         }
 
     }
-
+    
     Game.prototype.serialize = function() {
 
         var result = {};
         var index;
 
         result.name = this.name;
+        result.version = this.version;
         result.titleBoard = this.titleBoard;
         result.startingBoard = this.currentBoard.name;
         result.victoryBoard = this.victoryBoard;
@@ -212,6 +219,12 @@ var jzt = (function(my) {
 
         var index;
         var isRunning;
+        
+        // Ensure we're capable of loading this version of the data
+        if (!data.version || data.version !== this.version) {
+            this.catestrophicError(jzt.i18n.getMessage('status.incompatible'));
+            return;   
+        }
 
         // If we're already running, end the game loop
         if (this.loopId) {
