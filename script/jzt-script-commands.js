@@ -336,7 +336,7 @@ jzt.jztscript.commands = (function(my){
         if(direction) {
 
             // If we are to go a number of times...
-            if(--heap[count] > 0) {
+            if(heap[count]-- > 0) {
                 if(owner.move(direction)) {
                     return CommandResult.REPEAT;
                 }
