@@ -83,7 +83,7 @@ var jzt = (function (my) {
         this.loadingAnimationIndex = 0;
         this.screenEffectIndex = 0;
         this.previousStates = [];
-
+        
         this.onLoadCallback = configuration.onLoadCallback;
         this.notificationListener = configuration.notificationListener;
         this.resources = {};
@@ -114,6 +114,13 @@ var jzt = (function (my) {
         this.screenWidth = Math.floor(this.context.canvas.width / this.resources.graphics.TILE_SIZE.x);
         this.screenHeight = Math.floor(this.context.canvas.height / this.resources.graphics.TILE_SIZE.y);
 
+        this.settings = {
+            audioActive: this.resources.audio.active,
+            audioVolume: this.resources.audio.userVolume,
+            audioMute: false,
+            language: jzt.i18n.getLanguage()
+        };
+        
         // If we were given a settings object, set ourselves up as a listener and send our initial values
         if (configuration.settings) {
 
@@ -121,12 +128,7 @@ var jzt = (function (my) {
             configuration.settings.addListener(this.onSettingsChanged.bind(this));
 
             // Send our initial values
-            configuration.settings.initialize({
-                audioActive: this.resources.audio.active,
-                audioVolume: this.resources.audio.userVolume,
-                audioMute: false,
-                language: jzt.i18n.getLanguage()
-            });
+            configuration.settings.initialize(this.settings);
 
         }
 
@@ -219,7 +221,7 @@ var jzt = (function (my) {
     Game.prototype.deserialize = function(data) {
 
         var index;
-        var isRunning;
+        var wasAlreadyRunning = false;
         
         // Ensure we're capable of loading this version of the data
         if (!data.version || data.version !== this.version) {
@@ -228,8 +230,8 @@ var jzt = (function (my) {
         }
 
         // If we're already running, end the game loop
-        if (this.loopId) {
-            isRunning = true;
+        if (this.isRunning()) {
+            wasAlreadyRunning = true;
             this.end();
         }
 
@@ -241,8 +243,8 @@ var jzt = (function (my) {
         this.author = data.author;
         this.boards = {};
         this.readMessages = {};
-
-        data.savedGame = data.savedGame ? true : false;
+        this.savedGame = data.savedGame ? true : false;
+        this.resources.audio.setActive(!this.settings.audioMute);
 
         // Initialize our default counters
         this.counters = {
@@ -253,7 +255,7 @@ var jzt = (function (my) {
             TORCHES: 0,
             SCORE: 0
         };
-
+        
         for (index in data.counters) {
             if (data.counters.hasOwnProperty(index) && !isNaN(data.counters[index])) {
                 this.counters[index] = data.counters[index];
@@ -269,7 +271,7 @@ var jzt = (function (my) {
         this.gameLoaded = true;
 
         // If we were running, resume the game loop
-        if (isRunning) {
+        if (wasAlreadyRunning) {
             this.run();
         }
 
@@ -675,8 +677,10 @@ var jzt = (function (my) {
         }
 
         // If our game loop isn't already running
-        if (! this.loopId) {
+        if (! this.isRunning()) {
+            
             this.keyboard.initialize();
+            this.previousStates = [];
 
             // If we have a game loaded...
             if (this.gameLoaded) {
@@ -751,6 +755,10 @@ var jzt = (function (my) {
 
         }
 
+    };
+    
+    Game.prototype.isRunning = function () {
+        return this.loopId;   
     };
 
     /**
@@ -1160,16 +1168,19 @@ var jzt = (function (my) {
     };
 
     Game.prototype.onSettingsChanged = function (settings) {
-
+        
         if (settings.hasOwnProperty('audioMute')) {
+            this.settings.audioMute = settings.audioMute;
             this.resources.audio.setActive(!settings.audioMute);
         }
 
         if (settings.hasOwnProperty('audioVolume')) {
+            this.settings.audioVolume = settings.audioVolume;
             this.resources.audio.userVolume = settings.audioVolume;
         }
 
         if (settings.hasOwnProperty('language')) {
+            this.settings.language = settings.language;
             jzt.i18n.setLanguage(settings.language);
         }
 
