@@ -69,27 +69,29 @@
 		<script type="text/javascript" src="js/jzt-ux.min.js"></script>
 		<script type="text/javascript">
 
-			var game = new jzt.Game({
-				canvasElement: document.getElementById('jzt'),
-				notificationListener: new jzt.ux.DisplayableNotificationListener({
-					warningButton: document.getElementById('main-content').querySelector('.slide-toggle.warning'),
-					warningListElement: document.getElementById('main-content').querySelector('.warning-list')
-				}),
-				settings: new jzt.ux.Settings(document.getElementById('settings')),
-				onLoadCallback: function(success) {
-					if(success) {
-						this.run('../village-of-jzt.json');
-					}
-					else {
-						alert('Unsupported browser.')
-					}
-				}
-			});
+            (function () {
+                
+                var game = new jzt.Game({
+                    canvasElement: document.getElementById('jzt'),
+                    notificationListener: new jzt.ux.DisplayableNotificationListener({
+                        warningButton: document.getElementById('main-content').querySelector('.slide-toggle.warning'),
+                        warningListElement: document.getElementById('main-content').querySelector('.warning-list')
+                    }),
+                    settings: new jzt.ux.Settings(document.getElementById('settings')),
+                    onLoadCallback: function(success) {
+                        if(success) {
+                            this.run('../village-of-jzt.json');
+                        }
+                        else {
+                            alert('Unsupported browser.')
+                        }
+                    }
+                });
 
-			new jzt.ux.SlidingPanel(document.getElementById('main-content'));
+                new jzt.ux.SlidingPanel(document.getElementById('main-content'));
+                jzt.ux.setFullScreenButton(document.getElementById('full-screen'), document.getElementById('jzt'));
 
-			jzt.ux.setFullScreenButton(document.getElementById('full-screen'), document.getElementById('jzt'));
-
+            }());
 		</script>
 
 	</body>

@@ -297,7 +297,7 @@ jzt.things = (function(my){
         var type = template.type.toUpperCase();
         var color = template.color ? jzt.colors.deserializeForeground(template.color) : undefined;
 
-        if(this.constructor.name.toUpperCase() === type) {
+        if(this.constructor.type.toUpperCase() === type) {
 
             return color === undefined ? true : color === this.foreground;
 
