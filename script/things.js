@@ -11,6 +11,15 @@ jzt.things = (function(my){
     
     var ThingFactory = {};
     
+    /**
+     * Defines a thing by adding a property with its named construction function. Additionally
+     * adds a 'type' property to the function so it can be serialized even after minification.
+     */
+    function defineThing(name, thingFunction) {
+        my[name] = thingFunction;
+        thingFunction.type = name;
+    }
+    
     /*
      * Thing represents a single 'thing' that can be associated with a Board. This can
      * range from players, to walls, to Scriptables. Each Thing has a location,
@@ -38,7 +47,7 @@ jzt.things = (function(my){
      */
     Thing.prototype.serialize = function() {
         var result = {};
-        result.type = this.constructor.name;
+        result.type = this.constructor.type;
         result.color = jzt.colors.serialize(this.background, this.foreground);
         if(this.under) {
             result.under = this.under.serialize();
@@ -4405,11 +4414,11 @@ jzt.things = (function(my){
             // For each thing defined in this module...
             for(thing in my) {
                 
-                // If it's a thing (but not Thing) whose constructor has been defined as itself...
-                if(my.hasOwnProperty(thing) && my[thing].prototype && my[thing].prototype.constructor === my[thing]) {
+                // If it's a Thing with a defined type...
+                if(my.hasOwnProperty(thing) && my[thing].type) {
 
                     // Add it to our thing map by its uppercase name
-                    ThingFactory.thingMap[my[thing].prototype.constructor.name.toUpperCase()] = my[thing];
+                    ThingFactory.thingMap[thing.toUpperCase()] = my[thing];
 
                 }
             }
@@ -4464,51 +4473,52 @@ jzt.things = (function(my){
     
     my.Thing = Thing;
     my.UpdateableThing = UpdateableThing;
-    my.Scriptable = Scriptable;
-    my.ActiveBomb = ActiveBomb;
-    my.Ammo = Ammo;
-    my.Bear = Bear;
-    my.Blinker = Blinker;
-    my.BlinkWall = BlinkWall;
-    my.Bomb = Bomb;
-    my.Boulder = Boulder;
-    my.BreakableWall = BreakableWall;
-    my.Bullet = Bullet;
-    my.Centipede = Centipede;
-    my.Conveyor = Conveyor;
-    my.Door = Door;
-    my.Duplicator = Duplicator;
-    my.Explosion = Explosion;
-    my.FakeWall = FakeWall;
-    my.Forest = Forest;
-    my.Gem = Gem;
-    my.Heart = Heart;
-    my.InvisibleWall = InvisibleWall;
-    my.Key = Key;
-    my.Lava = Lava;
-    my.LineWall = LineWall;
-    my.Lion = Lion;
-    my.Passage = Passage;
-    my.Player = Player;
-    my.Pusher = Pusher;
-    my.Ricochet = Ricochet;
-    my.River = River;
-    my.Ruffian = Ruffian;
-    my.Signpost = Signpost;
-    my.SliderEw = SliderEw;
-    my.SliderNs = SliderNs;
-    my.Snake = Snake;
-    my.SolidWall = SolidWall;
-    my.Spider = Spider;
-    my.SpiderWeb = SpiderWeb;
-    my.SpinningGun = SpinningGun;
-    my.Teleporter = Teleporter;
-    my.Text = Text;
-    my.ThrowingStar = ThrowingStar;
-    my.Tiger = Tiger;
-    my.Torch = Torch;
-    my.Wall = Wall;
-    my.Water = Water;
+    
+    defineThing('Scriptable', Scriptable);
+    defineThing('ActiveBomb', ActiveBomb);
+    defineThing('Ammo', Ammo);
+    defineThing('Bear', Bear);
+    defineThing('Blinker', Blinker);
+    defineThing('BlinkWall', BlinkWall);
+    defineThing('Bomb', Bomb);
+    defineThing('Boulder', Boulder);
+    defineThing('BreakableWall', BreakableWall);
+    defineThing('Bullet', Bullet);
+    defineThing('Centipede', Centipede);
+    defineThing('Conveyor', Conveyor);
+    defineThing('Door', Door);
+    defineThing('Duplicator', Duplicator);
+    defineThing('Explosion', Explosion);
+    defineThing('FakeWall', FakeWall);
+    defineThing('Forest', Forest);
+    defineThing('Gem', Gem);
+    defineThing('Heart', Heart);
+    defineThing('InvisibleWall', InvisibleWall);
+    defineThing('Key', Key);
+    defineThing('Lava', Lava);
+    defineThing('LineWall', LineWall);
+    defineThing('Lion', Lion);
+    defineThing('Passage', Passage);
+    defineThing('Player', Player);
+    defineThing('Pusher', Pusher);
+    defineThing('Ricochet', Ricochet);
+    defineThing('River', River);
+    defineThing('Ruffian', Ruffian);
+    defineThing('Signpost', Signpost);
+    defineThing('SliderEw', SliderEw);
+    defineThing('SliderNs', SliderNs);
+    defineThing('Snake', Snake);
+    defineThing('SolidWall', SolidWall);
+    defineThing('Spider', Spider);
+    defineThing('SpiderWeb', SpiderWeb);
+    defineThing('SpinningGun', SpinningGun);
+    defineThing('Teleporter', Teleporter);
+    defineThing('Text', Text);
+    defineThing('ThrowingStar', ThrowingStar);
+    defineThing('Tiger', Tiger);
+    defineThing('Torch', Torch);
+    defineThing('Wall', Wall);
+    defineThing('Water', Water);
     
     my.ThingFactory = ThingFactory;
     

@@ -670,48 +670,6 @@ jzt.jztscript = (function(my){
         }
 
         /**
-         * Move Statement Parser
-         * Creates and returns a new 'move' statement paser.
-         * @return A 'move' statement parser.
-         */
-        function createMoveStatementParser() {
-            var move = new p.Sequence();
-            var moveOptions = new p.Alternation();
-            var otherwise = new p.Sequence();
-
-            // Add otherwise items
-            otherwise.addDiscard(new p.Literal('Otherwise'));
-            otherwise.add(new p.Word());
-
-            // Add move option items
-            moveOptions.addDiscard(new p.Literal('Forcefully'));
-            moveOptions.add(otherwise);
-            moveOptions.assembler = createAssembler(function(assembly){
-                assembly.push(assembly.peek().name === 'WORD' ? {jumpTo: assembly.pop().value.toUpperCase()} : {forceful: true});
-            });
-
-            // Add move command sequence
-            move.addDiscard(new p.Literal('Move'));
-            move.add(choice(createDirectionParser(), createCountableDirectionParser()));
-            move.add(optional(moveOptions));
-            
-            // Define assembler
-            move.assembler = createAssembler(function(assembly){
-                
-                var options;
-                
-                if(! (assembly.peek() instanceof commands.DirectionExpression)) {
-                    options = assembly.pop();
-                }
-                
-                assembly.push(new commands.MoveCommand(assembly.pop(), options));
-
-            });
-
-            return move;
-        }
-
-        /**
          * Play Statement Parser
          * Creates and returns a new 'play' statement paser.
          * @return A 'play' statement parser.

@@ -326,7 +326,6 @@ jzt.jztscript.commands = (function(my){
         var heap = owner.scriptContext.heap;
         var direction = this.directionExpression.getResult(owner);
         var count = '<count>';
-        var success;
     
         if(!heap[count]) {
             heap[count] = this.directionExpression.count;

@@ -161,7 +161,7 @@ jzt.parser = (function(my){
 
     Repetition.prototype.match = function(assemblies) {
 
-        var index, assembly, result, error;
+        var index, assembly, result;
         
         // If we have a preassember, assemble now
         if(this.preAssembler !== undefined) {
