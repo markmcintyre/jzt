@@ -222,7 +222,7 @@ var jzt = (function (my) {
             }
 
             // Go back to playing!
-            this.game.setState(jzt.GameState.Playing);
+            this.game.restoreState();
 
 
         }
@@ -240,7 +240,7 @@ var jzt = (function (my) {
 
         // If we're exiting
         else if (event === action.Exit) {
-            this.game.setState(jzt.GameState.Playing);
+            this.game.restoreState();
         }
 
 

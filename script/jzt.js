@@ -82,6 +82,7 @@ var jzt = (function (my) {
         this.gameLoaded = false;
         this.loadingAnimationIndex = 0;
         this.screenEffectIndex = 0;
+        this.previousStates = [];
 
         this.onLoadCallback = configuration.onLoadCallback;
         this.notificationListener = configuration.notificationListener;
@@ -371,6 +372,19 @@ var jzt = (function (my) {
 
     };
 
+    Game.prototype.pushState = function (state) {
+        this.previousStates.push(this.state);
+        this.keyboard.cancelInput();
+        this.setState(state);
+    };
+    
+    Game.prototype.restoreState = function () {
+        if(this.previousStates.length > 0) {
+            this.keyboard.cancelInput();
+            this.setState(this.previousStates.pop());
+        }
+    };
+    
     /**
      * Assigns a GameState to this Game instance, changing the current state of this Game's finite
      * state machine.
@@ -768,13 +782,13 @@ var jzt = (function (my) {
             // Check if the user wants to save
             else if (this.keyboard.isPressed(this.keyboard.S)) {
                 this.fileManagement.dialogType = jzt.FileManagement.Type.SAVE;
-                this.setState(GameState.FileManagement);
+                this.pushState(GameState.FileManagement);
             }
 
             // Check if the user wants to restore
             else if (this.keyboard.isPressed(this.keyboard.R)) {
                 this.fileManagement.dialogType = jzt.FileManagement.Type.OPEN;
-                this.setState(GameState.FileManagement);
+                this.pushState(GameState.FileManagement);
             }
 
         }
@@ -808,8 +822,16 @@ var jzt = (function (my) {
 
         // If it's game over, say so!
         else if (this.state === GameState.GameOver) {
+            
             this.currentBoard.update();
             this.currentBoard.setDisplayMessage(jzt.i18n.getMessage('status.gameover'));
+            
+            // The user has an option to load a previous game now
+            if (this.keyboard.isPressed(this.keyboard.R) || this.keyboard.isPressed(this.keyboard.ENTER)) {
+                this.fileManagement.dialogType = jzt.FileManagement.Type.OPEN;
+                this.pushState(GameState.FileManagement);
+            }
+            
         }
 
         // If we're on the title screen...
@@ -818,12 +840,18 @@ var jzt = (function (my) {
             this.currentBoard.update();
             this.currentBoard.setDisplayMessage(jzt.i18n.getMessage('status.title'));
 
-            // Also check if the user wants to play
+            // Check if the user wants to play
             if (this.keyboard.isPressed(this.keyboard.P) || this.keyboard.isPressed(this.keyboard.SPACE) || this.keyboard.isPressed(this.keyboard.ENTER)) {
                 this.keyboard.cancelKey(this.keyboard.P);
                 this.keyboard.cancelKey(this.keyboard.ENTER);
                 this.keyboard.cancelKey(this.keyboard.SPACE);
                 this.setState(GameState.Playing);
+            }
+            
+            // The user may also want to load a previous game
+            else if (this.keyboard.isPressed(this.keyboard.R)) {
+                this.fileManagement.dialogType = jzt.FileManagement.Type.OPEN;
+                this.pushState(GameState.FileManagement);
             }
 
         }
@@ -832,6 +860,12 @@ var jzt = (function (my) {
         else if (this.state === GameState.Victory) {
 
             this.currentBoard.update();
+            
+            // The user can load a previous game at this point
+            if (this.keyboard.isPressed(this.keyboard.R) || this.keyboard.isPressed(this.keyboard.ENTER)) {
+                this.fileManagement.dialogType = jzt.FileManagement.Type.OPEN;
+                this.pushState(GameState.FileManagement);
+            }
 
         }
 
