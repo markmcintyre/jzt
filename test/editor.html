@@ -471,7 +471,7 @@
             
             function onDownloadJson(event) {
                 var game = editor.serialize();
-                downloadJson.download = game.name.replace(/[^a-z0-9_\-]/gi, '-').toLowerCase() + '.jzt';
+                downloadJson.download = game.name.replace(/[^a-z0-9_\-]/gi, '-').toLowerCase() + '.json';
                 downloadJson.href = 'data:application/json;charset=utf-8;base64,' + Base64.encode(JSON.stringify(game));
             }
 

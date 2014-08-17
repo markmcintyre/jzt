@@ -155,14 +155,8 @@ jzt.ui.Splash.prototype.update = function() {
 
 	var time = Date.now() - this.startTime;
 
-	if(time >= 7000) {
+	if(time >= 4000) {
 		this.done = true;
-	}
-	else if(time >= 5000) {
-		this.setAnimationFrame(7);
-	}
-	else if(time >= 4000) {
-		this.setAnimationFrame(6);
 	}
 	else if(time >= 2000) {
 		this.setAnimationFrame(5);
@@ -189,47 +183,30 @@ jzt.ui.Splash.prototype.setAnimationFrame = function(frame) {
 	if(this.animationFrame !== frame) {
 
 		if(frame === 1) {
-			grid.addText(new jzt.Point(1,1), 'Mark x286 BIOS Version 2.1.16', jzt.colors.White);
-			grid.addText(new jzt.Point(1,2), 'Copyright (c) 2014 Orangeline Interactive, Inc', jzt.colors.White);
+            grid.addText(new jzt.Point(1,1), '┌───┐', jzt.colors.White);
+            grid.addText(new jzt.Point(1,2), '│ o┌┴──┐ Association of', jzt.colors.White);
+            grid.addText(new jzt.Point(1,3), '└─┬┴──┐│ Shareware', jzt.colors.White);
+            grid.addText(new jzt.Point(1,4), '  │ o ├┘ Unprofessionals', jzt.colors.White);
+            grid.addText(new jzt.Point(1,5), '  └─┴─┘', jzt.colors.White);
+			grid.addText(new jzt.Point(1,7), 'x286 BIOS Version 2.1.16', jzt.colors.White);
 		}
 		else if(frame === 2) {
-			grid.addText(new jzt.Point(1,4), 'Initializing ORNJtel(R) Boot Agent v1.4.14', jzt.colors.White);
-			grid.addText(new jzt.Point(1,5), 'ORNJ Nostalgia Engine (v1.0.0) Loaded.', jzt.colors.White);
+			grid.addText(new jzt.Point(1,9), 'Initializing Nostalgia Boot Agent v1.4.14', jzt.colors.White);
+			grid.addText(new jzt.Point(1,10), 'Nostalgia Boot Agent (v1.4.14) Loaded.', jzt.colors.White);
 			this.game.resources.audio.play('i++c');
 		}
 		else if(frame === 3) {
-			grid.addText(new jzt.Point(1,7), 'Starting ORNJ-DOS...', jzt.colors.White);
+			grid.addText(new jzt.Point(1,12), 'Starting Markrosoft DOS...', jzt.colors.White);
 		}
 		else if(frame === 4) {
-			grid.addText(new jzt.Point(1,9), 'Running autoexec.bat', jzt.colors.White);
-			grid.addText(new jzt.Point(1,10), 'C:\\>cd JZT', jzt.colors.White);
-			grid.addText(new jzt.Point(1,11), 'C:\\JZT\\>jzt.exe', jzt.colors.White);
+			grid.addText(new jzt.Point(1,14), 'Running autoexec.bat', jzt.colors.White);
+			grid.addText(new jzt.Point(1,15), 'C:\\>cd JZT', jzt.colors.White);
+			grid.addText(new jzt.Point(1,16), 'C:\\JZT\\>jzt.exe', jzt.colors.White);
 		}
 
 		else if(frame === 5) {
 			grid.clear();
-			grid.addArt(new jzt.Point(7,3),
-				' 0 0 0 0 0 0:3\n' +
-				' 0 0 0 0 0 0│3\n' +
-				' 0 0 0 0 0 0│B\n' +
-				'-3 0─3─3─B─B┼F─B─B─3─3 0-3\n' +
-				' 0 0 0 0 0 0│B 0▒C█C█C█C▒C░C 0▓C█C█C█C 0▓C█C█C█C▒C 0 0▄C\n' +
-				' 0 0 0 0 0 0│3 0█C█C 0 0█C▒C 0█C█C░C 0 0█C█C▒C 0█C▌C\n' +
-				' 0 0 0 0 0 0:3▐C█C█C 0▐C█C▒C 0█C█C 0 0░C█C█C 0 0█C 0█C▌C\n' +
-				' 0 0 0 0 0 0 0 0▒C█C█C█C▒C░C▐C█C▌C 0 0░C█C▌C 0▐C█C 0█C▌C 0:8\n' +
-				' 0 0 0 0 0 0 0 0▄C▄C▄C▄C▄C▄C▄C▄C▄C▄C▄C▄C▄C▄C▄C▄C▄C▄C█C▌C 0│7\n' +
-				' 0 0 0 0 0 0 0 0 0▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C▀C 0─8─7┼F─7─8\n' +
-				' 0 0 0 0☻F 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0│7\n' +
-				' 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0:8'
-			);
-			grid.addText(new jzt.Point(13, 13), 'Orangeline Interactive', jzt.colors.BrightRed);
-			grid.addText(new jzt.Point(13, 14), 'Presents...', jzt.colors.Red);
-
-		}
-
-		else if(frame === 6) {
-			grid.clear();
-			grid.addArt(new jzt.Point(6,5),
+			grid.addArt(new jzt.Point(7,5),
 				' 0 0 0 0 0 0 0▄F▄F▀F▀F▀F▀F▀F█F▄F▄F▄F▀F▀F▀F▀F▀F▀F▄F F F▄F▄F▀F▀F▀F▀F▀F▀F▀F▄F\n' +
 				' 0 0 0▄F▄F▀F▀F▄9▄9█9█9█9▀9▄F▀F▄9▄9▄9█9█9█9█9▓9 0█F▀F▀F▄9▄9█9█9█9█9█9▀9 0█F\n' +
 				' 0 0█F 0▄9█9█9█9█9█9▓9 0▄F▀F█9█9▀9▀9▀9▀9 0█9▓9▓F 0█9█9█9▀9█9▓9▀9 0▄F▄F▀F▀F\n' +
@@ -241,12 +218,8 @@ jzt.ui.Splash.prototype.setAnimationFrame = function(frame) {
 				' 0 0▀F▄F▀9▀9▀9▀9▄F▀F 0▀F▄F▀9▀9▀9▀9▀9▀9▄F▄F▄F▄F▄F▀F F F▀F▄F▄F▄F▀F\n' +
 				' 0 0 0 0▀F▀F▀F▀F F F F F F▀F▀F▀F▀F▀F▀F'
 			);
-		}
-
-		else if(frame === 7) {
-			grid.addText(new jzt.Point(8, 16), '(A Nostalgic DOS Game For The Web)', jzt.colors.BrightBlue);
-			grid.addText(new jzt.Point(8, 17), 'Created by Mark McIntyre', jzt.colors.Cyan);
-			grid.addText(new jzt.Point(13,19), '(c) 2014 Orangeline Interactive, Inc.', jzt.colors.Grey);
+            grid.addText(new jzt.Point(13, 18), 'Created by Mark McIntyre', jzt.colors.Grey);
+			grid.addText(new jzt.Point(6, 19), '(c) 2014 Orangeline Interactive, Inc.', jzt.colors.Grey);
 		}
 
 		this.animationFrame = frame;
