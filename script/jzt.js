@@ -169,7 +169,6 @@ var jzt = (function (my) {
     };
     
     Game.prototype.restartGame = function () {
-        this.keyboard.cancelInput();
         this.loadGame(this.gameUrl || this.cachedGame);  
     };
 
@@ -178,9 +177,13 @@ var jzt = (function (my) {
         var me = this;
         var response;
         var httpRequest;
+        
+        this.keyboard.cancelInput();
+        this.previousStates = [];
+        this.setState(GameState.Loading);
 
         if (typeof game === 'string') {
-            
+
             this.gameUrl = game;
 
             try {
@@ -252,6 +255,8 @@ var jzt = (function (my) {
         this.boards = {};
         this.readMessages = {};
         this.savedGame = data.savedGame ? true : false;
+        this.keyboard.cancelInput();
+        this.previousStates = [];
         this.resources.audio.setActive(!this.settings.audioMute);
 
         // Initialize our default counters
@@ -906,9 +911,6 @@ var jzt = (function (my) {
 
                 // If there was a game to load...
                 if (this.gameToLoad) {
-
-                    // Set our state to loading
-                    this.setState(GameState.Loading);
 
                     // Load our game
                     this.loadGame(this.gameToLoad);
