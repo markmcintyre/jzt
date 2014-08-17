@@ -167,6 +167,11 @@ var jzt = (function (my) {
         return result;
 
     };
+    
+    Game.prototype.restartGame = function () {
+        this.keyboard.cancelInput();
+        this.loadGame(this.gameUrl || this.cachedGame);  
+    };
 
     Game.prototype.loadGame = function(game) {
 
@@ -175,6 +180,8 @@ var jzt = (function (my) {
         var httpRequest;
 
         if (typeof game === 'string') {
+            
+            this.gameUrl = game;
 
             try {
                 httpRequest = new XMLHttpRequest();
@@ -208,6 +215,7 @@ var jzt = (function (my) {
 
         }
         else if (typeof game === 'object') {
+            this.cachedGame = game;
             this.deserialize(game);
         }
 

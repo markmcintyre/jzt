@@ -105,16 +105,8 @@ var jzt = (function (my) {
             return b.timestamp - a.timestamp; 
         });
         
-        // If we're saving...
-        if (this.dialogType === FileManagement.Type.SAVE) {
-
-            // Make sure our first element is an empty save slot
-            if (this.files.length <= 0 || this.files[0] !== undefined) {
-                this.files.splice(0, 0, undefined);
-            }
-
-
-        }
+        // Add an empty item as the first item
+        this.files.unshift(null);
 
         // Initalize our dialog title and sprite grid
         this.popup.redraw();
@@ -214,10 +206,7 @@ var jzt = (function (my) {
             if (this.dialogType === FileManagement.Type.OPEN) {
 
                 file = this.files[this.selectedIndex];
-
-                if (file) {
-                    this.loadFile(file);
-                }
+                this.loadFile(file);
 
             }
 
@@ -268,18 +257,25 @@ var jzt = (function (my) {
     FileManagement.prototype.loadFile = function (file) {
 
         var data;
-        var saveKey = getSaveName(file.timestamp);
+        var saveKey;
+        
+        if (file) {
+            saveKey = getSaveName(file.timestamp);
 
-        // If our save ID exists...
-        if (localStorage.hasOwnProperty(saveKey)) {
+            // If our save ID exists...
+            if (localStorage.hasOwnProperty(saveKey)) {
 
-            // Grab our serialized game
-            data = localStorage[saveKey];
-            data = LZString.decompressFromUTF16(data);
-            data = JSON.parse(data);
+                // Grab our serialized game
+                data = localStorage[saveKey];
+                data = LZString.decompressFromUTF16(data);
+                data = JSON.parse(data);
 
-            this.game.deserialize(data);
+                this.game.deserialize(data);
 
+            }
+        }
+        else {
+            this.game.restartGame();
         }
 
 
@@ -371,10 +367,22 @@ var jzt = (function (my) {
                 title = file.name || jzt.i18n.getMessage('file.saved');
                 me.spriteGrid.addText(point, title, selected ? jzt.colors.BrightWhite : jzt.colors.Grey, background);
             }
-            else {
+            
+            // If there's no file and we're saving, it's an empty spot
+            else if (me.dialogType === FileManagement.Type.SAVE) {
                 title = jzt.i18n.getMessage('file.new');
                 point.x = Math.round((me.boxWidth - title.length) / 2);
                 me.spriteGrid.addText(point, title, selected ? jzt.colors.BrightWhite : jzt.colors.Grey, background);
+            }
+            
+            // Otherwise, it's an invitation to restart the game
+            else {
+                title = jzt.i18n.getMessage('file.restart');
+                point.x = Math.round((me.boxWidth - title.length) / 2);
+                me.spriteGrid.addText(point, title, selected ? jzt.colors.BrightWhite : jzt.colors.Grey, background);
+                point.y += 1;
+                point.x = Math.round((me.boxWidth - me.game.name.length) / 2);
+                me.spriteGrid.addText(point, me.game.name, selected ? jzt.colors.BrightBlue : jzt.colors.Grey, background);
             }
 
             // Draw our timestamp

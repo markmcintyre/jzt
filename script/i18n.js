@@ -76,7 +76,8 @@ jzt.i18n = (function (my) {
                 'new': 'Empty Slot',
                 'saved': 'Saved Game',
                 'save': 'Save Game',
-                'load': 'Restore Game'
+                'load': 'Restore Game',
+                'restart': 'Restart Game'
             }
         },
         
@@ -142,9 +143,10 @@ jzt.i18n = (function (my) {
             },
             file: {
                 'new': 'Espace Vide',
-                'saved': 'Jeux Sauvegardé',
+                'saved': 'Jeu Sauvegardé',
                 'save': 'Sauvegarder',
-                'load': 'Ouvrir'
+                'load': 'Ouvrir',
+                'restart': 'Récommencer'
             }
         }
     
