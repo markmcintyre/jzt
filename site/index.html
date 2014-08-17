@@ -1,83 +1,98 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>JZT</title>
+		<title>JZT: A Nostalgic ZZT Clone for the Web</title>
 		<meta charset="utf-8" />
+        <meta name="Keywords" content="zzt,jzt,game,web game,javascript,html5" />
+        <meta name="description" content="JZT is a new take on the classic game ZZT, playable right from within your web browser." />
 		<link rel="stylesheet" type="text/css" href="css/main.css" />
 	</head>
 	<body>
 		
-		<div class="jzt-sliding-container" id="main-content">
+        <header>
+            <h1>JZT: A Nostalgic ZZT Clone for the Web</h1>
+            
+            <nav>
+                <ul>
+                    <li>About</li>
+                </ul>
+            </nav>
+            
+        </header>
+        
+        <div id="content">
 
+            <canvas id="jzt" width="800" height="640"></canvas>
 
-			<div class="jzt-top-content">
+            <section id="help">
 
-				<header>
-					<h1>JZT: Nostalgic DOS Game</h1>
-				</header>
+                <h2>How to Play</h2>
+                
+                <div id="settings">
+                    <label><input type="checkbox" name="audio-mute" /> Mute</label>
+                </div>
 
-				<ul class="toggles">
-					<li><a class="slide-toggle warning" data-panel="warnings">⚠</a></li>
-					<li><a class="slide-toggle" data-panel="help">?</a></li>
-					<li><a class="slide-toggle" data-panel="settings">⚙</a></li>
-					<li><a class="side-button" id="full-screen">⿹</a></li>
-				</ul>
-				
-				<canvas id="jzt" width="800" height="640"></canvas>
+                <div class="key-map">
 
-				<footer>
-				<p>&copy; {{JZT:YEAR}} Orangeline Interactive, Inc.</p>
-				</footer>
+                    <div class="instruction">
+                        <div class="description">Move</div>
+                        <div class="keys">
+                            <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd> <kbd>←</kbd>
+                        </div>
+                    </div>
 
-			</div>
+                    <div class="instruction">
+                        <div class="description">Shoot</div>
+                        <div class="keys">
+                            <kbd>Space</kbd> + <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd> <kbd>←</kbd>
+                        </div>
+                    </div>
 
-			<aside class="jzt-bottom-content">
+                    <div class="instruction">
+                        <div class="description">Pause, View Stats</div>
+                        <div class="keys">
+                            <kbd>P</kbd>
+                        </div>
+                    </div>
 
-				<div class="warnings panel">
-					<h3>Game Warnings</h3>
-					<ul class="warning-list">
-					</ul>
-				</div>
+                    <div class="instruction">
+                        <div class="description">Use Torch</div>
+                        <div class="keys">
+                            <kbd>T</kbd>
+                        </div>
+                    </div>
 
-				<div class="help panel">
-					<h3>Help</h3>
-					<p>Some very exciting help content will go here.</p>
-					<p>Cupcake ipsum dolor sit amet. Donut jelly beans carrot cake pie. Pastry pudding carrot cake powder gummies. Soufflé biscuit tiramisu croissant cheesecake. Dragée topping fruitcake apple pie pastry toffee gummies oat cake. Ice cream danish carrot cake wafer sesame snaps pie jelly beans chocolate bar jelly beans. Pastry gummi bears cupcake chocolate cake marzipan sesame snaps. Icing cake cake chupa chups apple pie ice cream. Tiramisu carrot cake icing jelly-o biscuit brownie.</p>
-					<p>Cupcake gummies sweet roll. Halvah cotton candy wafer jujubes cake. Icing croissant gummi bears donut. Danish tart chupa chups sugar plum. Danish dessert jelly gingerbread. Wafer cotton candy chupa chups cake. Gummi bears tiramisu applicake jelly oat cake cake marshmallow pie. Cupcake caramels sesame snaps gummi bears topping danish. Halvah gummies icing gummi bears bear claw candy canes.</p>
-					<p>Cupcake gummies sweet roll. Halvah cotton candy wafer jujubes cake. Icing croissant gummi bears donut. Danish tart chupa chups sugar plum. Danish dessert jelly gingerbread. Wafer cotton candy chupa chups cake. Gummi bears tiramisu applicake jelly oat cake cake marshmallow pie. Cupcake caramels sesame snaps gummi bears topping danish. Halvah gummies icing gummi bears bear claw candy canes.</p>
-					<p>Cupcake gummies sweet roll. Halvah cotton candy wafer jujubes cake. Icing croissant gummi bears donut. Danish tart chupa chups sugar plum. Danish dessert jelly gingerbread. Wafer cotton candy chupa chups cake. Gummi bears tiramisu applicake jelly oat cake cake marshmallow pie. Cupcake caramels sesame snaps gummi bears topping danish. Halvah gummies icing gummi bears bear claw candy canes.</p>
-					<p>Cupcake gummies sweet roll. Halvah cotton candy wafer jujubes cake. Icing croissant gummi bears donut. Danish tart chupa chups sugar plum. Danish dessert jelly gingerbread. Wafer cotton candy chupa chups cake. Gummi bears tiramisu applicake jelly oat cake cake marshmallow pie. Cupcake caramels sesame snaps gummi bears topping danish. Halvah gummies icing gummi bears bear claw candy canes.</p>
-					<p>Cupcake gummies sweet roll. Halvah cotton candy wafer jujubes cake. Icing croissant gummi bears donut. Danish tart chupa chups sugar plum. Danish dessert jelly gingerbread. Wafer cotton candy chupa chups cake. Gummi bears tiramisu applicake jelly oat cake cake marshmallow pie. Cupcake caramels sesame snaps gummi bears topping danish. Halvah gummies icing gummi bears bear claw candy canes.</p>
-				</div>
+                    <div class="instruction">
+                        <div class="description">Save</div>
+                        <div class="keys">
+                            <kbd>S</kbd>
+                        </div>
+                    </div>
 
-				<div class="settings panel" id="settings">
-					<label>Volume: <input type="range" min="0" max="5" step="0.5" name="audio-volume" /></label><br/>
-					<label><input type="checkbox" name="audio-enabled" /> Mute</label><br/>
-					<label>Language: 
-						<select name="language">
-							<option value="en">English</option>
-							<option value="fr">Français</option>
-						</select>
-					</label>
-				</div>
+                    <div class="instruction">
+                        <div class="description">Restore</div>
+                        <div class="keys">
+                            <kbd>R</kbd>
+                        </div>
+                    </div>
 
-			</aside>
+                </div>
+            </section>
 
-		</div>
+        </div>
+        
+        <footer>
+            <p><a href="http://www.ornj.net/">&copy; {{JZT:YEAR}}</a></p>
+        </footer>
 
 		<script type="text/javascript" src="js/jzt.min.js" charset="utf-8"></script>
-		<script type="text/javascript" src="js/jzt-ux.min.js"></script>
 		<script type="text/javascript">
 
             (function () {
                 
                 var game = new jzt.Game({
                     canvasElement: document.getElementById('jzt'),
-                    notificationListener: new jzt.ux.DisplayableNotificationListener({
-                        warningButton: document.getElementById('main-content').querySelector('.slide-toggle.warning'),
-                        warningListElement: document.getElementById('main-content').querySelector('.warning-list')
-                    }),
-                    settings: new jzt.ux.Settings(document.getElementById('settings')),
+                    settings: new jztux.Settings(document.getElementById('settings')),
                     onLoadCallback: function(success) {
                         if(success) {
                             this.run('../village-of-jzt.json');
@@ -87,10 +102,7 @@
                         }
                     }
                 });
-
-                new jzt.ux.SlidingPanel(document.getElementById('main-content'));
-                jzt.ux.setFullScreenButton(document.getElementById('full-screen'), document.getElementById('jzt'));
-
+                
             }());
 		</script>
 
