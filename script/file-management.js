@@ -64,7 +64,7 @@ var jzt = (function (my) {
         OPEN: 2
     };
 
-    FileManagement.prototype.open = function (dialogType) {
+    FileManagement.prototype.open = function (dialogType, noEmptySlot) {
 
         var saveGameMetaPrefix = getMetaName();
         var file;
@@ -106,7 +106,9 @@ var jzt = (function (my) {
         });
         
         // Add an empty item as the first item
-        this.files.unshift(null);
+        if(!noEmptySlot) {
+            this.files.unshift(null);
+        }
 
         // Initalize our dialog title and sprite grid
         this.popup.redraw();

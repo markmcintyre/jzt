@@ -464,7 +464,8 @@ var jzt = (function (my) {
             // Remember our pause time
             this.pauseStart = Date.now();
 
-            this.fileManagement.open();
+            // Show our file management, and suppress the empty slot if we're on the title screen
+            this.fileManagement.open(undefined, this.state === GameState.Title);
 
         }
 
