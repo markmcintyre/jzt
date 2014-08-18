@@ -1182,7 +1182,7 @@ var jzt = (function (my) {
         
         if (settings.hasOwnProperty('audioMute')) {
             this.settings.audioMute = settings.audioMute;
-            this.resources.audio.setActive(!settings.audioMute);
+            this.resources.audio.setActive(!settings.audioMute && (this.state !== GameState.GameOver));
         }
 
         if (settings.hasOwnProperty('audioVolume')) {

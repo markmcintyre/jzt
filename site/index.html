@@ -1,20 +1,23 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>JZT: A Nostalgic ZZT Clone for the Web</title>
-		<meta charset="utf-8" />
+    <head>
+        <title>JZT: A Nostalgic ZZT Clone for the Web</title>
+        <meta charset="utf-8" />
         <meta name="Keywords" content="zzt,jzt,game,web game,javascript,html5" />
         <meta name="description" content="JZT is a new take on the classic game ZZT, playable right from within your web browser." />
-		<link rel="stylesheet" type="text/css" href="css/main.css" />
-	</head>
-	<body>
-		
+        <link rel="stylesheet" type="text/css" href="css/main.css" />
+    </head>
+    <body>
+	
         <header>
-            <h1>JZT: A Nostalgic ZZT Clone for the Web</h1>
+            <h1><a href="/">JZT</a></h1>
+            <h2>A Nostalgic ZZT Clone for the Web</h2>
             
             <nav>
                 <ul>
                     <li>About</li>
+                    <li>Blog</li>
+                    <li>Community</li>
                 </ul>
             </nav>
             
@@ -22,6 +25,7 @@
         
         <div id="content">
 
+            <div id="unsupported-browser" class="warning"><span>⚠</span> Upgrade your browser to play.</div>
             <canvas id="jzt" width="800" height="640"></canvas>
 
             <section id="help">
@@ -29,7 +33,8 @@
                 <h2>How to Play</h2>
                 
                 <div id="settings">
-                    <label><input type="checkbox" name="audio-mute" /> Mute</label>
+                    <label><input type="checkbox" name="audio-mute" /> Mute</label><br/>
+                    <button id="fullscreen">Fullscreen</button>
                 </div>
 
                 <div class="key-map">
@@ -85,26 +90,35 @@
             <p><a href="http://www.ornj.net/">&copy; {{JZT:YEAR}}</a></p>
         </footer>
 
-		<script type="text/javascript" src="js/jzt.min.js" charset="utf-8"></script>
-		<script type="text/javascript">
+        <script type="text/javascript" src="js/jzt.min.js" charset="utf-8"></script>
+        <script type="text/javascript">
 
             (function () {
                 
+                var jztElement = document.getElementById('jzt');
+                var fullscreenElement = document.getElementById('fullscreen');
+                
                 var game = new jzt.Game({
-                    canvasElement: document.getElementById('jzt'),
+                    canvasElement: jztElement,
                     settings: new jztux.Settings(document.getElementById('settings')),
                     onLoadCallback: function(success) {
-                        if(success) {
+                        if (success) {
                             this.run('../village-of-jzt.json');
-                        }
-                        else {
-                            alert('Unsupported browser.')
+                        } else {
+                            document.getElementById('unsupported-browser').style.display = 'block';
+                            jztElement.parentNode.removeChild(jztElement);
                         }
                     }
                 });
                 
+                if (jztux.isFullscreenSupported()) {
+                    jztux.attachFullscreenHandler(fullscreenElement, jztElement);
+                } else {
+                    fullscreenElement.parentNode.removeChild(fullscreenElement);
+                }
+                
             }());
-		</script>
+        </script>
 
-	</body>
+    </body>
 </html>

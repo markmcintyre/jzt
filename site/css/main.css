@@ -27,19 +27,46 @@ a:hover, a:active {
     color: white;
 }
 
-#content {
-    margin: 0 auto;
-    width: 800px;
+#unsupported-browser {
+    display: none;
 }
 
-#jzt {
-    margin: 10px 0;   
+.warning {
+    margin: 20px auto;
+    border-radius: 100px;
+    background-color: #777;
+    color: black;
+    padding: 10px 20px;
+    font-size: 18pt;
+    vertical-align: middle;
+}
+
+.warning span {
+    font-size: 24pt;
+    color: yellow;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 10px;
+}
+
+#content {
+    margin: 10px auto;
+    width: 800px;
 }
 
 header h1 {
     font-size: 12pt;
     padding: 10px 0 0 10px;
     margin: 0;
+    color: #888;
+}
+
+header h2 {
+    display: none;   
+}
+
+header a {
+    color: #888;   
 }
 
 header nav {
@@ -47,6 +74,7 @@ header nav {
     top: 10px;
     right: 10px;
     text-align: right;
+    color: #888;
 }
 
 nav ul {
@@ -56,7 +84,7 @@ nav ul {
 }
 
 nav li {
-    padding: 0;
+    padding: 0 0 0 1em;
     margin: 0;
     display: inline;
 }
@@ -81,14 +109,19 @@ section {
 section#help {
     position: relative;
     padding: 1em;
+    margin: 10px 0;
     background-color: #4A4A4A;
 }
 
 footer {
     text-align: right;
 	font-size: 8pt;
-	color: #333;
     padding-right: 1em;
+    color: #888;
+}
+
+footer a {
+    color: #888;   
 }
 
 .key-map {
