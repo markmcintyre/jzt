@@ -905,8 +905,8 @@ jzt.Editor.prototype.fill = function(point) {
         var type;
         var color;
 
-        if(thing && thing.constructor.hasOwnProperty('serializationType')) {
-            type = thing.constructor.serializationType;
+        if(thing && thing.constructor && thing.constructor.type) {
+            type = thing.constructor.type;
         }
 
         if(thing) {

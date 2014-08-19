@@ -2861,6 +2861,7 @@ jzt.things = (function(my){
 
         // If we can't shoot on this board, return
         if(this.board.canPlayerShoot(true) <= 0) {
+            this.play('02');
             return;
         }
 
