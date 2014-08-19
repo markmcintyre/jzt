@@ -132,7 +132,7 @@ var jzt = (function(my){
                 for(column = 0; column < tilesPerRow; ++column) {
 
                     spritePoint = new jzt.Point(column * me.SPRITE_SIZE.x, row * me.SPRITE_SIZE.y);
-                    sprite = new Sprite(spritePoint, me);
+                    sprite = new my.Sprite(spritePoint, me);
                     me.sprites.push(sprite);
 
                 }
@@ -231,12 +231,14 @@ var jzt = (function(my){
     Graphics.prototype.textToSprites = function(text) {
 
         var result = [];
+        var index;
+        var spriteIndex;
 
         // For each character in our string...
-        for(var index = 0; index < text.length; ++index) {
+        for(index = 0; index < text.length; ++index) {
 
             // Convert the character into its CodePage-437 index
-            var spriteIndex = this.convertSpecialCharacter(text.charAt(index));
+            spriteIndex = this.convertSpecialCharacter(text.charAt(index));
 
             // Push the resulting Sprite onto our result
             result.push(this.getSprite(spriteIndex));
@@ -274,9 +276,10 @@ var jzt = (function(my){
     Graphics.prototype.drawSprites = function(context, point, sprites, foreground, background) {
         point = point.clone();
         var sprite;
+        var index;
         foreground = foreground || jzt.colors.Yellow;
         background = background || undefined;
-        for(var index = 0; index < sprites.length; ++index) {
+        for(index = 0; index < sprites.length; ++index) {
             sprite = sprites[index];
             sprite.draw(context, point, foreground, background);
             point.x++;
@@ -442,7 +445,7 @@ var jzt = (function(my){
         '\u221A': 251, // √ Square Root
         '\u207F': 252, // ⁿ Superscript Latin Small n
         '\u00B2': 253, // ² Squared
-        '\u25A0': 254, // ■ Black Square
+        '\u25A0': 254  // ■ Black Square
     };
 
     /**
@@ -502,7 +505,7 @@ var jzt = (function(my){
 
         this.tiles[point.x + point.y * this.width] = {
             sprite: spriteIndex ? this.graphics.getSprite(spriteIndex) : undefined,
-            foreground: foreground ? foreground : jzt.colors.White,
+            foreground: foreground || jzt.colors.White,
             background: background
         };
 
@@ -518,8 +521,8 @@ var jzt = (function(my){
     SpriteGrid.prototype.setColor = function(point, foreground, background) {
         var tile = this.tiles[point.x + point.y * this.width];
         if(tile) {
-            tile.foreground = foreground ? foreground : tile.foreground;
-            tile.background = background ? background : tile.background;
+            tile.foreground = foreground || tile.foreground;
+            tile.background = background || tile.background;
         }
     };
 
@@ -573,7 +576,6 @@ var jzt = (function(my){
             if(symbol === '\n') {
                 point.x = startingPoint.x;
                 point.y++;
-                continue;
             }
 
             // Otherwise add our colored symbol
@@ -710,8 +712,8 @@ jzt.colors = (function(my) {
     
     'use strict';
     
-    var _colors;
-    var _cycle;
+    var colors;
+    var cycle;
     
     /**
      * Color represents a named RBG color.
@@ -761,12 +763,12 @@ jzt.colors = (function(my) {
     }
 
     Color.prototype.darken = function() {
-        var result = _colors[this.index - 8];
+        var result = colors[this.index - 8];
         return result || this;
     };
 
     Color.prototype.lighten = function() {
-        var result = _colors[this.index + 8];
+        var result = colors[this.index + 8];
         return result || this;
     };
 
@@ -806,9 +808,9 @@ jzt.colors = (function(my) {
     };
 
     /**
-     * _colors is an enumerated type representing defined DOS colors.
+     * colors is an enumerated type representing defined DOS colors.
      */
-    _colors = [
+    colors = [
         new Color('0', 'Black',         0,  0,   0,   0  ),
         new Color('1', 'Blue',          1,  0,   0,   170),
         new Color('2', 'Green',         2,  0,   170, 0  ),
@@ -827,10 +829,10 @@ jzt.colors = (function(my) {
         new Color('F', 'BrightWhite',   15, 255, 255, 255)
     ];
 
-    _cycle = new CyclingColor('*', 'Cycle', [_colors[9], _colors[10], _colors[11], _colors[12], _colors[13], _colors[14], _colors[15]]);
+    cycle = new CyclingColor('*', 'Cycle', [colors[9], colors[10], colors[11], colors[12], colors[13], colors[14], colors[15]]);
     
     function getColor(hexDigit) {
-        return _colors[parseInt(hexDigit, 16)];
+        return colors[parseInt(hexDigit, 16)];
     }
 
     function deserializeForeground(colorCode) {
@@ -845,7 +847,7 @@ jzt.colors = (function(my) {
         }
 
         if(foregroundCode) {
-            return foregroundCode === '*' ? _cycle : getColor(foregroundCode);
+            return foregroundCode === '*' ? cycle : getColor(foregroundCode);
         }
 
         throw 'Invalid color code: ' + colorCode;
@@ -879,29 +881,29 @@ jzt.colors = (function(my) {
      */
     (function(colors, my){
         
-        var _colorIndex;
+        var colorIndex;
         
-        for(_colorIndex = 0; _colorIndex < colors.length; ++_colorIndex) {
+        for(colorIndex = 0; colorIndex < colors.length; ++colorIndex) {
 
             // Regular version
-            my[colors[_colorIndex].name] = colors[_colorIndex];
+            my[colors[colorIndex].name] = colors[colorIndex];
 
             // All caps version
-            my[colors[_colorIndex].name.toUpperCase()] = colors[_colorIndex];
+            my[colors[colorIndex].name.toUpperCase()] = colors[colorIndex];
 
         }
         
-    }(_colors, my));
+    }(colors, my));
 
     // Exports
     my.getColor = getColor;
     my.deserializeForeground = deserializeForeground;
     my.deserializeBackground = deserializeBackground;
     my.serialize = serialize;
-    my.Cycle = _cycle;
+    my.Cycle = cycle;
     my.Color = Color;
     my.CyclingColor = CyclingColor;
-    my.Colors = _colors;
+    my.Colors = colors;
     
     return my;
     

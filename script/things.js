@@ -2369,6 +2369,20 @@ jzt.things = (function(my){
     }
     Key.prototype = new Thing();
     Key.prototype.constructor = Key;
+    
+    Key.prototype.deserialize = function (data) {
+        Thing.prototype.deserialize.call(this, data);
+        
+        // Keys can only be bright colors
+        this.foreground = this.foreground.lighten();
+        
+        // Grey keys don't exist either, so assume white
+        if (this.foreground === jzt.colors.Grey) {
+            this.foreground = jzt.colors.White;
+        }
+        
+        this.background = undefined;
+    };
 
     /**
      * Delivers a provided message to this Thing. If a TOUCH message is 
