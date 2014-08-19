@@ -320,7 +320,7 @@ var jzt = (function(my){
         '\u25BC': 31,  // ▼ Black Down-Pointing Triangle
         '\u2303': 127, // ⌂ House
         '\u00C7': 128, // Ç Capital C Cedilla
-        '\u004C': 129, // ü Small u Diaeresis
+        '\u00FC': 129, // ü Small u Diaeresis
         '\u00E9': 130, // e Small e Acute
         '\u00E2': 131, // â Small a Circumflex
         '\u00E4': 132, // ä Small a Diaeresis
