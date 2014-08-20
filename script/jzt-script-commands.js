@@ -208,6 +208,9 @@ jzt.jztscript.commands = (function(my){
      */
     DieCommand.prototype.execute = function(owner) {
         owner.remove();
+        if (this.magnetically) {
+            owner.board.player.push(jzt.Direction.opposite(owner.getPlayerDirection()));
+        }
     };
     
     /**
@@ -417,6 +420,7 @@ jzt.jztscript.commands = (function(my){
      */
     PlayCommand.prototype.execute = function(owner) {
         owner.play(this.sequence, true);
+        return CommandResult.CONTINUE;
     };
     
     /**
