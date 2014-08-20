@@ -29,6 +29,8 @@ jztux = (function (jztux) {
                 canvasElement.style.width = '800px';
                 canvasElement.style.height = '640px';
             }
+            
+            buttonElement.checked = false;
 
         }
 

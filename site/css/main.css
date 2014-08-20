@@ -95,22 +95,29 @@ h1, h2 {
     padding: 0;
 }
 
-section {
-    padding: 1em 0;   
+aside {
+    display: block;
+    overflow: auto;
+    margin: 10px 0;
+    background-color: #4A4A4A;
 }
 
-#settings {
-    text-align: right;
-    position: absolute;
-    top: 1em;
-    right: 1em;
+section {
+   padding: 20px;
+}
+
+section h2 {
+    margin-bottom: .5em;
 }
 
 section#help {
-    position: relative;
-    padding: 1em;
-    margin: 10px 0;
-    background-color: #4A4A4A;
+    float: left;
+    width: 510px;
+}
+
+section#settings {
+    float: right;
+    width: 210px;
 }
 
 footer {
@@ -158,4 +165,8 @@ kbd {
 	color:  rgb(50, 50, 50);
 	text-shadow: 0 0 2px rgb(255, 255, 255);
 	box-shadow: inset 0 0 1px rgb(255, 255, 255), inset 0 0 .4em rgb(200, 200, 200), 0 .1em 0 rgb(130, 130, 130), 0 .11em 0 rgba(0, 0, 0, .4), 0 .1em .11em rgba(0, 0, 0, .9);  
+}
+
+span.clear {
+    clear: both;   
 }

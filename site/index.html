@@ -28,61 +28,66 @@
             <div id="unsupported-browser" class="warning"><span>⚠</span> Upgrade your browser to play.</div>
             <canvas id="jzt" width="800" height="640"></canvas>
 
-            <section id="help">
-
-                <h2>How to Play</h2>
+            <aside>
                 
-                <div id="settings">
+                <section id="help">
+
+                    <h2>How to Play</h2>
+
+                    <div class="key-map">
+
+                        <div class="instruction">
+                            <div class="description">Move</div>
+                            <div class="keys">
+                                <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd> <kbd>←</kbd>
+                            </div>
+                        </div>
+
+                        <div class="instruction">
+                            <div class="description">Shoot</div>
+                            <div class="keys">
+                                <kbd>Space</kbd> + <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd> <kbd>←</kbd>
+                            </div>
+                        </div>
+
+                        <div class="instruction">
+                            <div class="description">Pause, View Stats</div>
+                            <div class="keys">
+                                <kbd>P</kbd>
+                            </div>
+                        </div>
+
+                        <div class="instruction">
+                            <div class="description">Use Torch</div>
+                            <div class="keys">
+                                <kbd>T</kbd>
+                            </div>
+                        </div>
+
+                        <div class="instruction">
+                            <div class="description">Save</div>
+                            <div class="keys">
+                                <kbd>S</kbd>
+                            </div>
+                        </div>
+
+                        <div class="instruction">
+                            <div class="description">Restore</div>
+                            <div class="keys">
+                                <kbd>R</kbd>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+                
+                <section id="settings">
+                    <h2>Settings</h2>
                     <label><input type="checkbox" name="audio-mute" /> Mute</label><br/>
-                    <button id="fullscreen">Fullscreen</button>
-                </div>
+                    <label><input type="checkbox" name="fullscreen" /> Fullscreen</label>
+                </section>
 
-                <div class="key-map">
-
-                    <div class="instruction">
-                        <div class="description">Move</div>
-                        <div class="keys">
-                            <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd> <kbd>←</kbd>
-                        </div>
-                    </div>
-
-                    <div class="instruction">
-                        <div class="description">Shoot</div>
-                        <div class="keys">
-                            <kbd>Space</kbd> + <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd> <kbd>←</kbd>
-                        </div>
-                    </div>
-
-                    <div class="instruction">
-                        <div class="description">Pause, View Stats</div>
-                        <div class="keys">
-                            <kbd>P</kbd>
-                        </div>
-                    </div>
-
-                    <div class="instruction">
-                        <div class="description">Use Torch</div>
-                        <div class="keys">
-                            <kbd>T</kbd>
-                        </div>
-                    </div>
-
-                    <div class="instruction">
-                        <div class="description">Save</div>
-                        <div class="keys">
-                            <kbd>S</kbd>
-                        </div>
-                    </div>
-
-                    <div class="instruction">
-                        <div class="description">Restore</div>
-                        <div class="keys">
-                            <kbd>R</kbd>
-                        </div>
-                    </div>
-
-                </div>
-            </section>
+            </aside>
 
         </div>
         
@@ -95,12 +100,13 @@
 
             (function () {
                 
+                var settingsElement = document.getElementById('settings');
+                var fullscreenElement = settingsElement.querySelector('input[name=\'fullscreen\']');
                 var jztElement = document.getElementById('jzt');
-                var fullscreenElement = document.getElementById('fullscreen');
                 
                 var game = new jzt.Game({
                     canvasElement: jztElement,
-                    settings: new jztux.Settings(document.getElementById('settings')),
+                    settings: new jztux.Settings(settingsElement),
                     onLoadCallback: function(success) {
                         if (success) {
                             this.run('../village-of-jzt.json');
