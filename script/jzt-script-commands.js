@@ -460,23 +460,19 @@ jzt.jztscript.commands = (function(my){
             // Determine if there is free space, or if we can make some by pushing an obstacle
             isFreeSpace = obstacle ? owner.board.moveTile(owner.point, point, false, true) : true;
 
-            // If there is free space
-            if(isFreeSpace) {
+            // Create our new thing
+            newThing = ThingFactory.deserialize(this.thingTemplate, owner.board);
 
-                // Create our new thing
-                newThing = ThingFactory.deserialize(this.thingTemplate, owner.board);
-
-                // If we created a thing, add it...
-                if(newThing) {
-                    owner.board.addThing(point, newThing);
-                }
-                
-                // Otherwise, we're putting an empty thing...
-                else {
-                    owner.board.deleteTile(point);
-                }
-                
+            // If there's space and we're ready to create a new thing, do it
+            if(isFreeSpace && newThing) {
+                owner.board.addThing(point, newThing);
             }
+
+            // If there's no free space, and we're putting an empty thing...
+            else if(!isFreeSpace && !newThing) {
+                owner.board.deleteTile(point);
+            }
+
         }
     };
     
