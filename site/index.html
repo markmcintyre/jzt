@@ -120,6 +120,7 @@
                 if (jztux.isFullscreenSupported()) {
                     jztux.attachFullscreenHandler(fullscreenElement, jztElement);
                 } else {
+                    fullscreenElement = fullscreenElement.parentNode;
                     fullscreenElement.parentNode.removeChild(fullscreenElement);
                 }
                 

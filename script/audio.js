@@ -4,9 +4,9 @@
  * @author Mark McIntyre
  */
 
-/* global AudioContext, webkitAudioContext */
+/*global AudioContext, webkitAudioContext */
 
-var jzt = (function(my){
+var jzt = (function (my) {
     
     'use strict';
     
@@ -14,7 +14,7 @@ var jzt = (function(my){
      * A static frequency table that maps indicies from 0 to 107 to notes on a traditional
      * scale, starting with 0 at C-0 to 107 at B-8.
      */
-    var _frequencyTable = [
+    var frequencyTable = [
     //  0      1      2      3      4      5      6      7      8      9      10     11
         16.35, 17.32, 18.35, 19.45, 20.60, 21.83, 23.12, 24.50, 25.96, 27.50, 29.14, 30.87, // 0
         32.70, 34.65, 36.71, 38.89, 41.20, 43.65, 46.25, 49.00, 51.91, 55.00, 58.27, 61.74, // 12
@@ -28,196 +28,15 @@ var jzt = (function(my){
     ];
     
     /**
-     * _percussiveSound is an enumerated type representing percussive sound effects.
+     * percussiveSound is an enumerated type representing percussive sound effects.
      */
-    var _percussiveSound = {
-        'Cowbell': [103,103,105,80,103,103,105,80,103,103,105,80,103,103,105,80],
-        'HighSnare': [12,71,87,83,94,12,92,89,85,99,12,92,68,79,103],
+    var percussiveSound = {
+        'Cowbell': [103, 103, 105, 80, 103, 103, 105, 80, 103, 103, 105, 80, 103, 103, 105, 80],
+        'HighSnare': [12, 71, 87, 83, 94, 12, 92, 89, 85, 99, 12, 92, 68, 79, 103],
         'HighWoodblock': [80, 79, 80, 68, 80, 79, 80, 70, 80, 83, 78, 80, 81, 80],
-        'LowSnare': [12,97,93,76,88,81,12,97,93,76,88,81,12,97,93,76,88,81],
-        'LowWoodblock': [12,74,74,73,73,12,74,74,75,75,12,74,74,75,75,76,76],
-        'BassDrum': [54,52,50,5,12,30,58,56,54,5,12,30,62,60,58,5,12]
-    };
-    
-    /**
-     * Audio is capable of playing melodic tunes and sound effects through a 
-     * textual syntax on a single square wave oscillator.
-     */
-    function Audio() {
-        
-        if(!(this instanceof Audio)) {
-            throw jzt.ConstructorError;
-        }
-
-        // Try to activate this Audio instance
-        this.setActive(true);
-
-        // If it was successfully activated...
-        if(this.active) {
-
-            // Establish our context
-            if (typeof AudioContext !== 'undefined') {
-                this.context = new AudioContext();
-            }
-            else if (typeof webkitAudioContext !== 'undefined') {
-                /*jshint newcap: false */
-                this.context = new webkitAudioContext();
-                /*jshint newcap: true */
-            }
-
-            // Initialize our audio nodes
-            this.userVolume = 0.1;
-            this.delay = 0.06;
-            this.volume = this.context.createGain ? this.context.createGain() : this.context.createGainNode();
-            this.volume.gain.value = 0;
-            this.volume.connect(this.context.destination);
-
-            // Create an oscillator
-            this.oscillator = this.context.createOscillator();
-            this.oscillator.type = this.oscillator.SQUARE ? this.oscillator.SQUARE : 'square';
-            this.oscillator.connect(this.volume);
-
-            // Polyfill for oscillator start
-            if(!this.oscillator.start) {
-                this.oscillator.start = this.oscillator.noteOn;
-            }
-
-            this.timestamp = this.context.currentTime;
-            this.interruptTimestamp = this.context.currentTime;
-
-            // Start our oscillator
-            this.oscillator.start(this.context.currentTime);
-
-        }
-
-    }
-    
-    /**
-     * Activates or deactivates this Audio instance. Activation will only work if
-     * AudioContext or webkitAudioContext is available.
-     *
-     * @param activeValue A boolean value indicating whether or not to activate this Audio instance.
-     */
-    Audio.prototype.setActive = function(activeValue) {
-
-        this.active = (activeValue && (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined'));
-
-    };
-
-    /**
-     * Cancels all audio events for this Audio instance. This will immediately halt any playing
-     * audio.
-     */
-    Audio.prototype.cancel = function() {
-
-        // If this Audio instance is active and has an oscillator...
-        if(this.active && this.oscillator) {
-
-            var cancelTime = this.context.currentTime + this.delay;
-
-            // Cancel all scheduled frequency changes on the oscillator
-            this.oscillator.frequency.cancelScheduledValues(cancelTime);
-
-            // Cancel all scheduled volumne changes on the volumne node
-            this.volume.gain.cancelScheduledValues(cancelTime);
-            this.volume.gain.setValueAtTime(0, cancelTime);
-
-            // Reset our timestamp and interrupt timestamp to right now
-            this.timestamp = this.context.currentTime;
-            this.interruptTimestamp = this.context.currentTime;
-
-        }
-
-    };
-
-    /**
-     * Retrieves whether or not this Audio instance is currently playing audio.
-     *
-     * @return True if audio is currently playing, false otherwise.
-     */
-    Audio.prototype.isPlaying = function() {
-        return this.active && (this.context.currentTime + this.delay) < this.timestamp;
-    };
-
-    /**
-     * Schedules a provided notation to begin playing immediately after any
-     * currently playing audio has finished. The new audio can optionally be
-     * marked as uninterruptable, meaning that no other audio event will be
-     * able to interrupt its progress unless this Audio instance is explicitly
-     * cancelled.
-     *
-     * @param notation A textual notation indicating a melody to play
-     * @param uninterruptable A truthy value indicating if the new melody is interruptable
-     */
-    Audio.prototype.playAfter = function(notation, uninterruptable) {
-
-        if(this.active) {
-
-            // Create a song from our notation
-            var song = new AudioSong(notation);
-
-            // Update our starting timestamp
-            if(this.timestamp < this.context.currentTime + this.delay) {
-                this.timestamp = this.context.currentTime + this.delay;
-            }
-
-            var startTime = this.timestamp;
-
-            // Set our oscillator frequency at our scheduled note times
-            for(var index = 0; index < song.notes.length; ++index) {
-
-                var note = song.notes[index];
-
-                // If there's a start and end frequency
-                if(note.frequency && note.endFrequency) {
-                    this.oscillator.frequency.setValueAtTime(note.frequency, this.timestamp);
-                    this.oscillator.frequency.linearRampToValueAtTime(note.endFrequency, this.timestamp + note.duration);
-                }
-
-                // If there's just a start frequency
-                else if(note.frequency) {
-                    this.oscillator.frequency.setValueAtTime(note.frequency, this.timestamp);
-                }
-
-                // If there's no frequency at all
-                else {
-                    this.volume.gain.setValueAtTime(0, this.timestamp);
-                    this.volume.gain.setValueAtTime(this.userVolume, this.timestamp + note.duration);
-                }
-
-                // Update our timestamp
-                this.timestamp += note.duration;
-
-            }
-
-            // Start our oscillator now, and stop after all notes are done
-            this.volume.gain.setValueAtTime(this.userVolume, startTime);
-            this.volume.gain.setValueAtTime(0, this.timestamp);
-
-            // If we're not to be interrupted, upadte the timestamp
-            if(uninterruptable) {
-                this.interruptTimestamp = this.timestamp;
-            }
-
-        }
-
-    };
-
-    /**
-     * Immediately plays a provided notation, interrupting any currently playing audio,
-     * unless that audio has been denoted as uninterruptable. The new audio can optionally be
-     * marked as uninterruptable, meaning that no other audio event will be
-     * able to interrupt its progress unless this Audio instance is explicitly
-     * cancelled.
-     *
-     * @param notation A textual notation indicating a melody to play
-     * @param uninterruptable A truthy value indicating if the new melody is interruptable
-     */
-    Audio.prototype.play = function(notation, uninterruptable) {
-        if(this.active && this.context.currentTime +this.delay >= this.interruptTimestamp) {
-            this.cancel();
-            this.playAfter(notation, uninterruptable);
-        }
+        'LowSnare': [12, 97, 93, 76, 88, 81, 12, 97, 93, 76, 88, 81, 12, 97, 93, 76, 88, 81],
+        'LowWoodblock': [12, 74, 74, 73, 73, 12, 74, 74, 75, 75, 12, 74, 74, 75, 75, 76, 76],
+        'BassDrum': [54, 52, 50, 5, 12, 30, 58, 56, 54, 5, 12, 30, 62, 60, 58, 5, 12]
     };
 
     /**
@@ -230,12 +49,12 @@ var jzt = (function(my){
      */
     function AudioNote(index, duration) {
         
-        if(!(this instanceof AudioNote)) {
+        if (!(this instanceof AudioNote)) {
             throw jzt.ConstructorError;
         }
         
         this.noteIndex = index;
-        this.frequency = _frequencyTable[this.noteIndex];
+        this.frequency = frequencyTable[this.noteIndex];
         this.duration = duration;
     }
 
@@ -245,26 +64,31 @@ var jzt = (function(my){
      *
      * @param adjustmentValue An integer value to modify this note's index on the linear frequency scale.
      */
-    AudioNote.prototype.adjustNote = function(adjustmentValue) {
+    AudioNote.prototype.adjustNote = function (adjustmentValue) {
 
         // If we have a note index to adjust...
-        if(this.noteIndex !== undefined) {
+        if (this.noteIndex !== undefined) {
 
             // Adjust the value
             this.noteIndex += adjustmentValue;
 
-            // If it moves past the end of our scale, cap it to the last note
-            if(this.noteIndex >= _frequencyTable.length-1) {
-                this.noteIndex = _frequencyTable.length-1;
-            }
-
-            // If it moves before the start of our scale, base it to the first note
-            else if(this.noteIndex < 0) {
+            // Check our scale position...
+            if (this.noteIndex >= frequencyTable.length - 1) {
+                
+                // We've moved past the end of our scale, so
+                // cap to the last note
+                this.noteIndex = frequencyTable.length - 1;
+                
+            } else if (this.noteIndex < 0) {
+                
+                // We've moved before the start of our scale, so
+                // base it to the first note
                 this.noteIndex = 0;
+                
             }
 
             // Assign our actual frequency value
-            this.frequency = _frequencyTable[this.noteIndex];
+            this.frequency = frequencyTable[this.noteIndex];
 
         }
     };
@@ -272,14 +96,14 @@ var jzt = (function(my){
     /**
      * Shifts this Note up by one note on a traditional scale.
      */
-    AudioNote.prototype.shiftUp = function() {
+    AudioNote.prototype.shiftUp = function () {
         this.adjustNote(1);
     };
 
     /**
      * Shifts this Note down by one note on a traditional scale.
      */
-    AudioNote.prototype.shiftDown = function() {
+    AudioNote.prototype.shiftDown = function () {
         this.adjustNote(-1);
     };
 
@@ -288,8 +112,8 @@ var jzt = (function(my){
      *
      * @param octaveCount A number of octaves to shift this Note up.
      */
-    AudioNote.prototype.octaveUp = function(octaveCount) {
-        this.adjustNote(12*octaveCount);
+    AudioNote.prototype.octaveUp = function (octaveCount) {
+        this.adjustNote(12 * octaveCount);
     };
 
     /**
@@ -297,8 +121,8 @@ var jzt = (function(my){
      *
      * @param octaveCount A number of octaves to shift this Note down.
      */
-    AudioNote.prototype.octaveDown = function(octaveCount) {
-        this.adjustNote(-12*octaveCount);
+    AudioNote.prototype.octaveDown = function (octaveCount) {
+        this.adjustNote(-12 * octaveCount);
     };
 
     /**
@@ -307,8 +131,8 @@ var jzt = (function(my){
      *
      * @param newIndex A different ending frequency for this Note.
      */
-    AudioNote.prototype.bendTo = function(newIndex) {
-        this.endFrequency = _frequencyTable[newIndex];
+    AudioNote.prototype.bendTo = function (newIndex) {
+        this.endFrequency = frequencyTable[newIndex];
     };
 
     /**
@@ -319,7 +143,7 @@ var jzt = (function(my){
      */
     function AudioSong(notation) {
         
-        if(!(this instanceof AudioSong)) {
+        if (!(this instanceof AudioSong)) {
             throw jzt.ConstructorError;
         }
         
@@ -336,18 +160,19 @@ var jzt = (function(my){
      * @param noteArray An array of note indicies to be played rapidly in succession
      * @param currentDuration A duration in which we expect the percussive sound to fit
      */
-    AudioSong.prototype.addPercussiveSound = function(noteArray, currentDuration) {
+    AudioSong.prototype.addPercussiveSound = function (noteArray, currentDuration) {
 
+        var index;
         var remainingDuration = currentDuration;
 
-        for(var index in noteArray) {
-            if(noteArray.hasOwnProperty(index)) {
+        for (index in noteArray) {
+            if (noteArray.hasOwnProperty(index)) {
                 this.notes.push(new AudioNote(noteArray[index], 0.001));
                 remainingDuration -= 0.001;
             }
         }
 
-        if(remainingDuration > 0) {
+        if (remainingDuration > 0) {
             this.addRest(remainingDuration);
         }
 
@@ -358,7 +183,7 @@ var jzt = (function(my){
      *
      * @param duration A duration in seconds to rest.
      */
-    AudioSong.prototype.addRest = function(duration) {
+    AudioSong.prototype.addRest = function (duration) {
         this.notes.push(new AudioNote(undefined, duration));
     };
 
@@ -392,7 +217,7 @@ var jzt = (function(my){
      *
      * @param notation A textual music notation 
      */
-    AudioSong.prototype.parse = function(notation) {
+    AudioSong.prototype.parse = function (notation) {
 
         var currentOctave = 4;
         var currentDuration = this.barLength / 32;
@@ -410,132 +235,131 @@ var jzt = (function(my){
         notation = notation.toUpperCase();
 
         // For each character in our notation...
-        for(index = 0; index < notation.length; ++index) {
+        for (index = 0; index < notation.length; index += 1) {
 
             currentNote = undefined;
             currentChar = notation.charAt(index);
 
             // If we've got a musical note...
-            switch(currentChar) {
-                case 'T':
-                    currentDuration = this.barLength / 32;
-                    break;
-                case 'S':
-                    currentDuration = this.barLength / 16;
-                    break;
-                case 'I':
-                    currentDuration = this.barLength / 8;
-                    break;
-                case 'Q':
-                    currentDuration = this.barLength / 4;
-                    break;
-                case 'H':
-                    currentDuration = this.barLength / 2;
-                    break;
-                case 'W':
-                    currentDuration = this.barLength;
-                    break;
-                case '3':
-                    tripletCount = 3;
-                    tripletDuration = currentDuration / 3;
-                    break;
-                case '+':
-                    currentOctave++;
-                    break;
-                case '-':
-                    currentOctave--;
-                    break;
-                case '.':
-                    timeAndHalf = true;
-                    break;
-                case 'X':
-                    currentNote = new AudioNote();
-                    break;
-                case 'C':
-                    currentNote = new AudioNote(0);
-                    break;
-                case 'D':
-                    currentNote = new AudioNote(2);
-                    break;
-                case 'E':
-                    currentNote = new AudioNote(4);
-                    break;
-                case 'F':
-                    currentNote = new AudioNote(5);
-                    break;
-                case 'G':
-                    currentNote = new AudioNote(7);
-                    break;
-                case 'A':
-                    currentNote = new AudioNote(9);
-                    break;
-                case 'B':
-                    currentNote = new AudioNote(11);
-                    break;
-                case '0':
-                    percussiveNote = new AudioNote(0, 0.005);
-                    percussiveNote.bendTo(56);
-                    this.notes.push(percussiveNote);
-                    this.addRest(currentDuration - 0.005);
-                    break;
-                case '1':
-                    percussiveNote = new AudioNote(72, 0.015);
-                    percussiveNote.bendTo(87);
-                    this.notes.push(percussiveNote);
-                    this.addRest(currentDuration - 0.015);
-                    break;
-                case '2':
-                    this.addPercussiveSound(_percussiveSound.Cowbell, currentDuration);
-                    break;
-                case '4':
-                    this.addPercussiveSound(_percussiveSound.HighSnare, currentDuration);
-                    break;
-                case '5':
-                    this.addPercussiveSound(_percussiveSound.HighWoodblock, currentDuration);
-                    break;
-                case '6':
-                    this.addPercussiveSound(_percussiveSound.LowSnare, currentDuration);
-                    break;
-                case '7':
-                    percussiveNote = new AudioNote(65, 0.015);
-                    percussiveNote.bendTo(60);
-                    this.notes.push(percussiveNote);
-                    this.addRest(currentDuration - 0.015);
-                    break;
-                case '8':
-                    this.addPercussiveSound(_percussiveSound.LowWoodblock, currentDuration);
-                    break;
-                case '9':
-                    this.addPercussiveSound(_percussiveSound.BassDrum, currentDuration);
-                    break;
-                default:
-                    currentNote = undefined;
+            switch (currentChar) {
+            case 'T':
+                currentDuration = this.barLength / 32;
+                break;
+            case 'S':
+                currentDuration = this.barLength / 16;
+                break;
+            case 'I':
+                currentDuration = this.barLength / 8;
+                break;
+            case 'Q':
+                currentDuration = this.barLength / 4;
+                break;
+            case 'H':
+                currentDuration = this.barLength / 2;
+                break;
+            case 'W':
+                currentDuration = this.barLength;
+                break;
+            case '3':
+                tripletCount = 3;
+                tripletDuration = currentDuration / 3;
+                break;
+            case '+':
+                currentOctave += 1;
+                break;
+            case '-':
+                currentOctave -= 1;
+                break;
+            case '.':
+                timeAndHalf = true;
+                break;
+            case 'X':
+                currentNote = new AudioNote();
+                break;
+            case 'C':
+                currentNote = new AudioNote(0);
+                break;
+            case 'D':
+                currentNote = new AudioNote(2);
+                break;
+            case 'E':
+                currentNote = new AudioNote(4);
+                break;
+            case 'F':
+                currentNote = new AudioNote(5);
+                break;
+            case 'G':
+                currentNote = new AudioNote(7);
+                break;
+            case 'A':
+                currentNote = new AudioNote(9);
+                break;
+            case 'B':
+                currentNote = new AudioNote(11);
+                break;
+            case '0':
+                percussiveNote = new AudioNote(0, 0.005);
+                percussiveNote.bendTo(56);
+                this.notes.push(percussiveNote);
+                this.addRest(currentDuration - 0.005);
+                break;
+            case '1':
+                percussiveNote = new AudioNote(72, 0.015);
+                percussiveNote.bendTo(87);
+                this.notes.push(percussiveNote);
+                this.addRest(currentDuration - 0.015);
+                break;
+            case '2':
+                this.addPercussiveSound(percussiveSound.Cowbell, currentDuration);
+                break;
+            case '4':
+                this.addPercussiveSound(percussiveSound.HighSnare, currentDuration);
+                break;
+            case '5':
+                this.addPercussiveSound(percussiveSound.HighWoodblock, currentDuration);
+                break;
+            case '6':
+                this.addPercussiveSound(percussiveSound.LowSnare, currentDuration);
+                break;
+            case '7':
+                percussiveNote = new AudioNote(65, 0.015);
+                percussiveNote.bendTo(60);
+                this.notes.push(percussiveNote);
+                this.addRest(currentDuration - 0.015);
+                break;
+            case '8':
+                this.addPercussiveSound(percussiveSound.LowWoodblock, currentDuration);
+                break;
+            case '9':
+                this.addPercussiveSound(percussiveSound.BassDrum, currentDuration);
+                break;
+            default:
+                currentNote = undefined;
 
             }
 
             // If we got a note to play...
-            if(currentNote) {
+            if (currentNote) {
 
-                nextChar = index >= notation.length ? undefined : notation.charAt(index+1);
+                nextChar = index >= notation.length ? undefined : notation.charAt(index + 1);
                 activeDuration = currentDuration;
 
-                if(nextChar === '#') {
+                if (nextChar === '#') {
                     currentNote.shiftUp();
-                    index++;
-                }
-                else if(nextChar === '!') {
+                    index += 1;
+                } else if (nextChar === '!') {
                     currentNote.shiftDown();
-                    index++;
+                    index += 1;
                 }
 
                 // If we're in a triplet, set our duration to 1/3 normal
-                if(tripletCount > 0) {
-                    tripletCount--;
+                if (tripletCount > 0) {
+                    tripletCount -= 1;
                     activeDuration = tripletDuration;
                 }
 
                 // If we're in time and a half, increase our duration by 50%
-                if(timeAndHalf) {
+                if (timeAndHalf) {
                     timeAndHalf = false;
                     activeDuration = currentDuration + (currentDuration / 2);
                 }
@@ -552,6 +376,192 @@ var jzt = (function(my){
             }
         }
 
+    };
+    
+    /**
+     * Audio is capable of playing melodic tunes and sound effects through a 
+     * textual syntax on a single square wave oscillator.
+     */
+    function Audio() {
+        
+        /*jslint newcap: true */
+        
+        if (!(this instanceof Audio)) {
+            throw jzt.ConstructorError;
+        }
+
+        // Try to activate this Audio instance
+        this.setActive(true);
+
+        // If it was successfully activated...
+        if (this.active) {
+
+            // Establish our context
+            if (typeof AudioContext !== 'undefined') {
+                this.context = new AudioContext();
+            } else if (typeof webkitAudioContext !== 'undefined') {
+                this.context = new webkitAudioContext();
+            }
+
+            // Initialize our audio nodes
+            this.userVolume = 0.1;
+            this.delay = 0.06;
+            this.volume = this.context.createGain ? this.context.createGain() : this.context.createGainNode();
+            this.volume.gain.value = 0;
+            this.volume.connect(this.context.destination);
+
+            // Create an oscillator
+            this.oscillator = this.context.createOscillator();
+            this.oscillator.type = this.oscillator.SQUARE || 'square';
+            this.oscillator.connect(this.volume);
+
+            // Polyfill for oscillator start
+            if (!this.oscillator.start) {
+                this.oscillator.start = this.oscillator.noteOn;
+            }
+
+            this.timestamp = this.context.currentTime;
+            this.interruptTimestamp = this.context.currentTime;
+
+            // Start our oscillator
+            this.oscillator.start(this.context.currentTime);
+
+        }
+
+    }
+    
+    /**
+     * Activates or deactivates this Audio instance. Activation will only work if
+     * AudioContext or webkitAudioContext is available.
+     *
+     * @param activeValue A boolean value indicating whether or not to activate this Audio instance.
+     */
+    Audio.prototype.setActive = function (activeValue) {
+
+        this.active = (activeValue && (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined'));
+
+    };
+
+    /**
+     * Cancels all audio events for this Audio instance. This will immediately halt any playing
+     * audio.
+     */
+    Audio.prototype.cancel = function () {
+
+        // If this Audio instance is active and has an oscillator...
+        if (this.active && this.oscillator) {
+
+            var cancelTime = this.context.currentTime + this.delay;
+
+            // Cancel all scheduled frequency changes on the oscillator
+            this.oscillator.frequency.cancelScheduledValues(cancelTime);
+
+            // Cancel all scheduled volumne changes on the volumne node
+            this.volume.gain.cancelScheduledValues(cancelTime);
+            this.volume.gain.setValueAtTime(0, cancelTime);
+
+            // Reset our timestamp and interrupt timestamp to right now
+            this.timestamp = this.context.currentTime;
+            this.interruptTimestamp = this.context.currentTime;
+
+        }
+
+    };
+
+    /**
+     * Retrieves whether or not this Audio instance is currently playing audio.
+     *
+     * @return True if audio is currently playing, false otherwise.
+     */
+    Audio.prototype.isPlaying = function () {
+        return this.active && (this.context.currentTime + this.delay) < this.timestamp;
+    };
+
+    /**
+     * Schedules a provided notation to begin playing immediately after any
+     * currently playing audio has finished. The new audio can optionally be
+     * marked as uninterruptable, meaning that no other audio event will be
+     * able to interrupt its progress unless this Audio instance is explicitly
+     * cancelled.
+     *
+     * @param notation A textual notation indicating a melody to play
+     * @param uninterruptable A truthy value indicating if the new melody is interruptable
+     */
+    Audio.prototype.playAfter = function (notation, uninterruptable) {
+
+        if (this.active) {
+
+            var index;
+            var note;
+            
+            // Create a song from our notation
+            var song = new AudioSong(notation);
+
+            // Update our starting timestamp
+            if (this.timestamp < this.context.currentTime + this.delay) {
+                this.timestamp = this.context.currentTime + this.delay;
+            }
+
+            var startTime = this.timestamp;
+
+            // Set our oscillator frequency at our scheduled note times
+            for (index = 0; index < song.notes.length; index += 1) {
+
+                note = song.notes[index];
+
+                // Check what we've been given...
+                if (note.frequency && note.endFrequency) {
+                    
+                    // We've got both a start and end frequency
+                    this.oscillator.frequency.setValueAtTime(note.frequency, this.timestamp);
+                    this.oscillator.frequency.linearRampToValueAtTime(note.endFrequency, this.timestamp + note.duration);
+                    
+                } else if (note.frequency) {
+                    
+                    // There's just a start frequency
+                    this.oscillator.frequency.setValueAtTime(note.frequency, this.timestamp);
+                    
+                } else {
+                    
+                    // There's no frequency at all
+                    this.volume.gain.setValueAtTime(0, this.timestamp);
+                    this.volume.gain.setValueAtTime(this.userVolume, this.timestamp + note.duration);
+                    
+                }
+
+                // Update our timestamp
+                this.timestamp += note.duration;
+
+            }
+
+            // Start our oscillator now, and stop after all notes are done
+            this.volume.gain.setValueAtTime(this.userVolume, startTime);
+            this.volume.gain.setValueAtTime(0, this.timestamp);
+
+            // If we're not to be interrupted, upadte the timestamp
+            if (uninterruptable) {
+                this.interruptTimestamp = this.timestamp;
+            }
+
+        }
+
+    };
+
+    /**
+     * Immediately plays a provided notation, interrupting any currently playing audio,
+     * unless that audio has been denoted as uninterruptable. The new audio can optionally be
+     * marked as uninterruptable, meaning that no other audio event will be
+     * able to interrupt its progress unless this Audio instance is explicitly
+     * cancelled.
+     *
+     * @param notation A textual notation indicating a melody to play
+     * @param uninterruptable A truthy value indicating if the new melody is interruptable
+     */
+    Audio.prototype.play = function (notation, uninterruptable) {
+        if (this.active && this.context.currentTime + this.delay >= this.interruptTimestamp) {
+            this.cancel();
+            this.playAfter(notation, uninterruptable);
+        }
     };
     
     my.Audio = Audio;

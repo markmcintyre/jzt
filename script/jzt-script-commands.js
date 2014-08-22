@@ -19,27 +19,26 @@ jzt.jztscript.commands = (function(my){
      * CONTINUE: Requests that the next command be executed immediately.
      * REPEAT: Requests that the same command be executed again next cycle.
      */
-    var CommandResult = {
+    var CommandResult = Object.freeze({
         NORMAL: 0,
         CONTINUE: 1,
         CONTINUE_AFTER_JUMP: 2,
         REPEAT: 3
-    };
-    Object.freeze(CommandResult);
-    
+    });
+
     /**
      * Direction Modifier Enumerated Types
      * 
      * Each direction modifier has an associated token value, a display name, and a process function.
      * The process function takes a direction and returns a final, calculated direction value.
      */
-    var DirectionModifier = {
+    var DirectionModifier = Object.freeze({
         CW:   {name: 'Clockwise',              type: 'modifier', process: function(d) {return jzt.Direction.clockwise(d);}},
         CCW:  {name: 'Counter-clockwise',      type: 'modifier', process: function(d) {return jzt.Direction.counterClockwise(d);}},
         OPP:  {name: 'Opposite',               type: 'modifier', process: function(d) {return jzt.Direction.opposite(d);}},
         RNDP: {name: 'Perpendicularly Random', type: 'modifier', process: function(d) {return jzt.Direction.randomPerpendicular(d);}}
-    };
-    Object.freeze(DirectionModifier);
+    });
+    
 
     /**
      * Direction Enumerated Types
@@ -47,7 +46,7 @@ jzt.jztscript.commands = (function(my){
      * Each direction has an associated token value, a display name, and a process function.
      * The process function takes a JztObject and returns a final, calculated direction value.
      */
-    var Direction = {
+    var Direction = Object.freeze({
         SEEK:  {name: 'Toward player',            type: 'terminal', process: function(o) {return o.getPlayerDirection();}},
         SMART: {name: 'Smart seek',               type: 'terminal', process: function(o) {return o.getSmartDirection() || o.getPlayerDirection();}},
         FLOW:  {name: 'Current orientation',      type: 'terminal', process: function(o) {return o.orientation;}},
@@ -65,8 +64,7 @@ jzt.jztscript.commands = (function(my){
         E:     {name: 'East shorthand',           type: 'terminal', process: function()  {return jzt.Direction.East;}},
         S:     {name: 'South shorthand',          type: 'terminal', process: function()  {return jzt.Direction.South;}},
         W:     {name: 'West shorthand',           type: 'terminal', process: function()  {return jzt.Direction.West;}}
-    };
-    Object.freeze(Direction);
+    });
     
     /** 
      * Label

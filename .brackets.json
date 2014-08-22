@@ -1,7 +1,5 @@
 {
    "jslint.options" : {
-       "vars": true,
-       "plusplus": true,
-       "white": true
+       "vars": true
    }
 }
