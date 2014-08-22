@@ -4,11 +4,12 @@
  * @author Mark McIntyre
  */
 
-var jzt = (function(my){
+var jzt = (function (my) {
     
     'use strict';
     
     var ConstructorError = 'Constructor must be called with new.';
+    var Direction;
     
     /**
      * Point represents a point on a cartesian plane.
@@ -18,7 +19,7 @@ var jzt = (function(my){
      */
     function Point(x, y) {
         
-        if(!(this instanceof Point)) {
+        if (!(this instanceof Point)) {
             throw ConstructorError;
         }
         
@@ -31,7 +32,7 @@ var jzt = (function(my){
      *
      * @return A Point.
      */
-    Point.prototype.clone = function() {
+    Point.prototype.clone = function () {
         return new Point(this.x, this.y);
     };
 
@@ -41,7 +42,7 @@ var jzt = (function(my){
      * @param other Another point to add to this one.
      * @return A new point with the added value.
      */
-    Point.prototype.add = function(other) {
+    Point.prototype.add = function (other) {
         return new Point(this.x + other.x, this.y + other.y);
     };
 
@@ -51,7 +52,7 @@ var jzt = (function(my){
      * @param other Another point to subtract from this one.
      * @return A new point with the subtracted value.
      */
-    Point.prototype.subtract = function(other) {
+    Point.prototype.subtract = function (other) {
         return new Point(this.x - other.x, this.y - other.y);
     };
 
@@ -61,7 +62,7 @@ var jzt = (function(my){
      * @param other Another point to test for adjacency
      * @return true if a provided point is adjacent, false otherwise
      */
-    Point.prototype.adjacent = function(other) {
+    Point.prototype.adjacent = function (other) {
 
         var xDeviance = Math.abs(this.x - other.x);
         var yDeviance = Math.abs(this.y - other.y);
@@ -78,25 +79,20 @@ var jzt = (function(my){
      * @param spread A spread threshold to allow for in the alignement calculation.
      * @return true if a provided point is aligned with this one, false otherwise.
      */
-    Point.prototype.aligned = function(other, spread, direction) {
+    Point.prototype.aligned = function (other, spread, direction) {
         spread = spread === undefined ? 1 : spread;
 
-        if(!direction) {
+        if (!direction) {
             return (Math.abs(this.x - other.x) < spread) || (Math.abs(this.y - other.y) < spread);
-        }
-        else if(direction === Direction.North) {
+        } else if (direction === Direction.North) {
             return (other.y < this.y) && Math.abs((this.x - other.x)) < spread;
-        }
-        else if(direction === Direction.South) {
+        } else if (direction === Direction.South) {
             return (other.y > this.y) && Math.abs((this.x - other.x)) < spread;
-        }
-        else if(direction === Direction.East) {
+        } else if (direction === Direction.East) {
             return (other.x > this.x) && Math.abs((this.y - other.y)) < spread;
-        }
-        else if(direction === Direction.West) {
+        } else if (direction === Direction.West) {
             return (other.x < this.x) && Math.abs((this.y - other.y)) < spread;
-        }
-        else {
+        } else {
             return undefined;
         }
     };
@@ -110,36 +106,33 @@ var jzt = (function(my){
      * @param axis 'x' or 'y' depending on the axis to be tested.
      * @return A Point representing a direction
      */
-    Point.prototype.directionTo = function(other, axis) {
+    Point.prototype.directionTo = function (other, axis) {
 
         var xDistance = this.x - other.x;
         var yDistance = this.y - other.y;
 
         // There is no direction to the same point
-        if(xDistance === 0 && yDistance === 0) {
+        if (xDistance === 0 && yDistance === 0) {
             return undefined;
         }
 
-        if(axis === undefined) {
-            if(xDistance === 0) {
+        if (axis === undefined) {
+            if (xDistance === 0) {
                 axis = 'y';
-            }
-            else if(yDistance === 0) {
+            } else if (yDistance === 0) {
                 axis = 'x';
-            }
-            else {
-                axis = (Math.floor(Math.random()*2)) ? 'x' : 'y';
+            } else {
+                axis = (Math.floor(Math.random() * 2)) ? 'x' : 'y';
             }
         }
 
-        if(axis === 'x') {
-            if(xDistance === 0) {
+        if (axis === 'x') {
+            if (xDistance === 0) {
                 return undefined;
             }
             return xDistance < 0 ? Direction.East : Direction.West;
-        }
-        else {
-            if(yDistance === 0) {
+        } else {
+            if (yDistance === 0) {
                 return undefined;
             }
             return yDistance < 0 ? Direction.South : Direction.North;
@@ -147,18 +140,15 @@ var jzt = (function(my){
 
     };
 
-    Point.prototype.compareTo = function(other) {
-        if(this.x < other.x) {
+    Point.prototype.compareTo = function (other) {
+        if (this.x < other.x) {
             return -1;
-        }
-        else if(this.x > other.x) {
+        } else if (this.x > other.x) {
             return 1;
-        }
-        else {
-            if(this.y < other.y) {
+        } else {
+            if (this.y < other.y) {
                 return -1;
-            }
-            else if(this.y > other.y) {
+            } else if (this.y > other.y) {
                 return 1;
             }
         }
@@ -171,7 +161,7 @@ var jzt = (function(my){
      * @param other A point to test for equality.
      * @return true if another point is equal in value to this point, false otherwise.
      */
-    Point.prototype.equals = function(other) {
+    Point.prototype.equals = function (other) {
         return this.x === other.x && this.y === other.y;
     };
 
@@ -180,7 +170,7 @@ var jzt = (function(my){
      *
      * @return A string representation of this point.
      */
-    Point.prototype.toString = function() {
+    Point.prototype.toString = function () {
         return '(' + this.x + ', ' + this.y + ')';
     };
     
@@ -190,7 +180,7 @@ var jzt = (function(my){
      */
     function PointSet() {
         
-        if(!(this instanceof PointSet)) {
+        if (!(this instanceof PointSet)) {
             throw jzt.ConstructorError;
         }
         
@@ -198,44 +188,42 @@ var jzt = (function(my){
         this.sorted = false;
     }
 
-    PointSet.prototype.add = function(point) {
-        if(!this.contains(point)) {
+    PointSet.prototype.add = function (point) {
+        if (!this.contains(point)) {
             this.points.push(point);
             this.sorted = false;
         }
     };
 
-    PointSet.prototype.sortPoints = function() {
-        this.points.sort(function(a, b) {
+    PointSet.prototype.sortPoints = function () {
+        this.points.sort(function (a, b) {
             return a.compareTo(b);
         });
         this.sorted = true;
     };
 
-    PointSet.prototype.contains = function(point) {
+    PointSet.prototype.contains = function (point) {
         return this.indexOf(point) >= 0;
     };
 
-    PointSet.prototype.indexOf = function(point) {
+    PointSet.prototype.indexOf = function (point) {
 
         var minIndex = 0;
         var maxIndex = this.points.length - 1;
         var middle;
 
-        if(! this.sorted) {
+        if (!this.sorted) {
             this.sortPoints();
         }
 
-        while(maxIndex >= minIndex) {
+        while (maxIndex >= minIndex) {
             middle = minIndex + (Math.round((maxIndex - minIndex) / 2));
 
             if (this.points[middle].compareTo(point) < 0) {
                 minIndex = middle + 1;
-            }
-            else if(this.points[middle].compareTo(point) > 0) {
+            } else if (this.points[middle].compareTo(point) > 0) {
                 maxIndex = middle - 1;
-            }
-            else {
+            } else {
                 return middle;
             }
 
@@ -249,13 +237,13 @@ var jzt = (function(my){
      * Direction is an enumerated type representing each of the four possible directions
      * on a tile-based grid.
      */
-    var Direction = {
-        North: new Point(0,-1),
-        East: new Point(1,0),
-        South: new Point(0,1),
-        West: new Point(-1,0)
+    Direction = {
+        North: new Point(0, -1),
+        East: new Point(1, 0),
+        South: new Point(0, 1),
+        West: new Point(-1, 0)
     };
-
+    
     /**
      * Performs a provided callback function for each possible direction on a tile-based
      * grid. The callback function will be given a single parameter containing the direction
@@ -263,7 +251,7 @@ var jzt = (function(my){
      * 
      * @param callback A callback function to be executed.
      */
-    Direction.each = function(callback) {
+    Direction.each = function (callback) {
         callback(Direction.North);
         callback(Direction.East);
         callback(Direction.South);
@@ -276,22 +264,22 @@ var jzt = (function(my){
      * @param name A name of a direction
      * @return A Point representing a direction.
      */
-    Direction.fromName = function(name) {
-        switch(name) {
-            case 'N':
-            case 'North':
-                return Direction.North;
-            case 'E':
-            case 'East':
-                return Direction.East;
-            case 'S':
-            case 'South':
-                return Direction.South;
-            case 'W':
-            case 'West':
-                return Direction.West;
-            default:
-                return undefined;
+    Direction.fromName = function (name) {
+        switch (name) {
+        case 'N':
+        case 'North':
+            return Direction.North;
+        case 'E':
+        case 'East':
+            return Direction.East;
+        case 'S':
+        case 'South':
+            return Direction.South;
+        case 'W':
+        case 'West':
+            return Direction.West;
+        default:
+            return undefined;
         }
     };
 
@@ -302,34 +290,38 @@ var jzt = (function(my){
      * @param direction A provided direction
      * @return A direction name.
      */
-    Direction.getName = function(direction) {
-        switch(direction) {
-            case Direction.North:
-                return 'North';
-            case Direction.East:
-                return 'East';
-            case Direction.South:
-                return 'South';
-            case Direction.West:
-                return 'West';
+    Direction.getName = function (direction) {
+        
+        switch (direction) {
+        case Direction.North:
+            return 'North';
+        case Direction.East:
+            return 'East';
+        case Direction.South:
+            return 'South';
+        case Direction.West:
+            return 'West';
         }
 
         return undefined;
 
     };
 
-    Direction.getShortName = function(direction) {
-        switch(direction) {
-            case Direction.North:
-                return 'N';
-            case Direction.East:
-                return 'E';
-            case Direction.South:
-                return 'S';
-            case Direction.West:
-                return 'W';
+    Direction.getShortName = function (direction) {
+        
+        switch (direction) {
+        case Direction.North:
+            return 'N';
+        case Direction.East:
+            return 'E';
+        case Direction.South:
+            return 'S';
+        case Direction.West:
+            return 'W';
         }
+        
         return undefined;
+        
     };
 
     /**
@@ -339,17 +331,17 @@ var jzt = (function(my){
      * @param direction A direction.
      * @return A clockwise direction.
      */
-    Direction.clockwise = function(direction) {
+    Direction.clockwise = function (direction) {
 
-        switch(direction) {
-            case Direction.North:
-                return Direction.East;
-            case Direction.East:
-                return Direction.South;
-            case Direction.South:
-                return Direction.West;
-            case Direction.West:
-                return Direction.North;
+        switch (direction) {
+        case Direction.North:
+            return Direction.East;
+        case Direction.East:
+            return Direction.South;
+        case Direction.South:
+            return Direction.West;
+        case Direction.West:
+            return Direction.North;
         }
 
         return undefined;
@@ -363,14 +355,14 @@ var jzt = (function(my){
      * @param direction A direction.
      * @return A new direction perpendicular to the provided one, at random.
      */
-    Direction.randomPerpendicular = function(direction) {
+    Direction.randomPerpendicular = function (direction) {
 
-        switch(direction) {
-            case Direction.North:
-            case Direction.South:
-                return Direction.randomEastWest();
-            default:
-                return Direction.randomNorthSouth();
+        switch (direction) {
+        case Direction.North:
+        case Direction.South:
+            return Direction.randomEastWest();
+        default:
+            return Direction.randomNorthSouth();
         }
 
     };
@@ -380,7 +372,7 @@ var jzt = (function(my){
      * 
      * @return A Point direction.
      */
-    Direction.randomNorthSouth = function() {
+    Direction.randomNorthSouth = function () {
         return Direction.random([Direction.North, Direction.South]);
     };
 
@@ -389,7 +381,7 @@ var jzt = (function(my){
      * 
      * @return A Point direction.
      */
-    Direction.randomEastWest = function() {
+    Direction.randomEastWest = function () {
         return Direction.random([Direction.East, Direction.West]);
     };
 
@@ -398,7 +390,7 @@ var jzt = (function(my){
      * 
      * @return A Point direction.
      */
-    Direction.randomNorthEast = function() {
+    Direction.randomNorthEast = function () {
         return Direction.random([Direction.North, Direction.East]);
     };
 
@@ -410,10 +402,10 @@ var jzt = (function(my){
      * @param directions An array of possible directions to choose at random
      * @return A random Point representing a Direction.
      */
-    Direction.random = function(directions) {
+    Direction.random = function (directions) {
 
         // If an array of directions to pick from wasn't specified...
-        if(!directions) {
+        if (!directions) {
             directions = [Direction.North, Direction.East, Direction.South, Direction.West];
         }
 
@@ -428,17 +420,17 @@ var jzt = (function(my){
      * @param direction A direction
      * @return A direction rotated 90 degrees counter-clockwise.
      */
-    Direction.counterClockwise = function(direction) {
+    Direction.counterClockwise = function (direction) {
 
-        switch(direction) {
-            case Direction.North:
-                return Direction.West;
-            case Direction.West:
-                return Direction.South;
-            case Direction.South:
-                return Direction.East;
-            case Direction.East:
-                return Direction.North;
+        switch (direction) {
+        case Direction.North:
+            return Direction.West;
+        case Direction.West:
+            return Direction.South;
+        case Direction.South:
+            return Direction.East;
+        case Direction.East:
+            return Direction.North;
         }
 
         return undefined;
@@ -451,17 +443,17 @@ var jzt = (function(my){
      * @param direction
      * @return A Point representing an opposite direction.
      */
-    Direction.opposite = function(direction) {
+    Direction.opposite = function (direction) {
 
-        switch(direction) {
-            case Direction.North:
-                return Direction.South;
-            case Direction.East:
-                return Direction.West;
-            case Direction.South:
-                return Direction.North;
-            case Direction.West:
-                return Direction.East;
+        switch (direction) {
+        case Direction.North:
+            return Direction.South;
+        case Direction.East:
+            return Direction.West;
+        case Direction.South:
+            return Direction.North;
+        case Direction.West:
+            return Direction.East;
         }
 
         return undefined;
@@ -470,7 +462,7 @@ var jzt = (function(my){
 
     function DelayedEventScheduler(initialDelay, subsequentDelay) {
         
-        if(!(this instanceof DelayedEventScheduler)) {
+        if (!(this instanceof DelayedEventScheduler)) {
             throw ConstructorError;
         }
         
@@ -480,16 +472,15 @@ var jzt = (function(my){
         this.nextAllowableEvent = 0;
     }
 
-    DelayedEventScheduler.prototype.scheduleEvent = function(eventTime, event) {
+    DelayedEventScheduler.prototype.scheduleEvent = function (eventTime, event) {
 
         var now = Date.now();
 
-        if(now > this.nextAllowableEvent) {
+        if (now > this.nextAllowableEvent) {
 
-            if(eventTime + this.initialDelay < now) {
+            if (eventTime + this.initialDelay < now) {
                 this.nextAllowableEvent = now + this.subsequentDelay;
-            }
-            else {
+            } else {
                 this.nextAllowableEvent = now + this.initialDelay;
             }
 
@@ -498,11 +489,11 @@ var jzt = (function(my){
 
     };
 
-    DelayedEventScheduler.prototype.cancelEvent = function() {
+    DelayedEventScheduler.prototype.cancelEvent = function () {
         this.nextAllowableEvent = 0;
     };
 
-    DelayedEventScheduler.prototype.takeEvent = function() {
+    DelayedEventScheduler.prototype.takeEvent = function () {
         var result = this.event;
         this.event = undefined;
         return result;
@@ -513,14 +504,14 @@ var jzt = (function(my){
      */
     function NotificationListener() {
         
-        if(!(this instanceof NotificationListener)) {
+        if (!(this instanceof NotificationListener)) {
             throw ConstructorError;
         }
         
         this.notifications = [];
     }
 
-    NotificationListener.prototype.addNotification = function(type, message) {
+    NotificationListener.prototype.addNotification = function (type, message) {
         this.notifications.push({type: type, message: message, timestamp: Date.now()});
     };
     
@@ -538,8 +529,8 @@ var jzt = (function(my){
      * @param value A value to be stored.
      * @param defaultValue A default value.
      */
-    utilities.storeOption = function(destination, name, value, defaultValue) {
-        if(value !== defaultValue) {
+    utilities.storeOption = function (destination, name, value, defaultValue) {
+        if (value !== defaultValue) {
             destination[name] = value;
         }
     };
@@ -551,14 +542,14 @@ var jzt = (function(my){
      * @param point2 A second point
      * @return Line data with a points array, contains function, and forEach function.
      */
-    utilities.generateLineData = function(point1, point2) {
+    utilities.generateLineData = function (point1, point2) {
 
         var result = {};
         var dx = Math.abs(point2.x - point1.x);
         var dy = Math.abs(point2.y - point1.y);
         var sx = (point1.x < point2.x) ? 1 : -1;
         var sy = (point1.y < point2.y) ? 1 : -1;
-        var err = dx-dy;
+        var err = dx - dy;
         var e2;
         var x;
         var y;
@@ -568,10 +559,10 @@ var jzt = (function(my){
         /*
          * Returns whether or not this line data contains a provided point.
          */
-        result.contains = function(point) {
+        result.contains = function (point) {
             var index;
-            for(index = 0; index < this.points.length; ++index) {
-                if(this.points[index].equals(point)) {
+            for (index = 0; index < this.points.length; index += 1) {
+                if (this.points[index].equals(point)) {
                     return true;
                 }
             }
@@ -581,10 +572,10 @@ var jzt = (function(my){
         /*
          * Performs a callback function for each point in this line data.
          */
-        result.forEach = function(callback) {
+        result.forEach = function (callback) {
             var index;
-            if(callback && typeof callback === 'function') {
-                for(index = 0; index < this.points.length; ++index) {
+            if (callback && typeof callback === 'function') {
+                for (index = 0; index < this.points.length; index += 1) {
                     callback(this.points[index]);
                 }
             }
@@ -592,17 +583,17 @@ var jzt = (function(my){
 
         x = point1.x;
         y = point1.y;
-        while(true) {
+        while (true) {
             result.points.push(new Point(x, y));
-            if((x === point2.x) && (y === point2.y)) {
+            if ((x === point2.x) && (y === point2.y)) {
                 return result;
             }
             e2 = 2 * err;
-            if(e2 >-dy) {
+            if (e2 > -dy) {
                 err -= dy;
                 x += sx;
             }
-            if(e2 < dx) {
+            if (e2 < dx) {
                 err += dx;
                 y += sy;
             }
@@ -612,11 +603,11 @@ var jzt = (function(my){
 
     };
 
-    utilities.generateCircleData = function(point, radius) {
+    utilities.generateCircleData = function (point, radius) {
         return utilities.generateEllipseData(point, radius * 2, radius);
     };
 
-    utilities.generateEllipseData = function(point, rx, ry) {
+    utilities.generateEllipseData = function (point, rx, ry) {
 
         var result = {};
 
@@ -631,8 +622,8 @@ var jzt = (function(my){
         var py = twoRx2 * y;
         var minMax;
 
-        result.contains = function(point) {
-            if(this[point.y]) {
+        result.contains = function (point) {
+            if (this[point.y]) {
                 minMax = this[point.y];
                 return point.x >= minMax[0] && point.x <= minMax[1];
             }
@@ -640,7 +631,7 @@ var jzt = (function(my){
         };
 
         // If there is no radius...
-        if(rx === 0 && ry === 0) {
+        if (rx === 0 && ry === 0) {
 
             // We should always contain the center point
             result[point.y] = [point.x, point.x];
@@ -651,15 +642,14 @@ var jzt = (function(my){
         }
 
         // Upper Region
-        p = Math.round (ry2 - (rx2 * ry) + (0.25 * rx2));
+        p = Math.round(ry2 - (rx2 * ry) + (0.25 * rx2));
         while (px < py) {
-            x++;
+            x += 1;
             px += twoRy2;
             if (p < 0) {
                 p += ry2 + px;
-            }
-            else {
-                y--;
+            } else {
+                y -= 1;
                 py -= twoRx2;
                 p += ry2 + px - py;
             }
@@ -669,15 +659,14 @@ var jzt = (function(my){
         }
 
         // Lower Region
-        p = Math.round (ry2 * (x+0.5) * (x+0.5) + rx2 * (y-1) * (y-1) - rx2 * ry2);
+        p = Math.round(ry2 * (x + 0.5) * (x + 0.5) + rx2 * (y - 1) * (y - 1) - rx2 * ry2);
         while (y > 0) {
-            y--;
+            y -= 1;
             py -= twoRx2;
             if (p > 0) {
                 p += rx2 - py;
-            }
-            else {
-                x++;
+            } else {
+                x += 1;
                 px += twoRy2;
                 p += rx2 - py + px;
             }
@@ -690,11 +679,11 @@ var jzt = (function(my){
 
     };
 
-    utilities.pointsInCircle = function(point, radius) {
+    utilities.pointsInCircle = function (point, radius) {
         return utilities.pointsInEllipse(point, radius * 2, radius);
     };
 
-    utilities.pointsInEllipse = function(point, rx, ry) {
+    utilities.pointsInEllipse = function (point, rx, ry) {
 
         var result = [];
         var index;
@@ -704,14 +693,14 @@ var jzt = (function(my){
         var max;
         var ellipseData = utilities.generateEllipseData(point, rx, ry);
 
-        for(ellipseSegment in ellipseData) {
-            if(ellipseData.hasOwnProperty(ellipseSegment)) {
+        for (ellipseSegment in ellipseData) {
+            if (ellipseData.hasOwnProperty(ellipseSegment)) {
 
                 minMax = ellipseData[ellipseSegment];
                 min = minMax[0];
                 max = minMax[1];
 
-                for(index = min; index <= max; ++index) {
+                for (index = min; index <= max; index += 1) {
                     result.push(new Point(index, ellipseSegment));
                 }
 
@@ -730,8 +719,8 @@ var jzt = (function(my){
      * @param optionName A name of a property to retrieve
      * @param defaultValue A value to be retrieved if no such property is available.
      */
-    utilities.getOption = function(data, optionName, defaultValue) {
-        if(data.hasOwnProperty(optionName)) {
+    utilities.getOption = function (data, optionName, defaultValue) {
+        if (data.hasOwnProperty(optionName)) {
             return data[optionName];
         }
         return defaultValue;
@@ -744,6 +733,7 @@ var jzt = (function(my){
     my.NotificationListener = NotificationListener;
     my.util = utilities;
     my.ConstructorError = ConstructorError;
+    
     return my;
     
 }(jzt || {}));
