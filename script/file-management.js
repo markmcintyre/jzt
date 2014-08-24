@@ -4,10 +4,11 @@
  * @author Mark McIntyre
  */
 
+/*jslint vars:true */
 /*global LZString */
 
 var jzt = (function (my) {
-    
+
     'use strict';
 
     /**
@@ -21,22 +22,22 @@ var jzt = (function (my) {
         Delete: 3,
         Exit: 4
     };
-    
+
     function getMetaName(timestamp) {
-        return 'jzt-save-meta|' + (timestamp || '');  
+        return 'jzt-save-meta|' + (timestamp || '');
     }
-    
+
     function getSaveName(timestamp) {
         return 'jzt-save|' + (timestamp || '');
     }
-    
+
     /**
      * FileManagement represents an interface used for saving and restoring saved games.
      *
      * @param owner a Game instance to own this FileManagement.
      */
     function FileManagement(owner) {
-        
+
         if (!(this instanceof FileManagement)) {
             throw jzt.ConstructorError;
         }
@@ -58,7 +59,7 @@ var jzt = (function (my) {
         this.popup.setColor(jzt.colors.Blue, jzt.colors.BrightWhite, jzt.colors.Blue, jzt.colors.BrightBlue);
         this.spriteGrid = this.popup.spriteGrid;
     }
-    
+
     FileManagement.Type = {
         SAVE: 1,
         OPEN: 2
@@ -69,7 +70,7 @@ var jzt = (function (my) {
         var saveGameMetaPrefix = getMetaName();
         var file;
         var key;
-        
+
         // If we're provided a dialog type, set it here
         if (dialogType) {
             this.dialogType = dialogType;
@@ -78,33 +79,33 @@ var jzt = (function (my) {
         // Re-initialize our index and scrolling offset
         this.selectedIndex = 0;
         this.offset = 0;
-        
+
         this.files = [];
 
         // For each of our stored items...
         for (key in localStorage) {
             if (localStorage.hasOwnProperty(key)) {
-               
+
                 // If we found some saved game metadata...
                 if (key.lastIndexOf(saveGameMetaPrefix, 0) === 0) {
 
                     file = JSON.parse(localStorage[key]);
-                    
+
                     // If it's the same game, add it to our list
                     if(file.name === this.game.name) {
                         this.files.push(file);
                     }
 
                 }
-               
+
             }
         }
-    
+
         // Sort our saved games by time
         this.files.sort(function (a, b) {
-            return b.timestamp - a.timestamp; 
+            return b.timestamp - a.timestamp;
         });
-        
+
         // Add an empty item as the first item
         if(!noEmptySlot) {
             this.files.unshift(null);
@@ -241,17 +242,17 @@ var jzt = (function (my) {
 
         var saveKey = getSaveName(file.timestamp);
         var saveMetaKey = getMetaName(file.timestamp);
-        
+
         // Delete the saved game
         if (localStorage.hasOwnProperty(saveKey)) {
             delete localStorage[saveKey];
         }
-        
+
         // Delete the meta data
         if (localStorage.hasOwnProperty(saveMetaKey)) {
-            delete localStorage[saveMetaKey];   
+            delete localStorage[saveMetaKey];
         }
-        
+
         this.open();
 
     };
@@ -260,7 +261,7 @@ var jzt = (function (my) {
 
         var data;
         var saveKey;
-        
+
         if (file) {
             saveKey = getSaveName(file.timestamp);
 
@@ -369,14 +370,14 @@ var jzt = (function (my) {
                 title = file.name || jzt.i18n.getMessage('file.saved');
                 me.spriteGrid.addText(point, title, selected ? jzt.colors.BrightWhite : jzt.colors.Grey, background);
             }
-            
+
             // If there's no file and we're saving, it's an empty spot
             else if (me.dialogType === FileManagement.Type.SAVE) {
                 title = jzt.i18n.getMessage('file.new');
                 point.x = Math.round((me.boxWidth - title.length) / 2);
                 me.spriteGrid.addText(point, title, selected ? jzt.colors.BrightWhite : jzt.colors.Grey, background);
             }
-            
+
             // Otherwise, it's an invitation to restart the game
             else {
                 title = jzt.i18n.getMessage('file.restart');
@@ -417,8 +418,8 @@ var jzt = (function (my) {
         this.popup.render(context);
 
     };
-    
+
     my.FileManagement = FileManagement;
     return my;
-    
+
 }(jzt || {}));

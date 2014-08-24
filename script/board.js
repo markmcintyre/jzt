@@ -4,6 +4,8 @@
  * @author Mark McIntyre
  */
 
+/*jslint vars:true */
+
 var jzt;
 jzt = (function (my) {
 

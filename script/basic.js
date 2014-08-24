@@ -4,13 +4,16 @@
  * @author Mark McIntyre
  */
 
-var jzt = (function (my) {
-    
+/*jslint vars:true */
+
+var jzt;
+jzt = (function (my) {
+
     'use strict';
-    
+
     var ConstructorError = 'Constructor must be called with new.';
     var Direction;
-    
+
     /**
      * Point represents a point on a cartesian plane.
      *
@@ -18,11 +21,11 @@ var jzt = (function (my) {
      * @param y A y coordinate.
      */
     function Point(x, y) {
-        
+
         if (!(this instanceof Point)) {
             throw ConstructorError;
         }
-        
+
         this.x = x;
         this.y = y;
     }
@@ -84,21 +87,26 @@ var jzt = (function (my) {
 
         if (!direction) {
             return (Math.abs(this.x - other.x) < spread) || (Math.abs(this.y - other.y) < spread);
-        } else if (direction === Direction.North) {
-            return (other.y < this.y) && Math.abs((this.x - other.x)) < spread;
-        } else if (direction === Direction.South) {
-            return (other.y > this.y) && Math.abs((this.x - other.x)) < spread;
-        } else if (direction === Direction.East) {
-            return (other.x > this.x) && Math.abs((this.y - other.y)) < spread;
-        } else if (direction === Direction.West) {
-            return (other.x < this.x) && Math.abs((this.y - other.y)) < spread;
-        } else {
-            return undefined;
         }
+        if (direction === Direction.North) {
+            return (other.y < this.y) && Math.abs((this.x - other.x)) < spread;
+        }
+        if (direction === Direction.South) {
+            return (other.y > this.y) && Math.abs((this.x - other.x)) < spread;
+        }
+        if (direction === Direction.East) {
+            return (other.x > this.x) && Math.abs((this.y - other.y)) < spread;
+        }
+        if (direction === Direction.West) {
+            return (other.x < this.x) && Math.abs((this.y - other.y)) < spread;
+        }
+
+        return undefined;
+
     };
 
     /**
-     * Calculates a direction from this point to another point, along an optional axis. If 
+     * Calculates a direction from this point to another point, along an optional axis. If
      * no axis is provided, then the closest of either the X or Y axis will be used. If
      * the distance on both axes are the same, then one will be picked at random.
      *
@@ -131,28 +139,18 @@ var jzt = (function (my) {
                 return undefined;
             }
             return xDistance < 0 ? Direction.East : Direction.West;
-        } else {
-            if (yDistance === 0) {
-                return undefined;
-            }
-            return yDistance < 0 ? Direction.South : Direction.North;
         }
+
+        if (yDistance === 0) {
+            return undefined;
+        }
+
+        return yDistance < 0 ? Direction.South : Direction.North;
 
     };
 
     Point.prototype.compareTo = function (other) {
-        if (this.x < other.x) {
-            return -1;
-        } else if (this.x > other.x) {
-            return 1;
-        } else {
-            if (this.y < other.y) {
-                return -1;
-            } else if (this.y > other.y) {
-                return 1;
-            }
-        }
-        return 0;
+        return this.x === other.x ? this.y - other.y : this.x - other.x;
     };
 
     /**
@@ -173,17 +171,17 @@ var jzt = (function (my) {
     Point.prototype.toString = function () {
         return '(' + this.x + ', ' + this.y + ')';
     };
-    
+
     /**
      * PointSet represents a set of Point instances. This set can be sorted
      * and indexed.
      */
     function PointSet() {
-        
+
         if (!(this instanceof PointSet)) {
             throw jzt.ConstructorError;
         }
-        
+
         this.points = [];
         this.sorted = false;
     }
@@ -232,7 +230,7 @@ var jzt = (function (my) {
         return -1;
 
     };
-    
+
     /**
      * Direction is an enumerated type representing each of the four possible directions
      * on a tile-based grid.
@@ -243,12 +241,12 @@ var jzt = (function (my) {
         South: new Point(0, 1),
         West: new Point(-1, 0)
     };
-    
+
     /**
      * Performs a provided callback function for each possible direction on a tile-based
      * grid. The callback function will be given a single parameter containing the direction
      * being iterated.
-     * 
+     *
      * @param callback A callback function to be executed.
      */
     Direction.each = function (callback) {
@@ -260,7 +258,7 @@ var jzt = (function (my) {
 
     /**
      * Retrieves a Point representing a direction from a provided name.
-     * 
+     *
      * @param name A name of a direction
      * @return A Point representing a direction.
      */
@@ -291,7 +289,7 @@ var jzt = (function (my) {
      * @return A direction name.
      */
     Direction.getName = function (direction) {
-        
+
         switch (direction) {
         case Direction.North:
             return 'North';
@@ -308,7 +306,7 @@ var jzt = (function (my) {
     };
 
     Direction.getShortName = function (direction) {
-        
+
         switch (direction) {
         case Direction.North:
             return 'N';
@@ -319,9 +317,9 @@ var jzt = (function (my) {
         case Direction.West:
             return 'W';
         }
-        
+
         return undefined;
-        
+
     };
 
     /**
@@ -351,7 +349,7 @@ var jzt = (function (my) {
     /**
      * Given a direction from our Direction enumerated type, returns another direction
      * representing a random choice perpendicular to the provided one.
-     * 
+     *
      * @param direction A direction.
      * @return A new direction perpendicular to the provided one, at random.
      */
@@ -369,7 +367,7 @@ var jzt = (function (my) {
 
     /**
      * Returns a Point representing either North or South, at random.
-     * 
+     *
      * @return A Point direction.
      */
     Direction.randomNorthSouth = function () {
@@ -378,7 +376,7 @@ var jzt = (function (my) {
 
     /**
      * Returns a Point representing either East or West, at random.
-     * 
+     *
      * @return A Point direction.
      */
     Direction.randomEastWest = function () {
@@ -387,7 +385,7 @@ var jzt = (function (my) {
 
     /**
      * Returns a Point representing either North or East, at random.
-     * 
+     *
      * @return A Point direction.
      */
     Direction.randomNorthEast = function () {
@@ -461,11 +459,11 @@ var jzt = (function (my) {
     };
 
     function DelayedEventScheduler(initialDelay, subsequentDelay) {
-        
+
         if (!(this instanceof DelayedEventScheduler)) {
             throw ConstructorError;
         }
-        
+
         this.initialDelay = initialDelay;
         this.subsequentDelay = subsequentDelay;
         this.event = undefined;
@@ -503,28 +501,28 @@ var jzt = (function (my) {
      * NotificationListener
      */
     function NotificationListener() {
-        
+
         if (!(this instanceof NotificationListener)) {
             throw ConstructorError;
         }
-        
+
         this.notifications = [];
     }
 
     NotificationListener.prototype.addNotification = function (type, message) {
         this.notifications.push({type: type, message: message, timestamp: Date.now()});
     };
-    
+
     /**
      * An object to store utility functions.
      */
     var utilities = {};
-    
+
     /**
      * Adds a property to a provided destination object as a given name and value,
      * only if the value is doesn't match a provided default.
      *
-     * @param destination A destination object 
+     * @param destination A destination object
      * @param name A name of a property
      * @param value A value to be stored.
      * @param defaultValue A default value.
@@ -537,7 +535,7 @@ var jzt = (function (my) {
 
     /**
      * Generates line data between two points.
-     * 
+     *
      * @param point1 A first point
      * @param point2 A second point
      * @return Line data with a points array, contains function, and forEach function.
@@ -725,7 +723,7 @@ var jzt = (function (my) {
         }
         return defaultValue;
     };
-    
+
     my.Point = Point;
     my.PointSet = PointSet;
     my.Direction = Direction;
@@ -733,7 +731,7 @@ var jzt = (function (my) {
     my.NotificationListener = NotificationListener;
     my.util = utilities;
     my.ConstructorError = ConstructorError;
-    
+
     return my;
-    
+
 }(jzt || {}));

@@ -1,5 +1,11 @@
 {
-   "jslint.options" : {
-       "vars": true
-   }
+    "jslint.options": {},
+    "defaultExtension": "js",
+    "path": {
+        "script/thirdparty/**/*.js": {
+            "linting.enabled": false
+        }
+    },
+    "spaceUnits": 4,
+    "useTabChar": false
 }

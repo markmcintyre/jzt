@@ -4,12 +4,13 @@
  * @author Mark McIntyre
  */
 
-/*global AudioContext, webkitAudioContext */
+/*jslint browser:true, vars:true */
 
-var jzt = (function (my) {
-    
+var jzt;
+jzt = (function (my) {
+
     'use strict';
-    
+
     /**
      * A static frequency table that maps indicies from 0 to 107 to notes on a traditional
      * scale, starting with 0 at C-0 to 107 at B-8.
@@ -26,33 +27,34 @@ var jzt = (function (my) {
         2093,  2217,  2349,  2489,  2637,  2794,  2960,  3136,  3322,  3520,  3729,  3951,  // 84
         4186,  4435,  4699,  4978,  5274,  5588,  5920,  6272,  6645,  7040,  7459,  7902   // 96
     ];
-    
+
     /**
-     * percussiveSound is an enumerated type representing percussive sound effects.
+     * Some of our percussive instruments can be represented as a crude assemblage of notes
+     * played very rapidly.
      */
-    var percussiveSound = {
-        'Cowbell': [103, 103, 105, 80, 103, 103, 105, 80, 103, 103, 105, 80, 103, 103, 105, 80],
-        'HighSnare': [12, 71, 87, 83, 94, 12, 92, 89, 85, 99, 12, 92, 68, 79, 103],
-        'HighWoodblock': [80, 79, 80, 68, 80, 79, 80, 70, 80, 83, 78, 80, 81, 80],
-        'LowSnare': [12, 97, 93, 76, 88, 81, 12, 97, 93, 76, 88, 81, 12, 97, 93, 76, 88, 81],
-        'LowWoodblock': [12, 74, 74, 73, 73, 12, 74, 74, 75, 75, 12, 74, 74, 75, 75, 76, 76],
-        'BassDrum': [54, 52, 50, 5, 12, 30, 58, 56, 54, 5, 12, 30, 62, 60, 58, 5, 12]
-    };
+    var percussiveCowbell = [103, 103, 105, 80, 103, 103, 105, 80, 103, 103, 105, 80, 103, 103, 105, 80],
+        percussiveHighSnare = [12, 71, 87, 83, 94, 12, 92, 89, 85, 99, 12, 92, 68, 79, 103],
+        percussiveHighWoodblock = [80, 79, 80, 68, 80, 79, 80, 70, 80, 83, 78, 80, 81, 80],
+        percussiveLowSnare = [12, 97, 93, 76, 88, 81, 12, 97, 93, 76, 88, 81, 12, 97, 93, 76, 88, 81],
+        percussiveLowWoodblock = [12, 74, 74, 73, 73, 12, 74, 74, 75, 75, 12, 74, 74, 75, 75, 76, 76],
+        percussiveBassDrum = [54, 52, 50, 5, 12, 30, 58, 56, 54, 5, 12, 30, 62, 60, 58, 5, 12];
+
+    var SONG_BAR_LENGTH = 1.8;
 
     /**
      * Note represents a single melodic note, taking a numeric index from 0 to 107, with 0 representing C-0
-     * and 107 representing B-8, incrementing along all traditional notes on a piano. A duration in seconds must 
+     * and 107 representing B-8, incrementing along all traditional notes on a piano. A duration in seconds must
      * also be provided.
      *
      * @param A note index.
      * @param A note duration in seconds.
      */
     function AudioNote(index, duration) {
-        
+
         if (!(this instanceof AudioNote)) {
             throw jzt.ConstructorError;
         }
-        
+
         this.noteIndex = index;
         this.frequency = frequencyTable[this.noteIndex];
         this.duration = duration;
@@ -74,17 +76,17 @@ var jzt = (function (my) {
 
             // Check our scale position...
             if (this.noteIndex >= frequencyTable.length - 1) {
-                
+
                 // We've moved past the end of our scale, so
                 // cap to the last note
                 this.noteIndex = frequencyTable.length - 1;
-                
+
             } else if (this.noteIndex < 0) {
-                
+
                 // We've moved before the start of our scale, so
                 // base it to the first note
                 this.noteIndex = 0;
-                
+
             }
 
             // Assign our actual frequency value
@@ -142,13 +144,11 @@ var jzt = (function (my) {
      * @param notation A textual notation representing a melody or sound effect.
      */
     function AudioSong(notation) {
-        
+
         if (!(this instanceof AudioSong)) {
             throw jzt.ConstructorError;
         }
-        
-        this.MAX_OCTAVE = 8;
-        this.barLength = 1.8;
+
         this.notes = [];
         this.parse(notation);
     }
@@ -215,12 +215,12 @@ var jzt = (function (my) {
      * 8: Percussive low woodblock
      * 9: Percussive base
      *
-     * @param notation A textual music notation 
+     * @param notation A textual music notation
      */
     AudioSong.prototype.parse = function (notation) {
 
         var currentOctave = 4;
-        var currentDuration = this.barLength / 32;
+        var currentDuration = SONG_BAR_LENGTH / 32;
         var tripletDuration = currentDuration / 3;
         var tripletCount = -1;
         var timeAndHalf = false;
@@ -243,22 +243,22 @@ var jzt = (function (my) {
             // If we've got a musical note...
             switch (currentChar) {
             case 'T':
-                currentDuration = this.barLength / 32;
+                currentDuration = SONG_BAR_LENGTH / 32;
                 break;
             case 'S':
-                currentDuration = this.barLength / 16;
+                currentDuration = SONG_BAR_LENGTH / 16;
                 break;
             case 'I':
-                currentDuration = this.barLength / 8;
+                currentDuration = SONG_BAR_LENGTH / 8;
                 break;
             case 'Q':
-                currentDuration = this.barLength / 4;
+                currentDuration = SONG_BAR_LENGTH / 4;
                 break;
             case 'H':
-                currentDuration = this.barLength / 2;
+                currentDuration = SONG_BAR_LENGTH / 2;
                 break;
             case 'W':
-                currentDuration = this.barLength;
+                currentDuration = SONG_BAR_LENGTH;
                 break;
             case '3':
                 tripletCount = 3;
@@ -310,16 +310,16 @@ var jzt = (function (my) {
                 this.addRest(currentDuration - 0.015);
                 break;
             case '2':
-                this.addPercussiveSound(percussiveSound.Cowbell, currentDuration);
+                this.addPercussiveSound(percussiveCowbell, currentDuration);
                 break;
             case '4':
-                this.addPercussiveSound(percussiveSound.HighSnare, currentDuration);
+                this.addPercussiveSound(percussiveHighSnare, currentDuration);
                 break;
             case '5':
-                this.addPercussiveSound(percussiveSound.HighWoodblock, currentDuration);
+                this.addPercussiveSound(percussiveHighWoodblock, currentDuration);
                 break;
             case '6':
-                this.addPercussiveSound(percussiveSound.LowSnare, currentDuration);
+                this.addPercussiveSound(percussiveLowSnare, currentDuration);
                 break;
             case '7':
                 percussiveNote = new AudioNote(65, 0.015);
@@ -328,10 +328,10 @@ var jzt = (function (my) {
                 this.addRest(currentDuration - 0.015);
                 break;
             case '8':
-                this.addPercussiveSound(percussiveSound.LowWoodblock, currentDuration);
+                this.addPercussiveSound(percussiveLowWoodblock, currentDuration);
                 break;
             case '9':
-                this.addPercussiveSound(percussiveSound.BassDrum, currentDuration);
+                this.addPercussiveSound(percussiveBassDrum, currentDuration);
                 break;
             default:
                 currentNote = undefined;
@@ -377,15 +377,17 @@ var jzt = (function (my) {
         }
 
     };
-    
+
     /**
-     * Audio is capable of playing melodic tunes and sound effects through a 
+     * Audio is capable of playing melodic tunes and sound effects through a
      * textual syntax on a single square wave oscillator.
      */
     function Audio() {
-        
+
         /*jslint newcap: true */
-        
+
+        var audioContextFunction = window.AudioContext || window.webkitAudioContext;
+
         if (!(this instanceof Audio)) {
             throw jzt.ConstructorError;
         }
@@ -397,11 +399,7 @@ var jzt = (function (my) {
         if (this.active) {
 
             // Establish our context
-            if (typeof AudioContext !== 'undefined') {
-                this.context = new AudioContext();
-            } else if (typeof webkitAudioContext !== 'undefined') {
-                this.context = new webkitAudioContext();
-            }
+            this.context = new audioContextFunction();
 
             // Initialize our audio nodes
             this.userVolume = 0.1;
@@ -429,7 +427,7 @@ var jzt = (function (my) {
         }
 
     }
-    
+
     /**
      * Activates or deactivates this Audio instance. Activation will only work if
      * AudioContext or webkitAudioContext is available.
@@ -438,7 +436,7 @@ var jzt = (function (my) {
      */
     Audio.prototype.setActive = function (activeValue) {
 
-        this.active = (activeValue && (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined'));
+        this.active = (activeValue && (window.AudioContext || window.webkitAudioContext));
 
     };
 
@@ -493,7 +491,7 @@ var jzt = (function (my) {
 
             var index;
             var note;
-            
+
             // Create a song from our notation
             var song = new AudioSong(notation);
 
@@ -511,22 +509,22 @@ var jzt = (function (my) {
 
                 // Check what we've been given...
                 if (note.frequency && note.endFrequency) {
-                    
+
                     // We've got both a start and end frequency
                     this.oscillator.frequency.setValueAtTime(note.frequency, this.timestamp);
                     this.oscillator.frequency.linearRampToValueAtTime(note.endFrequency, this.timestamp + note.duration);
-                    
+
                 } else if (note.frequency) {
-                    
+
                     // There's just a start frequency
                     this.oscillator.frequency.setValueAtTime(note.frequency, this.timestamp);
-                    
+
                 } else {
-                    
+
                     // There's no frequency at all
                     this.volume.gain.setValueAtTime(0, this.timestamp);
                     this.volume.gain.setValueAtTime(this.userVolume, this.timestamp + note.duration);
-                    
+
                 }
 
                 // Update our timestamp
@@ -563,8 +561,8 @@ var jzt = (function (my) {
             this.playAfter(notation, uninterruptable);
         }
     };
-    
+
     my.Audio = Audio;
     return my;
-    
+
 }(jzt || {}));
