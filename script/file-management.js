@@ -92,7 +92,7 @@ var jzt = (function (my) {
                     file = JSON.parse(localStorage[key]);
 
                     // If it's the same game, add it to our list
-                    if(file.name === this.game.name) {
+                    if (file.name === this.game.name) {
                         this.files.push(file);
                     }
 
@@ -107,7 +107,7 @@ var jzt = (function (my) {
         });
 
         // Add an empty item as the first item
-        if(!noEmptySlot) {
+        if (!noEmptySlot) {
             this.files.unshift(null);
         }
 
@@ -122,51 +122,57 @@ var jzt = (function (my) {
 
         var k = this.game.keyboard;
 
-        // If the up key is pressed, scroll up one block
+
+        // Depending on which key was pressed...
         if (k.isPressed(k.UP)) {
+
+            // The up key was pressed, so scroll up
             this.eventScheduler.scheduleEvent(k.isPressed(k.UP), action.Up);
-        }
 
-        // If the down key is pressed, scroll down one block
-        else if (k.isPressed(k.DOWN)) {
+        } else if (k.isPressed(k.DOWN)) {
+
+            // The down key was pressed, so scroll down
             this.eventScheduler.scheduleEvent(k.isPressed(k.DOWN), action.Down);
-        }
 
-        // If Enter is pressed...
-        else if (k.isPressed(k.ENTER) || k.isPressed(k.SPACE)) {
+        } else if (k.isPressed(k.ENTER) || k.isPressed(k.SPACE)) {
+
+            // The enter or space key was pressed, so select the active element
             this.eventScheduler.scheduleEvent(k.isPressed(k.ENTER), action.Select);
-        }
 
-        else if (k.isPressed(k.DELETE) || k.isPressed(k.BACKSPACE)) {
+        } else if (k.isPressed(k.DELETE) || k.isPressed(k.BACKSPACE)) {
+
+            // Delete or backspace was pressed, so delete the active element
             this.eventScheduler.scheduleEvent(k.isPressed(k.DELETE), action.Delete);
-        }
 
-        // If Escape was pressed, close the scroll
-        else if (k.isPressed(k.ESCAPE)) {
+        } else if (k.isPressed(k.ESCAPE) || k.isPressed(k.S) || k.isPressed(k.R)) {
+
+            // Escape or S or R was pressed, so close our screen
             this.eventScheduler.scheduleEvent(k.isPressed(k.ESCAPE), action.Exit);
-        }
 
-        // If nothing was currently down, cancel any previously scheduled event
-        else {
+        } else {
             this.eventScheduler.cancelEvent();
         }
 
         // Update the cycle and do a tick if necessary
-        if (++this.cycleCount >= this.game.CYCLE_RATE) {
+        this.cycleCount += 1;
+        if (this.cycleCount >= this.game.CYCLE_RATE) {
             this.cycleCount = 0;
             this.doTick();
         }
 
     };
 
-    FileManagement.prototype.doTick = function() {
+    FileManagement.prototype.doTick = function () {
 
         var event = this.eventScheduler.takeEvent();
         var file;
 
-        // If we're scrolling up...
+        // Determine the action taken
         if (event === action.Up) {
-            if (--this.selectedIndex < 0) {
+
+            // We're scrolling up
+            this.selectedIndex -= 1;
+            if (this.selectedIndex < 0) {
                 this.selectedIndex = 0;
             }
             if (this.selectedIndex < this.offset) {
@@ -174,25 +180,26 @@ var jzt = (function (my) {
             }
 
             this.initializeSlots();
-        }
 
-        // If we're scrolling down...
-        else if (event === action.Down) {
-            if (++this.selectedIndex >= this.files.length - 1) {
+        } else if (event === action.Down) {
+
+            // We're scrolling down
+            this.selectedIndex += 1;
+            if (this.selectedIndex >= this.files.length - 1) {
                 this.selectedIndex = this.files.length - 1;
             }
             if (this.selectedIndex >= (this.offset + this.visibleBoxCount)) {
                 this.offset = this.selectedIndex - this.visibleBoxCount + 1;
             }
             this.initializeSlots();
-        }
 
-        // If we're selecting an element
-        else if (event === action.Select) {
+        } else if (event === action.Select) {
 
-            // If we are saving...
+            // We're selecting an element
+
             if (this.dialogType === FileManagement.Type.SAVE) {
 
+                // We are saving.
                 // Grab our existing file (if applicable)
                 file = this.files[this.selectedIndex];
 
@@ -203,11 +210,9 @@ var jzt = (function (my) {
 
                 this.saveFile();
 
-            }
+            } else if (this.dialogType === FileManagement.Type.OPEN) {
 
-            // If we are opening...
-            if (this.dialogType === FileManagement.Type.OPEN) {
-
+                // We are loading
                 file = this.files[this.selectedIndex];
                 this.loadFile(file);
 
@@ -217,10 +222,9 @@ var jzt = (function (my) {
             this.game.restoreState();
 
 
-        }
+        } else if (event === action.Delete) {
 
-        // If we're deleting a game
-        else if (event === action.Delete) {
+            // We're deleting a game
 
             file = this.files[this.selectedIndex];
 
@@ -228,11 +232,11 @@ var jzt = (function (my) {
                 this.deleteFile(file);
             }
 
-        }
+        } else if (event === action.Exit) {
 
-        // If we're exiting
-        else if (event === action.Exit) {
+            // We're exiting
             this.game.restoreState();
+
         }
 
 
@@ -276,15 +280,15 @@ var jzt = (function (my) {
                 this.game.deserialize(data);
 
             }
-        }
-        else {
+
+        } else {
             this.game.restartGame();
         }
 
 
     };
 
-    FileManagement.prototype.saveFile = function() {
+    FileManagement.prototype.saveFile = function () {
 
         var gameData;
         var file = {
@@ -338,26 +342,29 @@ var jzt = (function (my) {
             var dateString;
             var title;
 
-            for (point.x = 2; point.x < me.boxWidth; ++point.x) {
-                for (point.y = boxPosition; point.y < boxPosition + me.boxHeight; ++point.y) {
+            for (point.x = 2; point.x < me.boxWidth; point.x += 1) {
+                for (point.y = boxPosition; point.y < boxPosition + me.boxHeight; point.y += 1) {
 
-                    // If we're rendering the top shadow edge
+                    // Determine which edge we're drawing
                     if (point.x === me.boxWidth - 1 && point.y === boxPosition) {
+
+                        // We're rendering the top shadow edge
                         me.spriteGrid.setTile(point, 220, jzt.colors.Black);
-                    }
 
-                    // If we're rendering the right shadow edge
-                    else if(point.x === me.boxWidth - 1 && point.y !== boxPosition + me.boxHeight - 1) {
+                    } else if (point.x === me.boxWidth - 1 && point.y !== boxPosition + me.boxHeight - 1) {
+
+                        // We're rendering the right shadow edge
                         me.spriteGrid.setTile(point, undefined, jzt.colors.BrightWhite, jzt.colors.Black);
-                    }
 
-                    // If we're rendering the bottom shadow edge
-                    else if(point.y === boxPosition + me.boxHeight - 1 && point.x !== 2) {
+                    } else if (point.y === boxPosition + me.boxHeight - 1 && point.x !== 2) {
+
+                        // We're rendering the bottom shadow edge
                         me.spriteGrid.setTile(point, 223, jzt.colors.Black);
-                    }
 
-                    else if( !(point.y === boxPosition + me.boxHeight - 1 && point.x === 2)) {
+                    } else if (!(point.y === boxPosition + me.boxHeight - 1 && point.x === 2)) {
+
                         me.spriteGrid.setTile(point, undefined, jzt.colors.BrightWhite, background);
+
                     }
 
                 }
@@ -366,26 +373,33 @@ var jzt = (function (my) {
             // Draw our game title
             point.x = 3;
             point.y = boxPosition + 1;
+
+            // Determine what to draw
             if (file) {
+
+                // We've got a file, so draw it
                 title = file.name || jzt.i18n.getMessage('file.saved');
                 me.spriteGrid.addText(point, title, selected ? jzt.colors.BrightWhite : jzt.colors.Grey, background);
-            }
 
-            // If there's no file and we're saving, it's an empty spot
-            else if (me.dialogType === FileManagement.Type.SAVE) {
+            } else if (me.dialogType === FileManagement.Type.SAVE) {
+
+                // There's no file, so it's an empty spot
                 title = jzt.i18n.getMessage('file.new');
                 point.x = Math.round((me.boxWidth - title.length) / 2);
                 me.spriteGrid.addText(point, title, selected ? jzt.colors.BrightWhite : jzt.colors.Grey, background);
-            }
 
-            // Otherwise, it's an invitation to restart the game
-            else {
+            } else {
+
+                // There's no file and our dialog is not a save dialog, so
+                // add an invitation to restart the game
+
                 title = jzt.i18n.getMessage('file.restart');
                 point.x = Math.round((me.boxWidth - title.length) / 2);
                 me.spriteGrid.addText(point, title, selected ? jzt.colors.BrightWhite : jzt.colors.Grey, background);
                 point.y += 1;
                 point.x = Math.round((me.boxWidth - me.game.name.length) / 2);
                 me.spriteGrid.addText(point, me.game.name, selected ? jzt.colors.BrightBlue : jzt.colors.Grey, background);
+
             }
 
             // Draw our timestamp
@@ -398,14 +412,14 @@ var jzt = (function (my) {
             // Draw our current board name
             if (file && file.board) {
                 point.x = 3;
-                point.y++;
+                point.y += 1;
                 me.spriteGrid.addText(point, file.board, selected ? jzt.colors.BrightBlue : jzt.colors.Grey, background);
             }
 
         }
 
         boxesInView = Math.min(this.visibleBoxCount, this.files.length);
-        for (index = 0; index < boxesInView; ++index) {
+        for (index = 0; index < boxesInView; index += 1) {
             initializeSlot(this.files[this.offset + index], index, index + this.offset === this.selectedIndex);
         }
 
