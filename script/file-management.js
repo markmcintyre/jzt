@@ -4,10 +4,11 @@
  * @author Mark McIntyre
  */
 
-/*jslint vars:true */
+/*jslint browser:true, vars:true */
 /*global LZString */
 
-var jzt = (function (my) {
+var jzt;
+jzt = (function (my) {
 
     'use strict';
 

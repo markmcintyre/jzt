@@ -4,10 +4,13 @@
  * @author Mark McIntyre
  */
 
-var jzt = (function(my){
-    
+/*jslint browser:true, vars:true */
+
+var jzt;
+jzt = (function (my) {
+
     'use strict';
-    
+
     var BLINK_RATE = 10;
     var SPRITE_DATA = 'data:image/png;base64,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';
 
@@ -19,8 +22,8 @@ var jzt = (function(my){
      * @param onLoadCallback An optional callback function to be triggered when this Graphics is loaded and ready to use.
      */
     function Graphics(onLoadCallback) {
-        
-        if(!(this instanceof Graphics)) {
+
+        if (!(this instanceof Graphics)) {
             throw jzt.ConstructorError;
         }
 
@@ -42,7 +45,7 @@ var jzt = (function(my){
         this.onLoadCallback = onLoadCallback;
 
         // A function to finish initialization once our sprite source has been fully loaded
-        this.spriteSource.onload = function() {
+        this.spriteSource.onload = function () {
 
             var buffer;
             var context;
@@ -59,8 +62,8 @@ var jzt = (function(my){
             var sprite;
 
             // Create offscreen canvases
-            for(color in jzt.colors.Colors) {
-                if(jzt.colors.Colors.hasOwnProperty(color)) {
+            for (color in jzt.colors.Colors) {
+                if (jzt.colors.Colors.hasOwnProperty(color)) {
 
                     // Create a buffer to store our sprite graphics
                     buffer = document.createElement('canvas');
@@ -87,7 +90,7 @@ var jzt = (function(my){
                     rgba = imageData.data;
 
                     // For each of our pixels...
-                    for(pixel = 0; pixel < pixelCount; pixel += 4) {
+                    for (pixel = 0; pixel < pixelCount; pixel += 4) {
 
                         /* For a black and white image, we only need to test one of the
                          * values to determine if we need to write a color or a transparent
@@ -95,20 +98,17 @@ var jzt = (function(my){
                          */
 
                         // If we found an 'on' pixel
-                        if(rgba[pixel] >= 255) {
+                        if (rgba[pixel] >= 255) {
 
                             // Assign our new pixel color
                             rgba[pixel] = color.r;
-                            rgba[pixel+1] = color.g;
-                            rgba[pixel+2] = color.b;
+                            rgba[pixel + 1] = color.g;
+                            rgba[pixel + 2] = color.b;
 
                             // Make it completely opaque
-                            rgba[pixel+3] = 255;
+                            rgba[pixel + 3] = 255;
 
-                        }
-
-                        // If we found an 'off' pixel
-                        else {
+                        } else {
 
                             // Make our pixel completely transparent
                             rgba[pixel + 3] = 0;
@@ -128,8 +128,8 @@ var jzt = (function(my){
             tilesPerRow = this.width / me.SPRITE_SIZE.x;
             tilesPerColumn = this.height / me.SPRITE_SIZE.y;
 
-            for(row = 0; row < tilesPerColumn; ++row) {
-                for(column = 0; column < tilesPerRow; ++column) {
+            for (row = 0; row < tilesPerColumn; row += 1) {
+                for (column = 0; column < tilesPerRow; column += 1) {
 
                     spritePoint = new jzt.Point(column * me.SPRITE_SIZE.x, row * me.SPRITE_SIZE.y);
                     sprite = new my.Sprite(spritePoint, me);
@@ -146,11 +146,11 @@ var jzt = (function(my){
             context = buffer.getContext('2d');
             imageData = context.getImageData(0, 0, context.canvas.width, context.canvas.height);
             rgba = imageData.data;
-            for(pixel = 0; pixel < pixelCount; pixel += 4) {
+            for (pixel = 0; pixel < pixelCount; pixel += 4) {
                 rgba[pixel] = 0;
-                rgba[pixel+1] = 0;
-                rgba[pixel+2] = 0;
-                rgba[pixel+3] = Math.round(20 * Math.random());
+                rgba[pixel + 1] = 0;
+                rgba[pixel + 2] = 0;
+                rgba[pixel + 3] = Math.round(20 * Math.random());
             }
             context.putImageData(imageData, 0, 0);
             me.NOISE_IMAGE = buffer;
@@ -164,7 +164,7 @@ var jzt = (function(my){
             context.webkitImageSmoothingEnabled = false;
             context.mozImageSmoothingEnabled = false;
             sprite = me.getSprite(176);
-            sprite.draw(context, new jzt.Point(0,0), jzt.colors.Grey, jzt.colors.Black);
+            sprite.draw(context, new jzt.Point(0, 0), jzt.colors.Grey, jzt.colors.Black);
             me.DARK_IMAGE = buffer;
 
             // Now that everything is initialized, trigger our load callback
@@ -177,16 +177,16 @@ var jzt = (function(my){
     /**
      * Updates this Graphics's instance's blinking and color cycle state.
      */
-    Graphics.prototype.update = function() {
+    Graphics.prototype.update = function () {
 
         // Increment our blink cycle counter
-        this.blinkCycle++;
+        this.blinkCycle += 1;
 
         // If we've passed the blink rate threshold...
-        if(this.blinkCycle > BLINK_RATE) {
+        if (this.blinkCycle > BLINK_RATE) {
 
             // Adjust our blink state
-            this.blinkState = ! this.blinkState;
+            this.blinkState = !this.blinkState;
 
             // Our color cycle uses the same rate
             jzt.colors.Cycle.update();
@@ -197,13 +197,13 @@ var jzt = (function(my){
 
     };
 
-    Graphics.prototype.fillTile = function(c, point, color) {
+    Graphics.prototype.fillTile = function (c, point, color) {
 
         var destinationX = point.x * this.TILE_SIZE.x;
         var destinationY = point.y * this.TILE_SIZE.y;
 
         // Draw the tile
-        if(color) {
+        if (color) {
             c.fillStyle = color.rgbValue;
             c.fillRect(destinationX, destinationY, this.TILE_SIZE.x, this.TILE_SIZE.y);
         }
@@ -216,7 +216,7 @@ var jzt = (function(my){
      * @param index A CodePage-437 character index
      * @return A sprite representing a provided CodePage-437 index.
      */
-    Graphics.prototype.getSprite = function(index) {
+    Graphics.prototype.getSprite = function (index) {
         return this.sprites[index];
     };
 
@@ -228,14 +228,14 @@ var jzt = (function(my){
      * @param text A text string to convert to Sprite instances
      * @return An array of Sprite instances
      */
-    Graphics.prototype.textToSprites = function(text) {
+    Graphics.prototype.textToSprites = function (text) {
 
         var result = [];
         var index;
         var spriteIndex;
 
         // For each character in our string...
-        for(index = 0; index < text.length; ++index) {
+        for (index = 0; index < text.length; index += 1) {
 
             // Convert the character into its CodePage-437 index
             spriteIndex = this.convertSpecialCharacter(text.charAt(index));
@@ -250,7 +250,7 @@ var jzt = (function(my){
     };
 
     /**
-     * Draws a provided text string to a provided graphics context at a provided Point using a 
+     * Draws a provided text string to a provided graphics context at a provided Point using a
      * provided background and foreground color.
      *
      * @param context A 2D graphics context onto which to draw our string
@@ -259,7 +259,7 @@ var jzt = (function(my){
      * @param foreground A foreground Color.
      * @param background A background Color.
      */
-    Graphics.prototype.drawString = function(context, point, text, foreground, background) {
+    Graphics.prototype.drawString = function (context, point, text, foreground, background) {
         this.drawSprites(context, point, this.textToSprites(text), foreground, background);
     };
 
@@ -273,16 +273,16 @@ var jzt = (function(my){
      * @param foreground A foreground Color.
      * @param background A background Color.
      */
-    Graphics.prototype.drawSprites = function(context, point, sprites, foreground, background) {
+    Graphics.prototype.drawSprites = function (context, point, sprites, foreground, background) {
         point = point.clone();
         var sprite;
         var index;
         foreground = foreground || jzt.colors.Yellow;
         background = background || undefined;
-        for(index = 0; index < sprites.length; ++index) {
+        for (index = 0; index < sprites.length; index += 1) {
             sprite = sprites[index];
             sprite.draw(context, point, foreground, background);
-            point.x++;
+            point.x += 1;
         }
     };
 
@@ -450,22 +450,22 @@ var jzt = (function(my){
 
     /**
      * Converts a provided special character into its ANSI equivalent.
-     * 
+     *
      * @param character A Unicode character
      * @return An ANSI character code.
      */
-    Graphics.prototype.convertSpecialCharacter = function(character) {
+    Graphics.prototype.convertSpecialCharacter = function (character) {
 
         // Get our char code
         var characterCode = character.charCodeAt(0);
 
-        // If it's a letter, than it's the same
-        if(characterCode >= 32 && characterCode <= 126) {
+        // Determine if character mapping isn't necessary
+        if (characterCode >= 32 && characterCode <= 126) {
             return characterCode;
         }
 
-        // Otherwise, it might be special
-        else if(Graphics.characterTable.hasOwnProperty(character)) {
+        // Mapping is necessary, but do we have a mapping for this character?
+        if (Graphics.characterTable.hasOwnProperty(character)) {
             return Graphics.characterTable[character];
         }
 
@@ -482,11 +482,11 @@ var jzt = (function(my){
      * @param graphics a Graphics instance to own this SpriteGrid
      */
     function SpriteGrid(width, height, graphics) {
-        
-        if(!(this instanceof SpriteGrid)) {
+
+        if (!(this instanceof SpriteGrid)) {
             throw jzt.ConstructorError;
         }
-        
+
         this.width = width;
         this.height = height;
         this.graphics = graphics;
@@ -501,7 +501,7 @@ var jzt = (function(my){
      * @param foreground a foreground Color
      * @param background a background Color
      */
-    SpriteGrid.prototype.setTile = function(point, spriteIndex, foreground, background) {
+    SpriteGrid.prototype.setTile = function (point, spriteIndex, foreground, background) {
 
         this.tiles[point.x + point.y * this.width] = {
             sprite: spriteIndex ? this.graphics.getSprite(spriteIndex) : undefined,
@@ -518,9 +518,9 @@ var jzt = (function(my){
      * @param foreground A foreground color
      * @param background A background color
      */
-    SpriteGrid.prototype.setColor = function(point, foreground, background) {
+    SpriteGrid.prototype.setColor = function (point, foreground, background) {
         var tile = this.tiles[point.x + point.y * this.width];
-        if(tile) {
+        if (tile) {
             tile.foreground = foreground || tile.foreground;
             tile.background = background || tile.background;
         }
@@ -529,7 +529,7 @@ var jzt = (function(my){
     /**
      * Clears this SpriteGrid's tiles.
      */
-    SpriteGrid.prototype.clear = function() {
+    SpriteGrid.prototype.clear = function () {
         this.tiles = [];
     };
 
@@ -541,14 +541,14 @@ var jzt = (function(my){
      * @param foreground A foreground Color
      * @param background A background Color
      */
-    SpriteGrid.prototype.addText = function(point, text, foreground, background) {
+    SpriteGrid.prototype.addText = function (point, text, foreground, background) {
 
         var textPoint = point.clone();
         var index;
 
         text = this.graphics.textToSprites(text);
 
-        for(index = 0; index < text.length; ++index) {
+        for (index = 0; index < text.length; index += 1) {
             textPoint.x = point.x + index;
             this.tiles[textPoint.x + textPoint.y * this.width] = {
                 sprite: text[index],
@@ -559,7 +559,7 @@ var jzt = (function(my){
 
     };
 
-    SpriteGrid.prototype.addArt = function(startingPoint, artString) {
+    SpriteGrid.prototype.addArt = function (startingPoint, artString) {
 
         var index;
         var point = startingPoint.clone();
@@ -567,29 +567,29 @@ var jzt = (function(my){
         var color;
 
         // For each character in our string
-        for(index = 0; index < artString.length; index++) {
+        for (index = 0; index < artString.length; index += 1) {
 
             // Grab our next symbol
             symbol = artString.charAt(index);
 
             // If it's a newline, break to the next line
-            if(symbol === '\n') {
-                point.x = startingPoint.x;
-                point.y++;
-            }
+            if (symbol === '\n') {
 
-            // Otherwise add our colored symbol
-            else {
+                point.x = startingPoint.x;
+                point.y += 1;
+
+            } else {
 
                 symbol = this.graphics.convertSpecialCharacter(symbol);
 
-                if(index+1 <= artString.length) {
-                    color = jzt.colors.getColor(artString.charAt(++index));
+                if (index + 1 <= artString.length) {
+                    index += 1;
+                    color = jzt.colors.getColor(artString.charAt(index));
                 }
 
                 this.setTile(point, symbol, color);
 
-                point.x++;
+                point.x += 1;
 
             }
 
@@ -599,11 +599,11 @@ var jzt = (function(my){
 
     /**
      * Retrieves a tile from this SpriteGrid at a specific position
-     * 
+     *
      * @param a Point for which to retrieve sprite data
      * @return An Object containing a sprite, foreground, and background color.
      */
-    SpriteGrid.prototype.getTile = function(point) {
+    SpriteGrid.prototype.getTile = function (point) {
         return this.tiles[point.x + point.y * this.width];
     };
 
@@ -613,22 +613,19 @@ var jzt = (function(my){
      * @param context A 2D graphics context
      * @param point a Point at which to draw our SpriteGrid
      */
-    SpriteGrid.prototype.draw = function(context, point) {
+    SpriteGrid.prototype.draw = function (context, point) {
 
         var tile;
         var spritePoint = new jzt.Point(0, 0);
-        for(spritePoint.x = 0; spritePoint.x < this.width; ++spritePoint.x) {
-            for(spritePoint.y = 0; spritePoint.y < this.height; ++spritePoint.y) {
+        for (spritePoint.x = 0; spritePoint.x < this.width; spritePoint.x += 1) {
+            for (spritePoint.y = 0; spritePoint.y < this.height; spritePoint.y += 1) {
                 tile = this.getTile(spritePoint);
-                if(tile) {
+                if (tile) {
 
-                    // If we have a sprite defined...
-                    if(tile.sprite) {
+                    // Determine if we have a sprite to draw, or just a background color
+                    if (tile.sprite) {
                         tile.sprite.draw(context, spritePoint.add(point), tile.foreground, tile.background);
-                    }
-
-                    // If we only have a color defined...
-                    else {
+                    } else {
                         this.graphics.fillTile(context, spritePoint.add(point), tile.background);
                     }
 
@@ -646,11 +643,11 @@ var jzt = (function(my){
      * @param owner A Graphics instance to which this Sprite belongs
      */
     function Sprite(point, owner) {
-        
-        if(!(this instanceof Sprite)) {
+
+        if (!(this instanceof Sprite)) {
             throw jzt.ConstructorError;
         }
-        
+
         this.point = point;
         this.owner = owner;
     }
@@ -664,7 +661,7 @@ var jzt = (function(my){
      * @param foreground A foreground color.
      * @param background A background color.
      */
-    Sprite.prototype.draw = function(context, point, foreground, background) {
+    Sprite.prototype.draw = function (context, point, foreground, background) {
 
         var blink;
         var destinationX;
@@ -674,7 +671,7 @@ var jzt = (function(my){
          * Back in the DOS days, a bright background would actually signal
          * that the foreground color should blink. We're doing the same.
          */
-        if(background && background.isLight()) {
+        if (background && background.isLight()) {
             blink = true;
             background = background.darken();
         }
@@ -683,13 +680,13 @@ var jzt = (function(my){
         destinationY = point.y * this.owner.TILE_SIZE.y;
 
         // Draw the background
-        if(background) {
+        if (background) {
             context.fillStyle = background.rgbValue;
             context.fillRect(destinationX, destinationY, this.owner.TILE_SIZE.x, this.owner.TILE_SIZE.y);
         }
 
         // If we aren't blinking, or if the blink state is off, draw our sprite
-        if(!blink || ! this.owner.blinkState) {
+        if (!blink || !this.owner.blinkState) {
 
             context.drawImage(this.owner.colorSpriteSources[foreground.index], this.point.x, this.point.y, this.owner.SPRITE_SIZE.x, this.owner.SPRITE_SIZE.y,
                 destinationX, destinationY, this.owner.TILE_SIZE.x, this.owner.TILE_SIZE.y);
@@ -702,22 +699,22 @@ var jzt = (function(my){
     my.Sprite = Sprite;
     my.SpriteGrid = SpriteGrid;
     return my;
-    
+
 }(jzt || {}));
 
-/* 
+/*
  * Color Module
  */
-jzt.colors = (function(my) {
-    
+jzt.colors = (function (my) {
+
     'use strict';
-    
+
     var colors;
     var cycle;
-    
+
     /**
      * Color represents a named RBG color.
-     * 
+     *
      * @param code A Hex character representing a DOS color code
      * @param name A name of this color
      * @param index An index for this color
@@ -726,20 +723,20 @@ jzt.colors = (function(my) {
      * @param b A blue value
      */
     function Color(code, name, index, r, g, b) {
-        
-        if(!(this instanceof Color)) {
+
+        if (!(this instanceof Color)) {
             throw jzt.ConstructorError;
         }
 
         /**
          * Converts a byte into a Hexidecimal character digit.
-         * 
+         *
          * @param number A number from 0 to 255 to convert
          * @return A hexidecimal representation
          */
         function byteToHex(number) {
             var value = number.toString(16);
-            if(value.length <= 1) {
+            if (value.length <= 1) {
                 value = '0' + value;
             }
             return value;
@@ -748,11 +745,11 @@ jzt.colors = (function(my) {
         this.code = code;
         this.name = name;
 
-        if(index !== undefined) {
+        if (index !== undefined) {
             this.index = index;
         }
 
-        if(r !== undefined && g !== undefined && b !== undefined) {
+        if (r !== undefined && g !== undefined && b !== undefined) {
             this.r = r;
             this.g = g;
             this.b = b;
@@ -762,30 +759,30 @@ jzt.colors = (function(my) {
 
     }
 
-    Color.prototype.darken = function() {
+    Color.prototype.darken = function () {
         var result = colors[this.index - 8];
         return result || this;
     };
 
-    Color.prototype.lighten = function() {
+    Color.prototype.lighten = function () {
         var result = colors[this.index + 8];
         return result || this;
     };
 
-    Color.prototype.isLight = function() {
+    Color.prototype.isLight = function () {
         return this.index >= 8;
     };
 
-    Color.prototype.isDark = function() {
+    Color.prototype.isDark = function () {
         return this.index < 8;
     };
 
     function CyclingColor(code, name, cycleSequence) {
-        
-        if(!(this instanceof CyclingColor)) {
+
+        if (!(this instanceof CyclingColor)) {
             throw jzt.ConstructorError;
         }
-        
+
         Color.call(this, code, name);
         this.cycleSequence = cycleSequence;
         this.code = code;
@@ -796,7 +793,7 @@ jzt.colors = (function(my) {
     CyclingColor.prototype = new Color();
     CyclingColor.prototype.constructor = CyclingColor;
 
-    CyclingColor.prototype.update = function() {
+    CyclingColor.prototype.update = function () {
         var sequenceColor;
         this.cycleIndex = this.cycleIndex + 1 < this.cycleSequence.length ? this.cycleIndex + 1 : 0;
         sequenceColor = this.cycleSequence[this.cycleIndex];
@@ -811,26 +808,26 @@ jzt.colors = (function(my) {
      * colors is an enumerated type representing defined DOS colors.
      */
     colors = [
-        new Color('0', 'Black',         0,  0,   0,   0  ),
+        new Color('0', 'Black',         0,  0,   0,   0),
         new Color('1', 'Blue',          1,  0,   0,   170),
-        new Color('2', 'Green',         2,  0,   170, 0  ),
+        new Color('2', 'Green',         2,  0,   170, 0),
         new Color('3', 'Cyan',          3,  0,   170, 170),
-        new Color('4', 'Red',           4,  170, 0,   0  ),
+        new Color('4', 'Red',           4,  170, 0,   0),
         new Color('5', 'Magenta',       5,  170, 0,   170),
-        new Color('6', 'Brown',         6,  170, 85,  0  ),
+        new Color('6', 'Brown',         6,  170, 85,  0),
         new Color('7', 'White',         7,  170, 170, 170),
-        new Color('8', 'Grey',          8,  85,  85,  85 ),
+        new Color('8', 'Grey',          8,  85,  85,  85),
         new Color('9', 'BrightBlue',    9,  85,  85,  255),
-        new Color('A', 'BrightGreen',   10, 85,  255, 85 ),
+        new Color('A', 'BrightGreen',   10, 85,  255, 85),
         new Color('B', 'BrightCyan',    11, 85,  255, 255),
-        new Color('C', 'BrightRed',     12, 255, 85,  85 ),
+        new Color('C', 'BrightRed',     12, 255, 85,  85),
         new Color('D', 'BrightMagenta', 13, 255, 85,  255),
-        new Color('E', 'Yellow',        14, 255, 255, 85 ),
+        new Color('E', 'Yellow',        14, 255, 255, 85),
         new Color('F', 'BrightWhite',   15, 255, 255, 255)
     ];
 
     cycle = new CyclingColor('*', 'Cycle', [colors[9], colors[10], colors[11], colors[12], colors[13], colors[14], colors[15]]);
-    
+
     function getColor(hexDigit) {
         return colors[parseInt(hexDigit, 16)];
     }
@@ -839,14 +836,13 @@ jzt.colors = (function(my) {
 
         var foregroundCode;
 
-        if(colorCode.length === 2) {
+        if (colorCode.length === 2) {
             foregroundCode = colorCode.charAt(1);
-        }
-        else if(colorCode.length === 1) {
+        } else if (colorCode.length === 1) {
             foregroundCode = colorCode.charAt(0);
         }
 
-        if(foregroundCode) {
+        if (foregroundCode) {
             return foregroundCode === '*' ? cycle : getColor(foregroundCode);
         }
 
@@ -858,7 +854,7 @@ jzt.colors = (function(my) {
 
         var backgroundCode;
 
-        if(colorCode.length === 2) {
+        if (colorCode.length === 2) {
             backgroundCode = colorCode.charAt(0);
             return backgroundCode === '*' ? undefined : getColor(backgroundCode);
         }
@@ -871,7 +867,7 @@ jzt.colors = (function(my) {
         return (background === undefined ? '*' : background.code) +
             (foreground === undefined ? 'E' : foreground instanceof CyclingColor ? '*' : foreground.code);
     }
-    
+
     /**
      * Assigns convenience accessors for each of the colors in a provided array
      * to a specified object.
@@ -879,11 +875,11 @@ jzt.colors = (function(my) {
      * @param colors An array of Color instances.
      * @param my An object to which to assign convenience accessors.
      */
-    (function(colors, my){
-        
+    (function (colors, my) {
+
         var colorIndex;
-        
-        for(colorIndex = 0; colorIndex < colors.length; ++colorIndex) {
+
+        for (colorIndex = 0; colorIndex < colors.length; colorIndex += 1) {
 
             // Regular version
             my[colors[colorIndex].name] = colors[colorIndex];
@@ -892,7 +888,7 @@ jzt.colors = (function(my) {
             my[colors[colorIndex].name.toUpperCase()] = colors[colorIndex];
 
         }
-        
+
     }(colors, my));
 
     // Exports
@@ -904,7 +900,7 @@ jzt.colors = (function(my) {
     my.Color = Color;
     my.CyclingColor = CyclingColor;
     my.Colors = colors;
-    
+
     return my;
-    
+
 }(jzt.colors || {}));
