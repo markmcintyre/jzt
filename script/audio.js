@@ -436,6 +436,12 @@ jzt = (function (my) {
      */
     Audio.prototype.setActive = function (activeValue) {
 
+        // Cancel all audio if we're about to unset it
+        if (this.active && !activeValue) {
+            this.cancel();
+        }
+
+        // Assign our new value
         this.active = (activeValue && (window.AudioContext || window.webkitAudioContext));
 
     };

@@ -3,17 +3,19 @@
  * Copyright © 2014 Orangeline Interactive, Inc.
  * @author Mark McIntyre
  */
+
+/*jslint vars:true */
 /*global requestAnimationFrame, cancelAnimationFrame */
 
 var jzt = (function (my) {
-    
+
     'use strict';
-    
+
     /**
      * Format version represents the version of the game format that can be loaded.
      */
     var formatVersion = '1.0.0';
-    
+
     /**
      * GameState is an enumerated type representing a state in our game's finite state
      * machine.
@@ -41,7 +43,7 @@ var jzt = (function (my) {
      * - settings: User-configurable settings object to observe
      */
     function Game(configuration) {
-        
+
         if (!(this instanceof Game)) {
             throw jzt.ConstructorError;
         }
@@ -83,7 +85,7 @@ var jzt = (function (my) {
         this.loadingAnimationIndex = 0;
         this.screenEffectIndex = 0;
         this.previousStates = [];
-        
+
         this.onLoadCallback = configuration.onLoadCallback;
         this.notificationListener = configuration.notificationListener;
         this.resources = {};
@@ -120,7 +122,7 @@ var jzt = (function (my) {
             audioMute: false,
             language: jzt.i18n.getLanguage()
         };
-        
+
         // If we were given a settings object, set ourselves up as a listener and send our initial values
         if (configuration.settings) {
 
@@ -133,7 +135,7 @@ var jzt = (function (my) {
         }
 
     }
-    
+
     Game.prototype.serialize = function() {
 
         var result = {};
@@ -167,9 +169,9 @@ var jzt = (function (my) {
         return result;
 
     };
-    
+
     Game.prototype.restartGame = function () {
-        this.loadGame(this.gameUrl || this.cachedGame);  
+        this.loadGame(this.gameUrl || this.cachedGame);
     };
 
     Game.prototype.loadGame = function(game) {
@@ -177,7 +179,7 @@ var jzt = (function (my) {
         var me = this;
         var response;
         var httpRequest;
-        
+
         this.keyboard.cancelInput();
         this.previousStates = [];
         this.setState(GameState.Loading);
@@ -233,11 +235,11 @@ var jzt = (function (my) {
 
         var index;
         var wasAlreadyRunning = false;
-        
+
         // Ensure we're capable of loading this version of the data
         if (!data.version || data.version !== this.version) {
             this.catestrophicError(jzt.i18n.getMessage('status.incompatible'));
-            return;   
+            return;
         }
 
         // If we're already running, end the game loop
@@ -268,7 +270,7 @@ var jzt = (function (my) {
             TORCHES: 0,
             SCORE: 0
         };
-        
+
         for (index in data.counters) {
             if (data.counters.hasOwnProperty(index) && !isNaN(data.counters[index])) {
                 this.counters[index] = data.counters[index];
@@ -392,14 +394,14 @@ var jzt = (function (my) {
         this.keyboard.cancelInput();
         this.setState(state);
     };
-    
+
     Game.prototype.restoreState = function () {
         if(this.previousStates.length > 0) {
             this.keyboard.cancelInput();
             this.setState(this.previousStates.pop());
         }
     };
-    
+
     /**
      * Assigns a GameState to this Game instance, changing the current state of this Game's finite
      * state machine.
@@ -513,7 +515,7 @@ var jzt = (function (my) {
             if (this.victoryBoard) {
                 this.setBoard(this.victoryBoard);
             }
-            
+
             // The player shouldn't be on the board
             if (this.player) {
                 this.player.remove();
@@ -600,7 +602,7 @@ var jzt = (function (my) {
 
     /**
      * Retrieves a deserialized Board instance by name.
-     * 
+     *
      * @param name A name of a Board.
      */
     Game.prototype.getBoard = function(name) {
@@ -615,7 +617,7 @@ var jzt = (function (my) {
      * Assigns a given board or board name as this Game's current board,
      * and relocates this Game's player to a provided location.
      *
-     * @param board A name of a Board or a Board instance itself to be 
+     * @param board A name of a Board or a Board instance itself to be
      *              set as this Game's active board.
      * @param playerPoint An optional Point to which to relocate this Game's
      *              player. If no such Point is provided, the player's old
@@ -692,7 +694,7 @@ var jzt = (function (my) {
 
         // If our game loop isn't already running
         if (! this.isRunning()) {
-            
+
             this.keyboard.initialize();
             this.previousStates = [];
 
@@ -732,7 +734,7 @@ var jzt = (function (my) {
      * Executes a single cycle of this Game's primary loop, effectively running
      * this Game for a single graphics tick.
      *
-     * TODO: Use performance.now() and the parameter passed to this function by 
+     * TODO: Use performance.now() and the parameter passed to this function by
      * requestAnimationFrame to do timing once browser support improves.
      */
     Game.prototype.loop = function() {
@@ -770,9 +772,9 @@ var jzt = (function (my) {
         }
 
     };
-    
+
     Game.prototype.isRunning = function () {
-        return this.loopId;   
+        return this.loopId;
     };
 
     /**
@@ -844,16 +846,16 @@ var jzt = (function (my) {
 
         // If it's game over, say so!
         else if (this.state === GameState.GameOver) {
-            
+
             this.currentBoard.update();
             this.currentBoard.setDisplayMessage(jzt.i18n.getMessage('status.gameover'));
-            
+
             // The user has an option to load a previous game now
             if (this.keyboard.isPressed(this.keyboard.R) || this.keyboard.isPressed(this.keyboard.ENTER)) {
                 this.fileManagement.dialogType = jzt.FileManagement.Type.OPEN;
                 this.pushState(GameState.FileManagement);
             }
-            
+
         }
 
         // If we're on the title screen...
@@ -869,7 +871,7 @@ var jzt = (function (my) {
                 this.keyboard.cancelKey(this.keyboard.SPACE);
                 this.setState(GameState.Playing);
             }
-            
+
             // The user may also want to load a previous game
             else if (this.keyboard.isPressed(this.keyboard.R)) {
                 this.fileManagement.dialogType = jzt.FileManagement.Type.OPEN;
@@ -882,7 +884,7 @@ var jzt = (function (my) {
         else if (this.state === GameState.Victory) {
 
             this.currentBoard.update();
-            
+
             // The user can load a previous game at this point
             if (this.keyboard.isPressed(this.keyboard.R) || this.keyboard.isPressed(this.keyboard.ENTER)) {
                 this.fileManagement.dialogType = jzt.FileManagement.Type.OPEN;
@@ -1179,7 +1181,7 @@ var jzt = (function (my) {
     };
 
     Game.prototype.onSettingsChanged = function (settings) {
-        
+
         if (settings.hasOwnProperty('audioMute')) {
             this.settings.audioMute = settings.audioMute;
             this.resources.audio.setActive(!settings.audioMute && (this.state !== GameState.GameOver));
@@ -1196,11 +1198,11 @@ var jzt = (function (my) {
         }
 
     };
-      
+
     // Exports
     my.GameState = GameState;
     my.Game = Game;
-    
+
     return my;
-    
+
 }(jzt || {}));
