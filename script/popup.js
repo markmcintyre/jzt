@@ -208,14 +208,18 @@ jzt.ui = (function (my) {
             grid.addText(new jzt.Point(1, 3), '└─┬┴──┐│ Shareware', jzt.colors.White);
             grid.addText(new jzt.Point(1, 4), '  │ o ├┘ Unprofessionals', jzt.colors.White);
             grid.addText(new jzt.Point(1, 5), '  └─┴─┘', jzt.colors.White);
+        }).then(300, function () {
             grid.addText(new jzt.Point(1, 7), 'x286 BIOS Version 2.1.16', jzt.colors.White);
-        }).then(500, function () {
+        }).then(400, function () {
             grid.addText(new jzt.Point(1, 9), 'Initializing Nostalgia Boot Agent v1.4.14', jzt.colors.White);
-            grid.addText(new jzt.Point(1, 10), 'Nostalgia Boot Agent (v1.4.14) Loaded.', jzt.colors.White);
+            game.resources.audio.play('i++c');
         }).then(600, function () {
-            grid.addText(new jzt.Point(1, 12), 'Starting Markrosoft DOS...', jzt.colors.White);
+            grid.addText(new jzt.Point(1, 10), 'Nostalgia Boot Agent (v1.4.14) Loaded.', jzt.colors.White);
         }).then(700, function () {
+            grid.addText(new jzt.Point(1, 12), 'Starting Markrosoft DOS...', jzt.colors.White);
+        }).then(1200, function () {
             grid.addText(new jzt.Point(1, 14), 'Running autoexec.bat', jzt.colors.White);
+        }).then(1300, function () {
             grid.addText(new jzt.Point(1, 15), 'C:\\>cd JZT', jzt.colors.White);
             grid.addText(new jzt.Point(1, 16), 'C:\\JZT\\>jzt.exe', jzt.colors.White);
         }).then(2000, function () {
