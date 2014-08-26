@@ -8,11 +8,11 @@
         <link rel="stylesheet" type="text/css" href="css/main.css" />
     </head>
     <body>
-	
+
         <header>
             <h1><a href="/">JZT</a></h1>
             <h2>A Nostalgic ZZT Clone for the Web</h2>
-            
+
             <nav>
                 <ul>
                     <li>About</li>
@@ -20,16 +20,16 @@
                     <li>Community</li>
                 </ul>
             </nav>
-            
+
         </header>
-        
+
         <div id="content">
 
             <div id="unsupported-browser" class="warning"><span>⚠</span> Upgrade your browser to play.</div>
             <canvas id="jzt" width="800" height="640"></canvas>
 
             <aside>
-                
+
                 <section id="help">
 
                     <h2>How to Play</h2>
@@ -80,7 +80,7 @@
 
                     </div>
                 </section>
-                
+
                 <section id="settings">
                     <h2>Settings</h2>
                     <label><input type="checkbox" name="audio-mute" /> Mute</label><br/>
@@ -90,7 +90,7 @@
             </aside>
 
         </div>
-        
+
         <footer>
             <p><a href="http://www.ornj.net/">&copy; {{JZT:YEAR}}</a></p>
         </footer>
@@ -99,31 +99,31 @@
         <script type="text/javascript">
 
             (function () {
-                
+
                 var settingsElement = document.getElementById('settings');
                 var fullscreenElement = settingsElement.querySelector('input[name=\'fullscreen\']');
                 var jztElement = document.getElementById('jzt');
-                
+
                 var game = new jzt.Game({
                     canvasElement: jztElement,
-                    settings: new jztux.Settings(settingsElement),
                     onLoadCallback: function(success) {
                         if (success) {
                             this.run('village-of-jzt.json');
+                            this.observeSettings(new jztux.Settings(settingsElement));
                         } else {
                             document.getElementById('unsupported-browser').style.display = 'block';
                             jztElement.parentNode.removeChild(jztElement);
                         }
                     }
                 });
-                
+
                 if (jztux.isFullscreenSupported()) {
                     jztux.attachFullscreenHandler(fullscreenElement, jztElement);
                 } else {
                     fullscreenElement = fullscreenElement.parentNode;
                     fullscreenElement.parentNode.removeChild(fullscreenElement);
                 }
-                
+
             }());
         </script>
 

@@ -124,18 +124,17 @@ jzt = (function (my) {
             language: jzt.i18n.getLanguage()
         };
 
-        // If we were given a settings object, set ourselves up as a listener and send our initial values
-        if (configuration.settings) {
-
-            // Assign our callback
-            configuration.settings.addListener(this.onSettingsChanged.bind(this));
-
-            // Send our initial values
-            configuration.settings.initialize(this.settings);
-
-        }
-
     }
+
+    Game.prototype.observeSettings = function (settings) {
+
+        // Assign our callback
+        settings.addListener(this.onSettingsChanged.bind(this));
+
+        // Send our initial values
+        settings.initialize(this.settings);
+
+    };
 
     Game.prototype.serialize = function () {
 
