@@ -1,66 +1,66 @@
 <!DOCTYPE html>
 <head>
-	<title>Parser Test</title>
+    <title>Parser Test</title>
     <link rel="stylesheet" href="qunit.css">
 </head>
 <body>
-	
+
     <div id="qunit"></div>
     <div id="qunit-fixture"></div>
     <script src="qunit.js"></script>
     <script type="text/javascript" src="../script/parser.js"></script>
-    
-	<script type="text/javascript">
-        
+
+    <script type="text/javascript">
+
         test("Number", function(){
             var number = new jzt.parser.Number();
-            ok(number.qualifies("100"), "100 qualifies");
-            ok(!number.qualifies("abs"), "abc doesn't qualify");
-            ok(!number.qualifies(undefined), "undefined doesn't qualify");
+            ok(number.qualifies({name: 'NUMBER', value: 100}), "100 qualifies");
+            ok(!number.qualifies({name: 'NUMBER', value: 'abc'}), "abc doesn't qualify");
+            ok(!number.qualifies({value: undefined}), "undefined doesn't qualify");
         });
-	
+
         test("Literal", function(){
             var literal = new jzt.parser.Literal("hello");
-            ok(literal.qualifies("hello"), "hello qualifies");
-            ok(literal.qualifies("Hello"), "Hello qualifies");
-            ok(literal.qualifies("HeLlO"), "HeLlO qualifies");
-            ok(!literal.qualifies("blah"), "blah doesn't qualify");
+            ok(literal.qualifies({value: 'hello'}), "hello qualifies");
+            ok(literal.qualifies({value: 'Hello'}), "Hello qualifies");
+            ok(literal.qualifies({value: 'HeLlO'}), "HeLlO qualifies");
+            ok(!literal.qualifies({value: 'blah'}), "blah doesn't qualify");
             ok(!literal.qualifies(undefined), "undefined doesn't qualify");
         });
-		
-		test("Case Sensitive Literal", function(){
+
+        test("Case Sensitive Literal", function(){
             var caseLiteral = new jzt.parser.Literal("hello", true);
-            ok(caseLiteral.qualifies("hello"), "hello qualifies");
-            ok(!caseLiteral.qualifies("Hello"), "Hello doesn't qualify");
-            ok(!caseLiteral.qualifies("blah"), "blah doesn't qualify");
+            ok(caseLiteral.qualifies({value: "hello"}), "hello qualifies");
+            ok(!caseLiteral.qualifies({value: "Hello"}), "Hello doesn't qualify");
+            ok(!caseLiteral.qualifies({value: "blah"}), "blah doesn't qualify");
             ok(!caseLiteral.qualifies(undefined), "undefined doesn't qualify");
         });
-        
+
         test("Word", function(){
             var word = new jzt.parser.Word();
-            ok(word.qualifies("hello"), "hello qualifies");
-            ok(!word.qualifies("hello world"), "hello word doesn't qualify");
-            ok(!word.qualifies("hello!"), "hello! doesn't qualify");
-            ok(!word.qualifies("\"hello\""), "\"hello\" doesn't qualify");
-            ok(word.qualifies("hello1"), "hello1 qualifies");
-            ok(!word.qualifies("1hello"), "1hello doesn't qualify");
-            ok(word.qualifies("_hello"), "_hello qualifies");
-            ok(!word.qualifies(" hello"), "leading space doesn't qualify");
-            ok(word.qualifies("a"), "a qualifies");
-            ok(!word.qualifies(""), "empty string doesn't qualify");
-            ok(!word.qualifies(" "), "space doesn't qualify");
-            ok(!word.qualifies("1"), "1 doesn't qualify");
+            ok(word.qualifies({value: "hello"}), "hello qualifies");
+            ok(!word.qualifies({value: "hello world"}), "hello word doesn't qualify");
+            ok(!word.qualifies({value: "hello!"}), "hello! doesn't qualify");
+            ok(!word.qualifies({value: "\"hello\""}), "\"hello\" doesn't qualify");
+            ok(word.qualifies({value: "hello1"}), "hello1 qualifies");
+            ok(!word.qualifies(value: {"1hello"}), "1hello doesn't qualify");
+            ok(word.qualifies({value: "_hello"}), "_hello qualifies");
+            ok(!word.qualifies({value: " hello"}), "leading space doesn't qualify");
+            ok(word.qualifies({value: "a"}), "a qualifies");
+            ok(!word.qualifies({value: ""}), "empty string doesn't qualify");
+            ok(!word.qualifies({value: " "}), "space doesn't qualify");
+            ok(!word.qualifies({value: "1"}), "1 doesn't qualify");
             ok(!word.qualifies(undefined), "undefined doesn't qualify");
         });
-		
-		test("NewLine", function(){
+
+        test("NewLine", function(){
             var nl = new jzt.parser.NewLine();
             ok(!nl.qualifies("\r"), "carriage return doesn't qualify");
             ok(nl.qualifies("\n"), "newline qualifies");
             ok(!nl.qualifies(" "), "space doesn't qualify");
             ok(!nl.qualifies(undefined), "undefined doesn't qualify");
         });
-	
-	</script>
-	
+
+    </script>
+
 </body>

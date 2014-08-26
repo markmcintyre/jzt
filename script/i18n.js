@@ -4,17 +4,20 @@
  * @author Mark McIntyre
  */
 
-var jzt = jzt || {};
+/*jslint vars:true */
+
+var jzt;
+jzt = jzt || {};
 jzt.i18n = (function (my) {
-    
+
     'use strict';
-    
+
     var DEFAULT_LANGUAGE = 'en';
     var MESSAGES = {
-    
+
         // ENGLISH-LANGUAGE MESSAGES
         en: {
-            
+
             keys: {
                 'collect': 'You now have the {0} key.',
                 'toomany': 'You already have a {0} key.',
@@ -80,10 +83,10 @@ jzt.i18n = (function (my) {
                 'restart': 'Restart Game'
             }
         },
-        
+
         // FRENCH-LANGUAGE MESSAGES
         fr: {
-            
+
             keys: {
                 'collect': 'Vous avez maintenant la clé {0}.',
                 'toomany': 'Vous avez déja une clé {0}.',
@@ -149,12 +152,12 @@ jzt.i18n = (function (my) {
                 'restart': 'Récommencer'
             }
         }
-    
+
     };
-    
+
     var currentLanguage;
     var currentMessages;
-    
+
     function findMessage(source, key) {
 
         var path = key.split('.');
@@ -164,15 +167,16 @@ jzt.i18n = (function (my) {
         for (index = 0; index < path.length; index += 1) {
             if (current[path[index]] === undefined) {
                 return undefined;
-            } else {
-                current = current[path[index]];
             }
+
+            current = current[path[index]];
+
         }
 
         return current;
 
     }
-    
+
     function getMessage(key) {
 
         var argumentIndex;
@@ -217,7 +221,7 @@ jzt.i18n = (function (my) {
 
     // Set our default language right off the bat
     setLanguage(DEFAULT_LANGUAGE);
-    
+
     // Exports
     my.DefaultLanguage = DEFAULT_LANGUAGE;
     my.Messages = MESSAGES;
@@ -226,7 +230,7 @@ jzt.i18n = (function (my) {
     my.getLanguage = getLanguage;
     my.setLanguage = setLanguage;
     my.getBoardMessage = getBoardMessage;
-    
+
     return my;
-    
+
 }(jzt.i18n || {}));

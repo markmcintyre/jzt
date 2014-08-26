@@ -4,17 +4,20 @@
  * @author Mark McIntyre
  */
 
-var jzt = jzt || {};
-jzt.parser = (function(my){
-    
+/*jslint vars: true */
+
+var jzt;
+jzt = jzt || {};
+jzt.parser = (function (my) {
+
     'use strict';
-    
-    /* 
+
+    /*
      * Assembly
      */
     function Assembly(tokens) {
-        
-        if(!(this instanceof Assembly)) {
+
+        if (!(this instanceof Assembly)) {
             throw jzt.ConstructorError;
         }
 
@@ -25,7 +28,7 @@ jzt.parser = (function(my){
 
     }
 
-    Assembly.prototype.clone = function() {
+    Assembly.prototype.clone = function () {
         var result = new Assembly();
         result.tokens = this.tokens.slice(0);
         result.index = this.index;
@@ -34,69 +37,71 @@ jzt.parser = (function(my){
         return result;
     };
 
-    Assembly.prototype.current = function() {
+    Assembly.prototype.current = function () {
         return this.tokens[this.index];
     };
-    
-    Assembly.prototype.peek = function() {
-        return this.stack[this.stack.length-1];
+
+    Assembly.prototype.peek = function () {
+        return this.stack[this.stack.length - 1];
     };
-    
-    Assembly.prototype.pop = function() {
+
+    Assembly.prototype.pop = function () {
         return this.stack.pop();
     };
-    
-    Assembly.prototype.push = function(item) {
+
+    Assembly.prototype.push = function (item) {
         this.stack.push(item);
     };
 
-    Assembly.prototype.isDone = function() {
+    Assembly.prototype.isDone = function () {
         return this.index >= this.tokens.length;
     };
 
-    Assembly.prototype.next = function() {
-        return this.tokens[this.index++];
+    Assembly.prototype.next = function () {
+        var result = this.tokens[this.index];
+        this.index += 1;
+        return result;
     };
 
     /*
      * Parser
      */
     function Parser() {
-        if(!(this instanceof Parser)) {
+        if (!(this instanceof Parser)) {
             throw jzt.ConstructorError;
         }
         this.assembler = undefined;
     }
 
-    Parser.prototype.match = function() {
+    Parser.prototype.match = function () {
         return [];
     };
 
-    Parser.prototype.bestMatch = function(assembly) {
+    Parser.prototype.bestMatch = function (assembly) {
         var result = this.matchAndAssemble([assembly]);
         return this.findBestAssembly(result);
     };
 
-    Parser.prototype.completeMatch = function(assembly) {
+    Parser.prototype.completeMatch = function (assembly) {
         var result = this.bestMatch(assembly);
         var token;
-        if(result !== undefined && result.isDone()) {
+        if (result !== undefined && result.isDone()) {
             return result;
         }
-        
+
         token = result.current();
         throw 'Unexpected token \'' + token.value + '\' on line ' + token.line + ', column ' + token.column;
     };
 
-    Parser.prototype.matchAndAssemble = function(assemblies) {
+    Parser.prototype.matchAndAssemble = function (assemblies) {
 
         var result = this.match(assemblies);
         var index;
 
         // If we've got an assembler, have it assemble
-        if(this.assembler) {
+        if (this.assembler) {
 
-            for(index = 0; index < result.length; ++index) {
+            for (index = 0; index < result.length; index += 1) {
                 this.assembler.assemble(result[index]);
             }
         }
@@ -105,20 +110,19 @@ jzt.parser = (function(my){
 
     };
 
-    Parser.prototype.findBestAssembly = function(assemblies) {
+    Parser.prototype.findBestAssembly = function (assemblies) {
 
         var bestAssembly;
         var index;
         var assembly;
 
-        for(index = 0; index < assemblies.length; ++index) {
+        for (index = 0; index < assemblies.length; index += 1) {
 
             assembly = assemblies[index];
 
-            if(!bestAssembly) {
+            if (!bestAssembly) {
                 bestAssembly = assembly;
-            }
-            else if(assembly.index > bestAssembly.index) {
+            } else if (assembly.index > bestAssembly.index) {
                 bestAssembly = assembly;
             }
         }
@@ -127,11 +131,11 @@ jzt.parser = (function(my){
 
     };
 
-    Parser.prototype.cloneAssemblies = function(assemblies) {
+    Parser.prototype.cloneAssemblies = function (assemblies) {
 
         var result = [], index, assembly;
 
-        for(index = 0; index < assemblies.length; ++index) {
+        for (index = 0; index < assemblies.length; index += 1) {
             assembly = assemblies[index];
             result.push(assembly.clone());
         }
@@ -144,12 +148,12 @@ jzt.parser = (function(my){
      * Repetition
      */
     function Repetition(subParser) {
-        
-        if(!(this instanceof Repetition)) {
+
+        if (!(this instanceof Repetition)) {
             throw jzt.ConstructorError;
         }
-        
-        if(!subParser) {
+
+        if (!subParser) {
             throw 'Subparser is required.';
         }
         this.subParser = subParser;
@@ -159,20 +163,20 @@ jzt.parser = (function(my){
     Repetition.prototype = new Parser();
     Repetition.prototype.constructor = Repetition;
 
-    Repetition.prototype.match = function(assemblies) {
+    Repetition.prototype.match = function (assemblies) {
 
         var index, assembly, result;
-        
+
         // If we have a preassember, assemble now
-        if(this.preAssembler !== undefined) {
-            for(index = 0; index < assemblies.length; ++index) {
+        if (this.preAssembler !== undefined) {
+            for (index = 0; index < assemblies.length; index += 1) {
                 assembly = assemblies[index];
                 this.preAssembler.assemble(assembly);
             }
         }
 
         result = this.cloneAssemblies(assemblies);
-        while(assemblies.length > 0) {
+        while (assemblies.length > 0) {
             assemblies = this.subParser.matchAndAssemble(assemblies);
             result = result.concat(assemblies);
         }
@@ -185,7 +189,7 @@ jzt.parser = (function(my){
      * Empty
      */
     function Empty() {
-        if(!(this instanceof Empty)) {
+        if (!(this instanceof Empty)) {
             throw jzt.ConstructorError;
         }
         this.assembler = undefined;
@@ -193,7 +197,7 @@ jzt.parser = (function(my){
     Empty.prototype = new Parser();
     Empty.prototype.constructor = Empty;
 
-    Empty.prototype.match = function(assemblies) {
+    Empty.prototype.match = function (assemblies) {
         return this.cloneAssemblies(assemblies);
     };
 
@@ -201,7 +205,7 @@ jzt.parser = (function(my){
      * CollectionParser
      */
     function CollectionParser() {
-        if(!(this instanceof CollectionParser)) {
+        if (!(this instanceof CollectionParser)) {
             throw jzt.ConstructorError;
         }
         this.assembler = undefined;
@@ -210,11 +214,11 @@ jzt.parser = (function(my){
     CollectionParser.prototype = new Parser();
     CollectionParser.constructor = CollectionParser;
 
-    CollectionParser.prototype.add = function(subParser) {
+    CollectionParser.prototype.add = function (subParser) {
         this.subParsers.push(subParser);
     };
-    
-    CollectionParser.prototype.addDiscard = function(subParser) {
+
+    CollectionParser.prototype.addDiscard = function (subParser) {
         subParser.discard = true;
         this.subParsers.push(subParser);
     };
@@ -223,7 +227,7 @@ jzt.parser = (function(my){
      * Sequence
      */
     function Sequence() {
-        if(!(this instanceof Sequence)) {
+        if (!(this instanceof Sequence)) {
             throw jzt.ConstructorError;
         }
         this.assembler = undefined;
@@ -232,7 +236,7 @@ jzt.parser = (function(my){
     Sequence.prototype = new CollectionParser();
     Sequence.prototype.constructor = Sequence;
 
-    Sequence.prototype.match = function(assemblies) {
+    Sequence.prototype.match = function (assemblies) {
 
         var started = false;
         var previousResult = assemblies;
@@ -240,13 +244,13 @@ jzt.parser = (function(my){
         var index;
         var subParser;
 
-        for(index = 0; index < this.subParsers.length; ++index) {
+        for (index = 0; index < this.subParsers.length; index += 1) {
 
             subParser = this.subParsers[index];
 
             result = subParser.matchAndAssemble(result);
-            if(result.length <= 0) {
-                if(started) {
+            if (result.length <= 0) {
+                if (started) {
                     this.determineTokenError(previousResult);
                 }
                 return result;
@@ -261,23 +265,25 @@ jzt.parser = (function(my){
 
     };
 
-    Sequence.prototype.determineTokenError = function(previousResult) {
+    Sequence.prototype.determineTokenError = function (previousResult) {
+
         var best = this.findBestAssembly(previousResult);
         var token;
-        if(best.current() === undefined) {
+
+        if (best.current() === undefined) {
             throw 'Token expected';
         }
-        else {
-            token = best.current();
-            throw 'Unexpected token \'' + token.value + '\' on line ' + token.line + ', column ' + token.column;
-        }
+
+        token = best.current();
+        throw 'Unexpected token \'' + token.value + '\' on line ' + token.line + ', column ' + token.column;
+
     };
 
     /*
      * Alternation
      */
     function Alternation() {
-        if(!(this instanceof Alternation)) {
+        if (!(this instanceof Alternation)) {
             throw jzt.ConstructorError;
         }
         this.assembler = undefined;
@@ -286,7 +292,7 @@ jzt.parser = (function(my){
     Alternation.prototype = new CollectionParser();
     Alternation.prototype.constructor = Alternation;
 
-    Alternation.prototype.match = function(assemblies) {
+    Alternation.prototype.match = function (assemblies) {
 
         var result = [];
         var error;
@@ -294,21 +300,20 @@ jzt.parser = (function(my){
         var alternationResult;
         var index;
 
-        for(index = 0; index < this.subParsers.length; ++index) {
+        for (index = 0; index < this.subParsers.length; index += 1) {
             subParser = this.subParsers[index];
             try {
                 alternationResult = subParser.matchAndAssemble(assemblies);
                 result = result.concat(alternationResult);
-            }
-            catch(tokenError) {
+            } catch (tokenError) {
                 error = tokenError;
             }
         }
 
-        if(result.length <=0 && error !== undefined) {
+        if (result.length <= 0 && error !== undefined) {
             throw error;
         }
-        
+
         return result;
 
     };
@@ -317,7 +322,7 @@ jzt.parser = (function(my){
      * Terminal
      */
     function Terminal() {
-        if(!(this instanceof Terminal)) {
+        if (!(this instanceof Terminal)) {
             throw jzt.ConstructorError;
         }
         this.assembler = undefined;
@@ -327,18 +332,18 @@ jzt.parser = (function(my){
     Terminal.prototype.constructor = Terminal;
 
 
-    Terminal.prototype.qualifies = function() {
+    Terminal.prototype.qualifies = function () {
         return true;
     };
 
-    Terminal.prototype.match = function(assemblies) {
+    Terminal.prototype.match = function (assemblies) {
 
         var result = [], index, assembly, assemblyResult;
 
-        for(index = 0; index < assemblies.length; ++index) {
+        for (index = 0; index < assemblies.length; index += 1) {
             assembly = assemblies[index];
             assemblyResult = this.matchAssembly(assembly);
-            if(assemblyResult !== undefined) {
+            if (assemblyResult !== undefined) {
                 result.push(assemblyResult);
             }
         }
@@ -347,18 +352,18 @@ jzt.parser = (function(my){
 
     };
 
-    Terminal.prototype.matchAssembly = function(assembly) {
+    Terminal.prototype.matchAssembly = function (assembly) {
 
-        if(assembly.isDone()) {
+        if (assembly.isDone()) {
             return undefined;
         }
 
-        if(this.qualifies(assembly.current())) {
+        if (this.qualifies(assembly.current())) {
 
             var result = assembly.clone();
 
             var token = result.next();
-            if(!this.discard) {
+            if (!this.discard) {
                 result.stack.push(token);
             }
             return result;
@@ -372,7 +377,7 @@ jzt.parser = (function(my){
      *  Number
      */
     function Number() {
-        if(!(this instanceof Number)) {
+        if (!(this instanceof Number)) {
             throw jzt.ConstructorError;
         }
         this.assembler = undefined;
@@ -380,7 +385,7 @@ jzt.parser = (function(my){
     }
     Number.prototype = new Terminal();
 
-    Number.prototype.qualifies = function(token) {
+    Number.prototype.qualifies = function (token) {
         return token.name === 'NUMBER' && !isNaN(token.value);
     };
 
@@ -388,14 +393,14 @@ jzt.parser = (function(my){
      * Literal
      */
     function Literal(literalValue, caseSensitive) {
-        if(!(this instanceof Literal)) {
+        if (!(this instanceof Literal)) {
             throw jzt.ConstructorError;
         }
         this.assembler = undefined;
         this.caseSensitive = caseSensitive;
         this.literalValue = literalValue;
         this.discard = false;
-        if(!caseSensitive) {
+        if (!caseSensitive) {
             this.literalValue = this.literalValue.toUpperCase();
         }
 
@@ -403,23 +408,23 @@ jzt.parser = (function(my){
     Literal.prototype = new Terminal();
     Literal.prototype.constructor = Literal;
 
-    Literal.prototype.qualifies = function(token) {
+    Literal.prototype.qualifies = function (token) {
 
         var value = token.value;
-        
-        if(typeof value === 'string' && !this.caseSensitive) {
+
+        if (typeof value === 'string' && !this.caseSensitive) {
             value = value.toUpperCase();
         }
-        
+
         return this.literalValue === value;
-        
+
     };
 
     /*
      * Word
      */
-    function Word(){
-        if(!(this instanceof Word)) {
+    function Word() {
+        if (!(this instanceof Word)) {
             throw jzt.ConstructorError;
         }
         this.assembler = undefined;
@@ -427,21 +432,21 @@ jzt.parser = (function(my){
     }
     Word.prototype = new Terminal();
     Word.prototype.constructor = Word;
-    Word.prototype.qualifies = function(token) {
-        
-        if(token.name === 'WORD') {
+    Word.prototype.qualifies = function (token) {
+
+        if (token.name === 'WORD') {
             return isNaN(parseInt(token.value, 10));
         }
-        
+
         return false;
-        
+
     };
 
     /*
      * String
      */
     function String() {
-        if(!(this instanceof String)) {
+        if (!(this instanceof String)) {
             throw jzt.ConstructorError;
         }
         this.assembler = undefined;
@@ -449,15 +454,15 @@ jzt.parser = (function(my){
     }
     String.prototype = new Terminal();
     String.prototype.constructor = String;
-    String.prototype.qualifies = function(token) {
+    String.prototype.qualifies = function (token) {
         return token.name === 'STRING';
     };
 
     /*
      * NewLine
      */
-    function NewLine(){
-        if(!(this instanceof NewLine)) {
+    function NewLine() {
+        if (!(this instanceof NewLine)) {
             throw jzt.ConstructorError;
         }
         this.assembler = undefined;
@@ -465,7 +470,7 @@ jzt.parser = (function(my){
     }
     NewLine.prototype = new Terminal();
     NewLine.prototype.constructor = NewLine;
-    NewLine.prototype.qualifies = function(token) {
+    NewLine.prototype.qualifies = function (token) {
         return token.name === 'NEWLINE';
     };
 
@@ -483,5 +488,5 @@ jzt.parser = (function(my){
     my.String = String;
     my.Word = Word;
     return my;
-    
+
 }(jzt.parser || {}));

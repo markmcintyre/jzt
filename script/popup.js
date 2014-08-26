@@ -190,6 +190,7 @@ jzt.ui = (function (my) {
     function Splash(game) {
 
         var grid;
+        var colors = jzt.colors;
 
         this.game = game;
         this.animator = new Animator();
@@ -203,25 +204,25 @@ jzt.ui = (function (my) {
 
         // Define our animation
         this.animator.start(function () {
-            grid.addText(new jzt.Point(1, 1), '┌───┐', jzt.colors.White);
-            grid.addText(new jzt.Point(1, 2), '│ o┌┴──┐ Association of', jzt.colors.White);
-            grid.addText(new jzt.Point(1, 3), '└─┬┴──┐│ Shareware', jzt.colors.White);
-            grid.addText(new jzt.Point(1, 4), '  │ o ├┘ Unprofessionals', jzt.colors.White);
-            grid.addText(new jzt.Point(1, 5), '  └─┴─┘', jzt.colors.White);
+            grid.addText(new jzt.Point(1, 1), '┌───┐', colors.White);
+            grid.addText(new jzt.Point(1, 2), '│ o┌┴──┐ Association of', colors.White);
+            grid.addText(new jzt.Point(1, 3), '└─┬┴──┐│ Shareware', colors.White);
+            grid.addText(new jzt.Point(1, 4), '  │ o ├┘ Unprofessionals', colors.White);
+            grid.addText(new jzt.Point(1, 5), '  └─┴─┘', colors.White);
         }).then(300, function () {
-            grid.addText(new jzt.Point(1, 7), 'x286 BIOS Version 2.1.16', jzt.colors.White);
+            grid.addText(new jzt.Point(1, 7), 'x286 BIOS Version 2.1.16', colors.White);
         }).then(400, function () {
-            grid.addText(new jzt.Point(1, 9), 'Initializing Nostalgia Boot Agent v1.4.14', jzt.colors.White);
+            grid.addText(new jzt.Point(1, 9), 'Initializing Nostalgia Boot Agent v1.4.14', colors.White);
             game.resources.audio.play('i++c');
         }).then(600, function () {
-            grid.addText(new jzt.Point(1, 10), 'Nostalgia Boot Agent (v1.4.14) Loaded.', jzt.colors.White);
+            grid.addText(new jzt.Point(1, 10), 'Nostalgia Boot Agent (v1.4.14) Loaded.', colors.White);
         }).then(700, function () {
-            grid.addText(new jzt.Point(1, 12), 'Starting Markrosoft DOS...', jzt.colors.White);
+            grid.addText(new jzt.Point(1, 12), 'Starting Markrosoft DOS...', colors.White);
         }).then(1200, function () {
-            grid.addText(new jzt.Point(1, 14), 'Running autoexec.bat', jzt.colors.White);
+            grid.addText(new jzt.Point(1, 14), 'Running autoexec.bat', colors.White);
         }).then(1300, function () {
-            grid.addText(new jzt.Point(1, 15), 'C:\\>cd JZT', jzt.colors.White);
-            grid.addText(new jzt.Point(1, 16), 'C:\\JZT\\>jzt.exe', jzt.colors.White);
+            grid.addText(new jzt.Point(1, 15), 'C:\\>cd JZT', colors.White);
+            grid.addText(new jzt.Point(1, 16), 'C:\\JZT\\>jzt.exe', colors.White);
         }).then(2000, function () {
             grid.clear();
             grid.addArt(new jzt.Point(7, 5),
@@ -236,8 +237,9 @@ jzt.ui = (function (my) {
                 ' 0 0▀F▄F▀9▀9▀9▀9▄F▀F 0▀F▄F▀9▀9▀9▀9▀9▀9▄F▄F▄F▄F▄F▀F F F▀F▄F▄F▄F▀F\n' +
                 ' 0 0 0 0▀F▀F▀F▀F F F F F F▀F▀F▀F▀F▀F▀F'
                 );
-            grid.addText(new jzt.Point(13, 18), 'Created by Mark McIntyre', jzt.colors.Grey);
-            grid.addText(new jzt.Point(6, 19), '(c) 2014 Orangeline Interactive, Inc.', jzt.colors.Grey);
+            grid.addText(new jzt.Point(46 - jzt.meta.version.length, 15), jzt.meta.version, colors.Grey);
+            grid.addText(new jzt.Point(13, 18), 'Created by Mark McIntyre', colors.Grey);
+            grid.addText(new jzt.Point(6, 19), '(c) ' + jzt.meta.date.getFullYear() + ' Orangeline Interactive, Inc.', colors.Grey);
         }).end(4000);
 
     }

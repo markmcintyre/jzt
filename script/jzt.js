@@ -4,10 +4,11 @@
  * @author Mark McIntyre
  */
 
-/*jslint vars:true */
+/*jslint browser: true, vars:true */
 /*global requestAnimationFrame, cancelAnimationFrame */
 
-var jzt = (function (my) {
+var jzt;
+jzt = (function (my) {
 
     'use strict';
 
@@ -61,7 +62,7 @@ var jzt = (function (my) {
         if ((typeof Function.prototype.bind !== 'function') || (!window.CanvasRenderingContext2D)) {
 
             // If we were given a callback, tell it that the load was unsuccessful.
-            if(typeof configuration.onLoadCallback === 'function') {
+            if (typeof configuration.onLoadCallback === 'function') {
                 configuration.onLoadCallback(false);
             }
 
@@ -136,7 +137,7 @@ var jzt = (function (my) {
 
     }
 
-    Game.prototype.serialize = function() {
+    Game.prototype.serialize = function () {
 
         var result = {};
         var index;
@@ -174,7 +175,7 @@ var jzt = (function (my) {
         this.loadGame(this.gameUrl || this.cachedGame);
     };
 
-    Game.prototype.loadGame = function(game) {
+    Game.prototype.loadGame = function (game) {
 
         var me = this;
         var response;
@@ -190,22 +191,19 @@ var jzt = (function (my) {
 
             try {
                 httpRequest = new XMLHttpRequest();
-                httpRequest.onreadystatechange = function() {
+                httpRequest.onreadystatechange = function () {
                     if (httpRequest.readyState === 4) {
 
                         try {
 
-                            if(httpRequest.status === 200) {
+                            if (httpRequest.status === 200) {
                                 response = JSON.parse(httpRequest.responseText);
                                 me.deserialize(response);
-                            }
-                            else {
+                            } else {
                                 throw 'Unexpected HTTP request status ' + httpRequest.status;
                             }
 
-                        }
-
-                        catch(exception) {
+                        } catch (exception) {
                             me.catestrophicError(jzt.i18n.getMessage('status.loaderror'));
                         }
 
@@ -213,27 +211,26 @@ var jzt = (function (my) {
                 };
                 httpRequest.open('GET', game, true);
                 httpRequest.send(null);
-            }
-            catch (exception) {
+            } catch (exception) {
                 this.catestrophicError(jzt.i18n.getMessage('status.loaderror'));
             }
 
-        }
-        else if (typeof game === 'object') {
+        } else if (typeof game === 'object') {
             this.cachedGame = game;
             this.deserialize(game);
         }
 
     };
 
-    Game.prototype.catestrophicError = function(message) {
+    Game.prototype.catestrophicError = function (message) {
         this.catestrophicErrorMessage = message;
         this.setState(GameState.Error);
     };
 
-    Game.prototype.deserialize = function(data) {
+    Game.prototype.deserialize = function (data) {
 
         var index;
+        var board;
         var wasAlreadyRunning = false;
 
         // Ensure we're capable of loading this version of the data
@@ -277,8 +274,8 @@ var jzt = (function (my) {
             }
         }
 
-        for (index = 0; index < data.boards.length; ++index) {
-            var board = data.boards[index];
+        for (index = 0; index < data.boards.length; index += 1) {
+            board = data.boards[index];
             this.boards[board.name] = board;
         }
 
@@ -299,17 +296,17 @@ var jzt = (function (my) {
      * @param counter A name of a counter
      * @param value A value by which to adjust a counter
      */
-    Game.prototype.adjustCounter = function(counter, value) {
+    Game.prototype.adjustCounter = function (counter, value) {
         this.setCounterValue(counter, this.getCounterValue(counter) + value);
     };
 
-    Game.prototype.getCounterValue = function(counter) {
+    Game.prototype.getCounterValue = function (counter) {
         if (this.counters[counter] === undefined) {
             return 0;
         }
-        else {
-            return this.counters[counter];
-        }
+
+        return this.counters[counter];
+
     };
 
     /**
@@ -318,7 +315,7 @@ var jzt = (function (my) {
      * @param counter A name of a counter to be assigned a value.
      * @param value A value for a counter.
      */
-    Game.prototype.setCounterValue = function(counter, value) {
+    Game.prototype.setCounterValue = function (counter, value) {
 
         var maxCounter = counter + '_MAX';
 
@@ -332,14 +329,17 @@ var jzt = (function (my) {
             value = this.counters[maxCounter];
         }
 
-        // If our value is less or equal to zero, remove the counter entirely
+        // Depending on our new value
         if (value <= 0) {
-            delete this.counters[counter];
-        }
 
-        // Otherwise assign our counter value
-        else {
+            // It's less than zero, so just delete it entirely
+            delete this.counters[counter];
+
+        } else {
+
+            // Set our counter value
             this.counters[counter] = value;
+
         }
 
     };
@@ -348,7 +348,7 @@ var jzt = (function (my) {
      * A callback function to be executed once all graphic assets have been
      * loaded.
      */
-    Game.prototype.onGraphicsLoaded = function() {
+    Game.prototype.onGraphicsLoaded = function () {
 
         this.scroll = new jzt.Scroll(this);
         this.fileManagement = new jzt.FileManagement(this);
@@ -369,7 +369,7 @@ var jzt = (function (my) {
      * @param passageId An ID of a Passage
      * @param boardName A name of a Board to be loaded.
      */
-    Game.prototype.movePlayerToPassage = function(passageId, boardName) {
+    Game.prototype.movePlayerToPassage = function (passageId, boardName) {
 
         // Retrieve our new board (or the current board if it's the same)
         var newBoard = (boardName === this.currentBoard.name) ? this.currentBoard : this.getBoard(boardName);
@@ -396,7 +396,7 @@ var jzt = (function (my) {
     };
 
     Game.prototype.restoreState = function () {
-        if(this.previousStates.length > 0) {
+        if (this.previousStates.length > 0) {
             this.keyboard.cancelInput();
             this.setState(this.previousStates.pop());
         }
@@ -408,7 +408,7 @@ var jzt = (function (my) {
      *
      * @param state A GameState to be assigned to this Game.
      */
-    Game.prototype.setState = function(state) {
+    Game.prototype.setState = function (state) {
 
         // If we are to pause the game...
         if (state === GameState.Paused) {
@@ -422,10 +422,9 @@ var jzt = (function (my) {
             // Remember our pause time
             this.pauseStart = Date.now();
 
-        }
+        } else if (state === GameState.Playing) {
 
-        // If we are to resume playing...
-        else if (state === GameState.Playing) {
+            // Let's resume playing!
 
             // Forget if P was pressed
             this.keyboard.cancelKey(this.keyboard.P);
@@ -450,10 +449,9 @@ var jzt = (function (my) {
             // Reset our player display
             this.player.background = this.player.background.darken();
 
-        }
+        } else if (state === GameState.Reading) {
 
-        // If we are to start reading
-        else if (state === GameState.Reading) {
+            // Let's start reading!
 
             // Remember our pause time
             this.pauseStart = Date.now();
@@ -463,10 +461,9 @@ var jzt = (function (my) {
 
             this.scroll.open();
 
-        }
+        } else if (state === GameState.FileManagement) {
 
-        // If we are to enter file management
-        else if (state === GameState.FileManagement) {
+            // Let's do some file management!
 
             // Remember our pause time
             this.pauseStart = Date.now();
@@ -474,10 +471,9 @@ var jzt = (function (my) {
             // Show our file management, and suppress the empty slot if we're on the title screen
             this.fileManagement.open(undefined, this.state === GameState.Title);
 
-        }
+        } else if (state === GameState.GameOver) {
 
-        // If it's game over
-        else if (state === GameState.GameOver) {
+            // Oh dear, it's game over...
 
             // Stop all scheduled audio
             this.resources.audio.cancel();
@@ -488,15 +484,13 @@ var jzt = (function (my) {
             // Deactivate subsequent audio output
             this.resources.audio.setActive(false);
 
-        }
+        } else if (state === GameState.Title) {
 
-        // If it's the title screen
-        else if (state === GameState.Title) {
+            // It's the title screen!
 
             if (this.titleBoard) {
                 this.setBoard(this.titleBoard);
-            }
-            else {
+            } else {
                 this.setBoard(this.startingBoard);
             }
 
@@ -507,10 +501,9 @@ var jzt = (function (my) {
                 this.player.point.y = -1;
             }
 
-        }
+        } else if (state === GameState.Victory) {
 
-        // If it's a victory
-        else if (state === GameState.Victory) {
+            // Victory!
 
             if (this.victoryBoard) {
                 this.setBoard(this.victoryBoard);
@@ -523,11 +516,9 @@ var jzt = (function (my) {
                 this.player.point.y = -1;
             }
 
-        }
+        } else if (state === GameState.Splash) {
 
-        else if (state === GameState.Splash) {
-
-            // Create our splash
+            // Splashy Splashy!
             this.splash = new jzt.ui.Splash(this);
 
         }
@@ -546,7 +537,7 @@ var jzt = (function (my) {
      * @param edge A Direction representing an edge of a board
      * @param boardName A name of a Board to be loaded.
      */
-    Game.prototype.movePlayerToBoardEdge = function(edge, boardName, offset) {
+    Game.prototype.movePlayerToBoardEdge = function (edge, boardName, offset) {
 
         // Retrieve our new board (or the current board if it's the same)
         var newBoard = (boardName === this.currentBoard.name) ? this.currentBoard : this.getBoard(boardName);
@@ -564,29 +555,28 @@ var jzt = (function (my) {
         if (offset && (edge === jzt.Direction.North || edge === jzt.Direction.South)) {
             outsideLocation.x = outsideLocation.x + offset;
             newLocation.x = newLocation.x + offset;
-        }
-        else if (offset && (edge === jzt.Direction.East || edge === jzt.Direction.West)) {
+        } else if (offset && (edge === jzt.Direction.East || edge === jzt.Direction.West)) {
             outsideLocation.y = outsideLocation.y + offset;
             newLocation.y = newLocation.y + offset;
         }
 
         switch (edge) {
-            case jzt.Direction.North:
-                outsideLocation.y = -1;
-                newLocation.y = 0;
-                break;
-            case jzt.Direction.East:
-                outsideLocation.x = newBoard.width;
-                newLocation.x = newBoard.width-1;
-                break;
-            case jzt.Direction.South:
-                outsideLocation.y = newBoard.height;
-                newLocation.y = newBoard.height-1;
-                break;
-            case jzt.Direction.West:
-                outsideLocation.x = -1;
-                newLocation.x = 0;
-                break;
+        case jzt.Direction.North:
+            outsideLocation.y = -1;
+            newLocation.y = 0;
+            break;
+        case jzt.Direction.East:
+            outsideLocation.x = newBoard.width;
+            newLocation.x = newBoard.width - 1;
+            break;
+        case jzt.Direction.South:
+            outsideLocation.y = newBoard.height;
+            newLocation.y = newBoard.height - 1;
+            break;
+        case jzt.Direction.West:
+            outsideLocation.x = -1;
+            newLocation.x = 0;
+            break;
         }
 
         // If the player cannot move to this location, return immediately
@@ -605,7 +595,7 @@ var jzt = (function (my) {
      *
      * @param name A name of a Board.
      */
-    Game.prototype.getBoard = function(name) {
+    Game.prototype.getBoard = function (name) {
 
         if (this.boards.hasOwnProperty(name)) {
             return new jzt.Board(this.boards[name], this);
@@ -624,7 +614,7 @@ var jzt = (function (my) {
      *              position will be used, or if that point it outside the new
      *              Board's boundaries, the board's default player position.
      */
-    Game.prototype.setBoard = function(board, playerPoint) {
+    Game.prototype.setBoard = function (board, playerPoint) {
 
         var properties;
 
@@ -641,14 +631,17 @@ var jzt = (function (my) {
                 this.boards[this.currentBoard.name] = this.currentBoard.serialize();
             }
 
-            // If we were given an actual board, assign that
+            // So, what did we actually receive?
             if (board instanceof jzt.Board) {
-                this.currentBoard = board;
-            }
 
-            // Otherwise, load it
-            else {
+                // It's a board, so load it directly
+                this.currentBoard = board;
+
+            } else {
+
+                // It's the name of a board, so load it from our boards
                 this.currentBoard = new jzt.Board(this.boards[board], this);
+
             }
 
             // Export our old player properties, if applicable
@@ -686,37 +679,34 @@ var jzt = (function (my) {
     /**
      * Starts this Game's loop, effectively starting this Game.
      */
-    Game.prototype.run = function(game) {
+    Game.prototype.run = function (game) {
 
         if (game) {
             this.gameToLoad = game;
         }
 
         // If our game loop isn't already running
-        if (! this.isRunning()) {
+        if (!this.isRunning()) {
 
             this.keyboard.initialize();
             this.previousStates = [];
 
-            // If we have a game loaded...
             if (this.gameLoaded) {
 
-                // If we've loaded a saved game, start from a board
+                // We've got a game loaded
+
+                // If it's a saved game, start from its starting board,
+                // otherwise start from the title screen.
                 if (this.savedGame) {
                     this.setBoard(this.startingBoard);
                     this.setState(GameState.Paused);
-                }
-
-                // Otherwise start from the title screen
-                else {
+                } else {
                     this.setState(GameState.Title);
                 }
 
-            }
+            } else {
 
-            // If no game has loaded, we're in our splash state
-            else {
-
+                // No game has loaded, start from the splash screen
                 this.setState(GameState.Splash);
 
             }
@@ -737,7 +727,7 @@ var jzt = (function (my) {
      * TODO: Use performance.now() and the parameter passed to this function by
      * requestAnimationFrame to do timing once browser support improves.
      */
-    Game.prototype.loop = function() {
+    Game.prototype.loop = function () {
 
         try {
             var now = Date.now();
@@ -746,13 +736,12 @@ var jzt = (function (my) {
 
             this.loopId = requestAnimationFrame(this.boundLoop);
 
-            if(delta > this.FPS_INTERVAL) {
+            if (delta > this.FPS_INTERVAL) {
                 this.then = now - (delta % this.FPS_INTERVAL);
                 this.update();
                 this.draw();
             }
-        }
-        catch (exception) {
+        } catch (exception) {
             this.catestrophicError(jzt.i18n.getMessage('status.fatalerror'));
         }
 
@@ -764,7 +753,7 @@ var jzt = (function (my) {
     Game.prototype.end = function () {
 
         // Stop the game loop if it's running
-        if(this.loopId) {
+        if (this.loopId) {
 
             cancelAnimationFrame(this.loopId);
             this.loopId = undefined;
@@ -785,8 +774,10 @@ var jzt = (function (my) {
         // Update our graphics resource
         this.resources.graphics.update();
 
-        // If we're playing...
+        // Determine our game's state
         if (this.state === GameState.Playing) {
+
+            // We're playing!
 
             this.currentBoard.update();
             this.checkCounters();
@@ -797,28 +788,30 @@ var jzt = (function (my) {
             // Update our focus point
             this.currentBoard.focusPoint = this.player.point;
 
-            // Check if the user wants to pause
+
             if (this.keyboard.isPressed(this.keyboard.P) || this.keyboard.isPressed(this.keyboard.ENTER)) {
+
+                // The user wants to pause
                 this.resources.audio.play('++se.tc.e.sc');
                 this.setState(GameState.Paused);
-            }
 
-            // Check if the user wants to save
-            else if (this.keyboard.isPressed(this.keyboard.S)) {
+            } else if (this.keyboard.isPressed(this.keyboard.S)) {
+
+                // The user wants to save
                 this.fileManagement.dialogType = jzt.FileManagement.Type.SAVE;
                 this.pushState(GameState.FileManagement);
-            }
 
-            // Check if the user wants to restore
-            else if (this.keyboard.isPressed(this.keyboard.R)) {
+            } else if (this.keyboard.isPressed(this.keyboard.R)) {
+
+                // The user wants to restore a saved game
                 this.fileManagement.dialogType = jzt.FileManagement.Type.OPEN;
                 this.pushState(GameState.FileManagement);
+
             }
 
-        }
+        } else if (this.state === GameState.Paused) {
 
-        // If we're paused...
-        else if (this.state === GameState.Paused) {
+            // We're paused.
 
             // Unpause on any expected keypress
             if (this.keyboard.isAnyPressed()) {
@@ -828,24 +821,19 @@ var jzt = (function (my) {
                 this.player.foregroundColor = jzt.colors.Colors.F;
             }
 
-        }
+        } else if (this.state === GameState.Reading) {
 
-        // If we're reading...
-        else if (this.state === GameState.Reading) {
-
+            // We're reading
             this.scroll.update();
 
-        }
+        } else if (this.state === GameState.FileManagement) {
 
-        // If it's file management...
-        else if (this.state === GameState.FileManagement) {
-
+            // We're managing files
             this.fileManagement.update();
 
-        }
+        } else if (this.state === GameState.GameOver) {
 
-        // If it's game over, say so!
-        else if (this.state === GameState.GameOver) {
+            // We're at game over
 
             this.currentBoard.update();
             this.currentBoard.setDisplayMessage(jzt.i18n.getMessage('status.gameover'));
@@ -856,33 +844,33 @@ var jzt = (function (my) {
                 this.pushState(GameState.FileManagement);
             }
 
-        }
+        } else if (this.state === GameState.Title) {
 
-        // If we're on the title screen...
-        else if (this.state === GameState.Title) {
+            // We're on the title screen
 
             this.currentBoard.update();
             this.currentBoard.setDisplayMessage(jzt.i18n.getMessage('status.title'));
 
-            // Check if the user wants to play
+            // Check our keyboard input
             if (this.keyboard.isPressed(this.keyboard.P) || this.keyboard.isPressed(this.keyboard.SPACE) || this.keyboard.isPressed(this.keyboard.ENTER)) {
+
+                // The user wants to play
                 this.keyboard.cancelKey(this.keyboard.P);
                 this.keyboard.cancelKey(this.keyboard.ENTER);
                 this.keyboard.cancelKey(this.keyboard.SPACE);
                 this.setState(GameState.Playing);
-            }
 
-            // The user may also want to load a previous game
-            else if (this.keyboard.isPressed(this.keyboard.R)) {
+            } else if (this.keyboard.isPressed(this.keyboard.R)) {
+
+                // The user wants to load a saved game
                 this.fileManagement.dialogType = jzt.FileManagement.Type.OPEN;
                 this.pushState(GameState.FileManagement);
+
             }
 
-        }
+        } else if (this.state === GameState.Victory) {
 
-        // If we've won
-        else if (this.state === GameState.Victory) {
-
+            // We're in a victory state!
             this.currentBoard.update();
 
             // The user can load a previous game at this point
@@ -891,18 +879,18 @@ var jzt = (function (my) {
                 this.pushState(GameState.FileManagement);
             }
 
-        }
+        } else if (this.state === GameState.Loading) {
 
-        // If we're loading
-        else if (this.state === GameState.Loading) {
-            if (++this.loadingAnimationIndex >= jzt.things.Conveyor.animationFrames.length * 4) {
+
+            // We're loading
+            this.loadingAnimationIndex += 1;
+            if (this.loadingAnimationIndex >= jzt.things.Conveyor.animationFrames.length * 4) {
                 this.loadingAnimationIndex = 0;
             }
-        }
 
-        // If we're splashing
-        else if (this.state === GameState.Splash) {
+        } else if (this.state === GameState.Splash) {
 
+            // We're splashing gratuitously
             this.splash.update();
 
             // If our splash is done
@@ -911,20 +899,20 @@ var jzt = (function (my) {
                 // We no longer need the splash screen
                 delete this.splash;
 
-                // If there was a game to load...
+                // Check if there's a game to load
                 if (this.gameToLoad) {
 
-                    // Load our game
+                    // There is! So load our game
                     this.loadGame(this.gameToLoad);
 
                     // There's no need to keep it around anymore
                     delete this.gameToLoad;
 
-                }
+                } else {
 
-                // If there was no game to load, we're in error
-                else {
+                    // There's no game to load, so we're in error...
                     this.setState(GameState.Error);
+
                 }
 
             }
@@ -988,7 +976,8 @@ var jzt = (function (my) {
         var translateX = Math.round(256 * Math.random());
         var translateY = Math.round(256 * Math.random());
 
-        if (++this.screenEffectIndex > lineSpacing) {
+        this.screenEffectIndex += 1;
+        if (this.screenEffectIndex > lineSpacing) {
             this.screenEffectIndex = 0;
         }
 
@@ -996,7 +985,7 @@ var jzt = (function (my) {
         this.context.save();
         this.context.translate(translateX, translateY);
         this.context.scale(2 * this.devicePixelRatio, 2 * this.devicePixelRatio);
-        this.context.fillRect(-translateX,-translateY,this.context.canvas.width, this.context.canvas.height);
+        this.context.fillRect(-translateX, -translateY, this.context.canvas.width, this.context.canvas.height);
         this.context.restore();
 
         this.context.lineWidth = 4 * this.devicePixelRatio;
@@ -1011,8 +1000,8 @@ var jzt = (function (my) {
 
         this.context.beginPath();
         for (line = -lineSpacing; line < this.context.canvas.height; line = line + lineSpacing) {
-            this.context.moveTo(0, line + (2*this.devicePixelRatio) + this.screenEffectIndex + lineSpacing);
-            this.context.lineTo(this.context.canvas.width, line + (2*this.devicePixelRatio) + this.screenEffectIndex);
+            this.context.moveTo(0, line + (2 * this.devicePixelRatio) + this.screenEffectIndex + lineSpacing);
+            this.context.lineTo(this.context.canvas.width, line + (2 * this.devicePixelRatio) + this.screenEffectIndex);
         }
         this.context.stroke();
 
@@ -1028,9 +1017,9 @@ var jzt = (function (my) {
             this.errorPopup = new jzt.ui.Popup(undefined, new jzt.Point(popupWidth, 3), this);
             this.errorPopup.setColor(jzt.colors.Red, jzt.colors.White);
             spriteGrid = this.errorPopup.spriteGrid;
-            spriteGrid.addText(new jzt.Point(2,1), this.catestrophicErrorMessage, jzt.colors.BrightWhite);
-            spriteGrid.setTile(new jzt.Point(popupWidth-4,1), 58, jzt.colors.Cycle);
-            spriteGrid.setTile(new jzt.Point(popupWidth-3,1), 40, jzt.colors.Cycle);
+            spriteGrid.addText(new jzt.Point(2, 1), this.catestrophicErrorMessage, jzt.colors.BrightWhite);
+            spriteGrid.setTile(new jzt.Point(popupWidth - 4, 1), 58, jzt.colors.Cycle);
+            spriteGrid.setTile(new jzt.Point(popupWidth - 3, 1), 40, jzt.colors.Cycle);
         }
 
         this.errorPopup.render(this.context);
@@ -1054,7 +1043,7 @@ var jzt = (function (my) {
 
         this.loadingPopup.render(this.context);
 
-        sprite = this.resources.graphics.getSprite( jzt.things.Conveyor.animationFrames[Math.floor(this.loadingAnimationIndex / 4)] );
+        sprite = this.resources.graphics.getSprite(jzt.things.Conveyor.animationFrames[Math.floor(this.loadingAnimationIndex / 4)]);
         sprite.draw(this.context, this.loadingPopup.animationPosition, jzt.colors.Cycle);
 
     };
@@ -1079,11 +1068,11 @@ var jzt = (function (my) {
 
         // If we haven't yet defined a status popup in our language, do it now
         if (this.statusPopup === undefined || this.statusPopup.language !== jzt.i18n.Messages.currentLanguage) {
-            this.statusPopup = new jzt.ui.Popup(new jzt.Point(this.screenWidth - (pauseWidth+1),1), new jzt.Point(pauseWidth,10), this);
+            this.statusPopup = new jzt.ui.Popup(new jzt.Point(this.screenWidth - (pauseWidth + 1), 1), new jzt.Point(pauseWidth, 10), this);
             this.statusPopup.language = jzt.i18n.Messages.currentLanguage;
             spriteGrid = this.statusPopup.spriteGrid;
             value = jzt.i18n.getMessage('pause.paused');
-            spriteGrid.addText(new jzt.Point(Math.floor((pauseWidth-value.length)/2), 1), value, jzt.colors.White);
+            spriteGrid.addText(new jzt.Point(Math.floor((pauseWidth - value.length) / 2), 1), value, jzt.colors.White);
             spriteGrid.addText(new jzt.Point(1, 3), jzt.i18n.getMessage('pause.health'), jzt.colors.Yellow);
             spriteGrid.addText(new jzt.Point(1, 4), jzt.i18n.getMessage('pause.ammo'), jzt.colors.Yellow);
             spriteGrid.addText(new jzt.Point(1, 5), jzt.i18n.getMessage('pause.gems'), jzt.colors.Yellow);
@@ -1095,8 +1084,7 @@ var jzt = (function (my) {
         // Make sure we don't position our popup over the player
         if (this.player.point.x >= this.currentBoard.windowOrigin.x + (this.screenWidth - pauseWidth - 2)) {
             this.statusPopup.position.x = 1;
-        }
-        else {
+        } else {
             this.statusPopup.position.x = this.screenWidth - (pauseWidth + 1);
         }
 
@@ -1113,10 +1101,10 @@ var jzt = (function (my) {
         // Draw our keys
         position = position.add(new jzt.Point(13, 8));
         sprite = this.resources.graphics.getSprite(12);
-        for (value = 0; value < keyValues.length; ++value) {
+        for (value = 0; value < keyValues.length; value += 1) {
             if (this.getCounterValue('KEY' + keyValues[value]) > 0) {
                 sprite.draw(this.context, position, jzt.colors.deserializeForeground(keyValues[value]));
-                position.x++;
+                position.x += 1;
             }
         }
     };
@@ -1124,58 +1112,59 @@ var jzt = (function (my) {
     /**
      * Renders a visual representation of this Game to its associated HTML5 Canvas element.
      */
-    Game.prototype.draw = function() {
+    Game.prototype.draw = function () {
 
         // If we've got a board and haven't failed to render it before...
         if (this.currentBoard && !this.errorInRender) {
 
             try {
                 this.currentBoard.render(this.context);
-            }
-            catch (exception) {
+            } catch (exception) {
                 this.errorInRender = true;
                 this.catestrophicError(jzt.i18n.getMessage('status.fatalerror'));
             }
 
-        }
-        else {
+        } else {
             this.context.fillStyle = jzt.colors.Grey.rgbValue;
             this.context.fillRect(0, 0, this.context.canvas.width, this.context.canvas.height);
         }
 
-        // If we're paused, draw our status
+        // Depending on our state...
         if (this.state === GameState.Paused) {
+
+            // We're paused
             this.drawScreenEffect();
             this.drawPauseScreen();
-        }
 
-        // If we are reading, also render our scroll instance
-        else if (this.state === GameState.Reading) {
+        } else if (this.state === GameState.Reading) {
+
+            // We're reading
             this.scroll.render(this.context);
-        }
 
-        // If we're in file management, render our file management instance
-        else if (this.state === GameState.FileManagement) {
+        } else if (this.state === GameState.FileManagement) {
+
+            // We're in file management
             this.drawScreenEffect();
             this.fileManagement.render(this.context);
-        }
 
-        // If we're loading, render our loading screen
-        else if (this.state === GameState.Loading) {
+        } else if (this.state === GameState.Loading) {
+
+            // We're loading
             this.drawScreenEffect();
             this.drawLoadingScreen();
-        }
 
-        // If we're in our splash state, draw our splash animation
-        else if (this.state === GameState.Splash) {
+        } else if (this.state === GameState.Splash) {
+
+            // We're splashing
             this.splash.render(this.context);
             this.drawScreenEffect();
-        }
 
-        // If there was a catestropic error...
-        else if (this.state === GameState.Error) {
+        } else if (this.state === GameState.Error) {
+
+            // We're in an error state (oh my!)
             this.drawScreenEffect();
             this.drawErrorScreen();
+
         }
 
     };

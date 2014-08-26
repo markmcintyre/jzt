@@ -4,14 +4,17 @@
  * @author Mark McIntyre
  */
 
-var jzt = jzt || {};
-jzt.ux = (function(my){
-    
+/*jslint browser: true, vars: true */
+
+var jzt;
+jzt = jzt || {};
+jzt.ux = (function (my) {
+
     'use strict';
-    
+
     function SlidingPanel(container) {
-        
-        if(!(this instanceof SlidingPanel)) {
+
+        if (!(this instanceof SlidingPanel)) {
             throw jzt.ConstructorError;
         }
 
@@ -23,13 +26,13 @@ jzt.ux = (function(my){
         this.slideToggles = {};
         this.bodyClickEvent = this.onBodyClick.bind(this);
 
-        for(index = 0; index < slideToggles.length; ++index) {
+        for (index = 0; index < slideToggles.length; index += 1) {
             this.addButton(slideToggles[index], slideToggles[index].getAttribute('data-panel'));
         }
 
     }
 
-    SlidingPanel.prototype.addButton = function(buttonElement, panelName) {
+    SlidingPanel.prototype.addButton = function (buttonElement, panelName) {
 
         var me = this;
 
@@ -37,29 +40,28 @@ jzt.ux = (function(my){
         this.slideToggles[panelName] = buttonElement;
 
         // Add a click event
-        buttonElement.addEventListener('click', function(event) {
+        buttonElement.addEventListener('click', function (event) {
             me.onButtonClick(event, panelName);
         });
 
     };
 
-    SlidingPanel.prototype.onButtonClick = function(event, panelName) {
+    SlidingPanel.prototype.onButtonClick = function (event, panelName) {
 
         // We're handling the event fully
         event.stopPropagation();
         event.preventDefault();
 
         // If our panel isn't already open...
-        if(this.activePanel !== panelName) {
+        if (this.activePanel !== panelName) {
             this.openPanel(panelName);
-        }
-        else {
+        } else {
             this.closePanels();
         }
 
     };
 
-    SlidingPanel.prototype.openPanel = function(panelName) {
+    SlidingPanel.prototype.openPanel = function (panelName) {
 
         var index;
         var slideToggle;
@@ -73,12 +75,12 @@ jzt.ux = (function(my){
 
         // Add an active class to the active slide toggle, if it exists
         slideToggle = this.slideToggles[panelName];
-        if(slideToggle) {
+        if (slideToggle) {
             slideToggle.classList.add('active');
         }
 
         // First, ensure our panels are hidden
-        for(index = 0; index < contentPanels.length; ++index) {
+        for (index = 0; index < contentPanels.length; index += 1) {
             contentPanels[index].style.display = 'none';
         }
 
@@ -93,26 +95,26 @@ jzt.ux = (function(my){
 
     };
 
-    SlidingPanel.prototype.removeDecoration = function() {
+    SlidingPanel.prototype.removeDecoration = function () {
 
         var index;
 
         // Remove our active class from our slide toggles
-        for(index in this.slideToggles) {
-            if(this.slideToggles.hasOwnProperty(index)) {
+        for (index in this.slideToggles) {
+            if (this.slideToggles.hasOwnProperty(index)) {
                 this.slideToggles[index].classList.remove('active');
             }
         }
 
     };
 
-    SlidingPanel.prototype.closePanels = function() {
+    SlidingPanel.prototype.closePanels = function () {
         this.activePanel = undefined;
         this.removeDecoration();
         this.container.className = 'jzt-sliding-container';
     };
 
-    SlidingPanel.prototype.onBodyClick = function() {
+    SlidingPanel.prototype.onBodyClick = function () {
         this.closePanels();
         document.removeEventListener('click', this.bodyClickEvent);
     };
@@ -125,25 +127,22 @@ jzt.ux = (function(my){
 
         function onFullScreenChange() {
 
-            if(isFullScreen()) {
+            if (isFullScreen()) {
                 canvasElement.style.height = '100%';
                 canvasElement.style.width = Math.round((screen.height * 800) / 640) + 'px';
-            }
-            else {
+            } else {
                 canvasElement.style.width = '800px';
                 canvasElement.style.height = '640px';
             }
 
         }
 
-        buttonElement.addEventListener('click', function() {
-            if(canvasElement.requestFullscreen) {
+        buttonElement.addEventListener('click', function () {
+            if (canvasElement.requestFullscreen) {
                 canvasElement.requestFullscreen();
-            }
-            else if(canvasElement.webkitRequestFullscreen) {
+            } else if (canvasElement.webkitRequestFullscreen) {
                 canvasElement.webkitRequestFullscreen();
-            }
-            else if(canvasElement.mozRequestFullScreen) {
+            } else if (canvasElement.mozRequestFullScreen) {
                 canvasElement.mozRequestFullScreen();
             }
         });
@@ -157,11 +156,11 @@ jzt.ux = (function(my){
     }
 
     function DisplayableNotificationListener(configuration) {
-        
-        if(!(this instanceof DisplayableNotificationListener)) {
+
+        if (!(this instanceof DisplayableNotificationListener)) {
             throw jzt.ConstructorError;
         }
-        
+
         jzt.NotificationListener.call(this);
         this.warningButton = configuration.warningButton;
         this.warningElement = configuration.warningListElement;
@@ -169,15 +168,15 @@ jzt.ux = (function(my){
     DisplayableNotificationListener.prototype = new jzt.NotificationListener();
     DisplayableNotificationListener.prototype.constructor = DisplayableNotificationListener;
 
-    DisplayableNotificationListener.prototype.addNotification = function(type, message) {
+    DisplayableNotificationListener.prototype.addNotification = function (type, message) {
         jzt.NotificationListener.prototype.addNotification.call(this, type, message);
-        if(type === 'warning') {
+        if (type === 'warning') {
             this.warningButton.style.display = 'block';
         }
         this.updateListElement();
     };
 
-    DisplayableNotificationListener.prototype.updateListElement = function() {
+    DisplayableNotificationListener.prototype.updateListElement = function () {
 
         var index;
         var notification;
@@ -185,26 +184,26 @@ jzt.ux = (function(my){
         // Clear any existing warnings
         this.warningElement.innerHTML = '';
 
-        for(index = this.notifications.length-1; index >= 0; --index) {
+        for (index = this.notifications.length - 1; index >= 0; index -= 1) {
             notification = this.notifications[index];
-            if(notification.type === 'warning') {
+            if (notification.type === 'warning') {
                 this.warningElement.innerHTML += '<li>' + '<p>' + notification.message.split('\n').join('</p><p>') + '</p><p><small>' + new Date(notification.timestamp).toLocaleString() + '</small></p></li>';
             }
         }
 
     };
 
-    DisplayableNotificationListener.prototype.clear = function() {
+    DisplayableNotificationListener.prototype.clear = function () {
         this.updateListElement();
         this.warningButton.style.display = 'none';
     };
 
     function Settings(settingsElement) {
-        
-        if(!(this instanceof Settings)) {
+
+        if (!(this instanceof Settings)) {
             throw jzt.ConstructorError;
         }
-        
+
         this.listenerCallbacks = [];
         this.audioMuteElement = settingsElement.querySelector('input[name=\'audio-enabled\']');
         this.audioVolumeElement = settingsElement.querySelector('input[name=\'audio-volume\']');
@@ -216,24 +215,23 @@ jzt.ux = (function(my){
 
     }
 
-    Settings.prototype.addListener = function(listenerCallback) {
+    Settings.prototype.addListener = function (listenerCallback) {
         this.listenerCallbacks.push(listenerCallback);
     };
 
-    Settings.prototype.notify = function(settings) {
+    Settings.prototype.notify = function (settings) {
         var index;
-        for(index = 0; index < this.listenerCallbacks.length; ++index) {
+        for (index = 0; index < this.listenerCallbacks.length; index += 1) {
             this.listenerCallbacks[index](settings);
         }
     };
 
-    Settings.prototype.initialize = function(initialSettings) {
+    Settings.prototype.initialize = function (initialSettings) {
 
-        if(initialSettings.audioActive) {
+        if (initialSettings.audioActive) {
             this.audioMuteElement.checked = initialSettings.audioMute;
             this.audioVolumeElement.value = initialSettings.audioVolume * 10;
-        }
-        else {
+        } else {
             this.audioMuteElement.checked = true;
             this.audioMuteElement.disabled = true;
             this.audioVolumeElement.disabled = true;
@@ -243,15 +241,15 @@ jzt.ux = (function(my){
 
     };
 
-    Settings.prototype.onMuteChange = function(event) {
+    Settings.prototype.onMuteChange = function (event) {
         this.notify({audioMute: event.target.checked});
     };
 
-    Settings.prototype.onVolumeChange = function(event) {
+    Settings.prototype.onVolumeChange = function (event) {
         this.notify({audioVolume: parseFloat(event.target.value) / 10});
     };
 
-    Settings.prototype.onLanguageChange = function(event) {
+    Settings.prototype.onLanguageChange = function (event) {
         this.notify({language: event.target.value});
     };
 
@@ -260,7 +258,7 @@ jzt.ux = (function(my){
     my.SlidingPanel = SlidingPanel;
     my.DisplayableNotificationListener = DisplayableNotificationListener;
     my.Settings = Settings;
-    
+
     return my;
-    
+
 }(jzt.ux || {}));
