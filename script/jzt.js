@@ -481,7 +481,7 @@ jzt = (function (my) {
             this.resources.audio.play('s-cd#g+c-ga#+dgfg#+cf---q.c', true);
 
             // Deactivate subsequent audio output
-            this.resources.audio.setActive(false);
+            this.resources.audio.setActive(false, false);
 
         } else if (state === GameState.Title) {
 

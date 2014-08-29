@@ -434,10 +434,13 @@ jzt = (function (my) {
      *
      * @param activeValue A boolean value indicating whether or not to activate this Audio instance.
      */
-    Audio.prototype.setActive = function (activeValue) {
+    Audio.prototype.setActive = function (activeValue, immediately) {
+
+        // Our immediately parameter defaults to true
+        immediately = (immediately === undefined) ? true : immediately;
 
         // Cancel all audio if we're about to unset it
-        if (this.active && !activeValue) {
+        if (this.active && !activeValue && immediately) {
             this.cancel();
         }
 
