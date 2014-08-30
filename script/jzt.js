@@ -105,6 +105,8 @@ jzt = (function (my) {
         this.context.imageSmoothingEnabled = false;
         this.context.webkitImageSmoothingEnabled = false;
         this.context.mozImageSmoothingEnabled = false;
+        this.context.msImageSmoothingEnabled = false;
+        this.context.oImageSmoothingEnabled = false;
 
         this.resources.audio = new jzt.Audio();
         this.resources.graphics = new jzt.Graphics(this.onGraphicsLoaded.bind(this));
