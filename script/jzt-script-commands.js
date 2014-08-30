@@ -830,6 +830,7 @@ jzt.jztscript.commands = (function (my) {
     WalkCommand.prototype.execute = function (owner) {
         var direction = this.directionExpression.getResult(owner);
         owner.walkDirection = direction;
+        return CommandResult.CONTINUE;
     };
 
     /**
