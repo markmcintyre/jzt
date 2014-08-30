@@ -57,7 +57,7 @@ jzt = (function (my) {
         /*
          * We perform some sanity checks for feature support. We use the bind function
          * as an acid test for ECMAScript 5 support, since it was one of the last supported
-         * features on some browsers. We also test for Canvas support.
+         * features on some browsers. We also test for Canvas support and requestAnimationFrame.
          */
         if ((typeof Function.prototype.bind !== 'function') || (!window.CanvasRenderingContext2D) || (typeof requestAnimationFrame !== 'function')) {
 
@@ -459,6 +459,9 @@ jzt = (function (my) {
 
             // Cancel all keyboard input
             this.keyboard.cancelInput();
+
+            // Cancel player events too
+            this.player.eventScheduler.cancelEvent();
 
             this.scroll.open();
 
