@@ -477,15 +477,34 @@
 
             function onLoadGame(event) {
                 var fileReader;
-                var result;
+                var file;
                 if(event.target.files && event.target.files[0]) {
+
+                    file = event.target.files[0];
                     fileReader = new FileReader();
+
                     fileReader.onload = function(event) {
-                        result = event.target.result.split(',')[1];
-                        result = LZString.decompressFromBase64(result);
-                        editor.deserialize(JSON.parse(result));
+
+                        var json;
+
+                        if(file.type === 'application/json') {
+                            json = fileReader.result;
+                        } else {
+                            json = fileReader.result.split(',')[1];
+                            json = LZString.decompressFromBase64(json);
+                        }
+
+                        editor.deserialize(JSON.parse(json));
+
                     };
-                    fileReader.readAsDataURL(event.target.files[0]);
+
+                    if(file.type === 'application/json') {
+                        fileReader.readAsText(file);
+                    }
+                    else {
+                        fileReader.readAsDataURL(file);
+                    }
+
                 }
             };
 
