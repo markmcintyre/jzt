@@ -488,6 +488,7 @@ jzt = (function (my) {
     };
 
     DelayedEventScheduler.prototype.cancelEvent = function () {
+        this.event = undefined;
         this.nextAllowableEvent = 0;
     };
 
