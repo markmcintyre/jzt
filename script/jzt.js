@@ -59,7 +59,7 @@ jzt = (function (my) {
          * as an acid test for ECMAScript 5 support, since it was one of the last supported
          * features on some browsers. We also test for Canvas support.
          */
-        if ((typeof Function.prototype.bind !== 'function') || (!window.CanvasRenderingContext2D)) {
+        if ((typeof Function.prototype.bind !== 'function') || (!window.CanvasRenderingContext2D) || (typeof requestAnimationFrame !== 'function')) {
 
             // If we were given a callback, tell it that the load was unsuccessful.
             if (typeof configuration.onLoadCallback === 'function') {
