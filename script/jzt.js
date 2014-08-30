@@ -460,8 +460,8 @@ jzt = (function (my) {
             // Cancel all keyboard input
             this.keyboard.cancelInput();
 
-            // Cancel player events too
-            this.player.eventScheduler.cancelEvent();
+            // Ignore the player's next scheduled event
+            this.player.eventScheduler.takeEvent();
 
             this.scroll.open();
 

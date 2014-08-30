@@ -11,7 +11,7 @@ jzt = (function (my) {
     'use strict';
 
     var meta = {
-        version: '1.0.0ß4',
+        version: '1.0.0ß5',
         date: new Date('2014-08-30')
     };
 
