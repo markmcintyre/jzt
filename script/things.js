@@ -542,7 +542,7 @@ jzt.things = (function (my) {
 
         if (this.scriptContext) {
 
-            if (this.scriptContext.commandIndex !== 0) {
+            if (!(this.scriptContext.inDefaultState())) {
                 result.scriptContext = this.scriptContext.serialize();
             }
             if (this.messageQueue.length > 0) {
@@ -584,7 +584,7 @@ jzt.things = (function (my) {
                 this.scriptContext.deserialize(data.scriptContext);
             }
 
-            if (data.messageQueue instanceof Array && data.messageQueue.length > 0) {
+            if (Array.isArray(data.messageQueue) && data.messageQueue.length > 0) {
                 this.messageQueue = data.messageQueue.slice(0);
             }
 

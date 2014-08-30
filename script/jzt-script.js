@@ -165,6 +165,44 @@ jzt.jztscript = (function (my) {
     };
 
     /**
+     * Determines whether or not we are in a default state for this JztScriptContext.
+     * A script context that's in its default state has no need of being serialized.
+     *
+     * @return true if in a default state, false otherwise.
+     */
+    JztScriptContext.prototype.inDefaultState = function () {
+
+        var defaultState = true;
+        var labelIndex;
+
+        // Look for evidence that we're not in a default state
+        if (this.commandIndex > 0) {
+
+            // We aren't at the first command
+            defaultState = false;
+
+        } else if (Object.keys(this.heap).length > 0) {
+
+            // The heap is not empty
+            defaultState = false;
+
+        } else {
+
+            // We have some non-zero label indicies
+            for (labelIndex in this.currentLabels) {
+                if (this.currentLabels.hasOwnProperty(labelIndex) && this.currentLabels[labelIndex] !== 0) {
+                    defaultState = false;
+                    break;
+                }
+            }
+
+        }
+
+        return defaultState;
+
+    };
+
+    /**
      * Initializes this JztScriptContext's labels to that of a provided Script instance.
      *
      * @param script A Script used to initialize this JztScriptContext's labels.

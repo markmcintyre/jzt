@@ -88,8 +88,8 @@ jzt = (function (my) {
         if (typeof data.width !== 'number') { valid = false; }
         if (data.height > 256 || data.height < 10) { valid = false; }
         if (data.width > 256 || data.width < 10) { valid = false; }
-        if (!data.tiles || !data.tiles instanceof Array) { valid = false; }
-        if (!data.scripts || !data.script instanceof Array) { valid = false; }
+        if (!data.tiles || !(Array.isArray(data.tiles))) { valid = false; }
+        if (!data.scripts || !(Array.isArray(data.scripts))) { valid = false; }
 
         if (!valid) {
             throw 'Invalid board data.';
