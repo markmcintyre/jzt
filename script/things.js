@@ -2788,11 +2788,13 @@ jzt.things = (function (my) {
     Player.prototype.constructor = Player;
 
     /**
-     * Serializes this Player instance. Note that serializing a Player does not
-     * return data.
+     * Serializes this Player instance. Note that players don't actually
+     * get serialized. Instead, any tile under the player is returned.
      */
     Player.prototype.serialize = function () {
-        return 0;
+
+        return this.under ? this.under.serialize() : 0;
+
     };
 
     /**

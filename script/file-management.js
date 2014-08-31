@@ -326,13 +326,17 @@ jzt = (function (my) {
         var me = this;
         var boxesInView;
 
+        function pad(value) {
+            return value <= 9 ? '0' + value : value;
+        }
+
         function formatDate(date) {
             var d = date.getDate();
             var m = date.getMonth() + 1;
             var y = date.getFullYear();
             var hours = date.getHours();
             var minutes = date.getMinutes();
-            return y + '-' + (m <= 9 ? '0' + m : m) + '-' + (d <= 9 ? '0' + d : d) + ' ' + hours + ':' + minutes;
+            return y + '-' + pad(m) + '-' + pad(d) + ' ' + hours + ':' + pad(minutes);
         }
 
         function initializeSlot(file, index, selected) {

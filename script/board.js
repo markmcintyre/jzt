@@ -295,6 +295,7 @@ jzt = (function (my) {
 
         var scriptables;
         var index;
+        var tile;
 
         // Check if our player is outside our range
         if (this.isOutside(player.point)) {
@@ -305,7 +306,11 @@ jzt = (function (my) {
 
         }
 
-        // Update our player and assign it to a tile
+        // Check if there's something at the player's position already.
+        // Whatever it is, the player needs to go on top of it.
+        tile = this.getTile(player.point);
+        player.under = tile;
+
         this.player = player;
         this.setTile(player.point, player);
         this.player.board = this;
