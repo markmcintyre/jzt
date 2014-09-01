@@ -607,8 +607,6 @@ jzt = (function (my) {
      */
     Game.prototype.setBoard = function (board, playerPoint) {
 
-        var properties;
-
         // First, erase the old player position if applicable
         if (this.currentBoard) {
             this.currentBoard.setTile(this.player.point, this.player.under);
