@@ -647,8 +647,8 @@ jzt = (function (my) {
             this.player.under = this.currentBoard.getTile(playerPoint);
         }
 
-        // If the board is dark, tell the player
-        if (this.currentBoard.dark) {
+        // If the board is dark and a torch isn't used, tell the player
+        if (this.currentBoard.dark && this.getCounterValue('TORCHLIFE') <= 0) {
             this.oneTimeMessage('status.dark');
         }
 
