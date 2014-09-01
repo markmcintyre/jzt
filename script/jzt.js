@@ -266,7 +266,8 @@ jzt = (function (my) {
             AMMO: 0,
             GEMS: 0,
             TORCHES: 0,
-            SCORE: 0
+            SCORE: 0,
+            TORCHLIFE: 0
         };
 
         for (index in data.counters) {
@@ -420,9 +421,6 @@ jzt = (function (my) {
             // Cancel all keyboard input
             this.keyboard.cancelInput();
 
-            // Remember our pause time
-            this.pauseStart = Date.now();
-
         } else if (state === GameState.Playing) {
 
             // Let's resume playing!
@@ -441,21 +439,12 @@ jzt = (function (my) {
 
             }
 
-            // Calculate our pause duration and notify our player
-            if (this.pauseStart) {
-                this.player.onUnpause(Date.now() - this.pauseStart);
-                delete this.pauseStart;
-            }
-
             // Reset our player display
             this.player.background = this.player.background.darken();
 
         } else if (state === GameState.Reading) {
 
             // Let's start reading!
-
-            // Remember our pause time
-            this.pauseStart = Date.now();
 
             // Cancel all keyboard input
             this.keyboard.cancelInput();
@@ -468,9 +457,6 @@ jzt = (function (my) {
         } else if (state === GameState.FileManagement) {
 
             // Let's do some file management!
-
-            // Remember our pause time
-            this.pauseStart = Date.now();
 
             // Show our file management, and suppress the empty slot if we're on the title screen
             this.fileManagement.open(undefined, this.state === GameState.Title);
@@ -648,19 +634,9 @@ jzt = (function (my) {
 
             }
 
-            // Export our old player properties, if applicable
-            if (this.player) {
-                properties = this.player.getProperties();
-            }
-
             // Construct our new player for this board
             this.player = new jzt.things.Player(this.currentBoard);
             this.player.game = this;
-
-            // Assign our exported properties, if applicable
-            if (properties) {
-                this.player.setProperties(properties);
-            }
 
         }
 
@@ -717,6 +693,7 @@ jzt = (function (my) {
 
             this.boundLoop = this.loop.bind(this);
             this.then = Date.now();
+            this.previousTimestamp = this.then;
 
             // Start the game loop
             this.loopId = requestAnimationFrame(this.boundLoop);
@@ -734,17 +711,31 @@ jzt = (function (my) {
     Game.prototype.loop = function () {
 
         try {
-            var now = Date.now();
 
+            var now = Date.now();
             var delta = now - this.then;
+            var realDelta = now - this.previousTimestamp;
 
             this.loopId = requestAnimationFrame(this.boundLoop);
 
             if (delta > this.FPS_INTERVAL) {
+
+                // We adjust for requestAnimationFrame not being an exact multiple
+                // of our framerate.
                 this.then = now - (delta % this.FPS_INTERVAL);
-                this.update();
+
+                // We still store the actual previous timestamp so that time-based
+                // calculations are properly tracked
+                this.previousTimestamp = now;
+
+                // Update our game
+                this.update(realDelta);
+
+                // Draw our game
                 this.draw();
+
             }
+
         } catch (exception) {
             this.catestrophicError(jzt.i18n.getMessage('status.fatalerror'));
         }
@@ -773,7 +764,7 @@ jzt = (function (my) {
     /**
      * Updates this Game's state by one execution tick.
      */
-    Game.prototype.update = function () {
+    Game.prototype.update = function (delta) {
 
         // Update our graphics resource
         this.resources.graphics.update();
@@ -781,10 +772,8 @@ jzt = (function (my) {
         // Determine our game's state
         if (this.state === GameState.Playing) {
 
-            // We're playing!
-
-            this.currentBoard.update();
-            this.checkCounters();
+            this.currentBoard.update(delta);
+            this.checkCounters(delta);
 
             // Update the player
             this.player.update();
@@ -792,7 +781,7 @@ jzt = (function (my) {
             // Update our focus point
             this.currentBoard.focusPoint = this.player.point;
 
-
+            // Check what keys the player might be pressing...
             if (this.keyboard.isPressed(this.keyboard.P) || this.keyboard.isPressed(this.keyboard.ENTER)) {
 
                 // The user wants to pause
@@ -928,13 +917,32 @@ jzt = (function (my) {
     /**
      * Checks this Game instance's counters and updates the game state as necessary.
      */
-    Game.prototype.checkCounters = function () {
+    Game.prototype.checkCounters = function (delta) {
+
+        var torchLife = this.getCounterValue('TORCHLIFE');
 
         // If our player is dead, and it's not already GameOver state
         if (this.getCounterValue('HEALTH') <= 0 && this.state !== GameState.GameOver) {
 
             // Assign our state to be GameOVer
             this.setState(GameState.GameOver);
+
+        } else if (torchLife > 0) {
+
+            // The player isn't dead, and we've got some torch life
+            // left in the bucket...
+
+            // Adjust our player's torch counter
+            torchLife -= delta;
+            this.setCounterValue('TORCHLIFE', torchLife);
+
+            // If our torch life is past the threshold now...
+            if (torchLife <= 0) {
+
+                // Play our torch expiry noise and set our strength explicitly to zero
+                this.resources.audio.play('tc-c-c');
+
+            }
 
         }
 

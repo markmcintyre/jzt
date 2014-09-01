@@ -13,6 +13,10 @@ jzt.things = (function (my) {
     'use strict';
 
     var ThingFactory = {};
+    var MOVE_ACTION = 0;
+    var SHOOT_ACTION = 1;
+    var TORCH_TTL = 60000; // One minute
+    var MAX_TORCH_STRENGTH = 4;
 
     /**
      * Defines a thing by adding a property with its named construction function. Additionally
@@ -2771,17 +2775,11 @@ jzt.things = (function (my) {
             this.eventScheduler = new jzt.DelayedEventScheduler(board.game.CYCLE_TICKS * 2, 0);
         }
 
-        this.torch = undefined;
-        this.torchStrength = 0;
-        this.torchExpiry = 0;
         this.game = undefined;
         this.speed = 1;
-        this.MOVE_ACTION = 0;
-        this.SHOOT_ACTION = 1;
         this.glow = true;
 
-        this.TORCH_TTL = 60000; // One Minute
-        this.MAX_TORCH_STRENGTH = 4;
+
 
     }
     Player.prototype = new UpdateableThing();
@@ -2795,30 +2793,6 @@ jzt.things = (function (my) {
 
         return this.under ? this.under.serialize() : 0;
 
-    };
-
-    /**
-     * Retrieves exportable properties from this Player.
-     *
-     * @return Player properties
-     */
-    Player.prototype.getProperties = function () {
-        return {
-            torch: this.torch,
-            torchExpiry: this.torchExpiry,
-            torchStrength: this.torchStrength
-        };
-    };
-
-    /**
-     * Assigns properties to this Player from an exported properties object.
-     *
-     * @param properties Exported Player properties.
-     */
-    Player.prototype.setProperties = function (properties) {
-        this.torch = jzt.util.getOption(properties, 'torch', this.torch);
-        this.torchExpiry = jzt.util.getOption(properties, 'torchExpiry', this.torchExpiry);
-        this.torchStrength = jzt.util.getOption(properties, 'torchStrength', this.torchStrength);
     };
 
     /**
@@ -2904,15 +2878,11 @@ jzt.things = (function (my) {
         var event = this.eventScheduler.takeEvent();
 
         if (event) {
-            if (event.type === this.MOVE_ACTION) {
+            if (event.type === MOVE_ACTION) {
                 this.move(event.direction);
-            } else if (event.type === this.SHOOT_ACTION) {
+            } else if (event.type === SHOOT_ACTION) {
                 this.shoot(event.direction);
             }
-        }
-
-        if (this.torch) {
-            this.updateTorch(Date.now());
         }
 
     };
@@ -2930,31 +2900,31 @@ jzt.things = (function (my) {
         if (k.isPressed(k.SHIFT) || k.isPressed(k.SPACE)) {
 
             if (key === k.UP) {
-                this.eventScheduler.scheduleEvent(k.isPressed(k.UP), {'type': this.SHOOT_ACTION,  'direction': jzt.Direction.North});
+                this.eventScheduler.scheduleEvent(k.isPressed(k.UP), {'type': SHOOT_ACTION,  'direction': jzt.Direction.North});
             } else if (key === k.RIGHT) {
-                this.eventScheduler.scheduleEvent(k.isPressed(k.RIGHT), {'type': this.SHOOT_ACTION, 'direction': jzt.Direction.East});
+                this.eventScheduler.scheduleEvent(k.isPressed(k.RIGHT), {'type': SHOOT_ACTION, 'direction': jzt.Direction.East});
             } else if (key === k.DOWN) {
-                this.eventScheduler.scheduleEvent(k.isPressed(k.DOWN), {'type': this.SHOOT_ACTION, 'direction': jzt.Direction.South});
+                this.eventScheduler.scheduleEvent(k.isPressed(k.DOWN), {'type': SHOOT_ACTION, 'direction': jzt.Direction.South});
             } else if (key === k.LEFT) {
-                this.eventScheduler.scheduleEvent(k.isPressed(k.LEFT), {'type': this.SHOOT_ACTION, 'direction': jzt.Direction.West});
+                this.eventScheduler.scheduleEvent(k.isPressed(k.LEFT), {'type': SHOOT_ACTION, 'direction': jzt.Direction.West});
             } else {
                 this.eventScheduler.cancelEvent();
             }
         } else {
             if (key === k.UP) {
-                this.eventScheduler.scheduleEvent(k.isPressed(k.UP), {'type': this.MOVE_ACTION, 'direction': jzt.Direction.North});
+                this.eventScheduler.scheduleEvent(k.isPressed(k.UP), {'type': MOVE_ACTION, 'direction': jzt.Direction.North});
             } else if (key === k.RIGHT) {
-                this.eventScheduler.scheduleEvent(k.isPressed(k.RIGHT), {'type': this.MOVE_ACTION, 'direction': jzt.Direction.East});
+                this.eventScheduler.scheduleEvent(k.isPressed(k.RIGHT), {'type': MOVE_ACTION, 'direction': jzt.Direction.East});
             } else if (key === k.DOWN) {
-                this.eventScheduler.scheduleEvent(k.isPressed(k.DOWN), {'type': this.MOVE_ACTION, 'direction': jzt.Direction.South});
+                this.eventScheduler.scheduleEvent(k.isPressed(k.DOWN), {'type': MOVE_ACTION, 'direction': jzt.Direction.South});
             } else if (key === k.LEFT) {
-                this.eventScheduler.scheduleEvent(k.isPressed(k.LEFT), {'type': this.MOVE_ACTION, 'direction': jzt.Direction.West});
+                this.eventScheduler.scheduleEvent(k.isPressed(k.LEFT), {'type': MOVE_ACTION, 'direction': jzt.Direction.West});
             } else {
                 this.eventScheduler.cancelEvent();
             }
 
             // If T has been pressed, and we have 10 seconds or less on our current torch
-            if (k.isPressed([k.T]) && ((!this.torch || (this.torchExpiry - Date.now()) < 10000))) {
+            if (k.isPressed([k.T])) {
                 this.useTorch();
             }
 
@@ -2973,6 +2943,12 @@ jzt.things = (function (my) {
      */
     Player.prototype.useTorch = function () {
 
+        // If the player has more than 10 seconds left on the current torch,
+        // then they don't need another yet.
+        if (this.game.getCounterValue('TORCHLIFE') > 10000) {
+            return;
+        }
+
         // If the player has torches available...
         if (this.game.getCounterValue('TORCHES') > 0) {
 
@@ -2986,9 +2962,7 @@ jzt.things = (function (my) {
             this.game.adjustCounter('TORCHES', -1);
 
             // Specify that we're now using a torch
-            this.torch = true;
-            this.torchExpiry = Date.now() + this.TORCH_TTL;
-            this.torchStrength = this.MAX_TORCH_STRENGTH;
+            this.game.setCounterValue('TORCHLIFE', TORCH_TTL);
 
         } else {
 
@@ -3001,45 +2975,25 @@ jzt.things = (function (my) {
     };
 
     /**
-     * An event handler to be called when the game is unpaused.
+     * Retrieves a torch area for this Player, if the player's torch is currently active.
      */
-    Player.prototype.onUnpause = function (pauseDuration) {
-        if (this.torch) {
-            this.torchExpiry = this.torchExpiry + pauseDuration;
-        }
-    };
+    Player.prototype.getTorch = function () {
 
-    /**
-     * Updates this Player's torch as of a provided timestamp moment, dimming
-     * the surrounding area as the torch ages.
-     *
-     * @param timeStamp A moment representing a new reality for this Player's torch.
-     */
-    Player.prototype.updateTorch = function (timeStamp) {
+        var torchLife = this.game.getCounterValue('TORCHLIFE');
+        var torchStrength = MAX_TORCH_STRENGTH;
 
-        var torchLife;
+        // If we've got a torch...
+        if (torchLife > 0) {
 
-        // If we've already past our torch expiry date
-        if (timeStamp > this.torchExpiry) {
-            this.play('tc-c-c');
-            this.torch = false;
-        } else {
-
-            // Calculate our torche's life remaining
-            torchLife = this.torchExpiry - timeStamp;
-
+            // Start shrinking the radius when there's only 20 seconds left
             if (torchLife < 20000) {
-                this.torchStrength = Math.ceil((torchLife * this.MAX_TORCH_STRENGTH) / 20000);
+                torchStrength = Math.ceil((torchLife * MAX_TORCH_STRENGTH) / (TORCH_TTL / 3));
             }
 
+            return jzt.util.generateCircleData(this.point, torchStrength);
+
         }
 
-    };
-
-    Player.prototype.getTorch = function () {
-        if (this.torch) {
-            return jzt.util.generateCircleData(this.point, this.torchStrength);
-        }
     };
 
     /**
