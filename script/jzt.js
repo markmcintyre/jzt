@@ -267,7 +267,8 @@ jzt = (function (my) {
             GEMS: 0,
             TORCHES: 0,
             SCORE: 0,
-            TORCHLIFE: 0
+            TORCHLIFE: 0,
+            '<PLAYTIME>': 0
         };
 
         for (index in data.counters) {
@@ -781,6 +782,9 @@ jzt = (function (my) {
             // Update our focus point
             this.currentBoard.focusPoint = this.player.point;
 
+            // Update our play time
+            this.adjustCounter('<PLAYTIME>', delta);
+
             // Check what keys the player might be pressing...
             if (this.keyboard.isPressed(this.keyboard.P) || this.keyboard.isPressed(this.keyboard.ENTER)) {
 
@@ -818,6 +822,9 @@ jzt = (function (my) {
 
             // We're reading
             this.scroll.update();
+
+            // Reading counts as playtime
+            this.adjustCounter('<PLAYTIME>', delta);
 
         } else if (this.state === GameState.FileManagement) {
 
