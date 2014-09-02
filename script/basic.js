@@ -149,6 +149,12 @@ jzt = (function (my) {
 
     };
 
+    /**
+     * Compares a provided Point instance to this one.
+     *
+     * @return {number} - A negative value if the other instance is smaller, 0 if both are the same,
+     *    and a positive value if other is greater.
+     */
     Point.prototype.compareTo = function (other) {
         return this.x === other.x ? this.y - other.y : this.x - other.x;
     };
@@ -170,65 +176,6 @@ jzt = (function (my) {
      */
     Point.prototype.toString = function () {
         return '(' + this.x + ', ' + this.y + ')';
-    };
-
-    /**
-     * PointSet represents a set of Point instances. This set can be sorted
-     * and indexed.
-     */
-    function PointSet() {
-
-        if (!(this instanceof PointSet)) {
-            throw jzt.ConstructorError;
-        }
-
-        this.points = [];
-        this.sorted = false;
-    }
-
-    PointSet.prototype.add = function (point) {
-        if (!this.contains(point)) {
-            this.points.push(point);
-            this.sorted = false;
-        }
-    };
-
-    PointSet.prototype.sortPoints = function () {
-        this.points.sort(function (a, b) {
-            return a.compareTo(b);
-        });
-        this.sorted = true;
-    };
-
-    PointSet.prototype.contains = function (point) {
-        return this.indexOf(point) >= 0;
-    };
-
-    PointSet.prototype.indexOf = function (point) {
-
-        var minIndex = 0;
-        var maxIndex = this.points.length - 1;
-        var middle;
-
-        if (!this.sorted) {
-            this.sortPoints();
-        }
-
-        while (maxIndex >= minIndex) {
-            middle = minIndex + (Math.round((maxIndex - minIndex) / 2));
-
-            if (this.points[middle].compareTo(point) < 0) {
-                minIndex = middle + 1;
-            } else if (this.points[middle].compareTo(point) > 0) {
-                maxIndex = middle - 1;
-            } else {
-                return middle;
-            }
-
-        }
-
-        return -1;
-
     };
 
     /**
@@ -285,8 +232,8 @@ jzt = (function (my) {
      * Retrieves a name for a provided Point representing a direction from our
      * enumerated direction types.
      *
-     * @param direction A provided direction
-     * @return A direction name.
+     * @param {object} direction - A provided direction
+     * @return {string} - A direction name.
      */
     Direction.getName = function (direction) {
 
@@ -305,6 +252,13 @@ jzt = (function (my) {
 
     };
 
+    /**
+     * Retrieves a 'short' name for a provided Point representing a direction from
+     * our enumerated direction types.
+     *
+     * @param {object} direction - A provided direction.
+     * @param {string} - A direction name
+     */
     Direction.getShortName = function (direction) {
 
         switch (direction) {
@@ -458,6 +412,14 @@ jzt = (function (my) {
 
     };
 
+    /**
+     * DelayedEventScheduler is an event scheduler that includes an initial delay
+     * before repeating events. This is used, for example, to "repeat" events as long as a key
+     * is held down, but includes a slight delay before the repeating happens.
+     *
+     * @param {number} initialDelay - A number of milliseconds to use as an initial delay
+     * @param {number} subsequentDelay - A number of milliseconds to repeat events after the initial delay
+     */
     function DelayedEventScheduler(initialDelay, subsequentDelay) {
 
         if (!(this instanceof DelayedEventScheduler)) {
@@ -468,8 +430,16 @@ jzt = (function (my) {
         this.subsequentDelay = subsequentDelay;
         this.event = undefined;
         this.nextAllowableEvent = 0;
+
     }
 
+    /**
+     * Schedules an event, expected to have started at a provided event time.
+     *
+     * @param {number} eventTime - A timestamp indicating the event time
+     * @param {object} event - An arbitrary object representing an event to retrieve
+     *     later at scheduled intervals.
+     */
     DelayedEventScheduler.prototype.scheduleEvent = function (eventTime, event) {
 
         var now = Date.now();
@@ -487,10 +457,18 @@ jzt = (function (my) {
 
     };
 
+    /**
+     * Cancels this event scheduler's scheduled event.
+     */
     DelayedEventScheduler.prototype.cancelEvent = function () {
         this.nextAllowableEvent = 0;
     };
 
+    /**
+     * Takes a scheduled event from this event scheduler.
+     *
+     * @return {object} - A scheduled event
+     */
     DelayedEventScheduler.prototype.takeEvent = function () {
         var result = this.event;
         this.event = undefined;
@@ -509,6 +487,12 @@ jzt = (function (my) {
         this.notifications = [];
     }
 
+    /**
+     * Adds a provided notification to this notification listner.
+     *
+     * @param {string} type - A notification type
+     * @param {string} message - A notification message
+     */
     NotificationListener.prototype.addNotification = function (type, message) {
         this.notifications.push({type: type, message: message, timestamp: Date.now()});
     };
@@ -601,10 +585,27 @@ jzt = (function (my) {
 
     };
 
+    /**
+     * Generates a circle given a center point and a radius to surround it.
+     * Note that since tiles are twice as high as they are wide, the circle
+     * is adjusted to have double the width as the height.
+     *
+     * @param {object} point - A center point
+     * @param {number} radius - A radius
+     * @return {object} - An ellipse object representing the tiles covered by an ellipse
+     */
     utilities.generateCircleData = function (point, radius) {
         return utilities.generateEllipseData(point, radius * 2, radius);
     };
 
+    /**
+     * Generates an ellipse given a center point, an X radius, and a Y radius.
+     *
+     * @param {object} point - A center point
+     * @param {number} rx - An X radius
+     * @param {number} ry - A Y radius
+     * @return {object} - An ellipse object representing the tiles covered by an ellipse
+     */
     utilities.generateEllipseData = function (point, rx, ry) {
 
         var result = {};
@@ -620,6 +621,13 @@ jzt = (function (my) {
         var py = twoRx2 * y;
         var minMax;
 
+        /**
+         * Retrieves whether or not a provided point is covered by this
+         * ellipse.
+         *
+         * @param {object} point - A point to test
+         * @return {boolean} - True if the provided point is inside this ellipse, false otherwise
+         */
         result.contains = function (point) {
             if (this[point.y]) {
                 minMax = this[point.y];
@@ -677,10 +685,27 @@ jzt = (function (my) {
 
     };
 
+    /**
+     * Retrieves an array of points that fall within a defined circle with
+     * a provided center point and radius.
+     *
+     * @param {object} point - A center point
+     * @param {number} radius - A radius
+     * @return {object[]} - An array of points
+     */
     utilities.pointsInCircle = function (point, radius) {
         return utilities.pointsInEllipse(point, radius * 2, radius);
     };
 
+    /**
+     * Retrieves an array of points that fall within a defined ellipse with
+     * a provided center point and provided x and y radius..
+     *
+     * @param {object} point - A center point
+     * @param {number} rx - An X radius
+     * @param {number} ry - A Y radius
+     * @return {object[]} - An array of points
+     */
     utilities.pointsInEllipse = function (point, rx, ry) {
 
         var result = [];
@@ -725,7 +750,6 @@ jzt = (function (my) {
     };
 
     my.Point = Point;
-    my.PointSet = PointSet;
     my.Direction = Direction;
     my.DelayedEventScheduler = DelayedEventScheduler;
     my.NotificationListener = NotificationListener;

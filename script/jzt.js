@@ -37,7 +37,7 @@ jzt = (function (my) {
     /**
      * Game represents a playable JZT game, including all Boards and a player.
      *
-     * @param configuration A configuration object consisting of the following:
+     * @param {object} configuration - A configuration object consisting of the following:
      * - onLoadCallback: A function to be called when the game has loaded
      * - canvasElement: A Canvas element where this game should be drawn
      * - notificationListener: A NotificationListener instance to listen for game notifications
@@ -71,16 +71,14 @@ jzt = (function (my) {
 
         }
 
-        // Start initializing our Game
         this.FPS = 30;
         this.CPS = 10;
         this.CYCLE_RATE = Math.round(this.FPS / this.CPS);
         this.CYCLE_TICKS = Math.floor(1000 / this.FPS) * this.CYCLE_RATE;
         this.FPS_INTERVAL = 1000 / this.FPS;
+
         this.version = formatVersion;
-
         this.loopId = undefined;
-
         this.gameToLoad = undefined;
         this.gameLoaded = false;
         this.loadingAnimationIndex = 0;
@@ -89,11 +87,12 @@ jzt = (function (my) {
 
         this.onLoadCallback = configuration.onLoadCallback;
         this.notificationListener = configuration.notificationListener;
-        this.resources = {};
         this.player = undefined;
         this.keyboard = new jzt.KeyboardInput();
         this.canvasElement = configuration.canvasElement;
         this.devicePixelRatio = 1;
+
+        // Initialize our canvas
         if (window.devicePixelRatio) {
             this.devicePixelRatio = window.devicePixelRatio;
             this.canvasElement.style.width = this.canvasElement.width + 'px';
@@ -101,6 +100,7 @@ jzt = (function (my) {
             this.canvasElement.width = this.canvasElement.width * window.devicePixelRatio;
             this.canvasElement.height = this.canvasElement.height * window.devicePixelRatio;
         }
+
         this.context = this.canvasElement.getContext('2d');
         this.context.imageSmoothingEnabled = false;
         this.context.webkitImageSmoothingEnabled = false;
@@ -108,12 +108,19 @@ jzt = (function (my) {
         this.context.msImageSmoothingEnabled = false;
         this.context.oImageSmoothingEnabled = false;
 
-        this.resources.audio = new jzt.Audio();
-        this.resources.graphics = new jzt.Graphics(this.onGraphicsLoaded.bind(this));
+        // Initialize our audio and graphics resources
+        this.resources = {
+            audio: new jzt.Audio(),
+            graphics: new jzt.Graphics(this.onGraphicsLoaded.bind(this))
+        };
 
+        // If we're not a 1:1 pixel ratio...
         if (window.devicePixelRatio) {
+
+            // Adjust our tile size
             this.resources.graphics.TILE_SIZE.x = this.resources.graphics.TILE_SIZE.x * window.devicePixelRatio;
             this.resources.graphics.TILE_SIZE.y = this.resources.graphics.TILE_SIZE.y * window.devicePixelRatio;
+
         }
 
         this.screenWidth = Math.floor(this.context.canvas.width / this.resources.graphics.TILE_SIZE.x);
@@ -128,6 +135,12 @@ jzt = (function (my) {
 
     }
 
+    /**
+     * Adds ourselves as a listener to a provided settings object. Whenever the settings
+     * of this instance changes, we expect to be notified.
+     *
+     * @param {object} settings - A settings object
+     */
     Game.prototype.observeSettings = function (settings) {
 
         // Assign our callback
@@ -138,6 +151,11 @@ jzt = (function (my) {
 
     };
 
+    /**
+     * Creates and returns a serializes object representing this Game's state.
+     *
+     * @return {object} - A serialized Game instance.
+     */
     Game.prototype.serialize = function () {
 
         var result = {};
@@ -153,15 +171,17 @@ jzt = (function (my) {
         result.counters = {};
         result.savedGame = true;
 
+        // Serialize our counters
         for (index in this.counters) {
             if (this.counters.hasOwnProperty(index) && !isNaN(this.counters[index])) {
                 result.counters[index] = this.counters[index];
             }
         }
 
-        // Serialize our current board
+        // Serialize our current board to our board storage first
         this.boards[this.currentBoard.name] = this.currentBoard.serialize();
 
+        // Serialize each of our boards
         for (index in this.boards) {
             if (this.boards.hasOwnProperty(index)) {
                 result.boards.push(this.boards[index]);
@@ -172,10 +192,18 @@ jzt = (function (my) {
 
     };
 
+    /**
+     * Restarts the currently active game.
+     */
     Game.prototype.restartGame = function () {
         this.loadGame(this.gameUrl || this.cachedGame);
     };
 
+    /**
+     * Loads a provided game to this Game instance.
+     *
+     * @param {object|string} - A serialized game, or a URL where one can be downloaded.
+     */
     Game.prototype.loadGame = function (game) {
 
         var me = this;
@@ -184,50 +212,90 @@ jzt = (function (my) {
 
         this.keyboard.cancelInput();
         this.previousStates = [];
+
+        // We're officially in a loading state
         this.setState(GameState.Loading);
 
+        // Determine what we've got, exactly
         if (typeof game === 'string') {
 
+            // It was a URL
             this.gameUrl = game;
 
             try {
+
+                // Fetch the game object via AJAX
                 httpRequest = new XMLHttpRequest();
                 httpRequest.onreadystatechange = function () {
+
+                    // If we're ready to load...
                     if (httpRequest.readyState === 4) {
 
                         try {
 
                             if (httpRequest.status === 200) {
+
+                                // The download was successful. Get our JSON response
+                                // and deserialize it.
                                 response = JSON.parse(httpRequest.responseText);
                                 me.deserialize(response);
+
                             } else {
+
+                                // There was an error.
                                 throw 'Unexpected HTTP request status ' + httpRequest.status;
+
                             }
 
                         } catch (exception) {
+
+                            // Any exeptions indicate a catestrophic error
                             me.catestrophicError(jzt.i18n.getMessage('status.loaderror'));
+
                         }
 
                     }
+
                 };
+
+                // Configure our GET request and do it!
                 httpRequest.open('GET', game, true);
                 httpRequest.send(null);
+
             } catch (exception) {
+
+                // If anything bad happens, all bets are off
                 this.catestrophicError(jzt.i18n.getMessage('status.loaderror'));
+
             }
 
         } else if (typeof game === 'object') {
+
+            // We got an actual game object instead of a URL
+            // so load it directly!
             this.cachedGame = game;
             this.deserialize(game);
+
         }
 
     };
 
+    /**
+     * Indicate that an unrecoverable error has occurred. This will interrupt
+     * all gameplay and display a message to the user.
+     *
+     * @param {string} message - A message to display to the user.
+     */
     Game.prototype.catestrophicError = function (message) {
         this.catestrophicErrorMessage = message;
         this.setState(GameState.Error);
     };
 
+    /**
+     * Deserializes a provided game instance and loads it to the current Game.
+     *
+     * @param {object} data - Serialized game data.
+     */
     Game.prototype.deserialize = function (data) {
 
         var index;
@@ -271,12 +339,14 @@ jzt = (function (my) {
             '<PLAYTIME>': 0
         };
 
+        // Load all of our provided counter values
         for (index in data.counters) {
             if (data.counters.hasOwnProperty(index) && !isNaN(data.counters[index])) {
                 this.counters[index] = data.counters[index];
             }
         }
 
+        // Load each of our boards
         for (index = 0; index < data.boards.length; index += 1) {
             board = data.boards[index];
             this.boards[board.name] = board;
@@ -303,6 +373,11 @@ jzt = (function (my) {
         this.setCounterValue(counter, this.getCounterValue(counter) + value);
     };
 
+    /**
+     * Retrieves a game counter's value.
+     *
+     * @param {string} counter - A name of a counter to retrieve.
+     */
     Game.prototype.getCounterValue = function (counter) {
         if (this.counters[counter] === undefined) {
             return 0;
@@ -392,12 +467,21 @@ jzt = (function (my) {
 
     };
 
+    /**
+     * Assigns a GameState to this Game instance, changing the current state of this Game's finite
+     * state machine, but saving the old state to a stack.
+     *
+     * @param {number} state - A new state to replace the old one.
+     */
     Game.prototype.pushState = function (state) {
         this.previousStates.push(this.state);
         this.keyboard.cancelInput();
         this.setState(state);
     };
 
+    /**
+     * Restores a GameState from this Game's state stack.
+     */
     Game.prototype.restoreState = function () {
         if (this.previousStates.length > 0) {
             this.keyboard.cancelInput();
@@ -756,6 +840,11 @@ jzt = (function (my) {
 
     };
 
+    /**
+     * Returns whether or not this Game is actively running.
+     *
+     * @return {boolean} - True if this Game is running, false otherwise.
+     */
     Game.prototype.isRunning = function () {
         return this.loopId;
     };
@@ -978,6 +1067,11 @@ jzt = (function (my) {
 
     };
 
+    /**
+     * Adds a provided warning message to this Game's notification listeners.
+     *
+     * @param {string} message - A message to send to this game's notification listeners.
+     */
     Game.prototype.addWarning = function (message) {
 
         if (this.notificationListener) {
@@ -986,6 +1080,9 @@ jzt = (function (my) {
 
     };
 
+    /**
+     * Draws a CRT-like screen effect over the current graphics canvas.
+     */
     Game.prototype.drawScreenEffect = function () {
 
         var line;
@@ -993,21 +1090,27 @@ jzt = (function (my) {
         var translateX = Math.round(256 * Math.random());
         var translateY = Math.round(256 * Math.random());
 
+        // Increment our vertical position
         this.screenEffectIndex += 1;
         if (this.screenEffectIndex > lineSpacing) {
             this.screenEffectIndex = 0;
         }
 
+        // We'll be drawing our noise pattern
         this.context.fillStyle = this.NOISE_PATTERN;
+
+        // We simulate noise with a single random noise image by translating to a
+        // a random location and drawing a pattern over the whole screen. This lets
+        // us re-use the same noise image to simulate static.
         this.context.save();
         this.context.translate(translateX, translateY);
         this.context.scale(2 * this.devicePixelRatio, 2 * this.devicePixelRatio);
         this.context.fillRect(-translateX, -translateY, this.context.canvas.width, this.context.canvas.height);
         this.context.restore();
 
+        // We also draw faded horizontal-ish lines over our whole image
         this.context.lineWidth = 4 * this.devicePixelRatio;
         this.context.strokeStyle = 'rgba(0,0,0,0.05)';
-
         this.context.beginPath();
         for (line = -lineSpacing; line < this.context.canvas.height; line = line + lineSpacing) {
             this.context.moveTo(0, line + this.screenEffectIndex + lineSpacing);
@@ -1015,6 +1118,7 @@ jzt = (function (my) {
         }
         this.context.stroke();
 
+        // We draw the same lines, offset slightly to make them a bit 'blurry'
         this.context.beginPath();
         for (line = -lineSpacing; line < this.context.canvas.height; line = line + lineSpacing) {
             this.context.moveTo(0, line + (2 * this.devicePixelRatio) + this.screenEffectIndex + lineSpacing);
@@ -1024,12 +1128,15 @@ jzt = (function (my) {
 
     };
 
+    /**
+     * Draws an error screen over the current canvas.
+     */
     Game.prototype.drawErrorScreen = function () {
 
         var spriteGrid = this.errorPopup ? this.errorPopup.spriteGrid : undefined;
         var popupWidth = this.catestrophicErrorMessage.length + 7;
 
-        // If we haven't yet defined our error popup
+        // If we haven't yet defined our error popup, do it now
         if (this.errorPopup === undefined || this.errorPopup.language !== jzt.i18n.Messages.currentLanguage) {
             this.errorPopup = new jzt.ui.Popup(undefined, new jzt.Point(popupWidth, 3), this);
             this.errorPopup.setColor(jzt.colors.Red, jzt.colors.White);
@@ -1043,6 +1150,9 @@ jzt = (function (my) {
 
     };
 
+    /**
+     * Draws an animated loading screen over the current canvas.
+     */
     Game.prototype.drawLoadingScreen = function () {
 
         var spriteGrid = this.loadingPopup ? this.loadingPopup.spriteGrid : undefined;
@@ -1060,11 +1170,15 @@ jzt = (function (my) {
 
         this.loadingPopup.render(this.context);
 
+        // Animate our spinning sprite
         sprite = this.resources.graphics.getSprite(jzt.things.Conveyor.animationFrames[Math.floor(this.loadingAnimationIndex / 4)]);
         sprite.draw(this.context, this.loadingPopup.animationPosition, jzt.colors.Cycle);
 
     };
 
+    /**
+     * Draws a pause screen with some player and gameplay statistics to the current canvas.
+     */
     Game.prototype.drawPauseScreen = function () {
 
         var spriteGrid;
@@ -1075,6 +1189,12 @@ jzt = (function (my) {
         var pauseWidth = 24;
         var me = this;
 
+        /**
+         * Retrieves a human-readable value of a named counter, along with its
+         * maximum, if applicable.
+         *
+         * @param {string} counter - A name of a counter to print
+         */
         function getCounterValue(counter) {
             var result = me.getCounterValue(counter).toString();
             if (me.getCounterValue(counter + '_MAX')) {
@@ -1124,6 +1244,7 @@ jzt = (function (my) {
                 position.x += 1;
             }
         }
+
     };
 
     /**
@@ -1186,6 +1307,12 @@ jzt = (function (my) {
 
     };
 
+    /**
+     * An event handler called when an observed settings object has changed. Depending on
+     * the values that have changed, the behaviour of this Game may change as well.
+     *
+     * @param {object} settings - A settings object that has changed
+     */
     Game.prototype.onSettingsChanged = function (settings) {
 
         if (settings.hasOwnProperty('audioMute')) {
