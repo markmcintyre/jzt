@@ -11,9 +11,9 @@
 var jzt = jzt || {};
 
 jzt.Editor = function(editorElement, configuration) {
-    
+
     var me = this;
-    
+
     this.formatVersion = '1.0.0';
 
     this.editorElement = editorElement;
@@ -36,7 +36,7 @@ jzt.Editor = function(editorElement, configuration) {
         resources: {},
         isEditor: true,
         version: this.formatVersion,
-        addWarning: function(){},
+        notifyListeners: function(){},
         context: {
             canvas: {
                 width: 1,
@@ -457,7 +457,7 @@ jzt.Editor.prototype.deserialize = function(data) {
     var index;
     var board;
     var options = {};
-    
+
     if (!data.version || data.version !== this.formatVersion) {
         throw 'Incompatible version';
     }
@@ -466,7 +466,7 @@ jzt.Editor.prototype.deserialize = function(data) {
         this.removeBoardCallback.call(this, this.boards[index].name);
     }
 
-    
+
 
     this.boards = [];
 
@@ -475,7 +475,7 @@ jzt.Editor.prototype.deserialize = function(data) {
         this.boards.push(board);
         this.addBoardCallback.call(this, board.name);
     }
-    
+
 
     options.name = data.name;
     options.id = data.id;
@@ -565,7 +565,7 @@ jzt.Editor.prototype.addBoard = function(boardName, width, height) {
     var newBoard = new jzt.Board(template, this.game);
     newBoard.initializePlayer(new jzt.things.Player());
     this.boards.push(newBoard);
-    
+
     if(this.addBoardCallback) {
         this.addBoardCallback.call(this, newBoard.name);
     }
@@ -690,7 +690,7 @@ jzt.Editor.prototype.createField = function(fieldName, field, template) {
     label.appendChild(element);
 
     return label;
-    
+
 
 };
 
@@ -971,7 +971,7 @@ jzt.Editor.prototype.drawCursor = function(context) {
     context.lineWidth = this.drawing ? 4 : 2;
 
     context.fillRect(xPos, yPos,  xSize, ySize);
-    
+
     // If we're in drawing mode
     if(this.mode === jzt.Editor.Mode.DRAW) {
         context.strokeRect(xPos, yPos, xSize, ySize);

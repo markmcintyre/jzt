@@ -41,7 +41,13 @@
                     if(success) {
                         this.run(data);
                     }
-                }
+                },
+                notificationListeners: [{
+                    types: ['script-error', 'victory', 'game-over'],
+                    callback: function (type, notification) {
+                        alert('Notification received.\nType: ' + type + '\nNotification: ' + JSON.stringify(notification));
+                    }
+                }]
             });
         </script>
 

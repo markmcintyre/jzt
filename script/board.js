@@ -222,7 +222,7 @@ jzt = (function (my) {
                 script = new jzt.jztscript.JztScript(scriptData[index].name, scriptData[index].rawScript, true);
                 this.scripts.push(script);
             } catch (exception) {
-                this.game.addWarning(scriptData[index].name + ': ' + exception);
+                this.game.notifyListeners('script-error', {scriptName: scriptData[index].name, error: exception});
             }
 
 

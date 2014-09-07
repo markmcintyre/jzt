@@ -40,10 +40,12 @@ jzt = (function (my) {
      * @param {object} configuration - A configuration object consisting of the following:
      * - onLoadCallback: A function to be called when the game has loaded
      * - canvasElement: A Canvas element where this game should be drawn
-     * - notificationListener: A NotificationListener instance to listen for game notifications
+     * - notificationListeners: An array of notification listeners to listen for game notifications
      * - settings: User-configurable settings object to observe
      */
     function Game(configuration) {
+
+        var index;
 
         if (!(this instanceof Game)) {
             throw jzt.ConstructorError;
@@ -86,11 +88,18 @@ jzt = (function (my) {
         this.previousStates = [];
 
         this.onLoadCallback = configuration.onLoadCallback;
-        this.notificationListener = configuration.notificationListener;
         this.player = undefined;
         this.keyboard = new jzt.KeyboardInput();
         this.canvasElement = configuration.canvasElement;
         this.devicePixelRatio = 1;
+        this.notificationListeners = [];
+
+        // Add our notification listeners
+        if (configuration.notificationListeners) {
+            for (index = 0; index < configuration.notificationListeners.length; index += 1) {
+                this.addNotificationListener(configuration.notificationListeners[index]);
+            }
+        }
 
         // Initialize our canvas
         if (window.devicePixelRatio) {
@@ -149,6 +158,16 @@ jzt = (function (my) {
         // Send our initial values
         settings.initialize(this.settings);
 
+    };
+
+    /**
+     * Adds a provided notification listener to the set of listeners registered for this
+     * Game instance.
+     *
+     * @param {object} notificationListener - A notification listener.
+     */
+    Game.prototype.addNotificationListener = function (notificationListener) {
+        this.notificationListeners.push(notificationListener);
     };
 
     /**
@@ -559,6 +578,11 @@ jzt = (function (my) {
             // Deactivate subsequent audio output
             this.resources.audio.setActive(false, false);
 
+            // Notify our listeners that it's game over
+            this.notifyListeners('game-over', {
+                score: this.getCounterValue('SCORE')
+            });
+
         } else if (state === GameState.Title) {
 
             // It's the title screen!
@@ -590,6 +614,12 @@ jzt = (function (my) {
                 this.player.point.x = -1;
                 this.player.point.y = -1;
             }
+
+            // Notify our listeners that it's a victory
+            this.notifyListeners('victory', {
+                score: this.getCounterValue('SCORE'),
+                time: this.getCounterValue('<PLAYTIME>')
+            });
 
         } else if (state === GameState.Splash) {
 
@@ -1068,14 +1098,21 @@ jzt = (function (my) {
     };
 
     /**
-     * Adds a provided warning message to this Game's notification listeners.
+     * Notifies listeners of a provided notification.
      *
-     * @param {string} message - A message to send to this game's notification listeners.
+     * @param {string} type - A type of message used to filter notification listeners.
+     * @param {object} notification - A notification object that listeners will understand.
      */
-    Game.prototype.addWarning = function (message) {
+    Game.prototype.notifyListeners = function (type, notification) {
 
-        if (this.notificationListener) {
-            this.notificationListener.addNotification('warning', message);
+        var index,
+            notificationListener;
+
+        for (index = 0; index < this.notificationListeners.length; index += 1) {
+            notificationListener = this.notificationListeners[index];
+            if (!notificationListener.types || notificationListener.types.indexOf(type) >= 0) {
+                notificationListener.callback(type, notification);
+            }
         }
 
     };
