@@ -109,7 +109,7 @@ jzt.jztscript = (function (my) {
             var directionTerminal = new Alternation();
 
             // Add direction terminal options
-            // TODO: Can we get this from basic.js?
+            // Future Improvement: Can we get this from basic.js?
             directionTerminal.add(new Literal('SEEK'));
             directionTerminal.add(new Literal('SMART'));
             directionTerminal.add(new Literal('FLOW'));
@@ -224,7 +224,7 @@ jzt.jztscript = (function (my) {
             var thing = new Alternation();
 
             // Add alternation values
-            // TODO: Can we get these from jzt.things directly?
+            // Future Improvement: Can we get these from jzt.things directly?
             thing.add(new Literal('Empty'));
             thing.add(new Literal('ActiveBomb'));
             thing.add(new Literal('Ammo'));

@@ -788,7 +788,7 @@ jzt = (function (my) {
      * Executes a single cycle of this Game's primary loop, effectively running
      * this Game for a single graphics tick.
      *
-     * TODO: Use performance.now() and the parameter passed to this function by
+     * Future Improvement: Use performance.now() and the parameter passed to this function by
      * requestAnimationFrame to do timing once browser support improves.
      */
     Game.prototype.loop = function () {
