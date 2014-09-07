@@ -104,8 +104,6 @@ jzt = (function (my) {
         // Initialize our canvas
         if (window.devicePixelRatio) {
             this.devicePixelRatio = window.devicePixelRatio;
-            this.canvasElement.style.width = this.canvasElement.width + 'px';
-            this.canvasElement.style.height = this.canvasElement.height + 'px';
             this.canvasElement.width = this.canvasElement.width * window.devicePixelRatio;
             this.canvasElement.height = this.canvasElement.height * window.devicePixelRatio;
         }

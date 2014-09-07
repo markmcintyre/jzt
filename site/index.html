@@ -27,7 +27,11 @@
         <div id="content">
 
             <div id="unsupported-browser" class="warning"><span>⚠</span> Upgrade your browser to play.</div>
-            <canvas id="jzt" width="800" height="640"></canvas>
+
+            <div id="game-area">
+                <div class="alert"></div>
+                <canvas width="800" height="640"></canvas>
+            </div>
 
             <aside>
 
@@ -109,29 +113,31 @@
 
                 var settingsElement = document.getElementById('settings');
                 var fullscreenElement = settingsElement.querySelector('input[name=\'fullscreen\']');
-                var jztElement = document.getElementById('jzt');
+                var gameElement = document.getElementById('game-area');
+                var canvasElement = gameElement.querySelector('canvas');
 
                 var game = new jzt.Game({
-                    canvasElement: jztElement,
+                    canvasElement: canvasElement,
                     onLoadCallback: function(success) {
                         if (success) {
                             this.run('village-of-jzt.json');
                             this.observeSettings(new jztux.Settings(settingsElement));
                         } else {
                             document.getElementById('unsupported-browser').style.display = 'block';
-                            jztElement.parentNode.removeChild(jztElement);
+                            canvasElement.parentNode.removeChild(canvasElement);
                         }
                     }
                 });
 
                 if (jztux.isFullscreenSupported()) {
-                    jztux.attachFullscreenHandler(fullscreenElement, jztElement);
+                    jztux.attachFullscreenHandler(fullscreenElement, gameElement);
                 } else {
                     fullscreenElement = fullscreenElement.parentNode;
                     fullscreenElement.parentNode.removeChild(fullscreenElement);
                 }
 
             }());
+
         </script>
 
     </body>

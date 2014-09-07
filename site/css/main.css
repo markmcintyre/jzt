@@ -108,6 +108,35 @@ h1, h2 {
     padding: 0;
 }
 
+#game-area {
+    background-color: #555;
+    width: 800px;
+    height: 640px;
+}
+
+#game-area canvas {
+    height: 100%;
+}
+
+:-moz-full-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:-ms-fullscreen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:fullscreen {
+  /* set to flexbox to centre imagine inside */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 aside {
     display: block;
     overflow: auto;
