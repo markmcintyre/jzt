@@ -734,21 +734,6 @@ jzt = (function (my) {
 
     };
 
-    /**
-     * Retrieves a property value from a provided data object with a provided name.
-     * If no such value exists, then a provided default value is returned instead.
-     *
-     * @param data A data object
-     * @param optionName A name of a property to retrieve
-     * @param defaultValue A value to be retrieved if no such property is available.
-     */
-    utilities.getOption = function (data, optionName, defaultValue) {
-        if (data.hasOwnProperty(optionName)) {
-            return data[optionName];
-        }
-        return defaultValue;
-    };
-
     my.Point = Point;
     my.Direction = Direction;
     my.DelayedEventScheduler = DelayedEventScheduler;

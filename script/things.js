@@ -569,10 +569,10 @@ jzt.things = (function (my) {
      */
     Scriptable.prototype.deserialize = function (data) {
         UpdateableThing.prototype.deserialize.call(this, data);
-        this.name = jzt.util.getOption(data, 'name', 'UnknownScriptable');
-        this.spriteIndex = jzt.util.getOption(data, 'spriteIndex', 1);
-        this.setTorchRadius(jzt.util.getOption(data, 'torchRadius', 0));
-        this.pushable = jzt.util.getOption(data, 'pushable', false);
+        this.name = data.name || 'UnknownScriptable';
+        this.spriteIndex = data.spriteIndex !== undefined ? data.spriteIndex : 1;
+        this.setTorchRadius(data.torchRadius !== undefined ? data.torchRadius : 0);
+        this.pushable = data.pushable !== undefined ? data.pushable : false;
         this.locked = data.locked;
         if (data.walkDirection) {
             this.walkDirection = jzt.Direction.fromName(data.walkDirection);
@@ -704,8 +704,8 @@ jzt.things = (function (my) {
 
     ActiveBomb.prototype.deserialize = function (data) {
         UpdateableThing.prototype.deserialize.call(this, data);
-        this.timeToLive = jzt.util.getOption(data, 'timeToLive', 9);
-        this.radius = jzt.util.getOption(data, 'radius', 4);
+        this.timeToLive = data.timeToLive || 9;
+        this.radius = data.radius || 4;
     };
 
     ActiveBomb.prototype.push = function (direction) {
@@ -825,7 +825,7 @@ jzt.things = (function (my) {
         UpdateableThing.prototype.deserialize.call(this, data);
         this.background = undefined;
         this.foreground = jzt.colors.Brown;
-        this.sensitivity = jzt.util.getOption(data, 'sensitivity', 9);
+        this.sensitivity = data.sensitivity || 9;
     };
 
     /**
@@ -1048,7 +1048,7 @@ jzt.things = (function (my) {
 
     BlinkWall.prototype.deserialize = function (data) {
         Thing.prototype.deserialize.call(this, data);
-        this.horizontal = jzt.util.getOption(data, 'horizontal', false);
+        this.horizontal = data.horizontal !== undefined ? data.horizontal : false;
     };
 
     BlinkWall.prototype.getSpriteIndex = function () {
@@ -1073,7 +1073,7 @@ jzt.things = (function (my) {
 
     Bomb.prototype.deserialize = function (data) {
         Thing.prototype.deserialize.call(this, data);
-        this.radius = jzt.util.getOption(data, 'radius', 4);
+        this.radius = data.radius || 4;
     };
 
     Bomb.prototype.serialize = function () {
@@ -3223,8 +3223,8 @@ jzt.things = (function (my) {
         UpdateableThing.prototype.deserialize.call(this, data);
         this.background = undefined;
         this.foreground = jzt.colors.BrightMagenta;
-        this.intelligence = jzt.util.getOption(data, 'intelligence', 5);
-        this.restingTime = jzt.util.getOption(data, 'restingTime', 5);
+        this.intelligence = data.intelligence || 5;
+        this.restingTime = data.restingTime || 5;
     };
 
     /**
@@ -3771,8 +3771,8 @@ jzt.things = (function (my) {
      */
     SpinningGun.prototype.deserialize = function (data) {
         UpdateableThing.prototype.deserialize.call(this, data);
-        this.intelligence = jzt.util.getOption(data, 'intelligence', 5);
-        this.firingRate = jzt.util.getOption(data, 'firingRate', 5);
+        this.intelligence = data.intelligence || 5;
+        this.firingRate = data.firingRate || 5;
     };
 
     /**
@@ -4020,7 +4020,7 @@ jzt.things = (function (my) {
         UpdateableThing.prototype.deserialize.call(this, data);
         this.foreground = jzt.colors.Cycle;
         this.background = undefined;
-        this.timeToLove = jzt.util.getOption(data, 'timeToLive', 100);
+        this.timeToLive = data.timeToLive || 100;
     };
 
     /**
