@@ -544,6 +544,9 @@ jzt = (function (my) {
             // Reset our player display
             this.player.background = this.player.background.darken();
 
+            // Notify listeners that we're playing
+            this.notifyListeners('playing');
+
         } else if (state === GameState.Reading) {
 
             // Let's start reading!
@@ -562,6 +565,9 @@ jzt = (function (my) {
 
             // Show our file management, and suppress the empty slot if we're on the title screen
             this.fileManagement.open(undefined, this.state === GameState.Title);
+
+            // Notify listeners that we're managing files
+            this.notifyListeners('file-management');
 
         } else if (state === GameState.GameOver) {
 

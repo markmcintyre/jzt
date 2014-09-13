@@ -29,7 +29,15 @@
             <div id="unsupported-browser" class="warning"><span>⚠</span> Upgrade your browser to play.</div>
 
             <div id="game-area">
-                <div class="alert"></div>
+                <div class="alert slide">
+                    <div class="wrapper">
+                        <div class="close">✕</div>
+                        <h3 class="message"></h3>
+                        <div class="score">Your Score: <span class="value"></span></div>
+                        <div class="playtime">Your Play Time: <span class="value"></span></div>
+                        Share your score: [Facebook] [Twitter] [Google+]
+                    </div>
+                </div>
                 <canvas width="800" height="640"></canvas>
             </div>
 
@@ -118,6 +126,9 @@
 
                 var game = new jzt.Game({
                     canvasElement: canvasElement,
+                    notificationListeners: [
+                        new jztux.HighScoreListener(gameElement.querySelector('.alert'))
+                    ],
                     onLoadCallback: function(success) {
                         if (success) {
                             this.run('village-of-jzt.json');

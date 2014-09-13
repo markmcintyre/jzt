@@ -15,7 +15,7 @@ jztux = (function (jztux) {
         return document.fullscreenEnabled || document.webkitFullscreenEnabled || document.mozFullScreenEnabled || document.msFullscreenEnabled;
     }
 
-    function attachFullscreenHandler(buttonElement, canvasElement) {
+    function attachFullscreenHandler(buttonElement, fullscreenElement) {
 
         function isFullscreen() {
             return document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement;
@@ -24,11 +24,11 @@ jztux = (function (jztux) {
         function onFullscreenChange() {
 
             if (isFullscreen()) {
-                canvasElement.style.height = '100%';
-                canvasElement.style.width = Math.round((screen.height * 800) / 640) + 'px';
+                fullscreenElement.style.height = '100%';
+                fullscreenElement.style.width = '100%';
             } else {
-                canvasElement.style.width = '800px';
-                canvasElement.style.height = '640px';
+                fullscreenElement.style.width = '800px';
+                fullscreenElement.style.height = '640px';
             }
 
             buttonElement.checked = false;
@@ -36,14 +36,14 @@ jztux = (function (jztux) {
         }
 
         buttonElement.addEventListener('click', function () {
-            if (canvasElement.requestFullscreen) {
-                canvasElement.requestFullscreen();
-            } else if (canvasElement.webkitRequestFullscreen) {
-                canvasElement.webkitRequestFullscreen();
-            } else if (canvasElement.mozRequestFullScreen) {
-                canvasElement.mozRequestFullScreen();
-            } else if (canvasElement.msRequestFullscreen) {
-                canvasElement.msRequestFullscreen();
+            if (fullscreenElement.requestFullscreen) {
+                fullscreenElement.requestFullscreen();
+            } else if (fullscreenElement.webkitRequestFullscreen) {
+                fullscreenElement.webkitRequestFullscreen();
+            } else if (fullscreenElement.mozRequestFullScreen) {
+                fullscreenElement.mozRequestFullScreen();
+            } else if (fullscreenElement.msRequestFullscreen) {
+                fullscreenElement.msRequestFullscreen();
             }
         });
 
