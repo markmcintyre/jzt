@@ -43,11 +43,16 @@ jztux = (function (jztux) {
         var hours,
             minutes,
             seconds,
+            index,
+            socialLink,
+            template,
+            formattedScore,
             messageElement  = this.alertElement.querySelector('.message'),
             scoreElement    = this.alertElement.querySelector('.score'),
             playtimeElement = this.alertElement.querySelector('.playtime'),
             scoreValue      = scoreElement.querySelector('.value'),
             playtimeValue   = playtimeElement.querySelector('.value'),
+            socialLinks     = this.alertElement.querySelectorAll('.social-share'),
             me              = this;
 
         setTimeout(function () {
@@ -88,7 +93,15 @@ jztux = (function (jztux) {
             }
 
             // Show our score
-            scoreValue.innerHTML = notification.score.toLocaleString(jzt.i18n.getLanguage());
+            formattedScore = notification.score.toLocaleString(jzt.i18n.getLanguage());
+            scoreValue.innerHTML = formattedScore;
+
+            // Update our social sharing links
+            for (index = 0; index < socialLinks.length; index += 1) {
+                socialLink = socialLinks[index];
+                template = socialLink.getAttribute('data-uri-template');
+                socialLink.href = template.replace('{url}', encodeURIComponent(document.URL)).replace('{score}', encodeURIComponent(formattedScore));
+            }
 
             me.alertElement.classList.add('in');
 
