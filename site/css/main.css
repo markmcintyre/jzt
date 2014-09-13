@@ -142,6 +142,11 @@ h3 {
     top: 20px;
 }
 
+.alert .social-share {
+    display: inline-block;
+    width: auto;
+}
+
 .slide {
     overflow: hidden;
     max-height: 0;
