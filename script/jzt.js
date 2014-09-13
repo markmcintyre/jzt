@@ -327,8 +327,14 @@ jzt = (function (my) {
 
         // If we're already running, end the game loop
         if (this.isRunning()) {
+
             wasAlreadyRunning = true;
+
+            // Cancel any playing audio
+            this.resources.audio.cancel();
+
             this.end();
+
         }
 
         this.name = data.name;
