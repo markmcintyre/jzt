@@ -19,44 +19,11 @@
             textarea {
                 font-family: monospace;
             }
-            #color-customizer ol {
-                list-style: none;
-                margin: 5px;
-                padding: 0;
-            }
-            #color-customizer ol li {
-                display: inline-block;
-                width: 0;
-                height: 32px;
-                overflow: hidden;
-                padding-left: 16px;
-                border: 1px solid blue;
-            }
-            #color-customizer ol li.active {
-                border: 2px solid #5555FF;
-            }
-            li.color9 {background-color: #5555FF;}
-            li.colorA {background-color: #55FF55;}
-            li.colorB {background-color: #55FFFF;}
-            li.colorC {background-color: #FF5555;}
-            li.colorD {background-color: #FF55FF;}
-            li.colorE {background-color: #FFFF55;}
-            li.colorF {background-color: #FFFFFF;}
             #script-warning {background-color: yellow; color: red;}
             dialog + .backdrop {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
                 background-color: rgba(0, 0, 0, 0.75);
             }
             dialog::backdrop {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
                 background-color: rgba(0, 0, 0, 0.75);
             }
         </style>
@@ -68,12 +35,30 @@
         </header>
 
         <dialog id="script-dialog">
-            <select id="script-selector"></select>
-            <button id="new-script-button">New Script</button>
-            <button id="delete-script-button">Delete Script</button>
-            <textarea id="script-editor" rows="20" style="width: 100%"></textarea>
-            <div id="script-warning"></div>
-            <button class="ok-button">OK</button>
+            <select data-id="selector"></select>
+            <button data-id="new">New Script</button>
+            <button data-id="delete">Delete Script</button>
+            <textarea data-id="editor" rows="20" style="width: 100%"></textarea>
+            <div data-id="warning"></div>
+            <button data-id="ok">OK</button>
+        </dialog>
+
+        <dialog id="board-options-dialog">
+            <label>North: <select data-id="north"><option value="">None</option></select></label><br/>
+            <label>East: <select data-id="east"><option value="">None</option></select></label><br/>
+            <label>South: <select data-id="south"><option value="">None</option></select></label><br/>
+            <label>West: <select data-id="west"><option value="">None</option></select></label><br/>
+            <label><input type="checkbox" data-id="dark" /> Dark Room</label>
+            <button data-id="ok">OK</button>
+        </dialog>
+
+        <dialog id="world-options-dialog">
+            <label>Game Title: <input type="text" data-id="title" /></label><br/>
+            <label>Author: <input type="text" data-id="author"/></label><br/>
+            <label>Title Board: <select data-id="title-board"><option value="">None</option></select></label>
+            <label>Starting Board: <select data-id="starting-board"></select></label>
+            <label>Victory Board: <select data-id="victory-board"><option value="">None</option></select></label>
+            <button data-id="ok">OK</button>
         </dialog>
 
         <div id="edit-area">
@@ -148,7 +133,9 @@
         <div id="customizers">
             <div id="toolbar">
                 <button id="script-button">Scripts</button>
-            </div>
+                <button id="board-options-button">Board Options</button>
+                <button id="world-options-button">World Options</button>
+            </div><br/>
             <div id="other-customizers">
                 <select id="mode-selector">
                     <option value="0">Drawing</option>
@@ -162,33 +149,6 @@
             </div>
             <textarea id="active-template-editor" rows="10" style="width: 100%"></textarea>
 
-            <div id="color-customizer">
-                <ol>
-                    <li class="color9" data-color="9">Bright&nbsp;Blue</li>
-                    <li class="colorA" data-color="A">Bright&nbsp;Green</li>
-                    <li class="colorB" data-color="B">Bright&nbsp;Cyan</li>
-                    <li class="colorC" data-color="C">Bright&nbsp;Red</li>
-                    <li class="colorD" data-color="D">Bright&nbsp;Magenta</li>
-                    <li class="colorE" data-color="E">Yellow</li>
-                    <li class="colorF" data-color="F">White</li>
-                </ol>
-            </div>
-
-            <div id="board-customizer">
-                <label>North: <select id="north-selector"><option value="">None</option></select></label><br/>
-                <label>East: <select id="east-selector"><option value="">None</option></select></label><br/>
-                <label>South: <select id="south-selector"><option value="">None</option></select></label><br/>
-                <label>West: <select id="west-selector"><option value="">None</option></select></label><br/>
-                <label><input type="checkbox" id="dark-selector" /> Dark Room</label>
-            </div>
-
-            <div id="game-customizer">
-                <label>Game Title: <input type="text" id="game-name" /></label><br/>
-                <label>Author: <input type="text" id="author-name"/></label><br/>
-                <label>Title Board: <select id="title-board-selector"><option value="">None</option></select></label>
-                <label>Starting Board: <select id="starting-board-selector"></select></label>
-                <label>Victory Board: <select id="victory-board-selector"><option value="">None</option></select></label>
-            </div>
         </div>
 
         <script type="text/javascript" src="../script/jzt.js"></script>
@@ -207,7 +167,66 @@
         <script type="text/javascript" src="../script/thirdparty/lz-string-1.3.3.js"></script>
         <script type="text/javascript" src="../script/thirdparty/base-64-tools.js"></script>
         <script type="text/javascript" src="../script/thirdparty/dialog-polyfill/dialog-polyfill.js"></script>
+        <script type="text/javascript" src="../script/ux/ux-editor.js"></script>
         <script type="text/javascript">
+
+            (function () {
+                jztux.initializeEditorUx({
+                    editArea: document.getElementById('edit-area'),
+                    boardSelector: document.getElementById('board-selector'),
+                    boardOptionsDialog: document.getElementById('board-options-dialog'),
+                    worldOptionsDialog: document.getElementById('world-options-dialog'),
+                    scriptDialog: document.getElementById('script-dialog'),
+                    templateEditor: document.getElementById('active-template-editor'),
+                    download: document.getElementById('download'),
+                    downloadJson: document.getElementById('download-json'),
+                    newBoard: document.getElementById('new-board'),
+                    deleteBoard: document.getElementById('delete-board'),
+                    loadGame: document.getElementById('load-game'),
+                    scriptButton: document.getElementById('script-button'),
+                    boardOptionsButton: document.getElementById('board-options-button'),
+                    worldOptionsButton: document.getElementById('world-options-button'),
+                    modeSelector: document.getElementById('mode-selector'),
+                    saveButton: document.getElementById('save-game'),
+                    toolBox: document.getElementById('toolbox')
+                });
+            })();
+
+              /* jztux.initializeEditorUx({
+                    boardSelector: document.getElementById('board-selector'),
+                    northSelector: document.getElementById('north-selector'),
+                    eastSelector: document.getElementById('east-selector'),
+                    southSelector: document.getElementById('south-selector'),
+                    westSelector: document.getElementById('west-selector'),
+                    darkSelector: document.getElementById('dark-selector'),
+                    templateEditor: document.getElementById('active-template-editor'),
+                    scriptSelector: document.getElementById('script-selector'),
+                    newScriptButton: document.getElementById('new-script-button'),
+                    deleteScriptButton: document.getElementById('delete-script-button'),
+                    scriptEditor: document.getElementById('script-editor'),
+                    modeSelector: document.getElementById('mode-selector'),
+                    editArea: document.getElementById('edit-area'),
+                    toolBox: document.getElementById('toolbox'),
+                    download: document.getElementById('download'),
+                    downloadJson: document.getElementById('download-json'),
+                    loadGame: document.getElementById('load-game'),
+                    newBoard: document.getElementById('new-board'),
+                    deleteBoard: document.getElementById('delete-board'),
+                    gameName: document.getElementById('game-name'),
+                    authorName: document.getElementById('author-name'),
+                    startingBoardSelector: document.getElementById('starting-board-selector'),
+                    titleBoardSelector: document.getElementById('title-board-selector'),
+                    victoryBoardSelector: document.getElementById('victory-board-selector'),
+                    scriptWarning: document.getElementById('script-warning'),
+                    scriptDialog: document.getElementById('script-dialog'),
+                    scriptButton: document.getElementById('script-button'),
+                    boardOptionsDialog: document.getElementById('board-options-dialog'),
+                    boardOptionsButton: document.getElementById('board-options-button'),
+                    worldOptionsDialog: document.getElementById('world-options-dialog'),
+                    worldOptionsButton: document.getElementById('world-options-button')
+               });
+
+            });
 
             var templates = {};
             var boardSelector = document.getElementById('board-selector');
@@ -237,10 +256,16 @@
             var scriptWarning = document.getElementById('script-warning');
             var scriptDialog = document.getElementById('script-dialog');
             var scriptButton = document.getElementById('script-button');
+            var boardOptionsDialog = document.getElementById('board-options-dialog');
+            var boardOptionsButton = document.getElementById('board-options-button');
+            var worldOptionsDialog = document.getElementById('world-options-dialog');
+            var worldOptionsButton = document.getElementById('world-options-button');
             var editor = undefined;
             var parser = new jzt.jztscript.JztScriptParser(true);
 
             dialogPolyfill.registerDialog(scriptDialog);
+            dialogPolyfill.registerDialog(boardOptionsDialog);
+            dialogPolyfill.registerDialog(worldOptionsDialog);
 
             function onToolSelected(event) {
 
@@ -549,11 +574,6 @@
                 tools[index].addEventListener('change', onToolSelected, false);
             }
 
-            var colors = document.getElementById('color-customizer').getElementsByTagName('li');
-            for(var index = 0; index < colors.length; ++index) {
-                colors[index].addEventListener('click', onColorSelected, false);
-            }
-
             var saveButton = document.getElementById('save-game');
             saveButton.addEventListener('click', saveGame, false);
 
@@ -595,6 +615,18 @@
             scriptDialog.querySelector('.ok-button').addEventListener('click', function () {
                 scriptDialog.close();
             });
+            boardOptionsButton.addEventListener('click', function () {
+                boardOptionsDialog.showModal();
+            });
+            boardOptionsDialog.querySelector('.ok-button').addEventListener('click', function () {
+                boardOptionsDialog.close();
+            });
+            worldOptionsButton.addEventListener('click', function () {
+                worldOptionsDialog.showModal();
+            });
+            worldOptionsDialog.querySelector('.ok-button').addEventListener('click', function () {
+                worldOptionsDialog.close();
+            });*/
 
 
         </script>

@@ -380,7 +380,7 @@ jzt = (function (my) {
         var torch;
 
         // If the board is dark and we've got a torch, add it to our collection
-        if (this.dark && typeof (thing.getTorch) === 'function') {
+        if (!(this.game.isEditor) && this.dark && typeof (thing.getTorch) === 'function') {
             torch = thing.getTorch();
             if (torch) {
                 this.torches.push(torch);
