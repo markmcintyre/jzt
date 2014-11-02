@@ -1,5 +1,5 @@
 /*jslint browser: true */
-/*global LZString, Base64, FileReader, alert, dialogPolyfill */
+/*global LZString, Base64, FileReader, alert, dialogPolyfill, CodeMirror */
 
 var jzt;
 var jztux;
@@ -42,9 +42,9 @@ jztux = (function (jzt, jztux) {
         var script = editor.currentBoard.getScript(scriptName);
 
         if (script) {
-            scriptEditor.value = script.rawScript || script.script;
+            scriptEditor.setValue(script.rawScript || script.script);
         } else {
-            scriptEditor.value = '';
+            scriptEditor.setValue('');
         }
 
     }
@@ -133,7 +133,10 @@ jztux = (function (jzt, jztux) {
 
         scriptSelector = dialog.querySelector('[data-id="selector"]');
 
-        scriptEditor = dialog.querySelector('[data-id="editor"]');
+        scriptEditor = CodeMirror.fromTextArea(dialog.querySelector('[data-id="editor"]'), {
+            lineNumbers: true,
+            lineWrapping: false
+        });
         scriptWarning = dialog.querySelector('[data-id="warning"]');
 
         // New Script Button
@@ -147,7 +150,7 @@ jztux = (function (jzt, jztux) {
                 script = new jzt.jztscript.JztScript(newName);
                 editor.currentBoard.scripts.push(script);
                 scriptSelector.options[scriptSelector.options.length] = new Option(newName);
-                scriptEditor.value = editor.currentBoard.getScript(newName).rawScript;
+                scriptEditor.setValue(editor.currentBoard.getScript(newName).rawScript);
                 scriptSelector.value = newName;
             }
 
@@ -172,19 +175,19 @@ jztux = (function (jzt, jztux) {
         }, false);
 
         // Script Editor
-        scriptEditor.addEventListener('blur', function () {
+        scriptEditor.on('blur', function () {
 
             var script = editor.currentBoard.getScript(scriptSelector.value);
 
             try {
-                parser.parse(scriptEditor.value);
+                parser.parse(scriptEditor.getValue());
                 scriptWarning.innerHTML = '';
             } catch (exception) {
                 scriptWarning.innerHTML = exception;
             }
-            script.rawScript = scriptEditor.value;
+            script.rawScript = scriptEditor.getValue();
 
-        }, false);
+        });
 
         scriptSelector.addEventListener('change', function (event) {
             selectScript(event.target.value);
