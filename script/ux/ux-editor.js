@@ -262,7 +262,10 @@ jztux = (function (jzt, jztux) {
         }, false);
 
         // Mode Selector
-        modeSelector.addEventListener('change', onModeChanged, false);
+        modeSelector.addEventListener('change', function () {
+            var mode = parseInt(modeSelector.value, 10);
+            editor.setMode(mode);
+        }, false);
 
         // Template Editor
         templateEditor.addEventListener('blur', function () {
