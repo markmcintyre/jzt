@@ -52,10 +52,10 @@
                 <ul class="right">
 
                     <li class="has-form">
-                        <ul class="button-group">
-                          <li><a href="#" class="button active">Draw</a></li>
-                          <li><a href="#" class="button">Fill</a></li>
-                          <li><a href="#" class="button">Select</a></li>
+                        <ul id="mode-selector" class="button-group">
+                          <li><a href="#" class="button active" data-mode="draw">Draw</a></li>
+                          <li><a href="#" class="button" data-mode="fill">Fill</a></li>
+                          <li><a href="#" class="button" data-mode="select">Select</a></li>
                         </ul>
                     </li>
 
@@ -211,7 +211,8 @@
                     loadGame: document.getElementById('load-game'),
                     scriptButton: document.getElementById('script-button'),
                     saveButton: document.getElementById('save-game'),
-                    itemSelector: document.getElementById('item-selector')
+                    itemSelector: document.getElementById('item-selector'),
+                    modeSelector: document.getElementById('mode-selector')
                 });
             })();
 

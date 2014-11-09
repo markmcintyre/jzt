@@ -24,6 +24,7 @@ jztux = (function (jzt, jztux) {
         titleBoardSelector,
         victoryBoardSelector,
         scriptWarning,
+        modeSelector,
         editor,
         templates,
         parser;
@@ -172,6 +173,9 @@ jztux = (function (jzt, jztux) {
      */
     function initializePrimaryUi(options) {
 
+        var index,
+            children;
+
         function onToolChange(event) {
 
             var toolType = event.target.value,
@@ -209,6 +213,22 @@ jztux = (function (jzt, jztux) {
 
         }
 
+        function onModeChange(event) {
+            var mode = event.target.getAttribute('data-mode');
+            switch (mode) {
+            case 'draw':
+                editor.setMode(jzt.Editor.Mode.DRAW);
+                break;
+            case 'select':
+                editor.setMode(jzt.Editor.Mode.SELECT);
+                break;
+            case 'fill':
+                editor.setMode(jzt.Editor.Mode.FILL);
+                break;
+            }
+        }
+
+        modeSelector = options.modeSelector;
         boardSelector = options.boardSelector;
         templateEditor = options.templateEditor;
         itemSelector = options.itemSelector;
@@ -217,6 +237,11 @@ jztux = (function (jzt, jztux) {
         boardSelector.addEventListener('change', function () {
             editor.switchBoard(event.target.value);
         }, false);
+
+        children = modeSelector.querySelectorAll('[data-mode]');
+        for (index = 0; index < children.length; index += 1) {
+            children[index].addEventListener('click', onModeChange, false);
+        }
 
         // Template Editor
         templateEditor.addEventListener('blur', function () {
@@ -414,13 +439,47 @@ jztux = (function (jzt, jztux) {
             }
 
         } else {
-            itemSelector.value = 'Nothing';
+            itemSelector.value = '';
             templateEditor.value = '(None)';
         }
 
     }
 
+    /**
+     * An event handler to be invoked when an edit mode has changed
+     *
+     * @param newMode {int} - A new mode
+     */
+    function onModeChanged(newMode) {
 
+        function selectMode(mode) {
+
+            var elements = modeSelector.querySelectorAll('[data-mode]'),
+                index;
+
+            for (index = 0; index < elements.length; index += 1) {
+                if (elements[index].getAttribute('data-mode') === mode) {
+                    elements[index].classList.add('active');
+                } else {
+                    elements[index].classList.remove('active');
+                }
+            }
+
+
+        }
+
+        switch (newMode) {
+        case jzt.Editor.Mode.DRAW:
+            selectMode('draw');
+            break;
+        case jzt.Editor.Mode.FILL:
+            selectMode('fill');
+            break;
+        case jzt.Editor.Mode.SELECT:
+            selectMode('select');
+            break;
+        }
+    }
 
     /**
      * Initializes a user interface for a JZT game editor.
@@ -435,6 +494,7 @@ jztux = (function (jzt, jztux) {
             addBoard: onBoardAdded,
             removeBoard: onBoardRemoved,
             changeBoard: onBoardChanged,
+            changeMode: onModeChanged,
             changeTemplate: onTemplateChanged,
             changeBoardOptions: onBoardOptionsChanged,
             changeGameOptions: onGameOptionsChanged

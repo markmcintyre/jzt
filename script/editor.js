@@ -161,6 +161,9 @@ jzt = (function (jzt) {
             script: {type: 'script', label: 'Script'},
             speed: {type: 'number', min: 1, max: 10, default: 3, label: 'Speed'}
         },
+        Signpost: {
+            text: {type: 'text', label: 'Signpost Text'}
+        },
         SliderEw: {
             color: {type: 'color', default: '*F', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
         },
@@ -629,7 +632,7 @@ jzt = (function (jzt) {
         }
 
         label = document.createElement('label');
-        label.innerHTML = field.label + ':';
+        label.innerHTML = field.label;
 
         if (field.type === 'number') {
             element = document.createElement('input');
@@ -688,6 +691,7 @@ jzt = (function (jzt) {
             }
         } else {
             element = document.createElement('input');
+            element.type = field.type;
         }
 
         if (!nonStandard && element) {
