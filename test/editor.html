@@ -2,6 +2,7 @@
 <html>
     <head>
         <title>JZT</title>
+        <meta charset="utf-8" />
         <link rel="stylesheet" href="../script/thirdparty/dialog-polyfill/dialog-polyfill.css" />
         <link rel="stylesheet" href="../script/thirdparty/codemirror/codemirror.css" />
         <link rel="stylesheet" href="../script/thirdparty/foundation/foundation.min.css" />
@@ -14,7 +15,7 @@
 
             <ul class="title-area">
                 <li class="name">
-                    <h1><a href="/">JZT Game World Editor</a></h1>
+                    <h1><a href="">JZT Game World Editor</a></h1>
                 </li>
 
                 <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
@@ -26,12 +27,13 @@
                     <li class="has-dropdown">
                         <a href="#">World</a>
                         <ul class="dropdown">
-                            <li><a href="">Save</a></li>
+                            <li><a href="" id="save-game">Save</a></li>
+                            <li><a href="">Open…</a></li>
                             <li class="divider"></li>
-                            <li><a href="">Download as JZT</a></li>
-                            <li><a href="">Download as JSON</a></li>
+                            <li><a href="" id="download">Download as JZT</a></li>
+                            <li><a href="" id="download-json">Download as JSON</a></li>
                             <li class="divider"></li>
-                            <li><a href="">Options</a></li>
+                            <li><a href="" data-reveal-id="world-options-dialog">Options</a></li>
                         </ul>
                     </li>
                     <li class="has-dropdown">
@@ -40,10 +42,10 @@
                             <li><label>Current Board</label></li>
                             <li class="board-selector-item"><select id="board-selector"></select></li>
                             <li class="divider"></li>
-                            <li><a href="">Add Board</a></li>
-                            <li><a href="">Delete Current Board</a></li>
+                            <li><a href="" id="new-board">Add New Board</a></li>
+                            <li><a href="" id="delete-board">Delete Current Board</a></li>
                             <li class="divider"></li>
-                            <li><a href="">Current Board Options</a></li>
+                            <li><a href="" data-reveal-id="board-options-dialog">Board Options</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -60,120 +62,108 @@
 
         </nav>
 
-        <dialog id="script-dialog">
+        <div id="script-dialog" class="reveal-modal" data-reveal>
             <select data-id="selector"></select>
             <button data-id="new">New Script</button>
             <button data-id="delete">Delete Script</button>
             <textarea data-id="editor" rows="20" style="width: 100%"></textarea>
             <div data-id="warning"></div>
-            <button data-id="ok">OK</button>
-        </dialog>
+            <a class="close-reveal-modal">&#215;</a>
+        </div>
 
-        <dialog id="board-options-dialog">
+        <div id="board-options-dialog" class="reveal-modal" data-reveal>
             <label>North: <select data-id="north"><option value="">None</option></select></label><br/>
             <label>East: <select data-id="east"><option value="">None</option></select></label><br/>
             <label>South: <select data-id="south"><option value="">None</option></select></label><br/>
             <label>West: <select data-id="west"><option value="">None</option></select></label><br/>
             <label><input type="checkbox" data-id="dark" /> Dark Room</label>
-            <button data-id="ok">OK</button>
-        </dialog>
+            <a class="close-reveal-modal">&#215;</a>
+        </div>
 
-        <dialog id="world-options-dialog">
+        <div id="world-options-dialog" class="reveal-modal" data-reveal>
             <label>Game Title: <input type="text" data-id="title" /></label><br/>
             <label>Author: <input type="text" data-id="author"/></label><br/>
             <label>Title Board: <select data-id="title-board"><option value="">None</option></select></label>
             <label>Starting Board: <select data-id="starting-board"></select></label>
             <label>Victory Board: <select data-id="victory-board"><option value="">None</option></select></label>
-            <button data-id="ok">OK</button>
-        </dialog>
-
-        <div id="edit-area">
+            <a class="close-reveal-modal">&#215;</a>
         </div>
 
-        <div id="toolbox">
+        <div class="row fullWidth">
 
-            <label><input type="radio" name="activeTemplate" value="" />Nothing</label>
-            <label><input type="radio" name="activeTemplate" value="Player">Player</label>
-            <label><input type="radio" name="activeTemplate" value="Wall" />Wall</label>
-            <label><input type="radio" name="activeTemplate" value="SolidWall" />Solid Wall</label>
-            <label><input type="radio" name="activeTemplate" value="LineWall" />Line</label>
-            <label><input type="radio" name="activeTemplate" value="InvisibleWall" />Invisible Wall</label>
-            <label><input type="radio" name="activeTemplate" value="BreakableWall" />Breakable Wall</label>
-            <label><input type="radio" name="activeTemplate" value="FakeWall" />Fake Wall</label>
-            <label><input type="radio" name="activeTemplate" value="SpiderWeb" />Spider Web</label>
-            <label><input type="radio" name="activeTemplate" value="Text"/>Text</label>
-            <br/>
-            <label><input type="radio" name="activeTemplate" value="Water" />Water</label>
-            <label><input type="radio" name="activeTemplate" value="Lava" />Lava</label>
-            <label><input type="radio" name="activeTemplate" value="Forest" />Forest</label>
-            <label><input type="radio" name="activeTemplate" value="Signpost">Signpost</label>
-            <label><input type="radio" name="activeTemplate" value="Ricochet" />Ricochet</label>
-            <label><input type="radio" name="activeTemplate" value="Door" />Door</label>
-            <br/>
-            <label><input type="radio" name="activeTemplate" value="Boulder" />Boulder</label>
-            <label><input type="radio" name="activeTemplate" value="SliderNs" />Slider (North/South)</label>
-            <label><input type="radio" name="activeTemplate" value="SliderEw" />Slider (East/West)</label>
-            <br/>
-            <label><input type="radio" name="activeTemplate" value="Teleporter" />Teleporter</label>
-            <label><input type="radio" name="activeTemplate" value="Passage" />Passage</label>
-            <label><input type="radio" name="activeTemplate" value="River" />River</label>
-            <label><input type="radio" name="activeTemplate" value="Blinker" />Blinker</label>
-            <label><input type="radio" name="activeTemplate" value="Conveyor" />Conveyor</label>
-            <label><input type="radio" name="activeTemplate" value="Duplicator" />Duplicator</label>
-            <br/>
-            <label><input type="radio" name="activeTemplate" value="Gem" />Gem</label>
-            <label><input type="radio" name="activeTemplate" value="Ammo" />Ammo</label>
-            <label><input type="radio" name="activeTemplate" value="Torch" />Torch</label>
-            <label><input type="radio" name="activeTemplate" value="Key" />Key</label>
-            <label><input type="radio" name="activeTemplate" value="Heart"/>Heart</label>
-            <label><input type="radio" name="activeTemplate" value="Bomb" />Bomb</label>
-            <br/>
-            <label><input type="radio" name="activeTemplate" value="Pusher" />Pusher</label>
-            <label><input type="radio" name="activeTemplate" value="Lion" />Lion</label>
-            <label><input type="radio" name="activeTemplate" value="Tiger" />Tiger</label>
-            <label><input type="radio" name="activeTemplate" value="Ruffian" />Ruffian</label>
-            <label><input type="radio" name="activeTemplate" value="Centipede" />Centipede</label>
-            <label><input type="radio" name="activeTemplate" value="Bear" />Bear</label>
-            <label><input type="radio" name="activeTemplate" value="SpinningGun" />Spinning Gun</label>
-            <label><input type="radio" name="activeTemplate" value="Spider" />Spider</label>
-            <label><input type="radio" name="activeTemplate" value="Snake" />Snake</label>
-            <label><input type="radio" name="activeTemplate" value="Scriptable" />Scriptable</label>
-            <br/>
-
-
-
-            <label>Boards
-                <select id="board-selector"></select>
-            </label>
-            <button id="new-board">New Board</button>
-            <button id="delete-board">Delete Board</button>
-            <br/>
-
-            <button id="save-game">Save</button>
-            <a download="untitled.jzt" id="download" href="#">Download</a>
-            <a download="untitled.jzt.json" id="download-json" href="#">Download JSON</a>
-            <input id="load-game" type="file" /><br/>
-
-        </div>
-
-        <div id="customizers">
-            <div id="toolbar">
-                <button id="script-button">Scripts</button>
-                <button id="board-options-button">Board Options</button>
-                <button id="world-options-button">World Options</button>
-            </div><br/>
-            <div id="other-customizers">
-                <select id="mode-selector">
-                    <option value="0">Drawing</option>
-                    <option value="1">Select</option>
-                    <option value="2">Fill</option>
-                    <option value="3">Text</option>
-                </select>
+            <div id="edit-area" class="small-12 large-8 columns">
             </div>
-            <div id="template-customizer">
 
+            <div class="small-12 large-4 columns">
+                <div id="toolbox">
+
+                    <label><input type="radio" name="activeTemplate" value="" />Nothing</label>
+                    <label><input type="radio" name="activeTemplate" value="Player">Player</label>
+                    <label><input type="radio" name="activeTemplate" value="Wall" />Wall</label>
+                    <label><input type="radio" name="activeTemplate" value="SolidWall" />Solid Wall</label>
+                    <label><input type="radio" name="activeTemplate" value="LineWall" />Line</label>
+                    <label><input type="radio" name="activeTemplate" value="InvisibleWall" />Invisible Wall</label>
+                    <label><input type="radio" name="activeTemplate" value="BreakableWall" />Breakable Wall</label>
+                    <label><input type="radio" name="activeTemplate" value="FakeWall" />Fake Wall</label>
+                    <label><input type="radio" name="activeTemplate" value="SpiderWeb" />Spider Web</label>
+                    <label><input type="radio" name="activeTemplate" value="Text"/>Text</label>
+                    <br/>
+                    <label><input type="radio" name="activeTemplate" value="Water" />Water</label>
+                    <label><input type="radio" name="activeTemplate" value="Lava" />Lava</label>
+                    <label><input type="radio" name="activeTemplate" value="Forest" />Forest</label>
+                    <label><input type="radio" name="activeTemplate" value="Signpost">Signpost</label>
+                    <label><input type="radio" name="activeTemplate" value="Ricochet" />Ricochet</label>
+                    <label><input type="radio" name="activeTemplate" value="Door" />Door</label>
+                    <br/>
+                    <label><input type="radio" name="activeTemplate" value="Boulder" />Boulder</label>
+                    <label><input type="radio" name="activeTemplate" value="SliderNs" />Slider (North/South)</label>
+                    <label><input type="radio" name="activeTemplate" value="SliderEw" />Slider (East/West)</label>
+                    <br/>
+                    <label><input type="radio" name="activeTemplate" value="Teleporter" />Teleporter</label>
+                    <label><input type="radio" name="activeTemplate" value="Passage" />Passage</label>
+                    <label><input type="radio" name="activeTemplate" value="River" />River</label>
+                    <label><input type="radio" name="activeTemplate" value="Blinker" />Blinker</label>
+                    <label><input type="radio" name="activeTemplate" value="Conveyor" />Conveyor</label>
+                    <label><input type="radio" name="activeTemplate" value="Duplicator" />Duplicator</label>
+                    <br/>
+                    <label><input type="radio" name="activeTemplate" value="Gem" />Gem</label>
+                    <label><input type="radio" name="activeTemplate" value="Ammo" />Ammo</label>
+                    <label><input type="radio" name="activeTemplate" value="Torch" />Torch</label>
+                    <label><input type="radio" name="activeTemplate" value="Key" />Key</label>
+                    <label><input type="radio" name="activeTemplate" value="Heart"/>Heart</label>
+                    <label><input type="radio" name="activeTemplate" value="Bomb" />Bomb</label>
+                    <br/>
+                    <label><input type="radio" name="activeTemplate" value="Pusher" />Pusher</label>
+                    <label><input type="radio" name="activeTemplate" value="Lion" />Lion</label>
+                    <label><input type="radio" name="activeTemplate" value="Tiger" />Tiger</label>
+                    <label><input type="radio" name="activeTemplate" value="Ruffian" />Ruffian</label>
+                    <label><input type="radio" name="activeTemplate" value="Centipede" />Centipede</label>
+                    <label><input type="radio" name="activeTemplate" value="Bear" />Bear</label>
+                    <label><input type="radio" name="activeTemplate" value="SpinningGun" />Spinning Gun</label>
+                    <label><input type="radio" name="activeTemplate" value="Spider" />Spider</label>
+                    <label><input type="radio" name="activeTemplate" value="Snake" />Snake</label>
+                    <label><input type="radio" name="activeTemplate" value="Scriptable" />Scriptable</label>
+                    <br/>
+
+                    <input id="load-game" type="file" /><br/>
+
+                    <div id="other-customizers">
+                        <select id="mode-selector">
+                            <option value="0">Drawing</option>
+                            <option value="1">Select</option>
+                            <option value="2">Fill</option>
+                            <option value="3">Text</option>
+                        </select>
+                    </div>
+
+                    <div id="template-customizer">
+
+                    </div>
+
+                    <textarea id="active-template-editor" rows="10" style="width: 100%"></textarea>
+
+                </div>
             </div>
-            <textarea id="active-template-editor" rows="10" style="width: 100%"></textarea>
 
         </div>
 
@@ -218,8 +208,6 @@
                     deleteBoard: document.getElementById('delete-board'),
                     loadGame: document.getElementById('load-game'),
                     scriptButton: document.getElementById('script-button'),
-                    boardOptionsButton: document.getElementById('board-options-button'),
-                    worldOptionsButton: document.getElementById('world-options-button'),
                     modeSelector: document.getElementById('mode-selector'),
                     saveButton: document.getElementById('save-game'),
                     toolBox: document.getElementById('toolbox')

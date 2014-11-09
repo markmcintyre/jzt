@@ -748,8 +748,11 @@ jzt = (function (jzt) {
     };
 
     Editor.prototype.eventToBoardPoint = function (event) {
-        var x = Math.floor(event.offsetX / this.game.resources.graphics.TILE_SIZE.x),
-            y = Math.floor(event.offsetY / this.game.resources.graphics.TILE_SIZE.y);
+
+        var scaleX = this.canvasElement.width / this.canvasElement.offsetWidth,
+            scaleY = this.canvasElement.height / this.canvasElement.offsetHeight,
+            x = Math.floor((event.offsetX * scaleX) / this.game.resources.graphics.TILE_SIZE.x),
+            y = Math.floor((event.offsetY * scaleY) / this.game.resources.graphics.TILE_SIZE.y);
         return new jzt.Point(x, y).add(this.currentBoard.windowOrigin);
     };
 

@@ -1,5 +1,5 @@
 /*jslint browser: true */
-/*global LZString, Base64, FileReader, alert, dialogPolyfill, CodeMirror */
+/*global LZString, Base64, FileReader, alert, CodeMirror */
 
 var jzt;
 var jztux;
@@ -71,10 +71,6 @@ jztux = (function (jzt, jztux) {
 
         boardOptionsDialog = dialog;
 
-        if (typeof dialog.show !== 'function') {
-            dialogPolyfill.registerDialog(dialog);
-        }
-
         northSelector = dialog.querySelector('[data-id="north"]');
         eastSelector = dialog.querySelector('[data-id="east"]');
         southSelector = dialog.querySelector('[data-id="south"]');
@@ -87,10 +83,6 @@ jztux = (function (jzt, jztux) {
         westSelector.addEventListener('change', onChange, false);
         darkSelector.addEventListener('click', onChange, false);
 
-        dialog.querySelector('[data-id="ok"]').addEventListener('click', function () {
-            dialog.close();
-        });
-
     }
 
     /**
@@ -102,19 +94,11 @@ jztux = (function (jzt, jztux) {
 
         worldOptionsDialog = dialog;
 
-        if (typeof dialog.show !== 'function') {
-            dialogPolyfill.registerDialog(dialog);
-        }
-
         gameName = dialog.querySelector('[data-id="title"]');
         authorName = dialog.querySelector('[data-id="author"]');
         titleBoardSelector = dialog.querySelector('[data-id="title-board"]');
         startingBoardSelector = dialog.querySelector('[data-id="starting-board"]');
         victoryBoardSelector = dialog.querySelector('[data-id="victory-board"]');
-
-        dialog.querySelector('[data-id="ok"]').addEventListener('click', function () {
-            dialog.close();
-        }, false);
 
     }
 
@@ -126,10 +110,6 @@ jztux = (function (jzt, jztux) {
     function initializeScriptDialog(dialog) {
 
         scriptDialog = dialog;
-
-        if (typeof dialog.show !== 'function') {
-            dialogPolyfill.registerDialog(dialog);
-        }
 
         scriptSelector = dialog.querySelector('[data-id="selector"]');
 
@@ -191,10 +171,6 @@ jztux = (function (jzt, jztux) {
 
         scriptSelector.addEventListener('change', function (event) {
             selectScript(event.target.value);
-        }, false);
-
-        dialog.querySelector('[data-id="ok"]').addEventListener('click', function () {
-            dialog.close();
         }, false);
 
     }
