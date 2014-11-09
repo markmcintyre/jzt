@@ -21,3 +21,7 @@
     position: relative;
     width: 100%;
 }
+
+.top-bar-section .button.active {
+    background-color: #00afe8;
+}

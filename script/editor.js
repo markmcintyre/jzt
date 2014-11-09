@@ -607,6 +607,27 @@ jzt = (function (jzt) {
             index,
             nonStandard = false;
 
+        function getFriendlyName(name) {
+            switch (name) {
+            case 'BrightBlue':
+                return 'Bright Blue';
+            case 'BrightGreen':
+                return 'Bright Green';
+            case 'BrightCyan':
+                return 'Bright Cyan';
+            case 'BrightRed':
+                return 'Bright Red';
+            case 'BrightMagenta':
+                return 'Bright Magenta';
+            case 'BrightWhite':
+                return 'Bright White';
+            case undefined:
+                return 'Transparent';
+            default:
+                return name;
+            }
+        }
+
         label = document.createElement('label');
         label.innerHTML = field.label + ':';
 
@@ -637,7 +658,7 @@ jzt = (function (jzt) {
         } else if (field.type === 'color') {
             element = document.createElement('select');
             for (index = 0; index < field.options.length; index += 1) {
-                element.options[element.options.length] = new Option(jzt.colors.getColor(field.options[index]).name, field.options[index]);
+                element.options[element.options.length] = new Option(getFriendlyName(jzt.colors.getColor(field.options[index]).name), field.options[index]);
             }
             nonStandard = true;
             element.addEventListener('change', function () {

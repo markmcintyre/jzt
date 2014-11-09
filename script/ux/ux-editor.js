@@ -16,9 +16,8 @@ jztux = (function (jzt, jztux) {
         templateEditor,
         scriptSelector,
         scriptEditor,
-        modeSelector,
         editArea,
-        toolBox,
+        itemSelector,
         gameName,
         authorName,
         startingBoardSelector,
@@ -26,9 +25,6 @@ jztux = (function (jzt, jztux) {
         victoryBoardSelector,
         scriptWarning,
         editor,
-        scriptDialog,
-        boardOptionsDialog,
-        worldOptionsDialog,
         templates,
         parser;
 
@@ -69,8 +65,6 @@ jztux = (function (jzt, jztux) {
             });
         }
 
-        boardOptionsDialog = dialog;
-
         northSelector = dialog.querySelector('[data-id="north"]');
         eastSelector = dialog.querySelector('[data-id="east"]');
         southSelector = dialog.querySelector('[data-id="south"]');
@@ -92,8 +86,6 @@ jztux = (function (jzt, jztux) {
      */
     function initializeWorldOptionsDialog(dialog) {
 
-        worldOptionsDialog = dialog;
-
         gameName = dialog.querySelector('[data-id="title"]');
         authorName = dialog.querySelector('[data-id="author"]');
         titleBoardSelector = dialog.querySelector('[data-id="title-board"]');
@@ -108,8 +100,6 @@ jztux = (function (jzt, jztux) {
      * @param dialog {object} - A dialog DOM element
      */
     function initializeScriptDialog(dialog) {
-
-        scriptDialog = dialog;
 
         scriptSelector = dialog.querySelector('[data-id="selector"]');
 
@@ -175,23 +165,12 @@ jztux = (function (jzt, jztux) {
 
     }
 
-    function onModeChanged(mode) {
-
-        if (parseInt(modeSelector.value, 10) !== mode) {
-            modeSelector.value = mode.toString();
-        }
-
-    }
-
     /**
      * Initializes the primary UI options
      *
      * @param options {object} - DOM elements used for user interaction
      */
     function initializePrimaryUi(options) {
-
-        var tools,
-            index;
 
         function onToolChange(event) {
 
@@ -232,18 +211,11 @@ jztux = (function (jzt, jztux) {
 
         boardSelector = options.boardSelector;
         templateEditor = options.templateEditor;
-        modeSelector = options.modeSelector;
-        toolBox = options.toolBox;
+        itemSelector = options.itemSelector;
 
         // Board Selector
         boardSelector.addEventListener('change', function () {
             editor.switchBoard(event.target.value);
-        }, false);
-
-        // Mode Selector
-        modeSelector.addEventListener('change', function () {
-            var mode = parseInt(modeSelector.value, 10);
-            editor.setMode(mode);
         }, false);
 
         // Template Editor
@@ -291,7 +263,7 @@ jztux = (function (jzt, jztux) {
         }, false);
 
         // Load Game
-        options.loadGame.addEventListener('click', function () {
+        /*options.loadGame.addEventListener('click', function () {
 
             var fileReader,
                 file;
@@ -323,24 +295,9 @@ jztux = (function (jzt, jztux) {
                 }
 
             }
-        }, false);
+        }, false);*/
 
-        options.scriptButton.addEventListener('click', function () {
-            scriptDialog.showModal();
-        }, false);
-
-        options.boardOptionsButton.addEventListener('click', function () {
-            boardOptionsDialog.showModal();
-        }, false);
-
-        options.worldOptionsButton.addEventListener('click', function () {
-            worldOptionsDialog.showModal();
-        }, false);
-
-        tools = document.getElementsByName('activeTemplate');
-        for (index = 0; index < tools.length; index += 1) {
-            tools[index].addEventListener('change', onToolChange, false);
-        }
+        itemSelector.addEventListener('change', onToolChange, false);
 
         options.saveButton.addEventListener('click', function () {
             editor.save();
@@ -449,21 +406,16 @@ jztux = (function (jzt, jztux) {
      */
     function onTemplateChanged(newTemplate) {
 
-        var element;
-
         if (newTemplate) {
             templateEditor.value = JSON.stringify(newTemplate, undefined, 4);
 
             if (newTemplate.type) {
-                element = toolBox.querySelector('input[value="' + newTemplate.type + '"]');
-                if (element) {
-                    element.checked = true;
-                }
+                itemSelector.value = newTemplate.type;
             }
 
         } else {
+            itemSelector.value = 'Nothing';
             templateEditor.value = '(None)';
-            toolBox.querySelector('input[value=""]').checked = true;
         }
 
     }
@@ -484,7 +436,6 @@ jztux = (function (jzt, jztux) {
             removeBoard: onBoardRemoved,
             changeBoard: onBoardChanged,
             changeTemplate: onTemplateChanged,
-            changeMode: onModeChanged,
             changeBoardOptions: onBoardOptionsChanged,
             changeGameOptions: onGameOptionsChanged
         });

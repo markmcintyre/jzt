@@ -3,7 +3,6 @@
     <head>
         <title>JZT</title>
         <meta charset="utf-8" />
-        <link rel="stylesheet" href="../script/thirdparty/dialog-polyfill/dialog-polyfill.css" />
         <link rel="stylesheet" href="../script/thirdparty/codemirror/codemirror.css" />
         <link rel="stylesheet" href="../script/thirdparty/foundation/foundation.min.css" />
         <link rel="stylesheet" href="editor.css" />
@@ -53,6 +52,14 @@
                 <ul class="right">
 
                     <li class="has-form">
+                        <ul class="button-group">
+                          <li><a href="#" class="button active">Draw</a></li>
+                          <li><a href="#" class="button">Fill</a></li>
+                          <li><a href="#" class="button">Select</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="has-form">
                       <a href="" class="button">Play</a>
                     </li>
 
@@ -91,14 +98,15 @@
 
         <div class="row fullWidth">
 
-            <div id="edit-area" class="small-12 large-8 columns">
+            <div id="edit-area" class="small-12 medium-8 columns">
             </div>
 
-            <div class="small-12 large-4 columns">
+            <div class="small-12 medium-4 columns">
 
+                <p></p>
                 <label>
                     Selected Item
-                    <select name="activeTemplate">
+                    <select id="item-selector">
 
                         <optgroup label="Items">
                             <option value="">Nothing</option>
@@ -154,16 +162,7 @@
 
                 <div id="template-customizer"></div>
 
-                <input id="load-game" type="file" /><br/>
-
-                <div id="other-customizers">
-                    <select id="mode-selector">
-                        <option value="0">Drawing</option>
-                        <option value="1">Select</option>
-                        <option value="2">Fill</option>
-                        <option value="3">Text</option>
-                    </select>
-                </div>
+                <!-- <input id="load-game" type="file" /><br/> -->
 
                 <textarea id="active-template-editor" rows="10" style="width: 100%"></textarea>
 
@@ -188,7 +187,6 @@
         <script type="text/javascript" src="../script/i18n.js"></script>
         <script type="text/javascript" src="../script/thirdparty/lz-string-1.3.3.js"></script>
         <script type="text/javascript" src="../script/thirdparty/base-64-tools.js"></script>
-        <script type="text/javascript" src="../script/thirdparty/dialog-polyfill/dialog-polyfill.js"></script>
         <script type="text/javascript" src="../script/thirdparty/codemirror/codemirror.js"></script>
         <script type="text/javascript" src="../script/ux/ux-editor.js"></script>
         <script type="text/javascript">
@@ -212,9 +210,8 @@
                     deleteBoard: document.getElementById('delete-board'),
                     loadGame: document.getElementById('load-game'),
                     scriptButton: document.getElementById('script-button'),
-                    modeSelector: document.getElementById('mode-selector'),
                     saveButton: document.getElementById('save-game'),
-                    toolBox: document.getElementById('toolbox')
+                    itemSelector: document.getElementById('item-selector')
                 });
             })();
 
