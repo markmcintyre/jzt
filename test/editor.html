@@ -95,74 +95,78 @@
             </div>
 
             <div class="small-12 large-4 columns">
-                <div id="toolbox">
 
-                    <label><input type="radio" name="activeTemplate" value="" />Nothing</label>
-                    <label><input type="radio" name="activeTemplate" value="Player">Player</label>
-                    <label><input type="radio" name="activeTemplate" value="Wall" />Wall</label>
-                    <label><input type="radio" name="activeTemplate" value="SolidWall" />Solid Wall</label>
-                    <label><input type="radio" name="activeTemplate" value="LineWall" />Line</label>
-                    <label><input type="radio" name="activeTemplate" value="InvisibleWall" />Invisible Wall</label>
-                    <label><input type="radio" name="activeTemplate" value="BreakableWall" />Breakable Wall</label>
-                    <label><input type="radio" name="activeTemplate" value="FakeWall" />Fake Wall</label>
-                    <label><input type="radio" name="activeTemplate" value="SpiderWeb" />Spider Web</label>
-                    <label><input type="radio" name="activeTemplate" value="Text"/>Text</label>
-                    <br/>
-                    <label><input type="radio" name="activeTemplate" value="Water" />Water</label>
-                    <label><input type="radio" name="activeTemplate" value="Lava" />Lava</label>
-                    <label><input type="radio" name="activeTemplate" value="Forest" />Forest</label>
-                    <label><input type="radio" name="activeTemplate" value="Signpost">Signpost</label>
-                    <label><input type="radio" name="activeTemplate" value="Ricochet" />Ricochet</label>
-                    <label><input type="radio" name="activeTemplate" value="Door" />Door</label>
-                    <br/>
-                    <label><input type="radio" name="activeTemplate" value="Boulder" />Boulder</label>
-                    <label><input type="radio" name="activeTemplate" value="SliderNs" />Slider (North/South)</label>
-                    <label><input type="radio" name="activeTemplate" value="SliderEw" />Slider (East/West)</label>
-                    <br/>
-                    <label><input type="radio" name="activeTemplate" value="Teleporter" />Teleporter</label>
-                    <label><input type="radio" name="activeTemplate" value="Passage" />Passage</label>
-                    <label><input type="radio" name="activeTemplate" value="River" />River</label>
-                    <label><input type="radio" name="activeTemplate" value="Blinker" />Blinker</label>
-                    <label><input type="radio" name="activeTemplate" value="Conveyor" />Conveyor</label>
-                    <label><input type="radio" name="activeTemplate" value="Duplicator" />Duplicator</label>
-                    <br/>
-                    <label><input type="radio" name="activeTemplate" value="Gem" />Gem</label>
-                    <label><input type="radio" name="activeTemplate" value="Ammo" />Ammo</label>
-                    <label><input type="radio" name="activeTemplate" value="Torch" />Torch</label>
-                    <label><input type="radio" name="activeTemplate" value="Key" />Key</label>
-                    <label><input type="radio" name="activeTemplate" value="Heart"/>Heart</label>
-                    <label><input type="radio" name="activeTemplate" value="Bomb" />Bomb</label>
-                    <br/>
-                    <label><input type="radio" name="activeTemplate" value="Pusher" />Pusher</label>
-                    <label><input type="radio" name="activeTemplate" value="Lion" />Lion</label>
-                    <label><input type="radio" name="activeTemplate" value="Tiger" />Tiger</label>
-                    <label><input type="radio" name="activeTemplate" value="Ruffian" />Ruffian</label>
-                    <label><input type="radio" name="activeTemplate" value="Centipede" />Centipede</label>
-                    <label><input type="radio" name="activeTemplate" value="Bear" />Bear</label>
-                    <label><input type="radio" name="activeTemplate" value="SpinningGun" />Spinning Gun</label>
-                    <label><input type="radio" name="activeTemplate" value="Spider" />Spider</label>
-                    <label><input type="radio" name="activeTemplate" value="Snake" />Snake</label>
-                    <label><input type="radio" name="activeTemplate" value="Scriptable" />Scriptable</label>
-                    <br/>
+                <label>
+                    Selected Item
+                    <select name="activeTemplate">
 
-                    <input id="load-game" type="file" /><br/>
+                        <optgroup label="Items">
+                            <option value="">Nothing</option>
+                            <option value="Ammo" />Ammo</option>
+                            <option value="Bomb" />Bomb</option>
+                            <option value="Boulder" />Boulder</option>
+                            <option value="Conveyor" />Conveyor</option>
+                            <option value="Door" />Door</option>
+                            <option value="Duplicator" />Duplicator</option>
+                            <option value="Gem" />Gem</option>
+                            <option value="Heart"/>Heart</option>
+                            <option value="Key" />Key</option>
+                            <option value="Passage" />Passage</option>
+                            <option value="Player">Player</option>
+                            <option value="Ricochet" />Ricochet</option>
+                            <option value="Signpost">Signpost</option>
+                            <option value="SliderEw" />Slider (East/West)</option>
+                            <option value="SliderNs" />Slider (North/South)</option>
+                            <option value="Teleporter" />Teleporter</option>
+                            <option value="Torch" />Torch</option>
+                        </optgroup>
 
-                    <div id="other-customizers">
-                        <select id="mode-selector">
-                            <option value="0">Drawing</option>
-                            <option value="1">Select</option>
-                            <option value="2">Fill</option>
-                            <option value="3">Text</option>
-                        </select>
-                    </div>
+                        <optgroup label="Terrain">
+                            <option value="BreakableWall" />Breakable Wall</option>
+                            <option value="FakeWall" />Fake Wall</option>
+                            <option value="Forest" />Forest</option>
+                            <option value="InvisibleWall" />Invisible Wall</option>
+                            <option value="Lava" />Lava</option>
+                            <option value="LineWall" />Line</option>
+                            <option value="River" />River</option>
+                            <option value="SolidWall" />Solid Wall</option>
+                            <option value="SpiderWeb" />Spider Web</option>
+                            <option value="Text"/>Text</option>
+                            <option value="Wall" />Wall</option>
+                            <option value="Water" />Water</option>
+                        </optgroup>
 
-                    <div id="template-customizer">
+                        <optgroup label="Creatures">
+                            <option value="Bear" />Bear</option>
+                            <option value="Blinker" />Blinker</option>
+                            <option value="Centipede" />Centipede</option>
+                            <option value="Lion" />Lion</option>
+                            <option value="Pusher" />Pusher</option>
+                            <option value="Ruffian" />Ruffian</option>
+                            <option value="Scriptable" />Scriptable</option>
+                            <option value="Snake" />Snake</option>
+                            <option value="Spider" />Spider</option>
+                            <option value="SpinningGun" />Spinning Gun</option>
+                            <option value="Tiger" />Tiger</option>
+                        </optgroup>
+                    </select>
+                </label>
 
-                    </div>
+                <div id="template-customizer"></div>
 
-                    <textarea id="active-template-editor" rows="10" style="width: 100%"></textarea>
+                <input id="load-game" type="file" /><br/>
 
+                <div id="other-customizers">
+                    <select id="mode-selector">
+                        <option value="0">Drawing</option>
+                        <option value="1">Select</option>
+                        <option value="2">Fill</option>
+                        <option value="3">Text</option>
+                    </select>
                 </div>
+
+                <textarea id="active-template-editor" rows="10" style="width: 100%"></textarea>
+
             </div>
 
         </div>
