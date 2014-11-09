@@ -1,0 +1,29 @@
+#jzt {
+    position: relative;
+}
+.board-selector-item {
+    padding: 0 1em 0 1em;
+}
+
+#board-menu {
+    min-width: 300px;
+}
+#customizers {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background-color: blue;
+    width: 25%;
+    height: 100%;
+    color: white;
+}
+textarea {
+    font-family: monospace;
+}
+#script-warning {background-color: yellow; color: red;}
+dialog + .backdrop {
+    background-color: rgba(0, 0, 0, 0.75);
+}
+dialog::backdrop {
+    background-color: rgba(0, 0, 0, 0.75);
+}

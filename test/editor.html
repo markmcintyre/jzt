@@ -4,32 +4,61 @@
         <title>JZT</title>
         <link rel="stylesheet" href="../script/thirdparty/dialog-polyfill/dialog-polyfill.css" />
         <link rel="stylesheet" href="../script/thirdparty/codemirror/codemirror.css" />
-        <style type="text/css">
-            #jzt {
-                position: relative;
-            }
-            #customizers {
-                position: absolute;
-                top: 0;
-                right: 0;
-                background-color: blue;
-                width: 25%;
-                height: 100%;
-                color: white;
-            }
-            textarea {
-                font-family: monospace;
-            }
-            #script-warning {background-color: yellow; color: red;}
-            dialog + .backdrop {
-                background-color: rgba(0, 0, 0, 0.75);
-            }
-            dialog::backdrop {
-                background-color: rgba(0, 0, 0, 0.75);
-            }
-        </style>
+        <link rel="stylesheet" href="../script/thirdparty/foundation/foundation.min.css" />
+        <link rel="stylesheet" href="editor.css" />
     </head>
     <body>
+
+
+        <nav class="top-bar" data-topbar role="navigation">
+
+            <ul class="title-area">
+                <li class="name">
+                    <h1><a href="/">JZT Game World Editor</a></h1>
+                </li>
+
+                <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
+            </ul>
+
+            <section class="top-bar-section">
+
+                <ul class="left">
+                    <li class="has-dropdown">
+                        <a href="#">World</a>
+                        <ul class="dropdown">
+                            <li><a href="">Save</a></li>
+                            <li class="divider"></li>
+                            <li><a href="">Download as JZT</a></li>
+                            <li><a href="">Download as JSON</a></li>
+                            <li class="divider"></li>
+                            <li><a href="">Options</a></li>
+                        </ul>
+                    </li>
+                    <li class="has-dropdown">
+                        <a href="">Board</a>
+                        <ul class="dropdown" id="board-menu">
+                            <li><label>Current Board</label></li>
+                            <li class="board-selector-item"><select id="board-selector"></select></li>
+                            <li class="divider"></li>
+                            <li><a href="">Add Board</a></li>
+                            <li><a href="">Delete Current Board</a></li>
+                            <li class="divider"></li>
+                            <li><a href="">Current Board Options</a></li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <ul class="right">
+
+                    <li class="has-form">
+                      <a href="" class="button">Play</a>
+                    </li>
+
+                </ul>
+
+            </section>
+
+        </nav>
 
         <dialog id="script-dialog">
             <select data-id="selector"></select>
@@ -148,6 +177,8 @@
 
         </div>
 
+        <script type="text/javascript" src="../script/thirdparty/foundation/vendor/jquery.js"></script>
+        <script type="text/javascript" src="../script/thirdparty/foundation/foundation.min.js"></script>
         <script type="text/javascript" src="../script/jzt.js"></script>
         <script type="text/javascript" src="../script/graphics.js"></script>
         <script type="text/javascript" src="../script/board.js"></script>
@@ -168,7 +199,12 @@
         <script type="text/javascript" src="../script/ux/ux-editor.js"></script>
         <script type="text/javascript">
 
+
+
             (function () {
+
+                $(document).foundation();
+
                 jztux.initializeEditorUx({
                     editArea: document.getElementById('edit-area'),
                     boardSelector: document.getElementById('board-selector'),
