@@ -25,3 +25,13 @@
 .top-bar-section .button.active {
     background-color: #00afe8;
 }
+
+dl.tabs {
+    margin-left: -0.9375rem;
+    margin-right: -0.9375rem;
+    background-color: silver;
+}
+
+input[type="checkbox"] {
+    width: 100%;
+}

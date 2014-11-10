@@ -104,7 +104,7 @@ jzt = (function (jzt) {
         Centipede: {
             head: {type: 'boolean', default: false, label: 'Head'},
             deviance: {type: 'number', min: 0, max: 10, default: 0, label: 'Deviance'},
-            intelligence: {type: 'number', min: 0, max: 10, default: 0},
+            intelligence: {type: 'number', min: 0, max: 10, default: 0, label: 'Intelligence'},
             color: {type: 'color', default: '*9', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
         },
         Conveyor: {
@@ -636,7 +636,7 @@ jzt = (function (jzt) {
 
         if (field.type === 'number') {
             element = document.createElement('input');
-            element.type = 'range';
+            element.type = 'number';
             element.min = field.min;
             element.max = field.max;
         } else if (field.type === 'direction') {
@@ -691,7 +691,7 @@ jzt = (function (jzt) {
             }
         } else {
             element = document.createElement('input');
-            element.type = field.type;
+            element.type = 'text';
         }
 
         if (!nonStandard && element) {
@@ -732,7 +732,6 @@ jzt = (function (jzt) {
 
                     if (this.advancedMode || !thing[field].advanced) {
                         this.templateCustomizer.appendChild(this.createField(field, thing[field], template));
-                        this.templateCustomizer.appendChild(document.createElement('br'));
                     }
 
                 }

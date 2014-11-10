@@ -69,21 +69,16 @@
 
         </nav>
 
-        <div id="script-dialog" class="reveal-modal" data-reveal>
-            <select data-id="selector"></select>
-            <button data-id="new">New Script</button>
-            <button data-id="delete">Delete Script</button>
-            <textarea data-id="editor" rows="20" style="width: 100%"></textarea>
-            <div data-id="warning"></div>
-            <a class="close-reveal-modal">&#215;</a>
-        </div>
-
         <div id="board-options-dialog" class="reveal-modal" data-reveal>
-            <label>North: <select data-id="north"><option value="">None</option></select></label><br/>
-            <label>East: <select data-id="east"><option value="">None</option></select></label><br/>
-            <label>South: <select data-id="south"><option value="">None</option></select></label><br/>
-            <label>West: <select data-id="west"><option value="">None</option></select></label><br/>
-            <label><input type="checkbox" data-id="dark" /> Dark Room</label>
+            <label>North Board <select data-id="north"><option value="">None</option></select></label>
+            <label>East Board <select data-id="east"><option value="">None</option></select></label>
+            <label>South Board <select data-id="south"><option value="">None</option></select></label>
+            <label>West Board <select data-id="west"><option value="">None</option></select></label>
+            <label>Dark</label>
+            <div class="switch">
+                <input type="checkbox" data-id="dark" id="darkcheckbox" />
+                <label for="darkcheckbox"></label>
+            </div>
             <a class="close-reveal-modal">&#215;</a>
         </div>
 
@@ -103,68 +98,96 @@
 
             <div class="small-12 medium-4 columns">
 
-                <p></p>
-                <label>
-                    Selected Item
-                    <select id="item-selector">
+                <dl class="tabs" data-tab>
+                    <dd class="active"><a href="#toolmap">Map</a></dd>
+                    <dd><a href="#toolscripts">Scripts</a></dd>
+                </dl>
 
-                        <optgroup label="Items">
-                            <option value="">Nothing</option>
-                            <option value="Ammo" />Ammo</option>
-                            <option value="Bomb" />Bomb</option>
-                            <option value="Boulder" />Boulder</option>
-                            <option value="Conveyor" />Conveyor</option>
-                            <option value="Door" />Door</option>
-                            <option value="Duplicator" />Duplicator</option>
-                            <option value="Gem" />Gem</option>
-                            <option value="Heart"/>Heart</option>
-                            <option value="Key" />Key</option>
-                            <option value="Passage" />Passage</option>
-                            <option value="Player">Player</option>
-                            <option value="Ricochet" />Ricochet</option>
-                            <option value="Signpost">Signpost</option>
-                            <option value="SliderEw" />Slider (East/West)</option>
-                            <option value="SliderNs" />Slider (North/South)</option>
-                            <option value="Teleporter" />Teleporter</option>
-                            <option value="Torch" />Torch</option>
-                        </optgroup>
+                <div class="tabs-content">
 
-                        <optgroup label="Terrain">
-                            <option value="BreakableWall" />Breakable Wall</option>
-                            <option value="FakeWall" />Fake Wall</option>
-                            <option value="Forest" />Forest</option>
-                            <option value="InvisibleWall" />Invisible Wall</option>
-                            <option value="Lava" />Lava</option>
-                            <option value="LineWall" />Line</option>
-                            <option value="River" />River</option>
-                            <option value="SolidWall" />Solid Wall</option>
-                            <option value="SpiderWeb" />Spider Web</option>
-                            <option value="Text"/>Text</option>
-                            <option value="Wall" />Wall</option>
-                            <option value="Water" />Water</option>
-                        </optgroup>
+                    <!-- Map -->
+                    <div class="content active" id="toolmap">
+                        <label>
+                            Selected Item
+                            <select id="item-selector">
 
-                        <optgroup label="Creatures">
-                            <option value="Bear" />Bear</option>
-                            <option value="Blinker" />Blinker</option>
-                            <option value="Centipede" />Centipede</option>
-                            <option value="Lion" />Lion</option>
-                            <option value="Pusher" />Pusher</option>
-                            <option value="Ruffian" />Ruffian</option>
-                            <option value="Scriptable" />Scriptable</option>
-                            <option value="Snake" />Snake</option>
-                            <option value="Spider" />Spider</option>
-                            <option value="SpinningGun" />Spinning Gun</option>
-                            <option value="Tiger" />Tiger</option>
-                        </optgroup>
-                    </select>
-                </label>
+                                <optgroup label="Items">
+                                    <option value="">Nothing</option>
+                                    <option value="Ammo" />Ammo</option>
+                                    <option value="Bomb" />Bomb</option>
+                                    <option value="Boulder" />Boulder</option>
+                                    <option value="Conveyor" />Conveyor</option>
+                                    <option value="Door" />Door</option>
+                                    <option value="Duplicator" />Duplicator</option>
+                                    <option value="Gem" />Gem</option>
+                                    <option value="Heart"/>Heart</option>
+                                    <option value="Key" />Key</option>
+                                    <option value="Passage" />Passage</option>
+                                    <option value="Player">Player</option>
+                                    <option value="Ricochet" />Ricochet</option>
+                                    <option value="Signpost">Signpost</option>
+                                    <option value="SliderEw" />Slider (East/West)</option>
+                                    <option value="SliderNs" />Slider (North/South)</option>
+                                    <option value="Teleporter" />Teleporter</option>
+                                    <option value="Torch" />Torch</option>
+                                </optgroup>
 
-                <div id="template-customizer"></div>
+                                <optgroup label="Terrain">
+                                    <option value="BreakableWall" />Breakable Wall</option>
+                                    <option value="FakeWall" />Fake Wall</option>
+                                    <option value="Forest" />Forest</option>
+                                    <option value="InvisibleWall" />Invisible Wall</option>
+                                    <option value="Lava" />Lava</option>
+                                    <option value="LineWall" />Line</option>
+                                    <option value="River" />River</option>
+                                    <option value="SolidWall" />Solid Wall</option>
+                                    <option value="SpiderWeb" />Spider Web</option>
+                                    <option value="Text"/>Text</option>
+                                    <option value="Wall" />Wall</option>
+                                    <option value="Water" />Water</option>
+                                </optgroup>
 
-                <!-- <input id="load-game" type="file" /><br/> -->
+                                <optgroup label="Creatures">
+                                    <option value="Bear" />Bear</option>
+                                    <option value="Blinker" />Blinker</option>
+                                    <option value="Centipede" />Centipede</option>
+                                    <option value="Lion" />Lion</option>
+                                    <option value="Pusher" />Pusher</option>
+                                    <option value="Ruffian" />Ruffian</option>
+                                    <option value="Scriptable" />Scriptable</option>
+                                    <option value="Snake" />Snake</option>
+                                    <option value="Spider" />Spider</option>
+                                    <option value="SpinningGun" />Spinning Gun</option>
+                                    <option value="Tiger" />Tiger</option>
+                                </optgroup>
+                            </select>
+                        </label>
 
-                <textarea id="active-template-editor" rows="10" style="width: 100%"></textarea>
+                        <div id="template-customizer"></div>
+
+                        <!-- <input id="load-game" type="file" /><br/> -->
+
+                        <label>Raw Template
+                            <textarea id="active-template-editor" rows="10" style="width: 100%"></textarea>
+                        </label>
+
+                    </div>
+
+                    <!-- Scripts -->
+                    <div class="content" id="toolscripts">
+
+
+                        <select data-id="selector"></select>
+                        <button class="small" data-id="new">New Script</button>
+                        <button class="small" data-id="delete">Delete Script</button>
+
+                        <div data-id="warning"></div>
+
+                        <textarea data-id="editor" rows="30" style="width: 100%"></textarea>
+
+                    </div>
+
+                </div>
 
             </div>
 
@@ -202,7 +225,7 @@
                     boardSelector: document.getElementById('board-selector'),
                     boardOptionsDialog: document.getElementById('board-options-dialog'),
                     worldOptionsDialog: document.getElementById('world-options-dialog'),
-                    scriptDialog: document.getElementById('script-dialog'),
+                    scriptDialog: document.getElementById('toolscripts'),
                     templateEditor: document.getElementById('active-template-editor'),
                     download: document.getElementById('download'),
                     downloadJson: document.getElementById('download-json'),
