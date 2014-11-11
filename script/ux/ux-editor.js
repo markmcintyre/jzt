@@ -179,6 +179,7 @@ jztux = (function (jzt, jztux) {
 
         scriptSelector.addEventListener('change', function (event) {
             selectScript(event.target.value);
+            validateScript();
         }, false);
 
     }
