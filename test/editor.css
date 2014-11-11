@@ -37,10 +37,22 @@ input[type="checkbox"] {
 }
 
 .script-warning {
-    margin-top: 1em;
+    margin: 1em 0;
     border: 1px solid #ffbd64;
     border-radius: 5em;
     padding: 0 0 0 .5em;
+}
+
+#toolscripts.noscript .scriptcontainer,
+#toolscripts.noscript select,
+#toolscripts.noscript button[data-id="delete"] {
+    display: none;
+}
+
+.scriptcontainer {
+    border: 1px solid silver;
+    border-width: 1px;
+    margin-bottom: 1em;
 }
 
 .warning-icon {

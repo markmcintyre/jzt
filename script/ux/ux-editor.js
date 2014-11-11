@@ -28,7 +28,26 @@ jztux = (function (jzt, jztux) {
         editor,
         oldLine = 1,
         templates,
+        scriptTab,
         parser;
+
+    /**
+     * Validates a current script and displays or hides a warning as appropriate.
+     */
+    function validateScript() {
+
+        try {
+            parser.parse(scriptEditor.getValue());
+            scriptWarning.innerHTML = '';
+            scriptWarning.style.display = 'none';
+        } catch (exception) {
+            scriptWarning.innerHTML = '<span class="warning-icon">⚠</span> ' + exception;
+            scriptWarning.style.display = 'block';
+        }
+
+        return CodeMirror.Pass;
+
+    }
 
     /**
      * Selects a script with a provided name
@@ -40,10 +59,14 @@ jztux = (function (jzt, jztux) {
         var script = editor.currentBoard.getScript(scriptName);
 
         if (script) {
-            scriptEditor.setValue(script.rawScript || script.script);
+            scriptTab.classList.remove('noscript');
+            scriptEditor.setValue(script.rawScript || script.script || '');
         } else {
             scriptEditor.setValue('');
+            scriptTab.classList.add('noscript');
         }
+
+        validateScript();
 
     }
 
@@ -103,20 +126,7 @@ jztux = (function (jzt, jztux) {
      */
     function initializeScriptDialog(dialog) {
 
-        function validateScript() {
-            try {
-                parser.parse(scriptEditor.getValue());
-                scriptWarning.innerHTML = '';
-                scriptWarning.style.display = 'none';
-            } catch (exception) {
-                scriptWarning.innerHTML = '<span class="warning-icon">⚠</span> ' + exception;
-                scriptWarning.style.display = 'block';
-            }
-
-            return CodeMirror.Pass;
-
-        }
-
+        scriptTab = dialog;
         scriptSelector = dialog.querySelector('[data-id="selector"]');
 
         scriptEditor = CodeMirror.fromTextArea(dialog.querySelector('[data-id="editor"]'), {
@@ -137,8 +147,8 @@ jztux = (function (jzt, jztux) {
                 script = new jzt.jztscript.JztScript(newName);
                 editor.currentBoard.scripts.push(script);
                 scriptSelector.options[scriptSelector.options.length] = new Option(newName);
-                scriptEditor.setValue(editor.currentBoard.getScript(newName).rawScript);
                 scriptSelector.value = newName;
+                selectScript(newName);
             }
 
         }, false);
@@ -164,9 +174,11 @@ jztux = (function (jzt, jztux) {
         // Script Editor
         scriptEditor.on('blur', function () {
 
-            var script = editor.currentBoard.getScript(scriptSelector.value);
+            var script = editor.currentBoard.getScript(scriptSelector.value),
+                rawScript = scriptEditor.getValue().trim();
+
             validateScript();
-            script.rawScript = scriptEditor.getValue();
+            script.rawScript = rawScript === '' ? undefined : rawScript;
 
         });
 
@@ -232,7 +244,9 @@ jztux = (function (jzt, jztux) {
         }
 
         function onModeChange(event) {
+
             var mode = event.target.getAttribute('data-mode');
+
             switch (mode) {
             case 'draw':
                 editor.setMode(jzt.Editor.Mode.DRAW);
@@ -244,6 +258,9 @@ jztux = (function (jzt, jztux) {
                 editor.setMode(jzt.Editor.Mode.FILL);
                 break;
             }
+
+            event.preventDefault();
+
         }
 
         modeSelector = options.modeSelector;
@@ -278,8 +295,12 @@ jztux = (function (jzt, jztux) {
         // Download JSON
         options.downloadJson.addEventListener('click', function (event) {
             var game = editor.serialize();
-            event.target.download = game.name.replace(/[a-z0-9_\-]/gi, '-').toLowerCase() + '.json';
-            event.target.href = 'data:application/json;charset=utf-8;base64,' + Base64.encode(JSON.stringify(game));
+            if (event.target.download !== undefined) {
+                event.target.download = game.name.replace(/[a-z0-9_\-]/gi, '-').toLowerCase() + '.json';
+                event.target.href = 'data:application/json;charset=utf-8;base64,' + Base64.encode(JSON.stringify(game));
+            } else {
+                alert('Browser doesn\'t support this.');
+            }
         }, false);
 
         // New Board
