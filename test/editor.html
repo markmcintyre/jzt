@@ -70,24 +70,97 @@
         </nav>
 
         <div id="board-options-dialog" class="reveal-modal" data-reveal>
-            <label>North Board <select data-id="north"><option value="">None</option></select></label>
-            <label>East Board <select data-id="east"><option value="">None</option></select></label>
-            <label>South Board <select data-id="south"><option value="">None</option></select></label>
-            <label>West Board <select data-id="west"><option value="">None</option></select></label>
-            <label>Dark</label>
-            <div class="switch">
-                <input type="checkbox" data-id="dark" id="darkcheckbox" />
-                <label for="darkcheckbox"></label>
+
+            <div class="row">
+                <div class="small-12 columns">
+                    <h3>Board Options</h3>
+                </div>
             </div>
+
+
+            <div class="row">
+
+                <div class="small-12 medium-8 columns">
+                    <label>North Board <select data-id="north"><option value="">None</option></select></label>
+                </div>
+                <div class="small-12 medium-4 columns">
+                    <label>North Offset <input type="number" data-id="north-offset" /></label>
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <div class="small-12 medium-8 columns">
+                    <label>East Board <select data-id="east"><option value="">None</option></select></label>
+                </div>
+                <div class="small-12 medium-4 columns">
+                    <label>East Offset <input type="number" data-id="east-offset" /></label>
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <div class="small-12 medium-8 columns">
+                    <label>South Board <select data-id="south"><option value="">None</option></select></label>
+                </div>
+                <div class="small-12 medium-4 columns">
+                    <label>South Offset <input type="number" data-id="south-offset" /></label>
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <div class="small-12 medium-8 columns">
+                    <label>West Board <select data-id="west"><option value="">None</option></select></label>
+                </div>
+                <div class="small-12 medium-4 columns">
+                    <label>West Offset <input type="number" data-id="west-offset" /></label>
+                </div>
+
+            </div>
+
+            <div class="row">
+                <div class="small-8 columns">
+                    <label>Maximum player bullets</label>
+                    <input type="number" data-id="max-bullets" />
+                </div>
+                <div class="small-2 columns">
+                    <label>Board is Dark</label>
+                    <div class="switch">
+                        <input type="checkbox" data-id="dark" id="darkcheckbox" />
+                        <label for="darkcheckbox"></label>
+                    </div>
+                </div>
+                <div class="small-2 columns">
+                    <label>Re-enter when hurt</label>
+                    <div class="switch">
+                        <input type="checkbox" data-id="reenter" id="reentercheckbox" />
+                        <label for="reentercheckbox"></label>
+                    </div>
+                </div>
+            </div>
+
+
             <a class="close-reveal-modal">&#215;</a>
         </div>
 
         <div id="world-options-dialog" class="reveal-modal" data-reveal>
-            <label>Game Title: <input type="text" data-id="title" /></label>
-            <label>Author: <input type="text" data-id="author"/></label>
-            <label>Title Board: <select data-id="title-board"><option value="">None</option></select></label>
-            <label>Starting Board: <select data-id="starting-board"></select></label>
-            <label>Victory Board: <select data-id="victory-board"><option value="">None</option></select></label>
+            <h3>World Options</h3>
+            <div class="row">
+                <div class="small-12 medium-6 columns">
+                    <label>Game Title: <input type="text" data-id="title" /></label>
+                    <label>Author: <input type="text" data-id="author"/></label>
+                </div>
+                <div class="small-12 medium-6 columns">
+                    <label>Title Board: <select data-id="title-board"><option value="">None</option></select></label>
+                    <label>Starting Board: <select data-id="starting-board"></select></label>
+                    <label>Victory Board: <select data-id="victory-board"><option value="">None</option></select></label>
+                </div>
+            </div>
+
             <a class="close-reveal-modal">&#215;</a>
         </div>
 
