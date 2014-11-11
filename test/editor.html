@@ -98,7 +98,7 @@
 
             <div class="small-12 medium-4 columns">
 
-                <dl class="tabs" data-tab>
+                <dl class="tabs" data-tab id="sidebar-tabs">
                     <dd class="active"><a href="#toolmap">Map</a></dd>
                     <dd><a href="#toolscripts">Scripts</a></dd>
                 </dl>
@@ -181,9 +181,9 @@
                         <button class="small" data-id="new">New Script</button>
                         <button class="small" data-id="delete">Delete Script</button>
 
-                        <div data-id="warning"></div>
-
                         <textarea data-id="editor" rows="30" style="width: 100%"></textarea>
+
+                        <div data-id="warning" class="script-warning"></div>
 
                     </div>
 
@@ -235,7 +235,8 @@
                     scriptButton: document.getElementById('script-button'),
                     saveButton: document.getElementById('save-game'),
                     itemSelector: document.getElementById('item-selector'),
-                    modeSelector: document.getElementById('mode-selector')
+                    modeSelector: document.getElementById('mode-selector'),
+                    sidebarTabs: $('#sidebar-tabs')
                 });
             })();
 

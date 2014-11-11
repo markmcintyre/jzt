@@ -35,3 +35,14 @@ dl.tabs {
 input[type="checkbox"] {
     width: 100%;
 }
+
+.script-warning {
+    margin-top: 1em;
+    border: 1px solid #ffbd64;
+    border-radius: 5em;
+    padding: 0 0 0 .5em;
+}
+
+.warning-icon {
+    color: #e38300;
+}

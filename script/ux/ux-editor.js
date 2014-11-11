@@ -26,6 +26,7 @@ jztux = (function (jzt, jztux) {
         scriptWarning,
         modeSelector,
         editor,
+        oldLine = 1,
         templates,
         parser;
 
@@ -102,12 +103,27 @@ jztux = (function (jzt, jztux) {
      */
     function initializeScriptDialog(dialog) {
 
+        function validateScript() {
+            try {
+                parser.parse(scriptEditor.getValue());
+                scriptWarning.innerHTML = '';
+                scriptWarning.style.display = 'none';
+            } catch (exception) {
+                scriptWarning.innerHTML = '<span class="warning-icon">⚠</span> ' + exception;
+                scriptWarning.style.display = 'block';
+            }
+
+            return CodeMirror.Pass;
+
+        }
+
         scriptSelector = dialog.querySelector('[data-id="selector"]');
 
         scriptEditor = CodeMirror.fromTextArea(dialog.querySelector('[data-id="editor"]'), {
             lineNumbers: true,
             lineWrapping: false
         });
+
         scriptWarning = dialog.querySelector('[data-id="warning"]');
 
         // New Script Button
@@ -149,15 +165,16 @@ jztux = (function (jzt, jztux) {
         scriptEditor.on('blur', function () {
 
             var script = editor.currentBoard.getScript(scriptSelector.value);
-
-            try {
-                parser.parse(scriptEditor.getValue());
-                scriptWarning.innerHTML = '';
-            } catch (exception) {
-                scriptWarning.innerHTML = exception;
-            }
+            validateScript();
             script.rawScript = scriptEditor.getValue();
 
+        });
+
+        scriptEditor.on('cursorActivity', function () {
+            if (scriptEditor.getCursor().line !== oldLine) {
+                validateScript();
+            }
+            oldLine = scriptEditor.getCursor().line;
         });
 
         scriptSelector.addEventListener('change', function (event) {
@@ -328,6 +345,10 @@ jztux = (function (jzt, jztux) {
             editor.save();
             alert('Game Saved!');
         }, false);
+
+        options.sidebarTabs.on('toggled', function () {
+            scriptEditor.refresh();
+        });
 
     }
 
