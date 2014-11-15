@@ -29,7 +29,7 @@ jztux = (function (jzt, jztux) {
         oldLine = 1,
         templates,
         scriptTab,
-        mainMenu,
+        mainNavigation,
         parser;
 
     /**
@@ -207,6 +207,7 @@ jztux = (function (jzt, jztux) {
     function initializePrimaryUi(options) {
 
         var index,
+            mainMenu,
             children;
 
         function onToolChange(event) {
@@ -270,7 +271,8 @@ jztux = (function (jzt, jztux) {
             event.preventDefault();
         }
 
-        mainMenu = options.mainMenu;
+        mainNavigation = options.mainNavigation;
+        mainMenu = mainNavigation.querySelector('section.top-bar-section');
         modeSelector = options.modeSelector;
         boardSelector = options.boardSelector;
         templateEditor = options.templateEditor;
@@ -388,7 +390,7 @@ jztux = (function (jzt, jztux) {
             event.preventDefault();
         }, false);
 
-        children = mainMenu.querySelectorAll('[data-noaction]');
+        children = mainNavigation.querySelectorAll('[data-noaction]');
         for (index = 0; index < children.length; index += 1) {
             children[index].addEventListener('click', onNoActionClick, false);
         }

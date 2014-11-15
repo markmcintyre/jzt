@@ -2,7 +2,7 @@
     padding: 0 1em 0 1em;
 }
 
-#main-menu [data-dropdown="board"] {
+#main-navigation [data-dropdown="board"] {
     min-width: 300px;
 }
 
