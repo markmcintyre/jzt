@@ -29,6 +29,7 @@ jztux = (function (jzt, jztux) {
         oldLine = 1,
         templates,
         scriptTab,
+        mainMenu,
         parser;
 
     /**
@@ -86,7 +87,7 @@ jztux = (function (jzt, jztux) {
                 east: eastSelector.value,
                 south: southSelector.value,
                 west: westSelector.value,
-                dark: darkSelector.value
+                dark: darkSelector.checked
             });
         }
 
@@ -130,6 +131,8 @@ jztux = (function (jzt, jztux) {
         scriptSelector = dialog.querySelector('[data-id="selector"]');
 
         scriptEditor = CodeMirror.fromTextArea(dialog.querySelector('[data-id="editor"]'), {
+            mode: 'jztscript',
+            theme: 'jzt',
             lineNumbers: true,
             lineWrapping: false
         });
@@ -263,6 +266,11 @@ jztux = (function (jzt, jztux) {
 
         }
 
+        function onNoActionClick(event) {
+            event.preventDefault();
+        }
+
+        mainMenu = options.mainMenu;
         modeSelector = options.modeSelector;
         boardSelector = options.boardSelector;
         templateEditor = options.templateEditor;
@@ -286,14 +294,15 @@ jztux = (function (jzt, jztux) {
         }, false);
 
         // Download
-        options.download.addEventListener('click', function (event) {
+        mainMenu.querySelector('[data-menu-item="download"]').addEventListener('click', function (event) {
             var game = editor.serialize();
             event.target.download = game.name.replace(/[a-z0-9_\-]/gi, '-').toLowerCase() + '.jzt';
             event.target.href = 'data:application/octet-stream;charset=utf-8;base64,' +     LZString.compressToBase64(JSON.stringify(game));
+            event.preventDefault();
         }, false);
 
         // Download JSON
-        options.downloadJson.addEventListener('click', function (event) {
+        mainMenu.querySelector('[data-menu-item="download-json"]').addEventListener('click', function (event) {
             var game = editor.serialize();
             if (event.target.download !== undefined) {
                 event.target.download = game.name.replace(/[a-z0-9_\-]/gi, '-').toLowerCase() + '.json';
@@ -301,10 +310,11 @@ jztux = (function (jzt, jztux) {
             } else {
                 alert('Browser doesn\'t support this.');
             }
+            event.preventDefault();
         }, false);
 
         // New Board
-        options.newBoard.addEventListener('click', function () {
+        mainMenu.querySelector('[data-menu-item="new-board"]').addEventListener('click', function () {
 
             var newName = window.prompt('Please enter a board name.', 'Untitled'),
                 width = parseInt(window.prompt('Please enter a board width.', '40'), 10),
@@ -319,15 +329,21 @@ jztux = (function (jzt, jztux) {
                 }
             }
 
+            event.preventDefault();
+
         }, false);
 
         // Delete Board
-        options.deleteBoard.addEventListener('click', function () {
+        mainMenu.querySelector('[data-menu-item="delete-board"]').addEventListener('click', function () {
+
             editor.removeBoard(editor.currentBoard.name);
+
+            event.preventDefault();
+
         }, false);
 
         // Load Game
-        /*options.loadGame.addEventListener('click', function () {
+        mainMenu.querySelector('[data-menu-item="open"]').addEventListener('click', function () {
 
             var fileReader,
                 file;
@@ -359,14 +375,23 @@ jztux = (function (jzt, jztux) {
                 }
 
             }
-        }, false);*/
+
+            event.preventDefault();
+
+        }, false);
 
         itemSelector.addEventListener('change', onToolChange, false);
 
-        options.saveButton.addEventListener('click', function () {
+        mainMenu.querySelector('[data-menu-item="save"]').addEventListener('click', function () {
             editor.save();
             alert('Game Saved!');
+            event.preventDefault();
         }, false);
+
+        children = mainMenu.querySelectorAll('[data-noaction]');
+        for (index = 0; index < children.length; index += 1) {
+            children[index].addEventListener('click', onNoActionClick, false);
+        }
 
         options.sidebarTabs.on('toggled', function () {
             scriptEditor.refresh();
@@ -530,6 +555,24 @@ jztux = (function (jzt, jztux) {
      * @param options {object} - Initial object elements
      */
     function initializeEditorUx(options) {
+
+        /*jslint regexp: true */
+
+        CodeMirror.defineSimpleMode("jztscript", {
+            // The start state contains the rules that are intially used
+            start: [
+                // The regex matches the token, the token property contains the type
+                {regex: /"(?:[^\\]|\\.)*?"/, token: "string"},
+                {regex: /\b(become|change|char|die|end|give|if|lock|move|play|put|scroll|send|set|take|throwstar|torch|restore|say|shoot|stand|unlock|victory|wait|walk|zap)\b/, token: "command"},
+                {regex: /(?:not|adjacent|blocked|aligned|peep|exists)\b/, token: "expression"},
+                {regex: /\d/i, token: "number"},
+                {regex: /:.*/, token: "label"},
+                {regex: /\/\/.*/, token: "comment"}
+            ],
+            meta: {
+                lineComment: "//"
+            }
+        });
 
         editArea = options.editArea;
         templates = {};

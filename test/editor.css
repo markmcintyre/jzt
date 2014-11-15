@@ -2,7 +2,7 @@
     padding: 0 1em 0 1em;
 }
 
-#board-menu {
+#main-menu [data-dropdown="board"] {
     min-width: 300px;
 }
 
@@ -58,3 +58,11 @@ input[type="checkbox"] {
 .warning-icon {
     color: #e38300;
 }
+
+/* JZT CodeMirror Theme */
+.cm-s-jzt span.cm-command {font-weight: bold;}
+.cm-s-jzt span.cm-expression {font-style: italic}
+.cm-s-jzt span.cm-number {color: #b79361;}
+.cm-s-jzt span.cm-comment {color: #3F7F5F; font-style: italic;}
+.cm-s-jzt span.cm-string {color: #5796aa;}
+.cm-s-jzt span.cm-label {color: #808080; font-style: italic;}
