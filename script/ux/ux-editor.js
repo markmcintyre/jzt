@@ -12,7 +12,12 @@ jztux = (function (jzt, jztux) {
         eastSelector,
         southSelector,
         westSelector,
+        northOffsetSelector,
+        eastOffsetSelector,
+        southOffsetSelector,
+        westOffsetSelector,
         darkSelector,
+        reenterSelector,
         templateEditor,
         scriptSelector,
         scriptEditor,
@@ -87,7 +92,12 @@ jztux = (function (jzt, jztux) {
                 east: eastSelector.value,
                 south: southSelector.value,
                 west: westSelector.value,
-                dark: darkSelector.checked
+                northOffset: northOffsetSelector.value,
+                eastOffset: eastOffsetSelector.value,
+                southOffset: southOffsetSelector.value,
+                westOffset: westOffsetSelector.value,
+                dark: darkSelector.checked,
+                reenter: reenterSelector.checked
             });
         }
 
@@ -95,13 +105,25 @@ jztux = (function (jzt, jztux) {
         eastSelector = dialog.querySelector('[data-id="east"]');
         southSelector = dialog.querySelector('[data-id="south"]');
         westSelector = dialog.querySelector('[data-id="west"]');
+        northOffsetSelector = dialog.querySelector('[data-id="north-offset"]');
+        eastOffsetSelector = dialog.querySelector('[data-id="east-offset"]');
+        southOffsetSelector = dialog.querySelector('[data-id="south-offset"]');
+        westOffsetSelector = dialog.querySelector('[data-id="west-offset"]');
         darkSelector = dialog.querySelector('[data-id="dark"]');
+        reenterSelector = dialog.querySelector('[data-id="reenter"]');
 
         northSelector.addEventListener('change', onChange, false);
         eastSelector.addEventListener('change', onChange, false);
         southSelector.addEventListener('change', onChange, false);
         westSelector.addEventListener('change', onChange, false);
+        northOffsetSelector.addEventListener('change', onChange, false);
+        eastOffsetSelector.addEventListener('change', onChange, false);
+        southOffsetSelector.addEventListener('change', onChange, false);
+        westOffsetSelector.addEventListener('change', onChange, false);
         darkSelector.addEventListener('click', onChange, false);
+        reenterSelector.addEventListener('click', onChange, false);
+
+
 
     }
 
@@ -490,7 +512,12 @@ jztux = (function (jzt, jztux) {
         eastSelector.value = options.east || '';
         southSelector.value = options.south || '';
         westSelector.value = options.west || '';
+        northOffsetSelector.value = options.northOffset || '';
+        eastOffsetSelector.value = options.eastOffset || '';
+        southOffsetSelector.value = options.southOffset || '';
+        westOffsetSelector.value = options.westOffset || '';
         darkSelector.checked = options.dark;
+        reenterSelector.checked = options.renter;
 
     }
 

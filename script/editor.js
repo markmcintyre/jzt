@@ -359,6 +359,11 @@ jzt = (function (jzt) {
         this.currentBoard.south = options.south !== '' ? options.south : undefined;
         this.currentBoard.east = options.east !== '' ? options.east : undefined;
         this.currentBoard.west = options.west !== '' ? options.west : undefined;
+        this.currentBoard.northOffset = options.northOffset !== '' ? options.northOffset : undefined;
+        this.currentBoard.southOffset = options.southOffset !== '' ? options.southOffset : undefined;
+        this.currentBoard.eastOffset = options.eastOffset !== '' ? options.eastOffset : undefined;
+        this.currentBoard.westOffset = options.westOffset !== '' ? options.westOffset : undefined;
+        this.currentBoard.reenter = options.reenter;
         this.changeBoardOptionsCallback(options);
     };
 
@@ -433,7 +438,12 @@ jzt = (function (jzt) {
             east: board.east,
             south: board.south,
             west: board.west,
-            dark: board.dark
+            northOffset: board.northOffset,
+            eastOffset: board.eastOffset,
+            southOffset: board.southOffset,
+            westOffset: board.westOffset,
+            dark: board.dark,
+            reenter: board.reenter
         };
         this.changeBoardOptionsCallback(boardOptions);
 
@@ -1020,6 +1030,13 @@ jzt = (function (jzt) {
             context.lineTo(xPos + xSize, yPos + (ySize / 2));
             context.stroke();
         }
+
+        context.font = '9pt Arial';
+        context.fillStyle = 'black';
+        context.fillText('(' + (this.cursor.x + 1) + ', ' + (this.cursor.y + 1) + ')', 5, 15);
+        context.fillStyle = 'white';
+        context.fillText('(' + (this.cursor.x + 1) + ', ' + (this.cursor.y + 1) + ')', 4, 14);
+
     };
 
     jzt.Editor = Editor;
