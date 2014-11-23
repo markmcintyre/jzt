@@ -608,6 +608,8 @@ jzt = (function (jzt) {
             element,
             me = this,
             index,
+            elementTemplate,
+            innerElement,
             nonStandard = false;
 
         function getFriendlyName(name) {
@@ -635,30 +637,52 @@ jzt = (function (jzt) {
         label.innerHTML = field.label;
 
         if (field.type === 'number') {
+
+            // Our field type is a number, so create a number input
             element = document.createElement('input');
             element.type = 'number';
             element.min = field.min;
             element.max = field.max;
+
         } else if (field.type === 'direction') {
+
+            // Our field type is a direction, so create a direction selector
             element = document.createElement('select');
             element.options[element.options.length] = new Option('North', 'N');
             element.options[element.options.length] = new Option('East', 'E');
             element.options[element.options.length] = new Option('South', 'S');
             element.options[element.options.length] = new Option('West', 'W');
+
         } else if (field.type === 'boolean') {
-            element = document.createElement('input');
-            element.type = 'checkbox';
+
+            // Our field type is a boolean, so create a sliding toggle
+
+            // Establish our template (based on Foundation framework's toggle markup)
+            elementTemplate = '<input id="{{fieldId}}" type="checkbox"><label for="{{fieldId}}"></label>';
+            elementTemplate = elementTemplate.replace(/\{\{fieldId\}\}/g, fieldName + '-checkbox');
+
+            element = document.createElement('div');
+            element.innerHTML = elementTemplate;
+            element.classList.add('switch');
             nonStandard = true;
-            element.addEventListener('click', function () {
-                template[fieldName] = element.checked;
+            innerElement = element.querySelector('#' + fieldName + '-checkbox');
+
+            // Add an event listner to our checkbox...
+            innerElement.addEventListener('click', function () {
+                template[fieldName] = innerElement.checked;
                 me.changeTemplateCallback(me.activeTemplate);
             }, false);
+
+            // Set our default value for the element...
             if (template.hasOwnProperty(fieldName)) {
-                element.checked = template[fieldName];
+                innerElement.checked = template[fieldName];
             } else if (field.default) {
-                element.checked = field.default;
+                innerElement.checked = field.default;
             }
+
         } else if (field.type === 'color') {
+
+            // Our field type is a color...
             element = document.createElement('select');
             for (index = 0; index < field.options.length; index += 1) {
                 element.options[element.options.length] = new Option(getFriendlyName(jzt.colors.getColor(field.options[index]).name), field.options[index]);
@@ -689,11 +713,16 @@ jzt = (function (jzt) {
                     element.value = jzt.colors.deserializeBackground(template[fieldName]).code;
                 }
             }
+
         } else {
+
+            // Our field type is anything else...
             element = document.createElement('input');
             element.type = 'text';
+
         }
 
+        // If our element is available and it's standard behaviour...
         if (!nonStandard && element) {
 
             element.addEventListener('change', function () {
