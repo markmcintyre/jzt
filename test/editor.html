@@ -27,7 +27,7 @@
                         <a href="#" data-menu="world" data-noaction>World</a>
                         <ul class="dropdown" data-dropdown="world">
                             <li><a href="#" data-menu-item="save">Save</a></li>
-                            <li><a href="#" data-menu-item="open">Open…</a></li>
+                            <li><a href="#" data-menu-item="open" data-reveal-id="open-dialog">Open…</a></li>
                             <li class="divider"></li>
                             <li><a href="#" data-menu-item="download">Download as JZT</a></li>
                             <li><a href="#" data-menu-item="download-json">Download as JSON</a></li>
@@ -145,6 +145,7 @@
 
 
             <a class="close-reveal-modal">&#215;</a>
+
         </div>
 
         <div id="world-options-dialog" class="reveal-modal" data-reveal>
@@ -161,6 +162,19 @@
                 </div>
             </div>
 
+            <a class="close-reveal-modal">&#215;</a>
+        </div>
+
+        <div id="open-dialog" class="reveal-modal" data-reveal>
+            <h3>Open Game World</h3>
+            <div class="row">
+                <div class="small-12 columns">
+                    <label>
+                        Select Game World:
+                        <input data-id="open" type="file" />
+                    </label>
+                </div>
+            </div>
             <a class="close-reveal-modal">&#215;</a>
         </div>
 
@@ -302,6 +316,7 @@
                     boardSelector: document.getElementById('board-selector'),
                     boardOptionsDialog: document.getElementById('board-options-dialog'),
                     worldOptionsDialog: document.getElementById('world-options-dialog'),
+                    openDialog: document.getElementById('open-dialog'),
                     scriptDialog: document.getElementById('toolscripts'),
                     templateEditor: document.getElementById('active-template-editor'),
                     mainNavigation: document.getElementById('main-navigation'),

@@ -1,5 +1,5 @@
 /*jslint browser: true */
-/*global LZString, Base64, FileReader, alert, CodeMirror */
+/*global LZString, Base64, FileReader, alert, CodeMirror, jQuery */
 
 var jzt;
 var jztux;
@@ -139,6 +139,55 @@ jztux = (function (jzt, jztux) {
         titleBoardSelector = dialog.querySelector('[data-id="title-board"]');
         startingBoardSelector = dialog.querySelector('[data-id="starting-board"]');
         victoryBoardSelector = dialog.querySelector('[data-id="victory-board"]');
+
+    }
+
+    /**
+     * Initializes an open dialog
+     *
+     * @param dialog {object} - A dialog DOM element
+     */
+    function initializeOpenDialog(dialog) {
+
+        // Load Game
+        dialog.querySelector('[data-id="open"]').addEventListener('change', function () {
+
+            var fileReader,
+                file;
+
+            if (event.target.files && event.target.files[0]) {
+
+                file = event.target.files[0];
+                fileReader = new FileReader();
+
+                fileReader.onload = function () {
+
+                    var json;
+
+                    if (file.type === 'application/json') {
+                        json = fileReader.result;
+                    } else {
+                        json = fileReader.result.split(',')[1];
+                        json = LZString.decompressFromBase64(json);
+                    }
+
+                    editor.deserialize(JSON.parse(json));
+
+                };
+
+                if (file.type === 'application/json') {
+                    fileReader.readAsText(file);
+                } else {
+                    fileReader.readAsDataURL(file);
+                }
+
+            }
+
+            event.preventDefault();
+            jQuery(dialog.querySelector('.close-reveal-modal')).trigger('click');
+
+        }, false);
+
 
     }
 
@@ -366,43 +415,6 @@ jztux = (function (jzt, jztux) {
 
         }, false);
 
-        // Load Game
-        mainMenu.querySelector('[data-menu-item="open"]').addEventListener('click', function () {
-
-            var fileReader,
-                file;
-
-            if (event.target.files && event.target.files[0]) {
-
-                file = event.target.files[0];
-                fileReader = new FileReader();
-
-                fileReader.onload = function () {
-
-                    var json;
-
-                    if (file.type === 'application/json') {
-                        json = fileReader.result;
-                    } else {
-                        json = fileReader.result.split(',')[1];
-                        json = LZString.decompressFromBase64(json);
-                    }
-
-                    editor.deserialize(JSON.parse(json));
-
-                };
-
-                if (file.type === 'application/json') {
-                    fileReader.readAsText(file);
-                } else {
-                    fileReader.readAsDataURL(file);
-                }
-
-            }
-
-            event.preventDefault();
-
-        }, false);
 
         itemSelector.addEventListener('change', onToolChange, false);
 
@@ -618,6 +630,7 @@ jztux = (function (jzt, jztux) {
 
         initializeBoardOptionsDialog(options.boardOptionsDialog);
         initializeWorldOptionsDialog(options.worldOptionsDialog);
+        initializeOpenDialog(options.openDialog);
         initializeScriptDialog(options.scriptDialog);
         initializePrimaryUi(options);
 
