@@ -529,7 +529,7 @@ jztux = (function (jzt, jztux) {
         southOffsetSelector.value = options.southOffset || '';
         westOffsetSelector.value = options.westOffset || '';
         darkSelector.checked = options.dark;
-        reenterSelector.checked = options.renter;
+        reenterSelector.checked = options.reenter;
 
     }
 
