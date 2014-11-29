@@ -687,6 +687,9 @@ jztux = (function (jzt, jztux) {
     }
 
     window.addEventListener('message', onMessage, false);
+    window.onbeforeunload = function () {
+        return 'A friendly heads up: If you leave this page before downloading your work, it will be lost forever.';
+    }
 
     jztux.initializeEditorUx = initializeEditorUx;
 
