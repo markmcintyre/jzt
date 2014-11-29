@@ -372,31 +372,31 @@ jztux = (function (jzt, jztux) {
             }
         }, false);
 
-        // Download
-        mainMenu.querySelector('[data-menu-item="download"]').addEventListener('click', function (event) {
-            var game = editor.serialize();
-            event.target.download = game.name.replace(/[a-z0-9_\-]/gi, '-').toLowerCase() + '.jzt';
-            event.target.href = 'data:application/octet-stream;charset=utf-8;base64,' +     LZString.compressToBase64(JSON.stringify(game));
-            event.preventDefault();
+        // New
+        mainMenu.querySelector('[data-menu-item="new"]').addEventListener('click', function () {
+            editor.newGame();
         }, false);
 
-        // Download JSON
-        /*mainMenu.querySelector('[data-menu-item="download-json"]').addEventListener('click', function (event) {
-            var game = editor.serialize();
-            if (event.target.download !== undefined) {
-                event.target.download = game.name.replace(/[a-z0-9_\-]/gi, '-').toLowerCase() + '.json';
-                event.target.href = 'data:application/json;charset=utf-8;base64,' + Base64.encode(JSON.stringify(game));
-            } else {
-                alert('Browser doesn\'t support this.');
-            }
-            event.preventDefault();
-        }, false);*/
+        // Download
+        mainMenu.querySelector('[data-menu-item="download"]').addEventListener('click', function () {
+
+            /*jslint regexp: true */
+
+            var game = editor.serialize(),
+                link;
+
+            link = document.createElement('a');
+            link.download = game.name.replace(/[^a-z0-9_\-]/gi, '-').toLowerCase() + '.jzt';
+            link.href = 'data:application/octet-stream;charset=utf-8;base64,' +     LZString.compressToBase64(JSON.stringify(game));
+            link.click();
+
+        }, false);
 
         // New Board
         mainMenu.querySelector('[data-menu-item="new-board"]').addEventListener('click', function () {
 
             var newName = window.prompt('Please enter a board name.', 'Untitled'),
-                width = parseInt(window.prompt('Please enter a board width.', '40'), 10),
+                width = parseInt(window.prompt('Please enter a board width.', '50'), 10),
                 height = parseInt(window.prompt('Please enter a board height.', '20'), 10);
 
             if (newName && width && height) {
@@ -423,12 +423,6 @@ jztux = (function (jzt, jztux) {
 
 
         itemSelector.addEventListener('change', onToolChange, false);
-
-        /*mainMenu.querySelector('[data-menu-item="save"]').addEventListener('click', function () {
-            editor.save();
-            alert('Game Saved!');
-            event.preventDefault();
-        }, false);*/
 
         children = mainNavigation.querySelectorAll('[data-noaction]');
         for (index = 0; index < children.length; index += 1) {
@@ -656,11 +650,11 @@ jztux = (function (jzt, jztux) {
 
         var origin = window.location.origin || window.location.protocol + '//' + window.location.host;
 
-        if(event.origin !== origin) {
+        if (event.origin !== origin) {
             return;
         }
 
-        if(event.data === 'send-game') {
+        if (event.data === 'send-game') {
 
             // A game was requested
             event.source.postMessage('play-game:' + JSON.stringify(editor.serialize(true)), event.origin);

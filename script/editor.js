@@ -53,17 +53,7 @@ jzt = (function (jzt) {
         this.game = mockGame;
 
         mockGame.resources.graphics = new jzt.Graphics(function () {
-
-            if (localStorage[jzt.Editor.CURRENT_GAME]) {
-                try {
-                    me.load();
-                } catch (exception) {
-                    alert('Could not load previously stored game.');
-                    me.addBoard('Untitled', 40, 15);
-                }
-            } else {
-                me.addBoard('Untitled', 40, 15);
-            }
+            me.newGame();
         });
 
         this.graphics = mockGame.resources.graphics;
@@ -71,8 +61,6 @@ jzt = (function (jzt) {
         window.addEventListener('keydown', this.onKeyDown.bind(this), false);
 
     }
-
-    Editor.CURRENT_GAME = 'currentGame';
 
     Editor.Mode = {
         DRAW: 0,
@@ -329,6 +317,17 @@ jzt = (function (jzt) {
 
     };
 
+    Editor.prototype.newGame = function () {
+        this.deserialize({
+            name: 'Untitled World',
+            version: this.game.version,
+            author: 'Anonymous',
+            titleBoard: 'Untitled Board',
+            startingBoard: 'Untitled Board',
+            boards: [this.createBoard('Untitled Board', 50, 20)]
+        });
+    };
+
     Editor.prototype.moveCursor = function (direction) {
 
         var startX,
@@ -449,24 +448,6 @@ jzt = (function (jzt) {
 
     };
 
-    Editor.prototype.save = function () {
-        var data = JSON.stringify(this.serialize());
-        data = LZString.compressToUTF16(data);
-        localStorage[Editor.CURRENT_GAME] = data;
-    };
-
-    Editor.prototype.load = function () {
-        var data = localStorage[Editor.CURRENT_GAME],
-            loadedData;
-        if (data) {
-            loadedData = LZString.decompressFromUTF16(data);
-            loadedData = JSON.parse(loadedData);
-            this.deserialize(loadedData);
-        } else {
-            throw 'No game data available.';
-        }
-    };
-
     Editor.prototype.deserialize = function (data) {
 
         var index,
@@ -548,7 +529,7 @@ jzt = (function (jzt) {
 
     };
 
-    Editor.prototype.addBoard = function (boardName, width, height) {
+    Editor.prototype.createBoard = function (boardName, width, height) {
 
         var template = {
                 name: boardName,
@@ -560,8 +541,7 @@ jzt = (function (jzt) {
                 scripts: []
             },
             row,
-            column,
-            newBoard;
+            column;
 
         for (row = 0; row < height; row += 1) {
             for (column = 0; column < width; column += 1) {
@@ -581,8 +561,18 @@ jzt = (function (jzt) {
             }
         }
 
+        return template;
+
+    };
+
+    Editor.prototype.addBoard = function (boardName, width, height) {
+
+        var newBoard,
+            template = this.createBoard(boardName, width, height);
+
         newBoard = new jzt.Board(template, this.game);
         newBoard.initializePlayer(new jzt.things.Player());
+
         this.boards.push(newBoard);
 
         if (this.addBoardCallback) {
