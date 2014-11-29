@@ -405,7 +405,9 @@ jztux = (function (jzt, jztux) {
 
         // New
         mainMenu.querySelector('[data-menu-item="new"]').addEventListener('click', function () {
-            editor.newGame();
+            if (window.confirm('Are you sure you want to start a new game world?')) {
+                editor.newGame();
+            }
         }, false);
 
         // Download
