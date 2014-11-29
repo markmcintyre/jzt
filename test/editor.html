@@ -40,7 +40,7 @@
                             <li><label>Current Board</label></li>
                             <li class="board-selector-item"><select id="board-selector"></select></li>
                             <li class="divider"></li>
-                            <li><a href="#" data-menu-item="new-board">Add New Board</a></li>
+                            <li><a href="#" data-menu-item="new-board" data-reveal-id="new-board-dialog">Add New Board</a></li>
                             <li><a href="#" data-menu-item="delete-board">Delete Current Board</a></li>
                             <li class="divider"></li>
                             <li><a href="#" data-reveal-id="board-options-dialog">Board Options</a></li>
@@ -161,6 +161,25 @@
                 </div>
             </div>
 
+            <a class="close-reveal-modal">&#215;</a>
+        </div>
+
+        <div id="new-board-dialog" class="reveal-modal" data-reveal>
+            <h3>New Board</h3>
+            <div class="row">
+                <div class="small-12 columns">
+                    <label>Board Name: <input type="text" data-id="name" /></label>
+                </div>
+                <div class="small-6 columns">
+                    <label>Board Width: <input type="number" min="10" max="256" data-id="width" /></label>
+                </div>
+                <div class="small-6 columns">
+                    <label>Board Height: <input type="number" min="10" max="256" data-id="height" /></label>
+                </div>
+                <div class="small-12 columns">
+                    <button data-id="ok">OK</button>
+                </div>
+            </div>
             <a class="close-reveal-modal">&#215;</a>
         </div>
 
@@ -317,6 +336,7 @@
                     worldOptionsDialog: document.getElementById('world-options-dialog'),
                     openDialog: document.getElementById('open-dialog'),
                     scriptDialog: document.getElementById('toolscripts'),
+                    newBoardDialog: document.getElementById('new-board-dialog'),
                     templateEditor: document.getElementById('active-template-editor'),
                     mainNavigation: document.getElementById('main-navigation'),
                     scriptButton: document.getElementById('script-button'),

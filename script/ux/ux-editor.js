@@ -35,6 +35,7 @@ jztux = (function (jzt, jztux) {
         oldLine = 1,
         templates,
         scriptTab,
+        newBoardDialog,
         mainNavigation,
         parser;
 
@@ -276,6 +277,36 @@ jztux = (function (jzt, jztux) {
     }
 
     /**
+     * Initializes the new board dialog
+     *
+     * @param dialog {object} - A dialog that allows the creation of a new board
+     */
+    function initializeNewBoardDialog(dialog) {
+
+        newBoardDialog = dialog;
+
+        dialog.querySelector('[data-id="ok"]').addEventListener('click', function () {
+
+            var name = dialog.querySelector('[data-id="name"]').value,
+                width = parseInt(dialog.querySelector('[data-id="width"]').value, 10),
+                height = parseInt(dialog.querySelector('[data-id="height"]').value, 10);
+
+            if (name && width && height) {
+                name = editor.getUniqueBoardName(name);
+                try {
+                    editor.addBoard(name, width, height);
+                } catch (ex) {
+                    alert(ex);
+                }
+            }
+
+            jQuery(dialog.querySelector('.close-reveal-modal')).trigger('click');
+
+        });
+
+    }
+
+    /**
      * Initializes the primary UI options
      *
      * @param options {object} - DOM elements used for user interaction
@@ -395,18 +426,9 @@ jztux = (function (jzt, jztux) {
         // New Board
         mainMenu.querySelector('[data-menu-item="new-board"]').addEventListener('click', function () {
 
-            var newName = window.prompt('Please enter a board name.', 'Untitled'),
-                width = parseInt(window.prompt('Please enter a board width.', '50'), 10),
-                height = parseInt(window.prompt('Please enter a board height.', '20'), 10);
-
-            if (newName && width && height) {
-                newName = editor.getUniqueBoardName(newName);
-                try {
-                    editor.addBoard(newName, width, height);
-                } catch (ex) {
-                    alert(ex);
-                }
-            }
+            newBoardDialog.querySelector('[data-id="name"]').value = 'Untitled Board';
+            newBoardDialog.querySelector('[data-id="width"]').value = '50';
+            newBoardDialog.querySelector('[data-id="height"]').value = '20';
 
             event.preventDefault();
 
@@ -639,6 +661,7 @@ jztux = (function (jzt, jztux) {
         initializeWorldOptionsDialog(options.worldOptionsDialog);
         initializeOpenDialog(options.openDialog);
         initializeScriptDialog(options.scriptDialog);
+        initializeNewBoardDialog(options.newBoardDialog);
         initializePrimaryUi(options);
 
     }
