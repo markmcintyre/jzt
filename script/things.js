@@ -3887,16 +3887,13 @@ jzt.things = (function (my) {
         var currentPoint = this.point.add(jzt.Direction.opposite(this.orientation));
         var destinationPoint = this.point.add(this.orientation);
         var thing;
-        var success = this.board.moveTile(currentPoint, destinationPoint);
+        var success = this.board.getTile(destinationPoint) instanceof Teleporter ? false : this.board.moveTile(currentPoint, destinationPoint);
 
         // If we couldn't move the tile to the other side of this teleporter...
         if (!success) {
 
             // While we haven't reached the edge of the board...
             while (!this.board.isOutside(destinationPoint)) {
-
-                // Look at the next tile in the direction
-                destinationPoint = destinationPoint.add(this.orientation);
 
                 // If we found a matching teleporter...
                 thing = this.board.getTile(destinationPoint);
@@ -3910,6 +3907,9 @@ jzt.things = (function (my) {
                     break;
 
                 }
+
+                // Look at the next tile in the direction
+                destinationPoint = destinationPoint.add(this.orientation);
 
             }
 
