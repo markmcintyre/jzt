@@ -1916,8 +1916,25 @@ jzt.things = (function (my) {
     Door.prototype.constructor = Door;
 
     Door.prototype.deserialize = function (data) {
+
         Thing.prototype.deserialize.call(this, data);
         this.foreground = jzt.colors.BrightWhite;
+
+        // Sanitize the color if necessary
+        if (this.background) {
+
+            if (this.background.isLight()) {
+                this.background = this.background.darken();
+            }
+
+            if (this.background === jzt.colors.Black) {
+                this.background = jzt.colors.White;
+            }
+
+        } else {
+            this.background = jzt.colors.Blue;
+        }
+
     };
 
     /**
@@ -2393,9 +2410,9 @@ jzt.things = (function (my) {
         // Keys can only be bright colors
         this.foreground = this.foreground.lighten();
 
-        // Grey keys don't exist either, so assume white
-        if (this.foreground === jzt.colors.Grey) {
-            this.foreground = jzt.colors.White;
+        // Grey and flashing keys don't exist either, so assume white
+        if (this.foreground instanceof jzt.colors.CyclingColor || this.foreground === jzt.colors.Grey) {
+            this.foreground = jzt.colors.BrightWhite;
         }
 
         this.background = undefined;

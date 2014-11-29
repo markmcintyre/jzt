@@ -611,6 +611,7 @@ jzt = (function (jzt) {
             index,
             elementTemplate,
             innerElement,
+            color,
             nonStandard = false;
 
         function getFriendlyName(name) {
@@ -709,9 +710,11 @@ jzt = (function (jzt) {
             }, false);
             if (template.hasOwnProperty(fieldName)) {
                 if (field.foreground) {
-                    element.value = jzt.colors.deserializeForeground(template[fieldName]).code;
+                    color = jzt.colors.deserializeForeground(template[fieldName]);
+                    element.value = color ? color.code : jzt.colors.Yellow;
                 } else {
-                    element.value = jzt.colors.deserializeBackground(template[fieldName]).code;
+                    color = jzt.colors.deserializeBackground(template[fieldName]);
+                    element.value = color ? color.code : jzt.colors.Blue;
                 }
             }
 
