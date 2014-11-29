@@ -94,6 +94,14 @@ jzt = (function (my) {
         this.devicePixelRatio = 1;
         this.notificationListeners = [];
 
+        if (configuration.playTest) {
+            this.playTest = true;
+        }
+
+        if (configuration.playTest) {
+            this.playTest = configuration.playTest;
+        }
+
         // Add our notification listeners
         if (configuration.notificationListeners) {
             for (index = 0; index < configuration.notificationListeners.length; index += 1) {
@@ -794,6 +802,11 @@ jzt = (function (my) {
             this.keyboard.initialize();
             this.previousStates = [];
 
+            // If we're play testing, load now
+            if (this.playTest) {
+                this.initialLoad();
+            }
+
             if (this.gameLoaded) {
 
                 // We've got a game loaded
@@ -809,8 +822,9 @@ jzt = (function (my) {
 
             } else {
 
-                // No game has loaded, start from the splash screen
+                // Otherwise show the splash screen
                 this.setState(GameState.Splash);
+
 
             }
 
@@ -1026,23 +1040,29 @@ jzt = (function (my) {
                 // We no longer need the splash screen
                 delete this.splash;
 
-                // Check if there's a game to load
-                if (this.gameToLoad) {
-
-                    // There is! So load our game
-                    this.loadGame(this.gameToLoad);
-
-                    // There's no need to keep it around anymore
-                    delete this.gameToLoad;
-
-                } else {
-
-                    // There's no game to load, so we're in error...
-                    this.setState(GameState.Error);
-
-                }
+                this.initialLoad();
 
             }
+
+        }
+
+    };
+
+    Game.prototype.initialLoad = function () {
+
+        // Check if there's a game to load
+        if (this.gameToLoad) {
+
+            // There is! So load our game
+            this.loadGame(this.gameToLoad);
+
+            // There's no need to keep it around anymore
+            delete this.gameToLoad;
+
+        } else {
+
+            // There's no game to load, so we're in error...
+            this.setState(GameState.Error);
 
         }
 

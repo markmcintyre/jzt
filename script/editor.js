@@ -505,15 +505,16 @@ jzt = (function (jzt) {
 
     };
 
-    Editor.prototype.serialize = function () {
+    Editor.prototype.serialize = function (playTest) {
         var result = {},
             index;
         result.name = this.game.name;
         result.version = this.game.version;
         result.id = this.game.id;
         result.titleBoard = this.game.titleBoard;
-        result.startingBoard = this.game.startingBoard;
+        result.startingBoard = playTest ? this.currentBoard.name : this.game.startingBoard;
         result.victoryBoard = this.game.victoryBoard;
+        result.savedGame = true;
         result.author = this.game.author;
         result.boards = [];
         for (index = 0; index < this.boards.length; index += 1) {

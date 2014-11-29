@@ -30,6 +30,7 @@ jztux = (function (jzt, jztux) {
         victoryBoardSelector,
         scriptWarning,
         modeSelector,
+        playButton,
         editor,
         oldLine = 1,
         templates,
@@ -171,7 +172,11 @@ jztux = (function (jzt, jztux) {
                         json = LZString.decompressFromBase64(json);
                     }
 
-                    editor.deserialize(JSON.parse(json));
+                    try {
+                        editor.deserialize(JSON.parse(json));
+                    } catch (exception) {
+                        alert(exception);
+                    }
 
                 };
 
@@ -345,6 +350,7 @@ jztux = (function (jzt, jztux) {
         mainNavigation = options.mainNavigation;
         mainMenu = mainNavigation.querySelector('section.top-bar-section');
         modeSelector = options.modeSelector;
+        playButton = options.playButton;
         boardSelector = options.boardSelector;
         templateEditor = options.templateEditor;
         itemSelector = options.itemSelector;
@@ -375,7 +381,7 @@ jztux = (function (jzt, jztux) {
         }, false);
 
         // Download JSON
-        mainMenu.querySelector('[data-menu-item="download-json"]').addEventListener('click', function (event) {
+        /*mainMenu.querySelector('[data-menu-item="download-json"]').addEventListener('click', function (event) {
             var game = editor.serialize();
             if (event.target.download !== undefined) {
                 event.target.download = game.name.replace(/[a-z0-9_\-]/gi, '-').toLowerCase() + '.json';
@@ -384,7 +390,7 @@ jztux = (function (jzt, jztux) {
                 alert('Browser doesn\'t support this.');
             }
             event.preventDefault();
-        }, false);
+        }, false);*/
 
         // New Board
         mainMenu.querySelector('[data-menu-item="new-board"]').addEventListener('click', function () {
@@ -418,11 +424,11 @@ jztux = (function (jzt, jztux) {
 
         itemSelector.addEventListener('change', onToolChange, false);
 
-        mainMenu.querySelector('[data-menu-item="save"]').addEventListener('click', function () {
+        /*mainMenu.querySelector('[data-menu-item="save"]').addEventListener('click', function () {
             editor.save();
             alert('Game Saved!');
             event.preventDefault();
-        }, false);
+        }, false);*/
 
         children = mainNavigation.querySelectorAll('[data-noaction]');
         for (index = 0; index < children.length; index += 1) {
@@ -432,6 +438,13 @@ jztux = (function (jzt, jztux) {
         options.sidebarTabs.on('toggled', function () {
             scriptEditor.refresh();
         });
+
+        playButton.addEventListener('click', function (event) {
+
+            window.open(event.target.href, 'jzt-play-test');
+            event.preventDefault();
+
+        }, false);
 
     }
 
@@ -635,6 +648,28 @@ jztux = (function (jzt, jztux) {
         initializePrimaryUi(options);
 
     }
+
+    /**
+     * An event handler to be triggered when a Cross-Document message is received.
+     */
+    function onMessage(event) {
+
+        var origin = window.location.origin || window.location.protocol + '//' + window.location.host;
+
+        if(event.origin !== origin) {
+            return;
+        }
+
+        if(event.data === 'send-game') {
+
+            // A game was requested
+            event.source.postMessage('play-game:' + JSON.stringify(editor.serialize(true)), event.origin);
+
+        }
+
+    }
+
+    window.addEventListener('message', onMessage, false);
 
     jztux.initializeEditorUx = initializeEditorUx;
 

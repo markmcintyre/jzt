@@ -26,13 +26,14 @@
                     <li class="has-dropdown">
                         <a href="#" data-menu="world" data-noaction>World</a>
                         <ul class="dropdown" data-dropdown="world">
-                            <li><a href="#" data-menu-item="save">Save</a></li>
-                            <li><a href="#" data-menu-item="open" data-reveal-id="open-dialog">Open…</a></li>
+                            <li><a href="#" data-menu-item="new">New Game World</a></li>
+                            <!-- <li><a href="#" data-menu-item="save">Save Game World</a></li> -->
+                            <li><a href="#" data-menu-item="open" data-reveal-id="open-dialog">Open Game World…</a></li>
                             <li class="divider"></li>
-                            <li><a href="#" data-menu-item="download">Download as JZT</a></li>
-                            <li><a href="#" data-menu-item="download-json">Download as JSON</a></li>
+                            <li><a href="#" data-menu-item="download">Download Game World</a></li>
+                            <!--<li><a href="#" data-menu-item="download-json">Download as JSON</a></li>-->
                             <li class="divider"></li>
-                            <li><a href="#" data-reveal-id="world-options-dialog">Options</a></li>
+                            <li><a href="#" data-reveal-id="world-options-dialog">World Options</a></li>
                         </ul>
                     </li>
                     <li class="has-dropdown">
@@ -60,7 +61,7 @@
                     </li>
 
                     <li class="has-form">
-                      <a href="" class="button">Play</a>
+                      <a href="editor-play.html" class="button" id="play">Play</a>
                     </li>
 
                 </ul>
@@ -323,6 +324,7 @@
                     scriptButton: document.getElementById('script-button'),
                     itemSelector: document.getElementById('item-selector'),
                     modeSelector: document.getElementById('mode-selector'),
+                    playButton: document.getElementById('play'),
                     sidebarTabs: $('#sidebar-tabs')
                 });
             })();
