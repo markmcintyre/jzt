@@ -2765,6 +2765,10 @@ jzt.things = (function (my) {
      */
     Passage.prototype.deserialize = function (data) {
         Thing.prototype.deserialize.call(this, data);
+        this.foreground = jzt.colors.BrightWhite;
+        if (! this.background) {
+            this.background = jzt.colors.Blue;
+        }
         this.targetBoard = data.targetBoard;
         this.passageId = data.passageId;
     };

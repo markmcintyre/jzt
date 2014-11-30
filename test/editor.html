@@ -134,8 +134,10 @@
 
             <div class="row">
                 <div class="small-12 medium-8 columns">
-                    <label>Maximum player bullets</label>
-                    <input type="number" data-id="max-bullets" />
+                    <label>Maximum player bullets <small class="description">(Enter -1 for unlimited)</small>
+                    <input type="number" data-id="max-player-bullets" min="-1" max="100" />
+                    </label>
+
                 </div>
                 <div class="small-6 medium-2 columns">
                     <label>Board is Dark</label>

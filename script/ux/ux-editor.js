@@ -17,6 +17,7 @@ jztux = (function (jzt, jztux) {
         southOffsetSelector,
         westOffsetSelector,
         darkSelector,
+        maxPlayerBulletSelector,
         reenterSelector,
         templateEditor,
         scriptSelector,
@@ -99,6 +100,7 @@ jztux = (function (jzt, jztux) {
                 southOffset: southOffsetSelector.value,
                 westOffset: westOffsetSelector.value,
                 dark: darkSelector.checked,
+                maxPlayerBullets: parseInt(maxPlayerBulletSelector.value, 10),
                 reenter: reenterSelector.checked
             });
         }
@@ -113,6 +115,7 @@ jztux = (function (jzt, jztux) {
         westOffsetSelector = dialog.querySelector('[data-id="west-offset"]');
         darkSelector = dialog.querySelector('[data-id="dark"]');
         reenterSelector = dialog.querySelector('[data-id="reenter"]');
+        maxPlayerBulletSelector = dialog.querySelector('[data-id="max-player-bullets"]');
 
         northSelector.addEventListener('change', onChange, false);
         eastSelector.addEventListener('change', onChange, false);
@@ -124,8 +127,7 @@ jztux = (function (jzt, jztux) {
         westOffsetSelector.addEventListener('change', onChange, false);
         darkSelector.addEventListener('click', onChange, false);
         reenterSelector.addEventListener('click', onChange, false);
-
-
+        maxPlayerBulletSelector.addEventListener('change', onChange, false);
 
     }
 
@@ -561,6 +563,7 @@ jztux = (function (jzt, jztux) {
         westOffsetSelector.value = options.westOffset || '';
         darkSelector.checked = options.dark;
         reenterSelector.checked = options.reenter;
+        maxPlayerBulletSelector.value = options.maxPlayerBullets === undefined ? -1 : options.maxPlayerBullets;
 
     }
 

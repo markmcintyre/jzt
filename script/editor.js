@@ -12,6 +12,11 @@ jzt = (function (jzt) {
 
     'use strict';
 
+    var lightColors = ['8', '9', 'A', 'B', 'C', 'D', 'E', 'F'],
+        darkColors = ['0', '1', '2', '3', '4', '5', '6', '7'],
+        allColors = ['9', 'A', 'B', 'C', 'D', 'E', 'F', '0', '7', '1', '2', '3', '4', '5', '6', '8'],
+        allColorsNoBlack = ['9', 'A', 'B', 'C', 'D', 'E', 'F', '7', '1', '2', '3', '4', '5', '6', '8'];
+
     function Editor(editorElement, configuration) {
 
         var mockGame,
@@ -77,26 +82,26 @@ jzt = (function (jzt) {
             direction: {type: 'direction', default: 'E', label: 'Direction'},
             period: {type: 'number', min: 1, max: 50, default: 1, label: 'Period'},
             delay: {type: 'number', min: 0, max: 50, default: 0, label: 'Delay'},
-            color: {type: 'color', default: '*9', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
+            color: {type: 'color', default: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
         Bomb: {
             radius: {type: 'number', default: 4, min: 2, max: 20, label: 'Radius', advanced: true},
-            color: {type: 'color', default: '*C', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
+            color: {type: 'color', default: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
         Boulder: {
-            color: {type: 'color', default: '*E', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
+            color: {type: 'color', default: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
         BreakableWall: {
-            color: {type: 'color', default: '0B', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
+            color: {type: 'color', default: '0B', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
         Centipede: {
             head: {type: 'boolean', default: false, label: 'Head'},
             deviance: {type: 'number', min: 0, max: 10, default: 0, label: 'Deviance'},
             intelligence: {type: 'number', min: 0, max: 10, default: 0, label: 'Intelligence'},
-            color: {type: 'color', default: '*9', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
+            color: {type: 'color', default: '*9', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
         Conveyor: {
-            color: {type: 'color', default: '*C', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'},
+            color: {type: 'color', default: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'},
             clockwise: {type: 'boolean', default: true, label: 'Clockwise'}
         },
         River: {
@@ -110,19 +115,19 @@ jzt = (function (jzt) {
             speed: {type: 'number', min: 1, max: 10, default: 5, label: 'Speed'}
         },
         FakeWall: {
-            color: {type: 'color', default: '0E', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
+            color: {type: 'color', default: '0E', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
         Gem: {
-            color: {type: 'color', default: '0D', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
+            color: {type: 'color', default: '0D', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
         InvisibleWall: {
-            color: {type: 'color', default: '0A', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
+            color: {type: 'color', default: '0A', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
         Key: {
-            color: {type: 'color', default: '*F', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
+            color: {type: 'color', default: '*9', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
         },
         LineWall: {
-            color: {type: 'color', default: '09', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
+            color: {type: 'color', default: '09', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
         Lion: {
             speed: {type: 'number', min: 1, max: 10, default: 2, label: 'Speed', advanced: true},
@@ -136,7 +141,7 @@ jzt = (function (jzt) {
         Pusher: {
             speed: {type: 'number', default: 3, min: '1', max: '10', label: 'Speed', advanced: true},
             orientation: {type: 'direction', default: 'S', label: 'Direction'},
-            color: {type: 'color', default: '*E', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
+            color: {type: 'color', default: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
         Ruffian: {
             speed: {type: 'number', default: 3, min: '1', max: '10', label: 'Speed', advanced: true},
@@ -145,7 +150,7 @@ jzt = (function (jzt) {
         },
         Scriptable: {
             name: {type: 'text', default: 'Unknown', label: 'Name'},
-            color: {type: 'color', default: '*F', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'},
+            color: {type: 'color', default: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'},
             script: {type: 'script', label: 'Script'},
             speed: {type: 'number', min: 1, max: 10, default: 3, label: 'Speed'}
         },
@@ -153,32 +158,32 @@ jzt = (function (jzt) {
             text: {type: 'text', label: 'Signpost Text'}
         },
         SliderEw: {
-            color: {type: 'color', default: '*F', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
+            color: {type: 'color', default: '*F', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
         SliderNs: {
-            color: {type: 'color', default: '*F', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
+            color: {type: 'color', default: '*F', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
         Snake: {
             speed: {type: 'number', default: 3, min: 1, max: 10, label: 'Speed'}
         },
         SolidWall: {
-            color: {type: 'color', default: '0E', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
+            color: {type: 'color', default: '0E', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
         Spider: {
             intelligence: {type: 'number', default: 5, min: 1, max: 5, label: 'Intelligence'},
-            color: {type: 'color', default: '*C', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
+            color: {type: 'color', default: '*C', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
         SpinningGun: {
             intelligence: {type: 'number', default: 5, min: 1, max: 5, label: 'Intelligence'},
             firingRate: {type: 'number', default: 5, min: 1, max: 10, label: 'Firing rate'},
-            color: {type: 'color', default: '*A', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
+            color: {type: 'color', default: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
         Teleporter: {
             orientation: {type: 'direction', default: 'E', label: 'Direction'},
-            color: {type: 'color', default: '*B', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
+            color: {type: 'color', default: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
         Text: {
-            color: {type: 'color', default: '1F', options: ['1', '2', '3', '4', '5', '6', '7', '8'], foreground: false, label: 'Color'},
+            color: {type: 'color', default: '0F', options: darkColors, foreground: false, label: 'Color'},
             text: {type: 'text', default: '', label: 'Text'}
         },
         Tiger: {
@@ -187,7 +192,7 @@ jzt = (function (jzt) {
             firingRate: {type: 'number', min: 1, max: 20, default: 5, label: 'Firing rate'}
         },
         Wall: {
-            color: {type: 'color', default: '0E', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
+            color: {type: 'color', default: '0E', options: allColorsNoBlack, foreground: true, label: 'Color'}
         }
     };
 
@@ -363,6 +368,7 @@ jzt = (function (jzt) {
         this.currentBoard.eastOffset = options.eastOffset !== '' ? options.eastOffset : undefined;
         this.currentBoard.westOffset = options.westOffset !== '' ? options.westOffset : undefined;
         this.currentBoard.reenter = options.reenter;
+        this.currentBoard.maxPlayerBullets = options.maxPlayerBullets < 0 ? undefined : options.maxPlayerBullets;
         this.changeBoardOptionsCallback(options);
     };
 
@@ -714,6 +720,14 @@ jzt = (function (jzt) {
                     element.value = color ? color.code : jzt.colors.Yellow;
                 } else {
                     color = jzt.colors.deserializeBackground(template[fieldName]);
+                    element.value = color ? color.code : jzt.colors.Blue;
+                }
+            } else if (field.default) {
+                if (field.foreground) {
+                    color = jzt.colors.deserializeForeground(field.default);
+                    element.value = color ? color.code : jzt.colors.Yellow;
+                } else {
+                    color = jzt.colors.deserializeBackground(field.default);
                     element.value = color ? color.code : jzt.colors.Blue;
                 }
             }

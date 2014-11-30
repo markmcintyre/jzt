@@ -13,6 +13,14 @@
     max-width: initial;
 }
 
+small.description {
+    font-size: small;
+    color: silver;
+    margin: 0 0 0 1em;
+    padding: 0;
+    text-transform: none;
+}
+
 .advanced {
     display: none;
 }
