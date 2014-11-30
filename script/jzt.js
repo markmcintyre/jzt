@@ -577,6 +577,11 @@ jzt = (function (my) {
 
             // Let's do some file management!
 
+            // UNLESS, of course, we're play testing.
+            if (this.playTest) {
+                return;
+            }
+
             // Show our file management, and suppress the empty slot if we're on the title screen
             this.fileManagement.open(undefined, this.state === GameState.Title);
 
