@@ -75,12 +75,11 @@ jzt = (function (jzt) {
 
     Editor.Thing = {
         Bear: {
-            sensitivity: {type: 'number', min: 1, max: 10, default: 1, label: 'Sensitivity'},
-            speed: {type: 'number', min: 1, max: 10, default: 2, label: 'Speed', advanced: true}
+            sensitivity: {type: 'number', min: 1, max: 10, default: 1, label: 'Sensitivity'}
         },
         Blinker: {
-            direction: {type: 'direction', default: 'E', label: 'Direction'},
-            period: {type: 'number', min: 1, max: 50, default: 1, label: 'Period'},
+            direction: {type: 'direction', default: 'N', label: 'Direction'},
+            period: {type: 'number', min: 1, max: 50, default: 3, label: 'Period'},
             delay: {type: 'number', min: 0, max: 50, default: 0, label: 'Delay'},
             color: {type: 'color', default: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
@@ -130,7 +129,6 @@ jzt = (function (jzt) {
             color: {type: 'color', default: '09', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
         Lion: {
-            speed: {type: 'number', min: 1, max: 10, default: 2, label: 'Speed', advanced: true},
             intelligence: {type: 'number', min: 1, max: 10, default: 3, label: 'Intelligence'}
         },
         Passage: {
@@ -144,7 +142,6 @@ jzt = (function (jzt) {
             color: {type: 'color', default: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
         Ruffian: {
-            speed: {type: 'number', default: 3, min: '1', max: '10', label: 'Speed', advanced: true},
             intelligence: {type: 'number', default: 5, min: '1', max: '10', label: 'Intelligence'},
             restingTime: {type: 'number', default: 5, min: '1', max: '20', label: 'Resting time'}
         },
@@ -187,7 +184,6 @@ jzt = (function (jzt) {
             text: {type: 'text', default: '', label: 'Text'}
         },
         Tiger: {
-            speed: {type: 'number', min: 1, max: 10, default: 2, label: 'Speed', advanced: true},
             intelligence: {type: 'number', min: 1, max: 10, default: 3, label: 'Intelligence'},
             firingRate: {type: 'number', min: 1, max: 20, default: 5, label: 'Firing rate'}
         },

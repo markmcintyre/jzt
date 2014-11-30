@@ -930,10 +930,10 @@ jzt.things = (function (my) {
     Blinker.prototype.deserialize = function (data) {
         UpdateableThing.prototype.deserialize.call(this, data);
         this.cycleCount = 0;
-        this.period = data.period;
-        this.delay = data.delay;
+        this.period = data.period || 3;
+        this.delay = data.delay || 0;
         this.currentTick = this.period - this.delay - 1;
-        this.direction = jzt.Direction.fromName(data.direction);
+        this.direction = data.direction ? jzt.Direction.fromName(data.direction) : jzt.Direction.North;
     };
 
     Blinker.prototype.doTick = function () {
