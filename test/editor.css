@@ -13,6 +13,14 @@
     max-width: initial;
 }
 
+.advanced {
+    display: none;
+}
+
+body.advanced-mode .advanced {
+    display: block;
+}
+
 #edit-area {
     padding: 0;
 }

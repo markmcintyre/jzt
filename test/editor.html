@@ -46,9 +46,20 @@
                             <li><a href="#" data-reveal-id="board-options-dialog">Board Options</a></li>
                         </ul>
                     </li>
+                    <li class="has-dropdown">
+                        <a href="#" data-menu="help" data-noaction>Help</a>
+                        <ul class="dropdown" data-dropdown="help">
+                            <li><a href="#" data-menu-item="help">Documentation</a></li>
+                            <li><a href="#" data-menu-item="reference">JZTScript Reference</a></li>
+                            <li class="divider"></li>
+                            <li><a href="#" data-menu-item="community">JZT Community</a></li>
+                        </ul>
+                    </li>
                 </ul>
 
                 <ul class="right">
+
+                    <li class="advanced"><a href="#" data-noaction>Advanced Mode</a></li>
 
                     <li class="has-form">
                         <ul id="mode-selector" class="button-group">
@@ -213,7 +224,7 @@
                     <!-- Map -->
                     <div class="content active" id="toolmap">
                         <label>
-                            Selected Item
+                            Active Item
                             <select id="item-selector">
 
                                 <optgroup label="Items">
@@ -272,7 +283,7 @@
 
                         <!-- <input id="load-game" type="file" /><br/> -->
 
-                        <label>Raw Template
+                        <label class="advanced">Raw Template
                             <textarea id="active-template-editor" rows="10" style="width: 100%"></textarea>
                         </label>
 

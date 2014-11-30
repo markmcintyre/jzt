@@ -693,6 +693,13 @@ jztux = (function (jzt, jztux) {
         return 'A friendly heads up: If you leave this page before downloading your work, it will be lost forever.';
     }
 
+    // Pressing ALT+A toggles Advanced Mode
+    window.onkeydown = function (event) {
+        if (event.keyCode === 65 && event.altKey) {
+            document.body.classList.toggle('advanced-mode');
+        }
+    };
+
     jztux.initializeEditorUx = initializeEditorUx;
 
     return jztux;

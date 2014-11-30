@@ -744,6 +744,10 @@ jzt = (function (jzt) {
 
         label.appendChild(element);
 
+        if (field.advanced) {
+            label.classList.add('advanced');
+        }
+
         return label;
 
 
@@ -762,11 +766,7 @@ jzt = (function (jzt) {
 
             for (field in thing) {
                 if (thing.hasOwnProperty(field)) {
-
-                    if (this.advancedMode || !thing[field].advanced) {
-                        this.templateCustomizer.appendChild(this.createField(field, thing[field], template));
-                    }
-
+                    this.templateCustomizer.appendChild(this.createField(field, thing[field], template));
                 }
             }
 
