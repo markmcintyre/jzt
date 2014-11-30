@@ -12,9 +12,7 @@ jzt = (function (jzt) {
 
     'use strict';
 
-    var lightColors = ['8', '9', 'A', 'B', 'C', 'D', 'E', 'F'],
-        darkColors = ['0', '1', '2', '3', '4', '5', '6', '7'],
-        allColors = ['9', 'A', 'B', 'C', 'D', 'E', 'F', '0', '7', '1', '2', '3', '4', '5', '6', '8'],
+    var darkColors = ['0', '1', '2', '3', '4', '5', '6', '7'],
         allColorsNoBlack = ['9', 'A', 'B', 'C', 'D', 'E', 'F', '7', '1', '2', '3', '4', '5', '6', '8'];
 
     function Editor(editorElement, configuration) {
