@@ -13,7 +13,8 @@ jzt = (function (jzt) {
     'use strict';
 
     var darkColors = ['0', '1', '2', '3', '4', '5', '6', '7'],
-        allColorsNoBlack = ['9', 'A', 'B', 'C', 'D', 'E', 'F', '7', '1', '2', '3', '4', '5', '6', '8'];
+        allColorsNoBlack = ['9', 'A', 'B', 'C', 'D', 'E', 'F', '7', '1', '2', '3', '4', '5', '6', '8'],
+        playerSprite;
 
     function Editor(editorElement, configuration) {
 
@@ -37,6 +38,7 @@ jzt = (function (jzt) {
 
         this.boards = [];
         this.cursor = new jzt.Point(0, 0);
+        this.playerPosition = new jzt.Point(0, 0);
 
         mockGame = {
             resources: {},
@@ -57,10 +59,12 @@ jzt = (function (jzt) {
 
         mockGame.resources.graphics = new jzt.Graphics(function () {
             me.newGame();
+            playerSprite = me.graphics.getSprite(2);
         });
 
         this.graphics = mockGame.resources.graphics;
 
+        this.playerPosition = new jzt.Point(0, 0);
         window.addEventListener('keydown', this.onKeyDown.bind(this), false);
 
     }
@@ -274,7 +278,14 @@ jzt = (function (jzt) {
 
             if (this.activeTemplate) {
 
-                if (this.activeTemplate.type === 'Text') {
+                if (this.activeTemplate.type === 'Player') {
+
+                    this.currentBoard.defaultPlayerX = this.cursor.x;
+                    this.currentBoard.defaultPlayerY = this.cursor.y;
+                    this.playerPosition.x = this.currentBoard.defaultPlayerX;
+                    this.playerPosition.y = this.currentBoard.defaultPlayerY;
+
+                } else if (this.activeTemplate.type === 'Text') {
 
                     if (this.activeTemplate.text) {
 
@@ -422,14 +433,14 @@ jzt = (function (jzt) {
             boardOptions;
 
         this.currentBoard = board;
-        if (!board.player) {
-            this.currentBoard.initializePlayer(new jzt.things.Player());
-        }
+
+        this.playerPosition.x = board.defaultPlayerX;
+        this.playerPosition.y = board.defaultPlayerY;
 
         this.initializeBoardElement(board);
 
         this.currentBoard.initializeWindow();
-        this.currentBoard.render(this.context);
+        this.render(this.context);
 
         this.changeBoardCallback(boardName);
         boardOptions = {
@@ -571,7 +582,8 @@ jzt = (function (jzt) {
             template = this.createBoard(boardName, width, height);
 
         newBoard = new jzt.Board(template, this.game);
-        newBoard.initializePlayer(new jzt.things.Player());
+        this.playerPosition.x = newBoard.defaultPlayerX;
+        this.playerPosition.y = newBoard.defaultPlayerY;
 
         this.boards.push(newBoard);
 
@@ -900,7 +912,7 @@ jzt = (function (jzt) {
 
         }
 
-        this.currentBoard.render(this.context);
+        this.render(this.context);
 
     };
 
@@ -1003,8 +1015,15 @@ jzt = (function (jzt) {
     };
 
     Editor.prototype.render = function (context) {
+
+        // If we aren't fully loaded, don't render anything yet
+        if (!this.currentBoard || !playerSprite) {
+            return;
+        }
+
         this.currentBoard.focusPoint = this.focusPoint;
         this.currentBoard.render(context);
+        playerSprite.draw(context, this.playerPosition.subtract(this.currentBoard.windowOrigin), jzt.colors.BrightWhite, jzt.colors.Blue);
         this.drawCursor(context);
     };
 

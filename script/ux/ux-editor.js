@@ -138,11 +138,30 @@ jztux = (function (jzt, jztux) {
      */
     function initializeWorldOptionsDialog(dialog) {
 
+        /**
+         * An event handler to be invoked when board options have changed
+         */
+        function onChange() {
+            editor.setGameOptions({
+                name: gameName.value,
+                author: authorName.value,
+                titleBoard: titleBoardSelector.value,
+                startingBoard: startingBoardSelector.value,
+                victoryBoard: victoryBoardSelector.value
+            });
+        }
+
         gameName = dialog.querySelector('[data-id="title"]');
         authorName = dialog.querySelector('[data-id="author"]');
         titleBoardSelector = dialog.querySelector('[data-id="title-board"]');
         startingBoardSelector = dialog.querySelector('[data-id="starting-board"]');
         victoryBoardSelector = dialog.querySelector('[data-id="victory-board"]');
+
+        gameName.addEventListener('change', onChange, false);
+        authorName.addEventListener('change', onChange, false);
+        titleBoardSelector.addEventListener('change', onChange, false);
+        startingBoardSelector.addEventListener('change', onChange, false);
+        victoryBoardSelector.addEventListener('change', onChange, false);
 
     }
 
@@ -473,13 +492,13 @@ jztux = (function (jzt, jztux) {
      *
      * @param options {object} - Game options that have changed
      */
-    function onGameOptionsChanged(options) {
+    function onGameOptionsChanged() {
 
-        gameName.value = options.name || 'Untitled';
-        authorName.value = options.author || 'Anonymous';
-        titleBoardSelector.value = options.titleBoard || '';
-        startingBoardSelector.value = options.startingBoard || editor.currentBoard.name;
-        victoryBoardSelector.value = options.victoryBoard || '';
+        gameName.value = this.game.name;
+        authorName.value = this.game.author;
+        titleBoardSelector.value = this.game.titleBoard || '';
+        startingBoardSelector.value = this.game.startingBoard;
+        victoryBoardSelector.value = this.game.victoryBoard || '';
 
     }
 
@@ -694,7 +713,7 @@ jztux = (function (jzt, jztux) {
     window.addEventListener('message', onMessage, false);
     window.onbeforeunload = function () {
         return 'A friendly heads up: If you leave this page before downloading your work, it will be lost forever.';
-    }
+    };
 
     // Pressing ALT+A toggles Advanced Mode
     window.onkeydown = function (event) {

@@ -10,11 +10,7 @@ jztux = (function (jzt, jztux) {
     var game,
         origin;
 
-    function initialize() {
-        origin = window.location.origin || window.location.protocol + '//' + window.location.host;
-        window.addEventListener('message', receiveMessage, false);
-        window.opener.postMessage('send-game', origin);
-    }
+
 
     function receiveMessage(event) {
 
@@ -27,8 +23,8 @@ jztux = (function (jzt, jztux) {
                 game = new jzt.Game({
                     canvasElement: document.getElementById('jzt'),
                     playTest: true,
-                    onLoadCallback: function(success) {
-                        if(success) {
+                    onLoadCallback: function (success) {
+                        if (success) {
                             this.run(JSON.parse(event.data.substring(10)));
                         }
                     }
@@ -38,6 +34,12 @@ jztux = (function (jzt, jztux) {
 
         }
 
+    }
+
+    function initialize() {
+        origin = window.location.origin || window.location.protocol + '//' + window.location.host;
+        window.addEventListener('message', receiveMessage, false);
+        window.opener.postMessage('send-game', origin);
     }
 
     initialize();
