@@ -150,6 +150,7 @@ jzt = (function (jzt) {
         Scriptable: {
             name: {type: 'text', default: 'Unknown', label: 'Name'},
             color: {type: 'color', default: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'},
+            spriteIndex: {type: 'sprite', default: 1, label: 'Symbol'},
             script: {type: 'script', label: 'Script'},
             speed: {type: 'number', min: 1, max: 10, default: 3, label: 'Speed'}
         },
@@ -621,6 +622,9 @@ jzt = (function (jzt) {
             element,
             me = this,
             index,
+            x,
+            y,
+            sprite,
             elementTemplate,
             innerElement,
             color,
@@ -645,6 +649,18 @@ jzt = (function (jzt) {
             default:
                 return name;
             }
+        }
+
+        function onSpriteClick(event) {
+            var spriteIndex = event.target.getAttribute('data-sprite-index'),
+                spriteFieldName = event.target.getAttribute('data-field-name'),
+                mainElement = document.querySelector('.' + spriteFieldName + '-spritepicker'),
+                spriteDisplay = mainElement.querySelector('button .sprite');
+
+            template[spriteFieldName] = spriteIndex;
+            spriteDisplay.style.backgroundPosition = event.target.style.backgroundPosition;
+            me.changeTemplateCallback(template);
+
         }
 
         label = document.createElement('label');
@@ -692,6 +708,44 @@ jzt = (function (jzt) {
                 innerElement.checked = template[fieldName];
             } else if (field.default) {
                 innerElement.checked = field.default;
+            }
+
+        } else if (field.type === 'sprite') {
+
+            // Our field type is a sprite
+
+            // This is a non-standard form element, naturally
+            nonStandard = true;
+
+            elementTemplate = '<button class="large secondary button dropdown expand" data-dropdown="{{fieldId}}" data-options="align: right"><div class="sprite"></div></button><div id="{{fieldId}}" data-dropdown-content class="f-dropdown medium content"><div class="sprites" /></div><input type="hidden">';
+            elementTemplate = elementTemplate.replace(/\{\{fieldId\}\}/g, fieldName + '-spritepicker');
+
+            element = document.createElement('div');
+            element.className = fieldName + '-spritepicker';
+            element.innerHTML = elementTemplate;
+
+            innerElement = element.querySelector('.sprite');
+            innerElement.style.margin = '0 0 0 1em';
+
+            innerElement = element.querySelector('.sprites');
+            x = 0;
+            y = 0;
+            for (index = 0; index < 256; index += 1) {
+
+                sprite = document.createElement('div');
+                sprite.className = 'sprite';
+                sprite.style.backgroundPosition = (x * -16) + 'px ' + (y * -32) + 'px';
+                sprite.setAttribute('data-sprite-index', index);
+                sprite.setAttribute('data-field-name', fieldName);
+                sprite.addEventListener('click', onSpriteClick, false);
+                innerElement.appendChild(sprite);
+
+                x += 1;
+                if (x >= 16) {
+                    x = 0;
+                    y += 1;
+                }
+
             }
 
         } else if (field.type === 'color') {
