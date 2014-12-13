@@ -71,6 +71,11 @@ input[type="checkbox"] {
     margin-bottom: 1em;
 }
 
+.button.spritepicker.large {
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
 .sprite {
     width: 16px;
     height: 32px;
