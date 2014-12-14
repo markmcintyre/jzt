@@ -16,6 +16,13 @@ jzt = (function (jzt) {
         allColorsNoBlack = ['9', 'A', 'B', 'C', 'D', 'E', 'F', '7', '1', '2', '3', '4', '5', '6', '8'],
         playerSprite;
 
+    /**
+     * Editor represents a JZT game editor, capable of creating and testing JZT game worlds,
+     * and providing definitions and UI elements to drive the editor.
+     *
+     * @param editorElement {object} - A DOM element representing the editor
+     * @param configuration {object} - Configuration values.
+     */
     function Editor(editorElement, configuration) {
 
         var mockGame,
@@ -40,6 +47,9 @@ jzt = (function (jzt) {
         this.cursor = new jzt.Point(0, 0);
         this.playerPosition = new jzt.Point(0, 0);
 
+        /* We don't need a "real" game instance, since we're not actually
+         * executing a playable instance, so we mock our game instead.
+         */
         mockGame = {
             resources: {},
             isEditor: true,
@@ -57,96 +67,131 @@ jzt = (function (jzt) {
 
         this.game = mockGame;
 
+        // Assign a Graphics instance to drive the rendering engine
         mockGame.resources.graphics = new jzt.Graphics(function () {
             me.newGame();
             playerSprite = me.graphics.getSprite(2);
         });
 
+        // Let's keep a local copy for convenience, too.
         this.graphics = mockGame.resources.graphics;
 
+        // The player isn't really an item on the board when editing, but rather just a concept of a position.
         this.playerPosition = new jzt.Point(0, 0);
+
+        // Finally, we need to listen for keyboard presses
         window.addEventListener('keydown', this.onKeyDown.bind(this), false);
 
     }
 
+    /**
+     * Editor.Mode is an enumerated type representing a "mode" for drawing actions.
+     */
     Editor.Mode = {
         DRAW: 0,
         SELECT: 1,
         FILL: 2
     };
 
+    /**
+     * The Editor knows about several Things used by JZT, and defines their configurable properties.
+     * This enumerated type structure defines these so that UI elements can be generated and used
+     * to configure them.
+     */
     Editor.Thing = {
+
         Bear: {
             sensitivity: {type: 'number', min: 1, max: 10, default: 1, label: 'Sensitivity'}
         },
+
         Blinker: {
             direction: {type: 'direction', default: 'N', label: 'Direction'},
             period: {type: 'number', min: 1, max: 50, default: 3, label: 'Period'},
             delay: {type: 'number', min: 0, max: 50, default: 0, label: 'Delay'},
             color: {type: 'color', default: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
+
         Bomb: {
             radius: {type: 'number', default: 4, min: 2, max: 20, label: 'Radius', advanced: true},
             color: {type: 'color', default: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
+
         Boulder: {
             color: {type: 'color', default: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
+
         BreakableWall: {
             color: {type: 'color', default: '0B', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
+
         Centipede: {
             head: {type: 'boolean', default: false, label: 'Head'},
             deviance: {type: 'number', min: 0, max: 10, default: 0, label: 'Deviance'},
             intelligence: {type: 'number', min: 0, max: 10, default: 0, label: 'Intelligence'},
             color: {type: 'color', default: '*9', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
+
         Conveyor: {
             color: {type: 'color', default: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'},
             clockwise: {type: 'boolean', default: true, label: 'Clockwise'}
         },
-        River: {
-            direction: {type: 'direction', default: 'N', label: 'Direction'}
-        },
+
+
+
         Door: {
             color: {type: 'color', default: '1F', options: ['1', '2', '3', '4', '5', '6', '7'], foreground: false, label: 'Color'}
         },
+
         Duplicator: {
             copyDirection: {type: 'direction', default: 'E', label: 'Clone Direction'},
             speed: {type: 'number', min: 1, max: 10, default: 5, label: 'Speed'}
         },
+
         FakeWall: {
             color: {type: 'color', default: '0E', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
+
         Gem: {
             color: {type: 'color', default: '0D', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
+
         InvisibleWall: {
             color: {type: 'color', default: '0A', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
+
         Key: {
             color: {type: 'color', default: '*9', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
         },
+
         LineWall: {
             color: {type: 'color', default: '09', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
+
         Lion: {
             intelligence: {type: 'number', min: 1, max: 10, default: 3, label: 'Intelligence'}
         },
+
         Passage: {
             color: {type: 'color', default: '1F', options: ['1', '2', '3', '4', '5', '6', '7'], foreground: false, label: 'Color'},
             passageId: {type: 'text', default: 'Door 1', label: 'ID'},
             targetBoard: {type: 'board', label: 'Target Board'}
         },
+
         Pusher: {
             speed: {type: 'number', default: 3, min: '1', max: '10', label: 'Speed', advanced: true},
             orientation: {type: 'direction', default: 'S', label: 'Direction'},
             color: {type: 'color', default: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
+
+        River: {
+            direction: {type: 'direction', default: 'N', label: 'Direction'}
+        },
+
         Ruffian: {
             intelligence: {type: 'number', default: 5, min: '1', max: '10', label: 'Intelligence'},
             restingTime: {type: 'number', default: 5, min: '1', max: '20', label: 'Resting time'}
         },
+
         Scriptable: {
             spriteIndex: {type: 'sprite', default: 1, label: 'Character'},
             color: {type: 'color', default: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'},
@@ -154,47 +199,64 @@ jzt = (function (jzt) {
             script: {type: 'script', label: 'Script'},
             speed: {type: 'number', min: 1, max: 10, default: 3, label: 'Speed'}
         },
+
         Signpost: {
             text: {type: 'text', label: 'Signpost Text'}
         },
+
         SliderEw: {
             color: {type: 'color', default: '*F', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
+
         SliderNs: {
             color: {type: 'color', default: '*F', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
+
         Snake: {
             speed: {type: 'number', default: 3, min: 1, max: 10, label: 'Speed'}
         },
+
         SolidWall: {
             color: {type: 'color', default: '0E', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
+
         Spider: {
             intelligence: {type: 'number', default: 5, min: 1, max: 5, label: 'Intelligence'},
             color: {type: 'color', default: '*C', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
+
         SpinningGun: {
             intelligence: {type: 'number', default: 5, min: 1, max: 5, label: 'Intelligence'},
             firingRate: {type: 'number', default: 5, min: 1, max: 10, label: 'Firing rate'},
             color: {type: 'color', default: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
+
         Teleporter: {
             orientation: {type: 'direction', default: 'E', label: 'Direction'},
             color: {type: 'color', default: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
         },
+
         Text: {
             color: {type: 'color', default: '0F', options: darkColors, foreground: false, label: 'Color'},
             text: {type: 'text', default: '', label: 'Text'}
         },
+
         Tiger: {
             intelligence: {type: 'number', min: 1, max: 10, default: 3, label: 'Intelligence'},
             firingRate: {type: 'number', min: 1, max: 20, default: 5, label: 'Firing rate'}
         },
+
         Wall: {
             color: {type: 'color', default: '0E', options: allColorsNoBlack, foreground: true, label: 'Color'}
         }
+
     };
 
+    /**
+     * Initializes this Editor's primary Board DOM element.
+     *
+     * @param board {object} - A DOM element to be initialized.
+     */
     Editor.prototype.initializeBoardElement = function (board) {
 
         // Remove the old canvas
@@ -229,6 +291,11 @@ jzt = (function (jzt) {
 
     };
 
+    /**
+     * Sets this Editor's cursor position to a provided point, ensuring that the
+     * position is within the restricted range, and that "drawing mode" being enabled
+     * will contine to plot tiles.
+     */
     Editor.prototype.setCursorPosition = function (point) {
 
         this.cursor = point;
@@ -246,6 +313,7 @@ jzt = (function (jzt) {
             this.cursor.y = this.currentBoard.height - 1;
         }
 
+        // If drawing mode is enabled, plot a tile immediately.
         if (this.drawing) {
             this.plot();
         }
@@ -254,6 +322,9 @@ jzt = (function (jzt) {
 
     };
 
+    /**
+     * Toggles the existence of a Thing at the current cursor position.
+     */
     Editor.prototype.togglePlot = function () {
 
         var thing = this.currentBoard.getTile(this.cursor);
@@ -267,19 +338,29 @@ jzt = (function (jzt) {
 
     };
 
+    /**
+     * Plots a Thing, based on this Editor's active template, at this Editor's
+     * current cursor position.
+     */
     Editor.prototype.plot = function () {
 
         var thing,
             index,
             c;
 
+        // No need to plot the same tile twice
         if (!this.previousPlot || !this.previousPlot.equals(this.cursor)) {
 
             this.previousPlot = this.cursor;
 
+            // If there is a template available...
             if (this.activeTemplate) {
 
+                // Which template have we got?
+
                 if (this.activeTemplate.type === 'Player') {
+
+                    // It's a player
 
                     this.currentBoard.defaultPlayerX = this.cursor.x;
                     this.currentBoard.defaultPlayerY = this.cursor.y;
@@ -288,14 +369,22 @@ jzt = (function (jzt) {
 
                 } else if (this.activeTemplate.type === 'Text') {
 
+                    // It's Text
+
                     if (this.activeTemplate.text) {
 
+                        // Output a text character for each character in the string
                         for (index = 0; index < this.activeTemplate.text.length; index += 1) {
 
                             c = this.activeTemplate.text.charAt(index);
                             c = this.graphics.convertSpecialCharacter(c);
 
                             thing = this.currentBoard.getTile(this.cursor);
+
+                            /* If there's already a Text thing in our position, set it's character
+                             * depending on the active language, and change its color if necessary.
+                             * Otherwise, we can go ahead and add a brand new Text Thing.
+                             */
                             if (thing && thing instanceof jzt.things.Text) {
                                 thing.i18n[jzt.i18n.getLanguage()] = c;
                                 thing.foreground = jzt.colors.deserializeForeground(this.activeTemplate.color);
@@ -314,12 +403,19 @@ jzt = (function (jzt) {
                     }
 
                 } else {
+
+                    // It's something else
+
                     this.currentBoard.addThing(this.cursor, jzt.things.ThingFactory.deserialize(this.activeTemplate, this.currentBoard));
+
                 }
 
 
             } else {
+
+                // No active template, means we should plot an empty space
                 this.currentBoard.addThing(this.cursor, undefined);
+
             }
 
         }
@@ -328,6 +424,9 @@ jzt = (function (jzt) {
 
     };
 
+    /**
+     * Creates a new game world.
+     */
     Editor.prototype.newGame = function () {
         this.deserialize({
             name: 'Untitled World',
@@ -339,6 +438,9 @@ jzt = (function (jzt) {
         });
     };
 
+    /**
+     * Moves this Editor's cursor in a given direction.
+     */
     Editor.prototype.moveCursor = function (direction) {
 
         var startX,
@@ -363,6 +465,11 @@ jzt = (function (jzt) {
 
     };
 
+    /**
+     * Sets this Editor's currently active board to a provided set of options.
+     *
+     * @param options {object} - A set of options to apply to the current board.
+     */
     Editor.prototype.setBoardOptions = function (options) {
         this.currentBoard.dark = options.dark;
         this.currentBoard.north = options.north !== '' ? options.north : undefined;
@@ -378,6 +485,11 @@ jzt = (function (jzt) {
         this.changeBoardOptionsCallback(options);
     };
 
+    /**
+     * Sets this Editor's current game world's options to a provided set.
+     *
+     * @param options {object} - A set of options to apply to this Editor's current game world.
+     */
     Editor.prototype.setGameOptions = function (options) {
         this.game.name = options.name;
         this.game.id = options.id;
@@ -388,6 +500,13 @@ jzt = (function (jzt) {
         this.changeGameOptionsCallback(options);
     };
 
+    /**
+     * Generates a unique board name given a candidate name. This ensures that no
+     * two boards have the same name when run through this generator.
+     *
+     * @param candidate {string} - A name to turn unique, if it's not already
+     * @return {string} - A unique board name based on a given candidate
+     */
     Editor.prototype.getUniqueBoardName = function (candidate) {
 
         var index = 2,
@@ -402,6 +521,13 @@ jzt = (function (jzt) {
 
     };
 
+    /**
+     * Generates a unique script name given a candidate name. This ensures that no two scripts
+     * on this Editor's current board have the same name when run through this generator.
+     *
+     * @param candidate {string} - A name to turn unique, if it's not already
+     * @return {string} - A unique script name based on a given candidate, for this Editor's current board.
+     */
     Editor.prototype.getUniqueScriptName = function (candidate) {
 
         var index = 2,
@@ -416,6 +542,12 @@ jzt = (function (jzt) {
 
     };
 
+    /**
+     * Retrieves a board from this Editor's current game world.
+     *
+     * @param boardName {string} - A name of a board to retrieve
+     * @return {object} - A game board with a provided name.
+     */
     Editor.prototype.getBoard = function (boardName) {
         var index;
 
@@ -428,6 +560,11 @@ jzt = (function (jzt) {
         return undefined;
     };
 
+    /**
+     * Switches this Editor's current board to a board with a provided name.
+     *
+     * @param boardName {string} - A name of a board to switch to
+     */
     Editor.prototype.switchBoard = function (boardName) {
 
         var board = this.getBoard(boardName),
