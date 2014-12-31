@@ -269,8 +269,7 @@ jzt.jztscript = (function (my) {
             thing.add(new Literal('Tiger'));
             thing.add(new Literal('Torch'));
             thing.add(new Literal('Wall'));
-            thing.add(new Literal('Water'));
-            thing.add(new Literal('ThingFactory'));
+            thing.add(new Literal('Water')); 
 
             // Define assembler
             thing.assembler = validateOnly ? undefined : {
