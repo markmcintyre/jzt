@@ -59,11 +59,30 @@ jzt = (function (my) {
         this.popup = new jzt.ui.Popup(undefined, new jzt.Point(this.width, this.height), this.game);
         this.popup.setColor(jzt.colors.Blue, jzt.colors.BrightWhite, jzt.colors.Blue, jzt.colors.BrightBlue);
         this.spriteGrid = this.popup.spriteGrid;
+
     }
 
     FileManagement.Type = {
         SAVE: 1,
         OPEN: 2
+    };
+
+    FileManagement.prototype.setAlert = function (message) {
+
+        // Cancel any keyboard events
+        var k = this.game.keyboard;
+        k.cancelInput();
+
+        // Create our alert message
+        this.alert = new jzt.ui.Popup(undefined, new jzt.Point(message.length + 4, 3), this.game);
+        this.alert.spriteGrid.addText(new jzt.Point(2, 1), message, jzt.colors.BrightWhite, jzt.colors.Blue);
+
+    };
+
+    FileManagement.prototype.clearAlert = function () {
+
+        this.alert = undefined;
+
     };
 
     FileManagement.prototype.open = function (dialogType, noEmptySlot) {
@@ -123,7 +142,6 @@ jzt = (function (my) {
 
         var k = this.game.keyboard;
 
-
         // Depending on which key was pressed...
         if (k.isPressed(k.UP)) {
 
@@ -168,6 +186,12 @@ jzt = (function (my) {
         var event = this.eventScheduler.takeEvent();
         var file;
 
+        // If we're displaying an alert, select or exit dismisses it.
+        if (this.alert && (event === action.Select || event === action.Exit)) {
+            this.clearAlert();
+            return;
+        }
+
         // Determine the action taken
         if (event === action.Up) {
 
@@ -209,7 +233,12 @@ jzt = (function (my) {
                     this.deleteFile(file);
                 }
 
-                this.saveFile();
+                try {
+                    this.saveFile();
+                } catch (exception) {
+                    this.setAlert(jzt.i18n.getMessage('status.nosave'));
+                    return;
+                }
 
             } else if (this.dialogType === FileManagement.Type.OPEN) {
 
@@ -434,7 +463,11 @@ jzt = (function (my) {
 
     FileManagement.prototype.render = function (context) {
 
-        this.popup.render(context);
+        if (this.alert) {
+            this.alert.render(context);
+        } else {
+            this.popup.render(context);
+        }
 
     };
 

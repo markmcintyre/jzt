@@ -64,7 +64,8 @@ jzt.i18n = (function (my) {
                 'loading': 'Loading...',
                 'loaderror': 'Oops! Loading failed.',
                 'fatalerror': 'I has error, Jim.',
-                'incompatible': 'Um, this file isn\'t compatible.'
+                'incompatible': 'Um, this file isn\'t compatible.',
+                'nosave': 'Yikes! You\'re out of save space.'
             },
             pause: {
                 'paused': 'Paused',
@@ -133,7 +134,8 @@ jzt.i18n = (function (my) {
                 'loading': 'Chargement...',
                 'loaderror': 'Oups! Chargement echoué.',
                 'fatalerror': 'J\'ai l\'erreur, Jim.',
-                'incompatible': 'Mais, ce fichier est incompatible...'
+                'incompatible': 'Mais ce fichier est incompatible...',
+                'nosave': 'Vous n\'avez plus d\'éspace pour sauvegarder.'
             },
             pause: {
                 'paused': 'Pause',
