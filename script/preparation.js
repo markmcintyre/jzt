@@ -11,8 +11,8 @@ jzt = (function (my) {
     'use strict';
 
     var meta = {
-        version: '1.0.1',
-        date: new Date('2014-11-29')
+        version: '1.0.2',
+        date: new Date('2015-01-04')
     };
 
     // Define Object.freeze if it hasn't already been defined so
