@@ -4,257 +4,254 @@
  * @author Mark McIntyre
  */
 
-/*jslint vars:true */
+/*jslint node:true */
 
-var jzt;
-jzt = jzt || {};
-jzt.ui = (function (my) {
+'use strict';
 
-    'use strict';
+var Point = require('basic').Point,
+    SpriteGrid = require('graphics').SpriteGrid,
+    colors = require('graphics').colors,
+    meta = require('preparation').meta;
 
-    /**
-     * Popup represents a pop-up box with a given position and size, capable of
-     * holding sprite information.
-     *
-     * @param position a Point indicating an x, y coordinate for this popup
-     * @param size a Point representing a width and height for this popup
-     * @param game A Game instance to own this Popup
-     */
-    function Popup(position, size, game) {
+/**
+ * Popup represents a pop-up box with a given position and size, capable of
+ * holding sprite information.
+ *
+ * @param position a Point indicating an x, y coordinate for this popup
+ * @param size a Point representing a width and height for this popup
+ * @param game A Game instance to own this Popup
+ */
+function Popup(position, size, game) {
 
-        if (position) {
-            this.position = position;
+    if (position) {
+        this.position = position;
+    } else {
+
+        this.position = new Point(0, 0);
+        this.position.x = Math.floor((game.screenWidth - size.x) / 2);
+        this.position.y = Math.floor((game.screenHeight - size.y) / 2);
+
+    }
+
+    this.size = size;
+    this.game = game;
+    this.graphics = game.resources.graphics;
+    this.spriteGrid = new SpriteGrid(this.size.x, this.size.y, this.graphics);
+    this.setColor(colors.Blue, colors.BrightWhite);
+
+}
+
+/**
+ * Renders this Popup to a specified context.
+ *
+ * @param c A 2D context onto which to render this Popup.
+ */
+Popup.prototype.render = function (c) {
+
+    var x = this.position.x,
+        y = this.position.y,
+        width = this.size.x,
+        height = this.size.y;
+
+    c.fillStyle = this.background.rgbValue;
+    c.fillRect(x * this.graphics.TILE_SIZE.x, y * this.graphics.TILE_SIZE.y, width * this.graphics.TILE_SIZE.x, height * this.graphics.TILE_SIZE.y);
+
+    this.spriteGrid.draw(c, this.position);
+
+};
+
+Popup.prototype.redraw = function () {
+    this.spriteGrid.clear();
+    this.createBorder(this.spriteGrid);
+};
+
+Popup.prototype.setColor = function (background, foreground, scrollbarBackground, scrollbarForeground) {
+    this.background = background;
+    this.foreground = foreground;
+    this.scrollbarBackground = scrollbarBackground || background;
+    this.scrollbarForeground = scrollbarForeground || foreground;
+    this.redraw();
+};
+
+Popup.prototype.setScrollBar = function (index, maximumIndex, visibleCount) {
+
+    var barHeight = this.size.y - 4,
+        point = new Point(this.size.x - 2, 1),
+        thumbPosition,
+        thumbHeight = Math.max(1, Math.floor(barHeight * (visibleCount / maximumIndex)));
+    thumbPosition = Math.round((barHeight - thumbHeight) * (index / (maximumIndex - visibleCount)));
+    thumbPosition = Math.min(barHeight - thumbHeight - 1, thumbPosition);
+
+    for (point.y = 1; point.y < this.size.y - 1; point.y += 1) {
+
+        // Determine what to draw
+        if (point.y === 1) {
+
+            // Draw our top arrow
+            this.spriteGrid.setTile(point, 30, this.scrollbarForeground, this.scrollbarBackground);
+
+        } else if (point.y === this.size.y - 2) {
+
+            // Draw our bottom arrow
+            this.spriteGrid.setTile(point, 31, this.scrollbarForeground, this.scrollbarBackground);
+
+        } else if (point.y - 2 >= thumbPosition && point.y - 2 <= thumbPosition + thumbHeight) {
+
+            // Draw our position indicator
+            this.spriteGrid.setTile(point, 219, this.scrollbarForeground);
+
         } else {
 
-            this.position = new jzt.Point(0, 0);
-            this.position.x = Math.floor((game.screenWidth - size.x) / 2);
-            this.position.y = Math.floor((game.screenHeight - size.y) / 2);
+            // Draw our shaded area
+            this.spriteGrid.setTile(point, 177, this.scrollbarForeground, this.scrollbarBackground);
 
         }
-
-        this.size = size;
-        this.game = game;
-        this.graphics = game.resources.graphics;
-        this.spriteGrid = new jzt.SpriteGrid(this.size.x, this.size.y, this.graphics);
-        this.setColor(jzt.colors.Blue, jzt.colors.BrightWhite);
 
     }
 
-    /**
-     * Renders this Popup to a specified context.
-     *
-     * @param c A 2D context onto which to render this Popup.
-     */
-    Popup.prototype.render = function (c) {
+};
 
-        var x = this.position.x;
-        var y = this.position.y;
-        var width = this.size.x;
-        var height = this.size.y;
+Popup.prototype.createBorder = function (spriteGrid) {
 
-        c.fillStyle = this.background.rgbValue;
-        c.fillRect(x * this.graphics.TILE_SIZE.x, y * this.graphics.TILE_SIZE.y, width * this.graphics.TILE_SIZE.x, height * this.graphics.TILE_SIZE.y);
+    var point = new Point(0, 0),
+        width = this.size.x,
+        height = this.size.y;
 
-        this.spriteGrid.draw(c, this.position);
+    // Top Left Corner
+    spriteGrid.setTile(new Point(0, 0), 218, this.foreground);
 
-    };
+    // Top Right Corner
+    spriteGrid.setTile(new Point(width - 1, 0), 191, this.foreground);
 
-    Popup.prototype.redraw = function () {
-        this.spriteGrid.clear();
-        this.createBorder(this.spriteGrid);
-    };
-
-    Popup.prototype.setColor = function (background, foreground, scrollbarBackground, scrollbarForeground) {
-        this.background = background;
-        this.foreground = foreground;
-        this.scrollbarBackground = scrollbarBackground || background;
-        this.scrollbarForeground = scrollbarForeground || foreground;
-        this.redraw();
-    };
-
-    Popup.prototype.setScrollBar = function (index, maximumIndex, visibleCount) {
-
-        var barHeight = this.size.y - 4;
-        var point = new jzt.Point(this.size.x - 2, 1);
-        var thumbPosition;
-        var thumbHeight = Math.max(1, Math.floor(barHeight * (visibleCount / maximumIndex)));
-        thumbPosition = Math.round((barHeight - thumbHeight) * (index / (maximumIndex - visibleCount)));
-        thumbPosition = Math.min(barHeight - thumbHeight - 1, thumbPosition);
-
-        for (point.y = 1; point.y < this.size.y - 1; point.y += 1) {
-
-            // Determine what to draw
-            if (point.y === 1) {
-
-                // Draw our top arrow
-                this.spriteGrid.setTile(point, 30, this.scrollbarForeground, this.scrollbarBackground);
-
-            } else if (point.y === this.size.y - 2) {
-
-                // Draw our bottom arrow
-                this.spriteGrid.setTile(point, 31, this.scrollbarForeground, this.scrollbarBackground);
-
-            } else if (point.y - 2 >= thumbPosition && point.y - 2 <= thumbPosition + thumbHeight) {
-
-                // Draw our position indicator
-                this.spriteGrid.setTile(point, 219, this.scrollbarForeground);
-
-            } else {
-
-                // Draw our shaded area
-                this.spriteGrid.setTile(point, 177, this.scrollbarForeground, this.scrollbarBackground);
-
-            }
-
-        }
-
-    };
-
-    Popup.prototype.createBorder = function (spriteGrid) {
-
-        var point = new jzt.Point(0, 0);
-        var width = this.size.x;
-        var height = this.size.y;
-
-        // Top Left Corner
-        spriteGrid.setTile(new jzt.Point(0, 0), 218, this.foreground);
-
-        // Top Right Corner
-        spriteGrid.setTile(new jzt.Point(width - 1, 0), 191, this.foreground);
-
-        // Top And Bottom
-        for (point.x = 1; point.x < width - 1; point.x += 1) {
-            point.y = 0;
-            spriteGrid.setTile(point, 196, this.foreground);
-            point.y = height - 1;
-            spriteGrid.setTile(point, 196, this.foreground);
-        }
-
-        // Sides
-        for (point.y = 1; point.y < height - 1; point.y += 1) {
-            point.x = 0;
-            spriteGrid.setTile(point, 179, this.foreground);
-            point.x = width - 1;
-            spriteGrid.setTile(point, 179, this.foreground);
-        }
-
-        // Bottom Left Corner
-        spriteGrid.setTile(new jzt.Point(0, height - 1), 192, this.foreground);
-
-        // Bottom Right Corner
-        spriteGrid.setTile(new jzt.Point(width - 1, height - 1), 217, this.foreground);
-
-    };
-
-    function Animator() {
-        this.startTime = Date.now();
-        this.renderFunctions = [];
+    // Top And Bottom
+    for (point.x = 1; point.x < width - 1; point.x += 1) {
+        point.y = 0;
+        spriteGrid.setTile(point, 196, this.foreground);
+        point.y = height - 1;
+        spriteGrid.setTile(point, 196, this.foreground);
     }
 
-    Animator.prototype.start = function (renderFunction) {
-        renderFunction.frameTime = 0;
-        this.renderFunctions.push(renderFunction);
-        return this;
-    };
-
-    Animator.prototype.end = function (endTime) {
-        this.then(endTime, function () { return undefined; });
-    };
-
-    Animator.prototype.update = function () {
-
-        var time = Date.now() - this.startTime;
-        var renderFunction;
-        var index;
-
-        for (index = this.renderFunctions.length - 1; index >= 0; index -= 1) {
-            renderFunction = this.renderFunctions[index];
-            if (time >= renderFunction.frameTime) {
-                renderFunction();
-                this.renderFunctions.splice(index, 1);
-            }
-        }
-
-    };
-
-    Animator.prototype.then = function (frameTime, renderFunction) {
-        renderFunction.frameTime = frameTime;
-        this.renderFunctions.push(renderFunction);
-        return this;
-    };
-
-    Animator.prototype.isDone = function () {
-        return this.renderFunctions.length <= 0;
-    };
-
-    function Splash(game) {
-
-        var grid;
-        var colors = jzt.colors;
-
-        this.game = game;
-        this.animator = new Animator();
-        this.done = false;
-        this.animationFrame = undefined;
-        this.popup = new jzt.ui.Popup(undefined, new jzt.Point(50, 20), game);
-        this.popup.setColor(jzt.colors.Black);
-        this.popup.spriteGrid.clear();
-
-        grid = this.popup.spriteGrid;
-
-        // Define our animation
-        this.animator.start(function () {
-            grid.addText(new jzt.Point(1, 1), '┌───┐', colors.White);
-            grid.addText(new jzt.Point(1, 2), '│ o┌┴──┐ Association of', colors.White);
-            grid.addText(new jzt.Point(1, 3), '└─┬┴──┐│ Shareware', colors.White);
-            grid.addText(new jzt.Point(1, 4), '  │ o ├┘ Unprofessionals', colors.White);
-            grid.addText(new jzt.Point(1, 5), '  └─┴─┘', colors.White);
-        }).then(300, function () {
-            grid.addText(new jzt.Point(1, 7), 'x286 BIOS Version 2.1.16', colors.White);
-        }).then(400, function () {
-            grid.addText(new jzt.Point(1, 9), 'Initializing Nostalgia Boot Agent v1.4.14', colors.White);
-            game.resources.audio.play('i++c');
-        }).then(600, function () {
-            grid.addText(new jzt.Point(1, 10), 'Nostalgia Boot Agent (v1.4.14) Loaded.', colors.White);
-        }).then(700, function () {
-            grid.addText(new jzt.Point(1, 12), 'Starting Markrosoft DOS...', colors.White);
-        }).then(1200, function () {
-            grid.addText(new jzt.Point(1, 14), 'Running autoexec.bat', colors.White);
-        }).then(1300, function () {
-            grid.addText(new jzt.Point(1, 15), 'C:\\>cd JZT', colors.White);
-            grid.addText(new jzt.Point(1, 16), 'C:\\JZT\\>jzt.exe', colors.White);
-        }).then(2000, function () {
-            grid.clear();
-            grid.addArt(new jzt.Point(7, 5),
-                ' 0 0 0 0 0 0 0▄F▄F▀F▀F▀F▀F▀F█F▄F▄F▄F▀F▀F▀F▀F▀F▀F▄F F F▄F▄F▀F▀F▀F▀F▀F▀F▀F▄F\n' +
-                ' 0 0 0▄F▄F▀F▀F▄9▄9█9█9█9▀9▄F▀F▄9▄9▄9█9█9█9█9▓9 0█F▀F▀F▄9▄9█9█9█9█9█9▀9 0█F\n' +
-                ' 0 0█F 0▄9█9█9█9█9█9▓9 0▄F▀F█9█9▀9▀9▀9▀9 0█9▓9▓F 0█9█9█9▀9█9▓9▀9 0▄F▄F▀F▀F\n' +
-                ' 0 0█F▄F▀9▀9 0▄F 0█9▓9 0▓F▄F▄F▄F▓F█F▀F▄9█9▓9 0▓F 0▀9▀9 0 0█9▓9 0█F\n' +
-                ' 0 0 0 0▀F▀F▀F█F 0█9▓9 0█F 0 0█F▀F▄9█9█9▓9 0█F▀F▀F▀F▀F█F 0█9▓9 0▓F\n' +
-                ' 0▄F▀F▀F▄F 0 0█F 0█9▓9 0▓F▄F▀F 0█9█9▓9 0▄F█F▄F 0 0 0 0█F 0█9▓9 0▓F\n' +
-                '█F 0█9█9 0▀F▀F▄9█9▓9▀9 0▓F█F 0█9▓9▀9 0▀F 0▄9▄9▀F▄F 0█F 0█9▓9▀9▄F▀F\n' +
-                '▀F▄F 0█9█9█9█9▓9█9▀9▄F▀F█F 0█9█9█9█9█9█9█9▓9▓9 0▓F 0█F 0█9▓9 0▓F\n' +
-                ' 0 0▀F▄F▀9▀9▀9▀9▄F▀F 0▀F▄F▀9▀9▀9▀9▀9▀9▄F▄F▄F▄F▄F▀F F F▀F▄F▄F▄F▀F\n' +
-                ' 0 0 0 0▀F▀F▀F▀F F F F F F▀F▀F▀F▀F▀F▀F'
-                );
-            grid.addText(new jzt.Point(46 - jzt.meta.version.length, 15), jzt.meta.version, colors.Grey);
-            grid.addText(new jzt.Point(13, 18), 'Created by Mark McIntyre', colors.Grey);
-            grid.addText(new jzt.Point(6, 19), '(c) ' + jzt.meta.date.getFullYear() + ' Orangeline Interactive, Inc.', colors.Grey);
-        }).end(4000);
-
+    // Sides
+    for (point.y = 1; point.y < height - 1; point.y += 1) {
+        point.x = 0;
+        spriteGrid.setTile(point, 179, this.foreground);
+        point.x = width - 1;
+        spriteGrid.setTile(point, 179, this.foreground);
     }
 
-    Splash.prototype.update = function () {
-        this.animator.update();
-        this.done = this.animator.isDone();
-    };
+    // Bottom Left Corner
+    spriteGrid.setTile(new Point(0, height - 1), 192, this.foreground);
 
-    Splash.prototype.render = function (c) {
-        this.popup.render(c);
-    };
+    // Bottom Right Corner
+    spriteGrid.setTile(new Point(width - 1, height - 1), 217, this.foreground);
 
-    my.Popup = Popup;
-    my.Splash = Splash;
-    return my;
+};
 
-}(jzt.ui || {}));
+function Animator() {
+    this.startTime = Date.now();
+    this.renderFunctions = [];
+}
+
+Animator.prototype.start = function (renderFunction) {
+    renderFunction.frameTime = 0;
+    this.renderFunctions.push(renderFunction);
+    return this;
+};
+
+Animator.prototype.end = function (endTime) {
+    this.then(endTime, function () { return undefined; });
+};
+
+Animator.prototype.update = function () {
+
+    var time = Date.now() - this.startTime,
+        renderFunction,
+        index;
+
+    for (index = this.renderFunctions.length - 1; index >= 0; index -= 1) {
+        renderFunction = this.renderFunctions[index];
+        if (time >= renderFunction.frameTime) {
+            renderFunction();
+            this.renderFunctions.splice(index, 1);
+        }
+    }
+
+};
+
+Animator.prototype.then = function (frameTime, renderFunction) {
+    renderFunction.frameTime = frameTime;
+    this.renderFunctions.push(renderFunction);
+    return this;
+};
+
+Animator.prototype.isDone = function () {
+    return this.renderFunctions.length <= 0;
+};
+
+function Splash(game) {
+
+    var grid;
+
+    this.game = game;
+    this.animator = new Animator();
+    this.done = false;
+    this.animationFrame = undefined;
+    this.popup = new Popup(undefined, new Point(50, 20), game);
+    this.popup.setColor(colors.Black);
+    this.popup.spriteGrid.clear();
+
+    grid = this.popup.spriteGrid;
+
+    // Define our animation
+    this.animator.start(function () {
+        grid.addText(new Point(1, 1), '┌───┐', colors.White);
+        grid.addText(new Point(1, 2), '│ o┌┴──┐ Association of', colors.White);
+        grid.addText(new Point(1, 3), '└─┬┴──┐│ Shareware', colors.White);
+        grid.addText(new Point(1, 4), '  │ o ├┘ Unprofessionals', colors.White);
+        grid.addText(new Point(1, 5), '  └─┴─┘', colors.White);
+    }).then(300, function () {
+        grid.addText(new Point(1, 7), 'x286 BIOS Version 2.1.16', colors.White);
+    }).then(400, function () {
+        grid.addText(new Point(1, 9), 'Initializing Nostalgia Boot Agent v1.4.14', colors.White);
+        game.resources.audio.play('i++c');
+    }).then(600, function () {
+        grid.addText(new Point(1, 10), 'Nostalgia Boot Agent (v1.4.14) Loaded.', colors.White);
+    }).then(700, function () {
+        grid.addText(new Point(1, 12), 'Starting Markrosoft DOS...', colors.White);
+    }).then(1200, function () {
+        grid.addText(new Point(1, 14), 'Running autoexec.bat', colors.White);
+    }).then(1300, function () {
+        grid.addText(new Point(1, 15), 'C:\\>cd JZT', colors.White);
+        grid.addText(new Point(1, 16), 'C:\\JZT\\>exe', colors.White);
+    }).then(2000, function () {
+        grid.clear();
+        grid.addArt(new Point(7, 5),
+            ' 0 0 0 0 0 0 0▄F▄F▀F▀F▀F▀F▀F█F▄F▄F▄F▀F▀F▀F▀F▀F▀F▄F F F▄F▄F▀F▀F▀F▀F▀F▀F▀F▄F\n' +
+            ' 0 0 0▄F▄F▀F▀F▄9▄9█9█9█9▀9▄F▀F▄9▄9▄9█9█9█9█9▓9 0█F▀F▀F▄9▄9█9█9█9█9█9▀9 0█F\n' +
+            ' 0 0█F 0▄9█9█9█9█9█9▓9 0▄F▀F█9█9▀9▀9▀9▀9 0█9▓9▓F 0█9█9█9▀9█9▓9▀9 0▄F▄F▀F▀F\n' +
+            ' 0 0█F▄F▀9▀9 0▄F 0█9▓9 0▓F▄F▄F▄F▓F█F▀F▄9█9▓9 0▓F 0▀9▀9 0 0█9▓9 0█F\n' +
+            ' 0 0 0 0▀F▀F▀F█F 0█9▓9 0█F 0 0█F▀F▄9█9█9▓9 0█F▀F▀F▀F▀F█F 0█9▓9 0▓F\n' +
+            ' 0▄F▀F▀F▄F 0 0█F 0█9▓9 0▓F▄F▀F 0█9█9▓9 0▄F█F▄F 0 0 0 0█F 0█9▓9 0▓F\n' +
+            '█F 0█9█9 0▀F▀F▄9█9▓9▀9 0▓F█F 0█9▓9▀9 0▀F 0▄9▄9▀F▄F 0█F 0█9▓9▀9▄F▀F\n' +
+            '▀F▄F 0█9█9█9█9▓9█9▀9▄F▀F█F 0█9█9█9█9█9█9█9▓9▓9 0▓F 0█F 0█9▓9 0▓F\n' +
+            ' 0 0▀F▄F▀9▀9▀9▀9▄F▀F 0▀F▄F▀9▀9▀9▀9▀9▀9▄F▄F▄F▄F▄F▀F F F▀F▄F▄F▄F▀F\n' +
+            ' 0 0 0 0▀F▀F▀F▀F F F F F F▀F▀F▀F▀F▀F▀F'
+            );
+        grid.addText(new Point(46 - meta.version.length, 15), meta.version, colors.Grey);
+        grid.addText(new Point(13, 18), 'Created by Mark McIntyre', colors.Grey);
+        grid.addText(new Point(6, 19), '(c) ' + meta.date.getFullYear() + ' Orangeline Interactive, Inc.', colors.Grey);
+    }).end(4000);
+
+}
+
+Splash.prototype.update = function () {
+    this.animator.update();
+    this.done = this.animator.isDone();
+};
+
+Splash.prototype.render = function (c) {
+    this.popup.render(c);
+};
+
+exports.Popup = Popup;
+exports.Splash = Splash;

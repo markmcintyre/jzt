@@ -15,7 +15,7 @@ var ConstructorError = require('basic').ConstructorError,
     JztScript = require('jzt-script').JztScript,
     things = require('things').things,
     Direction = require('basic').Direction,
-    i18n = require('i18n').i18n;
+    i18n = require('i18n');
 
 /**
  * Board represents a single game board.
