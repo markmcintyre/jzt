@@ -13,13 +13,14 @@
 var darkColors = ['0', '1', '2', '3', '4', '5', '6', '7'],
     allColorsNoBlack = ['9', 'A', 'B', 'C', 'D', 'E', 'F', '7', '1', '2', '3', '4', '5', '6', '8'],
     playerSprite,
-    Point = require('basic').Point,
-    Graphics = require('graphics').Graphics,
-    i18n = require('i18n').i18n,
-    colors = require('graphics').colors,
-    things = require('things').things,
-    Direction = require('basic').Direction,
-    Board = require('board').Board;
+    Point = require('./basic').Point,
+    Graphics = require('./graphics').Graphics,
+    i18n = require('./i18n').i18n,
+    Colors = require('./graphics').Colors,
+    things = require('./things').things,
+    Direction = require('./basic').Direction,
+    Board = require('./board').Board,
+    serializeColor = require('./graphics').serialize;
 
 /**
  * Editor represents a JZT game editor, capable of creating and testing JZT game worlds,
@@ -392,8 +393,8 @@ Editor.prototype.plot = function () {
                          */
                         if (thing && thing.type === 'Text') {
                             thing.i18n[i18n.getLanguage()] = c;
-                            thing.foreground = colors.deserializeForeground(this.activeTemplate.color);
-                            thing.background = colors.deserializeBackground(this.activeTemplate.color);
+                            thing.foreground = Colors.deserializeForeground(this.activeTemplate.color);
+                            thing.background = Colors.deserializeBackground(this.activeTemplate.color);
                         } else {
                             thing = {type: 'Text', i18n: {}, color: this.activeTemplate.color};
                             thing.i18n[i18n.getLanguage()] = c;
@@ -909,7 +910,7 @@ Editor.prototype.createField = function (fieldName, field, template) {
         // Our field type is a color...
         element = document.createElement('select');
         for (index = 0; index < field.options.length; index += 1) {
-            element.options[element.options.length] = new Option(getFriendlyName(colors.getColor(field.options[index]).name), field.options[index]);
+            element.options[element.options.length] = new Option(getFriendlyName(Colors.getColor(field.options[index]).name), field.options[index]);
         }
         nonStandard = true;
         element.addEventListener('change', function () {
@@ -918,13 +919,13 @@ Editor.prototype.createField = function (fieldName, field, template) {
                 foreground;
 
             oldValue = oldValue || field.defaultValue ? field.defaultValue : '**';
-            background = colors.deserializeBackground(oldValue);
-            foreground = colors.deserializeForeground(oldValue);
+            background = Colors.deserializeBackground(oldValue);
+            foreground = Colors.deserializeForeground(oldValue);
 
             if (field.foreground) {
-                template[fieldName] = colors.serialize(background, colors.getColor(element.value));
+                template[fieldName] = serializeColor(background, Colors.getColor(element.value));
             } else {
-                template[fieldName] = colors.serialize(colors.getColor(element.value), foreground);
+                template[fieldName] = serializeColor(Colors.getColor(element.value), foreground);
             }
 
             me.changeTemplateCallback(me.activeTemplate);
@@ -932,19 +933,19 @@ Editor.prototype.createField = function (fieldName, field, template) {
         }, false);
         if (template.hasOwnProperty(fieldName)) {
             if (field.foreground) {
-                color = colors.deserializeForeground(template[fieldName]);
-                element.value = color ? color.code : colors.Yellow;
+                color = Colors.deserializeForeground(template[fieldName]);
+                element.value = color ? color.code : Colors.Yellow;
             } else {
-                color = colors.deserializeBackground(template[fieldName]);
-                element.value = color ? color.code : colors.Blue;
+                color = Colors.deserializeBackground(template[fieldName]);
+                element.value = color ? color.code : Colors.Blue;
             }
         } else if (field.defaultValue) {
             if (field.foreground) {
-                color = colors.deserializeForeground(field.defaultValue);
-                element.value = color ? color.code : colors.Yellow;
+                color = Colors.deserializeForeground(field.defaultValue);
+                element.value = color ? color.code : Colors.Yellow;
             } else {
-                color = colors.deserializeBackground(field.defaultValue);
-                element.value = color ? color.code : colors.Blue;
+                color = Colors.deserializeBackground(field.defaultValue);
+                element.value = color ? color.code : Colors.Blue;
             }
         }
 
@@ -1012,10 +1013,10 @@ Editor.prototype.setTemplateForeground = function (foreground) {
         return;
     }
     if (this.activeTemplate.color) {
-        background = colors.deserializeBackground(this.activeTemplate.color);
-        this.activeTemplate.color = colors.serialize(background, foreground);
+        background = Colors.deserializeBackground(this.activeTemplate.color);
+        this.activeTemplate.color = serializeColor(background, foreground);
     } else {
-        this.activeTemplate.color = colors.serialize(colors.Black, foreground);
+        this.activeTemplate.color = serializeColor(Colors.Black, foreground);
     }
     this.changeTemplateCallback(this.activeTemplate);
 };
@@ -1026,10 +1027,10 @@ Editor.prototype.setTemplateBackground = function (background) {
         return;
     }
     if (this.activeTemplate.color) {
-        foreground = colors.deserializeForeground(this.activeTemplate.color);
-        this.activeTemplate.color = colors.serialize(background, foreground);
+        foreground = Colors.deserializeForeground(this.activeTemplate.color);
+        this.activeTemplate.color = serializeColor(background, foreground);
     } else {
-        this.activeTemplate.color = colors.serialize(background, colors.Yellow);
+        this.activeTemplate.color = serializeColor(background, Colors.Yellow);
     }
     this.changeTemplateCallback(this.activeTemplate);
 };
@@ -1182,7 +1183,7 @@ Editor.prototype.fill = function (point) {
         }
 
         if (thing) {
-            color = colors.serialize(thing.foreground, thing.background);
+            color = serializeColor(thing.foreground, thing.background);
         }
 
         return String(type) + String(color);
@@ -1233,7 +1234,7 @@ Editor.prototype.render = function (context) {
 
     this.currentBoard.focusPoint = this.focusPoint;
     this.currentBoard.render(context);
-    playerSprite.draw(context, this.playerPosition.subtract(this.currentBoard.windowOrigin), colors.BrightWhite, colors.Blue);
+    playerSprite.draw(context, this.playerPosition.subtract(this.currentBoard.windowOrigin), Colors.BrightWhite, Colors.Blue);
     this.drawCursor(context);
 };
 

@@ -8,8 +8,8 @@
 
 'use strict';
 
-var ConstructorError = require('basic').ConstructorError,
-    NotificationListener = require('basic').NotificationListener;
+var ConstructorError = require('./basic').ConstructorError,
+    NotificationListener = require('./basic').NotificationListener;
 
 function SlidingPanel(container) {
 

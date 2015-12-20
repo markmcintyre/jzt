@@ -8,7 +8,7 @@
 
 'use strict';
 
-var ConstructorError = require('basic').ConstructorError,
+var ConstructorError = require('./basic').ConstructorError,
 
 /**
  * A static frequency table that maps indicies from 0 to 107 to notes on a traditional

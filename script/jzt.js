@@ -13,37 +13,21 @@
  * Format version represents the version of the game format that can be loaded.
  */
 var formatVersion = '1.0.0',
-    ConstructorError = require('basic').ConstructorError,
-    KeyboardInput = require('input').KeyboardInput,
-    Audio = require('audio').Audio,
-    Graphics = require('graphics').Graphics,
-    i18n = require('i18n'),
-    Scroll = require('jzt-ux').Scroll,
-    FileManagement = require('file-management').FileManagement,
-    Splash = require('popup').Splash,
-    Point = require('basic').Point,
-    Direction = require('basic').Direction,
-    Board = require('board').Board,
-    things = require('things'),
-    colors = require('graphics').colors,
-    Popup = require('popup').Popup;
-
-/**
- * GameState is an enumerated type representing a state in our game's finite state
- * machine.
- */
-var GameState = {
-    Error: -2,
-    Splash: -1,
-    Loading: 0,
-    Playing: 1,
-    Paused: 2,
-    GameOver: 3,
-    Reading: 4,
-    Title: 5,
-    Victory: 6,
-    FileManagement: 7
-};
+    ConstructorError = require('./basic').ConstructorError,
+    KeyboardInput = require('./input').KeyboardInput,
+    Audio = require('./audio').Audio,
+    Graphics = require('./graphics').Graphics,
+    i18n = require('./i18n'),
+    Scroll = require('./scroll').Scroll,
+    FileManagement = require('./file-management').FileManagement,
+    Splash = require('./popup').Splash,
+    Point = require('./basic').Point,
+    Direction = require('./basic').Direction,
+    Board = require('./board').Board,
+    things = require('./things').things,
+    Colors = require('./graphics').Colors,
+    Popup = require('./popup').Popup,
+    GameState = require('./game-state').GameState;
 
 /**
  * Game represents a playable JZT game, including all Boards and a player.
@@ -969,7 +953,7 @@ Game.prototype.update = function (delta) {
             this.keyboard.cancelKey(this.keyboard.P);
             this.keyboard.cancelKey(this.keyboard.ENTER);
             this.setState(GameState.Playing);
-            this.player.foregroundColor = colors.Colors.F;
+            this.player.foregroundColor = Colors.F;
         }
 
     } else if (this.state === GameState.Reading) {
@@ -1219,11 +1203,11 @@ Game.prototype.drawErrorScreen = function () {
     // If we haven't yet defined our error popup, do it now
     if (this.errorPopup === undefined || this.errorPopup.language !== i18n.Messages.currentLanguage) {
         this.errorPopup = new Popup(undefined, new Point(popupWidth, 3), this);
-        this.errorPopup.setColor(colors.Red, colors.White);
+        this.errorPopup.setColor(Colors.Red, Colors.White);
         spriteGrid = this.errorPopup.spriteGrid;
-        spriteGrid.addText(new Point(2, 1), this.catestrophicErrorMessage, colors.BrightWhite);
-        spriteGrid.setTile(new Point(popupWidth - 4, 1), 58, colors.Cycle);
-        spriteGrid.setTile(new Point(popupWidth - 3, 1), 40, colors.Cycle);
+        spriteGrid.addText(new Point(2, 1), this.catestrophicErrorMessage, Colors.BrightWhite);
+        spriteGrid.setTile(new Point(popupWidth - 4, 1), 58, Colors.Cycle);
+        spriteGrid.setTile(new Point(popupWidth - 3, 1), 40, Colors.Cycle);
     }
 
     this.errorPopup.render(this.context);
@@ -1242,9 +1226,9 @@ Game.prototype.drawLoadingScreen = function () {
     // If we haven't yet defined our loading popup in our language, do it now
     if (this.loadingPopup === undefined || this.loadingPopup.language !== i18n.Messages.currentLanguage) {
         this.loadingPopup = new Popup(undefined, new Point(popupWidth, 3), this);
-        this.loadingPopup.setColor(colors.Blue, colors.White);
+        this.loadingPopup.setColor(Colors.Blue, Colors.White);
         spriteGrid = this.loadingPopup.spriteGrid;
-        spriteGrid.addText(new Point(4, 1), i18n.getMessage('status.loading'), colors.BrightWhite);
+        spriteGrid.addText(new Point(4, 1), i18n.getMessage('status.loading'), Colors.BrightWhite);
         this.loadingPopup.animationPosition = new Point(2, 1).add(this.loadingPopup.position);
     }
 
@@ -1252,7 +1236,7 @@ Game.prototype.drawLoadingScreen = function () {
 
     // Animate our spinning sprite
     sprite = this.resources.graphics.getSprite(things.Conveyor.animationFrames[Math.floor(this.loadingAnimationIndex / 4)]);
-    sprite.draw(this.context, this.loadingPopup.animationPosition, colors.Cycle);
+    sprite.draw(this.context, this.loadingPopup.animationPosition, Colors.Cycle);
 
 };
 
@@ -1289,13 +1273,13 @@ Game.prototype.drawPauseScreen = function () {
         this.statusPopup.language = i18n.Messages.currentLanguage;
         spriteGrid = this.statusPopup.spriteGrid;
         value = i18n.getMessage('pause.paused');
-        spriteGrid.addText(new Point(Math.floor((pauseWidth - value.length) / 2), 1), value, colors.White);
-        spriteGrid.addText(new Point(1, 3), i18n.getMessage('pause.health'), colors.Yellow);
-        spriteGrid.addText(new Point(1, 4), i18n.getMessage('pause.ammo'), colors.Yellow);
-        spriteGrid.addText(new Point(1, 5), i18n.getMessage('pause.gems'), colors.Yellow);
-        spriteGrid.addText(new Point(1, 6), i18n.getMessage('pause.torches'), colors.Yellow);
-        spriteGrid.addText(new Point(1, 7), i18n.getMessage('pause.score'), colors.Yellow);
-        spriteGrid.addText(new Point(1, 8), i18n.getMessage('pause.keys'), colors.Yellow);
+        spriteGrid.addText(new Point(Math.floor((pauseWidth - value.length) / 2), 1), value, Colors.White);
+        spriteGrid.addText(new Point(1, 3), i18n.getMessage('pause.health'), Colors.Yellow);
+        spriteGrid.addText(new Point(1, 4), i18n.getMessage('pause.ammo'), Colors.Yellow);
+        spriteGrid.addText(new Point(1, 5), i18n.getMessage('pause.gems'), Colors.Yellow);
+        spriteGrid.addText(new Point(1, 6), i18n.getMessage('pause.torches'), Colors.Yellow);
+        spriteGrid.addText(new Point(1, 7), i18n.getMessage('pause.score'), Colors.Yellow);
+        spriteGrid.addText(new Point(1, 8), i18n.getMessage('pause.keys'), Colors.Yellow);
     }
 
     // Make sure we don't position our popup over the player
@@ -1309,18 +1293,18 @@ Game.prototype.drawPauseScreen = function () {
     this.statusPopup.render(this.context);
 
     // Draw our status values
-    this.resources.graphics.drawString(this.context, position.add(new Point(13, 3)), getCounterValue('HEALTH'), colors.BrightWhite);
-    this.resources.graphics.drawString(this.context, position.add(new Point(13, 4)), getCounterValue('AMMO'), colors.BrightWhite);
-    this.resources.graphics.drawString(this.context, position.add(new Point(13, 5)), getCounterValue('GEMS'), colors.BrightWhite);
-    this.resources.graphics.drawString(this.context, position.add(new Point(13, 6)), getCounterValue('TORCHES'), colors.BrightWhite);
-    this.resources.graphics.drawString(this.context, position.add(new Point(13, 7)), getCounterValue('SCORE'), colors.BrightWhite);
+    this.resources.graphics.drawString(this.context, position.add(new Point(13, 3)), getCounterValue('HEALTH'), Colors.BrightWhite);
+    this.resources.graphics.drawString(this.context, position.add(new Point(13, 4)), getCounterValue('AMMO'), Colors.BrightWhite);
+    this.resources.graphics.drawString(this.context, position.add(new Point(13, 5)), getCounterValue('GEMS'), Colors.BrightWhite);
+    this.resources.graphics.drawString(this.context, position.add(new Point(13, 6)), getCounterValue('TORCHES'), Colors.BrightWhite);
+    this.resources.graphics.drawString(this.context, position.add(new Point(13, 7)), getCounterValue('SCORE'), Colors.BrightWhite);
 
     // Draw our keys
     position = position.add(new Point(13, 8));
     sprite = this.resources.graphics.getSprite(12);
     for (value = 0; value < keyValues.length; value += 1) {
         if (this.getCounterValue('KEY' + keyValues[value]) > 0) {
-            sprite.draw(this.context, position, colors.deserializeForeground(keyValues[value]));
+            sprite.draw(this.context, position, Colors.deserializeForeground(keyValues[value]));
             position.x += 1;
         }
     }
@@ -1343,7 +1327,7 @@ Game.prototype.draw = function () {
         }
 
     } else {
-        this.context.fillStyle = colors.Grey.rgbValue;
+        this.context.fillStyle = Colors.Grey.rgbValue;
         this.context.fillRect(0, 0, this.context.canvas.width, this.context.canvas.height);
     }
 
@@ -1415,3 +1399,5 @@ Game.prototype.onSettingsChanged = function (settings) {
 // Exports
 exports.GameState = GameState;
 exports.Game = Game;
+
+window.Game = Game;

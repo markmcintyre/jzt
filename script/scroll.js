@@ -8,11 +8,11 @@
 
 'use strict';
 
-var ConstructorError = require('basic').ConstructorError,
-    Point = require('basic').Point,
-    DelayedEventScheduler = require('basic').DelayedEventScheduler,
-    GameState = require('jzt').GameState,
-    colors = require('graphics').colors;
+var ConstructorError = require('./basic').ConstructorError,
+    Point = require('./basic').Point,
+    DelayedEventScheduler = require('./basic').DelayedEventScheduler,
+    GameState = require('./game-state').GameState,
+    Colors = require('./graphics').Colors;
 
 /**
  * Scroll represents a scrollable window used for reading text and selecting options
@@ -385,14 +385,14 @@ Scroll.prototype.drawLine = function (scrollIndex) {
  * @param point A Point at which to draw the sprites.
  */
 Scroll.prototype.drawText = function (sprites, point) {
-    var color = colors.Yellow;
+    var color = Colors.Yellow;
     if (sprites.center) {
-        color = colors.BrightWhite;
+        color = Colors.BrightWhite;
         point.x += Math.floor((this.textAreaWidth - sprites.length) / 2);
     }
     if (sprites.label) {
-        color = colors.BrightWhite;
-        this.graphics.getSprite(16).draw(this.game.context, point, colors.BrightMagenta);
+        color = Colors.BrightWhite;
+        this.graphics.getSprite(16).draw(this.game.context, point, Colors.BrightMagenta);
         point.x += 2;
     }
     this.graphics.drawSprites(this.game.context, point, sprites, color, undefined);
@@ -413,7 +413,7 @@ Scroll.prototype.render = function (context) {
         x = this.origin.x,
         y = this.origin.y;
 
-    context.fillStyle = colors.Blue.rgbValue;
+    context.fillStyle = Colors.Blue.rgbValue;
     context.fillRect(x * this.graphics.TILE_SIZE.x, y * this.graphics.TILE_SIZE.y, this.width * this.graphics.TILE_SIZE.x, this.height * this.graphics.TILE_SIZE.y);
 
     // Draw top
@@ -429,7 +429,7 @@ Scroll.prototype.render = function (context) {
 
     sprites.push(this.graphics.getSprite(209));
     sprites.push(this.graphics.getSprite(181));
-    this.graphics.drawSprites(context, new Point(x, y), sprites, colors.BrightWhite);
+    this.graphics.drawSprites(context, new Point(x, y), sprites, Colors.BrightWhite);
 
     if (this.title && this.height > 3) {
 
@@ -449,7 +449,7 @@ Scroll.prototype.render = function (context) {
         sprites.push(sprite);
         y += 1;
         point = new Point(x, y);
-        this.graphics.drawSprites(context, point, sprites, colors.BrightWhite);
+        this.graphics.drawSprites(context, point, sprites, Colors.BrightWhite);
         if (this.title) {
             point.x += 4;
             this.drawText(this.title, point);
@@ -471,7 +471,7 @@ Scroll.prototype.render = function (context) {
         sprites.push(this.graphics.getSprite(180));
         sprites.push(this.graphics.getSprite(32));
         y += 1;
-        this.graphics.drawSprites(context, new Point(x, y), sprites, colors.BrightWhite);
+        this.graphics.drawSprites(context, new Point(x, y), sprites, Colors.BrightWhite);
     }
 
     if (!this.title || this.height > 5) {
@@ -491,15 +491,15 @@ Scroll.prototype.render = function (context) {
             sprites.push(this.graphics.getSprite(179));
             sprites.push(sprite);
             y += 1;
-            this.graphics.drawSprites(context, new Point(x, y), sprites, colors.BrightWhite);
+            this.graphics.drawSprites(context, new Point(x, y), sprites, Colors.BrightWhite);
             this.drawLine(lineIndex);
 
             // Draw the cursor
             if (lineIndex === this.middlePosition) {
                 sprite = this.graphics.getSprite(175);
-                sprite.draw(context, new Point(x + 2, y), colors.BrightRed);
+                sprite.draw(context, new Point(x + 2, y), Colors.BrightRed);
                 sprite = this.graphics.getSprite(174);
-                sprite.draw(context, new Point(x + this.width - 3, y), colors.BrightRed);
+                sprite.draw(context, new Point(x + this.width - 3, y), Colors.BrightRed);
             }
 
         }
@@ -520,7 +520,7 @@ Scroll.prototype.render = function (context) {
         sprites.push(this.graphics.getSprite(207));
         sprites.push(this.graphics.getSprite(181));
         y += 1;
-        this.graphics.drawSprites(context, new Point(x, y), sprites, colors.BrightWhite);
+        this.graphics.drawSprites(context, new Point(x, y), sprites, Colors.BrightWhite);
     }
 
 };

@@ -13,12 +13,12 @@
  * Action is an enumerated type representing a performable action for
  * this FileManagement.
  */
-var ConstructorError = require('basic').ConstructorError,
-    Point = require('basic').Point,
-    DelayedEventScheduler = require('basic').DelayedEventScheduler,
-    Popup = require('jzt-ux').Popup,
-    colors = require('graphics').colors,
-    i18n = require('i18n'),
+var ConstructorError = require('./basic').ConstructorError,
+    Point = require('./basic').Point,
+    DelayedEventScheduler = require('./basic').DelayedEventScheduler,
+    Popup = require('./popup').Popup,
+    Colors = require('./graphics').Colors,
+    i18n = require('./i18n'),
     action = {
         Up: 0,
         Down: 1,
@@ -60,7 +60,7 @@ function FileManagement(owner) {
     this.visibleBoxCount = Math.floor((this.height - 2) / this.boxHeight);
     this.eventScheduler = new DelayedEventScheduler(this.game.CYCLE_TICKS * 2, this.game.CYCLE_TICKS);
     this.popup = new Popup(undefined, new Point(this.width, this.height), this.game);
-    this.popup.setColor(colors.Blue, colors.BrightWhite, colors.Blue, colors.BrightBlue);
+    this.popup.setColor(Colors.Blue, Colors.BrightWhite, Colors.Blue, Colors.BrightBlue);
     this.spriteGrid = this.popup.spriteGrid;
 
 }
@@ -78,7 +78,7 @@ FileManagement.prototype.setAlert = function (message) {
 
     // Create our alert message
     this.alert = new Popup(undefined, new Point(message.length + 4, 3), this.game);
-    this.alert.spriteGrid.addText(new Point(2, 1), message, colors.BrightWhite, colors.Blue);
+    this.alert.spriteGrid.addText(new Point(2, 1), message, Colors.BrightWhite, Colors.Blue);
 
 };
 
@@ -348,7 +348,7 @@ FileManagement.prototype.initializeTitle = function () {
     var message = ' ' + i18n.getMessage(this.dialogType === FileManagement.Type.SAVE ? 'file.save' : 'file.load') + ' ',
         position = Math.round((this.width - message.length) / 2);
 
-    this.spriteGrid.addText(new Point(position, 0), message, colors.BrightWhite);
+    this.spriteGrid.addText(new Point(position, 0), message, Colors.BrightWhite);
 
 };
 
@@ -374,7 +374,7 @@ FileManagement.prototype.initializeSlots = function () {
     function initializeSlot(file, index, selected) {
 
         var point = new Point(0, 0),
-            background = selected ? colors.White : colors.Cyan,
+            background = selected ? Colors.White : Colors.Cyan,
             boxPosition = index * me.boxHeight + 2,
             dateString,
             title;
@@ -386,21 +386,21 @@ FileManagement.prototype.initializeSlots = function () {
                 if (point.x === me.boxWidth - 1 && point.y === boxPosition) {
 
                     // We're rendering the top shadow edge
-                    me.spriteGrid.setTile(point, 220, colors.Black);
+                    me.spriteGrid.setTile(point, 220, Colors.Black);
 
                 } else if (point.x === me.boxWidth - 1 && point.y !== boxPosition + me.boxHeight - 1) {
 
                     // We're rendering the right shadow edge
-                    me.spriteGrid.setTile(point, undefined, colors.BrightWhite, colors.Black);
+                    me.spriteGrid.setTile(point, undefined, Colors.BrightWhite, Colors.Black);
 
                 } else if (point.y === boxPosition + me.boxHeight - 1 && point.x !== 2) {
 
                     // We're rendering the bottom shadow edge
-                    me.spriteGrid.setTile(point, 223, colors.Black);
+                    me.spriteGrid.setTile(point, 223, Colors.Black);
 
                 } else if (!(point.y === boxPosition + me.boxHeight - 1 && point.x === 2)) {
 
-                    me.spriteGrid.setTile(point, undefined, colors.BrightWhite, background);
+                    me.spriteGrid.setTile(point, undefined, Colors.BrightWhite, background);
 
                 }
 
@@ -416,14 +416,14 @@ FileManagement.prototype.initializeSlots = function () {
 
             // We've got a file, so draw it
             title = file.name || i18n.getMessage('file.saved');
-            me.spriteGrid.addText(point, title, selected ? colors.BrightWhite : colors.Grey, background);
+            me.spriteGrid.addText(point, title, selected ? Colors.BrightWhite : Colors.Grey, background);
 
         } else if (me.dialogType === FileManagement.Type.SAVE) {
 
             // There's no file, so it's an empty spot
             title = i18n.getMessage('file.new');
             point.x = Math.round((me.boxWidth - title.length) / 2);
-            me.spriteGrid.addText(point, title, selected ? colors.BrightWhite : colors.Grey, background);
+            me.spriteGrid.addText(point, title, selected ? Colors.BrightWhite : Colors.Grey, background);
 
         } else {
 
@@ -432,10 +432,10 @@ FileManagement.prototype.initializeSlots = function () {
 
             title = i18n.getMessage('file.restart');
             point.x = Math.round((me.boxWidth - title.length) / 2);
-            me.spriteGrid.addText(point, title, selected ? colors.BrightWhite : colors.Grey, background);
+            me.spriteGrid.addText(point, title, selected ? Colors.BrightWhite : Colors.Grey, background);
             point.y += 1;
             point.x = Math.round((me.boxWidth - me.game.name.length) / 2);
-            me.spriteGrid.addText(point, me.game.name, selected ? colors.BrightBlue : colors.Grey, background);
+            me.spriteGrid.addText(point, me.game.name, selected ? Colors.BrightBlue : Colors.Grey, background);
 
         }
 
@@ -443,14 +443,14 @@ FileManagement.prototype.initializeSlots = function () {
         if (file && file.timestamp) {
             dateString = formatDate(new Date(file.timestamp));
             point.x = me.boxWidth - dateString.length - 2;
-            me.spriteGrid.addText(point, dateString, colors.Grey, background);
+            me.spriteGrid.addText(point, dateString, Colors.Grey, background);
         }
 
         // Draw our current board name
         if (file && file.board) {
             point.x = 3;
             point.y += 1;
-            me.spriteGrid.addText(point, file.board, selected ? colors.BrightBlue : colors.Grey, background);
+            me.spriteGrid.addText(point, file.board, selected ? Colors.BrightBlue : Colors.Grey, background);
         }
 
     }

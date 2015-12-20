@@ -8,8 +8,8 @@
 
 'use strict';
 
-var ConstructorError = require('basic').ConstructorError,
-    Point = require('basic').Point,
+var ConstructorError = require('./basic').ConstructorError,
+    Point = require('./basic').Point,
     colors,
     cycle,
     BLINK_RATE = 10,
@@ -124,8 +124,8 @@ function Graphics(onLoadCallback) {
             sprite;
 
         // Create offscreen canvases
-        for (color in colors.Colors) {
-            if (colors.Colors.hasOwnProperty(color)) {
+        for (color in colors) {
+            if (colors.hasOwnProperty(color)) {
 
                 // Create a buffer to store our sprite graphics
                 buffer = document.createElement('canvas');
@@ -142,7 +142,7 @@ function Graphics(onLoadCallback) {
                 pixelCount = this.width * this.height * 4;
 
                 // Get our color
-                color = colors.Colors[color];
+                color = colors[color];
 
                 // Draw the black and white image first
                 context.drawImage(this, 0, 0);
@@ -226,7 +226,7 @@ function Graphics(onLoadCallback) {
         context.webkitImageSmoothingEnabled = false;
         context.mozImageSmoothingEnabled = false;
         sprite = me.getSprite(176);
-        sprite.draw(context, new Point(0, 0), colors.Grey, colors.Black);
+        sprite.draw(context, new Point(0, 0), exports.Colors.Grey, exports.Colors.Black);
         me.DARK_IMAGE = buffer;
 
         // Now that everything is initialized, trigger our load callback
@@ -251,7 +251,7 @@ Graphics.prototype.update = function () {
         this.blinkState = !this.blinkState;
 
         // Our color cycle uses the same rate
-        colors.Cycle.update();
+        exports.Colors.Cycle.update();
 
         // Reset the blink cycle
         this.blinkCycle = 0;
@@ -647,7 +647,7 @@ SpriteGrid.prototype.addArt = function (startingPoint, artString) {
 
             if (index + 1 <= artString.length) {
                 index += 1;
-                color = colors.getColor(artString.charAt(index));
+                color = exports.getColor(artString.charAt(index));
             }
 
             this.setTile(point, symbol, color);
@@ -861,6 +861,7 @@ function serialize(background, foreground) {
  * @param colors An array of Color instances.
  * @param my An object to which to assign convenience accessors.
  */
+exports.Colors = {};
 (function (colors, exports) {
 
     var colorIndex;
@@ -875,17 +876,16 @@ function serialize(background, foreground) {
 
     }
 
-}(colors, exports));
+}(colors, exports.Colors));
 
 // Exports
 exports.getColor = getColor;
 exports.deserializeForeground = deserializeForeground;
 exports.deserializeBackground = deserializeBackground;
 exports.serialize = serialize;
-exports.Cycle = cycle;
+exports.Colors.Cycle = cycle;
 exports.Color = Color;
 exports.CyclingColor = CyclingColor;
-exports.Colors = colors;
 exports.Graphics = Graphics;
 exports.Sprite = Sprite;
 exports.SpriteGrid = SpriteGrid;

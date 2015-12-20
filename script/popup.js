@@ -8,10 +8,10 @@
 
 'use strict';
 
-var Point = require('basic').Point,
-    SpriteGrid = require('graphics').SpriteGrid,
-    colors = require('graphics').colors,
-    meta = require('preparation').meta;
+var Point = require('./basic').Point,
+    SpriteGrid = require('./graphics').SpriteGrid,
+    Colors = require('./graphics').Colors,
+    meta = require('./preparation').meta;
 
 /**
  * Popup represents a pop-up box with a given position and size, capable of
@@ -37,7 +37,7 @@ function Popup(position, size, game) {
     this.game = game;
     this.graphics = game.resources.graphics;
     this.spriteGrid = new SpriteGrid(this.size.x, this.size.y, this.graphics);
-    this.setColor(colors.Blue, colors.BrightWhite);
+    this.setColor(Colors.Blue, Colors.BrightWhite);
 
 }
 
@@ -197,32 +197,32 @@ function Splash(game) {
     this.done = false;
     this.animationFrame = undefined;
     this.popup = new Popup(undefined, new Point(50, 20), game);
-    this.popup.setColor(colors.Black);
+    this.popup.setColor(Colors.Black);
     this.popup.spriteGrid.clear();
 
     grid = this.popup.spriteGrid;
 
     // Define our animation
     this.animator.start(function () {
-        grid.addText(new Point(1, 1), '┌───┐', colors.White);
-        grid.addText(new Point(1, 2), '│ o┌┴──┐ Association of', colors.White);
-        grid.addText(new Point(1, 3), '└─┬┴──┐│ Shareware', colors.White);
-        grid.addText(new Point(1, 4), '  │ o ├┘ Unprofessionals', colors.White);
-        grid.addText(new Point(1, 5), '  └─┴─┘', colors.White);
+        grid.addText(new Point(1, 1), '┌───┐', Colors.White);
+        grid.addText(new Point(1, 2), '│ o┌┴──┐ Association of', Colors.White);
+        grid.addText(new Point(1, 3), '└─┬┴──┐│ Shareware', Colors.White);
+        grid.addText(new Point(1, 4), '  │ o ├┘ Unprofessionals', Colors.White);
+        grid.addText(new Point(1, 5), '  └─┴─┘', Colors.White);
     }).then(300, function () {
-        grid.addText(new Point(1, 7), 'x286 BIOS Version 2.1.16', colors.White);
+        grid.addText(new Point(1, 7), 'x286 BIOS Version 2.1.16', Colors.White);
     }).then(400, function () {
-        grid.addText(new Point(1, 9), 'Initializing Nostalgia Boot Agent v1.4.14', colors.White);
+        grid.addText(new Point(1, 9), 'Initializing Nostalgia Boot Agent v1.4.14', Colors.White);
         game.resources.audio.play('i++c');
     }).then(600, function () {
-        grid.addText(new Point(1, 10), 'Nostalgia Boot Agent (v1.4.14) Loaded.', colors.White);
+        grid.addText(new Point(1, 10), 'Nostalgia Boot Agent (v1.4.14) Loaded.', Colors.White);
     }).then(700, function () {
-        grid.addText(new Point(1, 12), 'Starting Markrosoft DOS...', colors.White);
+        grid.addText(new Point(1, 12), 'Starting Markrosoft DOS...', Colors.White);
     }).then(1200, function () {
-        grid.addText(new Point(1, 14), 'Running autoexec.bat', colors.White);
+        grid.addText(new Point(1, 14), 'Running autoexec.bat', Colors.White);
     }).then(1300, function () {
-        grid.addText(new Point(1, 15), 'C:\\>cd JZT', colors.White);
-        grid.addText(new Point(1, 16), 'C:\\JZT\\>exe', colors.White);
+        grid.addText(new Point(1, 15), 'C:\\>cd JZT', Colors.White);
+        grid.addText(new Point(1, 16), 'C:\\JZT\\>exe', Colors.White);
     }).then(2000, function () {
         grid.clear();
         grid.addArt(new Point(7, 5),
@@ -237,9 +237,9 @@ function Splash(game) {
             ' 0 0▀F▄F▀9▀9▀9▀9▄F▀F 0▀F▄F▀9▀9▀9▀9▀9▀9▄F▄F▄F▄F▄F▀F F F▀F▄F▄F▄F▀F\n' +
             ' 0 0 0 0▀F▀F▀F▀F F F F F F▀F▀F▀F▀F▀F▀F'
             );
-        grid.addText(new Point(46 - meta.version.length, 15), meta.version, colors.Grey);
-        grid.addText(new Point(13, 18), 'Created by Mark McIntyre', colors.Grey);
-        grid.addText(new Point(6, 19), '(c) ' + meta.date.getFullYear() + ' Orangeline Interactive, Inc.', colors.Grey);
+        grid.addText(new Point(46 - meta.version.length, 15), meta.version, Colors.Grey);
+        grid.addText(new Point(13, 18), 'Created by Mark McIntyre', Colors.Grey);
+        grid.addText(new Point(6, 19), '(c) ' + meta.date.getFullYear() + ' Orangeline Interactive, Inc.', Colors.Grey);
     }).end(4000);
 
 }

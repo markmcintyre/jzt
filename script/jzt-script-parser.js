@@ -8,20 +8,21 @@
 
 'use strict';
 
-var Literal = require('parser').Literal,
-    Alternation = require('parser').Alternation,
-    Empty = require('parser').Empty,
-    Sequence = require('parser').Sequence,
-    Repetition = require('parser').Repetition,
-    ParserNumber = require('parser').Number,
-    Word = require('parser').Word,
-    NewLine = require('parser').NewLine,
-    Assembly = require('parser').Assembly,
-    ParserString = require('parser').String,
-    jztLexer = require('lexer').Lexer,
-    commands = require('jzt-script-commands'),
-    colors = require('graphics').colors,
-    ConstructorError = require('basic').ConstructorError;
+var Literal = require('./parser').Literal,
+    Alternation = require('./parser').Alternation,
+    Empty = require('./parser').Empty,
+    Sequence = require('./parser').Sequence,
+    Repetition = require('./parser').Repetition,
+    ParserNumber = require('./parser').Number,
+    Word = require('./parser').Word,
+    NewLine = require('./parser').NewLine,
+    Assembly = require('./parser').Assembly,
+    ParserString = require('./parser').String,
+    Lexer = require('./lexer').Lexer,
+    commands = require('./jzt-script-commands'),
+    Colors = require('./graphics').Colors,
+    ConstructorError = require('./basic').ConstructorError,
+    serializeColor = require('./graphics').serialize;
 
 /**
  * JztScriptParser
@@ -205,7 +206,7 @@ function JztScriptParser(validateOnly) {
         // Define assembler
         color.assembler = validateOnly ? undefined : {
             assemble: function (assembly) {
-                assembly.push(colors[assembly.pop().value.toUpperCase()]);
+                assembly.push(Colors[assembly.pop().value.toUpperCase()]);
             }
         };
 
@@ -296,7 +297,7 @@ function JztScriptParser(validateOnly) {
         colorfulThing.assembler = validateOnly ? undefined : {
             assemble: function (assembly) {
                 var thing = assembly.pop();
-                thing.color = colors.serialize(undefined, assembly.pop());
+                thing.color = serializeColor(undefined, assembly.pop());
                 assembly.push(thing);
             }
         };
@@ -1083,7 +1084,7 @@ JztScriptParser.prototype.parse = function (script) {
         script += '\n';
     }
 
-    lexer = new jztLexer.Lexer(script);
+    lexer = new Lexer(script);
     tokens = lexer.tokenizeAll();
     assembly = new Assembly(tokens);
     result = this.parser.completeMatch(assembly);

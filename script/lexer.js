@@ -8,7 +8,7 @@
 
 'use strict';
 
-var ConstructorError = require('basic').ConstructorError;
+var ConstructorError = require('./basic').ConstructorError;
 
 function isNewLine(character) {
     return character === '\r' || character === '\n';

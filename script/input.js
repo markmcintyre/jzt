@@ -8,7 +8,7 @@
 
 'use strict';
 
-var ConstructorError = require('basic').ConstructorError;
+var ConstructorError = require('./basic').ConstructorError;
 
 /**
  * Keyboard input takes event-based keyboard input and stores it in a pollable

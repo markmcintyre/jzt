@@ -8,11 +8,11 @@
 
 'use strict';
 
-var ThingFactory = require('things').ThingFactory,
-    Direction = require('basic').Direction,
-    ConstructorError = require('basic').ConstructorError,
-    GameState = require('jzt').GameState,
-    getBoardMessage = require('i18n').getBoardMessage;
+var ThingFactory = require('./things').ThingFactory,
+    Direction = require('./basic').Direction,
+    ConstructorError = require('./basic').ConstructorError,
+    GameState = require('./game-state').GameState,
+    getBoardMessage = require('./i18n').getBoardMessage;
 
 /**
  * {@code CommandResult} is an object containing definitions of

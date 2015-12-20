@@ -8,13 +8,18 @@
 
 'use strict';
 
-var Point = require('basic').Point,
-    colors = require('graphics').colors,
-    utilities = require('basic').utilities,
-    Direction = require('basic').Direction,
-    GameState = require('jzt').GameState,
-    JztScriptContext = require('jzt-script').JztScriptContext,
-    i18n = require('i18n'),
+var Point = require('./basic').Point,
+    Colors = require('./graphics').Colors,
+    CyclingColor = require('./graphics').CyclingColor,
+    deserializeForeground = require('./graphics').deserializeForeground,
+    deserializeBackground = require('./graphics').deserializeBackground,
+    serializeColor = require('./graphics').serialize,
+    utilities = require('./basic').utilities,
+    Direction = require('./basic').Direction,
+    GameState = require('./game-state').GameState,
+    JztScriptContext = require('./jzt-script-context').JztScriptContext,
+    DelayedEventScheduler = require('./basic').DelayedEventScheduler,
+    i18n = require('./i18n'),
     ThingFactory = {},
     MOVE_ACTION = 0,
     SHOOT_ACTION = 1,
@@ -25,8 +30,9 @@ var Point = require('basic').Point,
  * Defines a thing by adding a property with its named construction function. Additionally
  * adds a 'type' property to the function so it can be serialized even after minification.
  */
+exports.things = {};
 function defineThing(name, thingFunction) {
-    exports[name] = thingFunction;
+    exports.things[name] = thingFunction;
     thingFunction.type = name;
 }
 
@@ -44,10 +50,11 @@ function Thing(board) {
     this.spriteIndex = 63;
     this.board = board;
     this.point = new Point(0, 0);
-    this.foreground = colors.Yellow;
+    this.foreground = Colors.Yellow;
     this.background = undefined;
     this.x = 0;
     this.y = 0;
+    this.type = this.constructor.type;
 }
 
 /**
@@ -58,7 +65,7 @@ function Thing(board) {
 Thing.prototype.serialize = function () {
     var result = {};
     result.type = this.constructor.type;
-    result.color = colors.serialize(this.background, this.foreground);
+    result.color = serializeColor(this.background, this.foreground);
     if (this.under) {
         result.under = this.under.serialize();
     }
@@ -74,11 +81,11 @@ Thing.prototype.serialize = function () {
 Thing.prototype.deserialize = function (data) {
 
     if (data.color) {
-        this.foreground = colors.deserializeForeground(data.color);
-        this.background = colors.deserializeBackground(data.color);
+        this.foreground = deserializeForeground(data.color);
+        this.background = deserializeBackground(data.color);
     } else {
         if (!this.foreground) {
-            this.foreground = colors.Yellow;
+            this.foreground = Colors.Yellow;
         }
         this.background = undefined;
     }
@@ -211,7 +218,7 @@ Thing.prototype.isPlayerVisible = function (distance) {
 
     function isBlocked(point) {
         var tile = me.board.getTile(point);
-        return tile && (tile !== me) && !(tile instanceof Player);
+        return tile && (tile !== me) && (tile.tyle !== 'Player');
     }
 
     if (line.points.length > distance) {
@@ -249,9 +256,8 @@ Thing.prototype.isPlayerVisible = function (distance) {
  * @return true if a Player thing is directly adjacent in a given direction, false otherwise.
  */
 Thing.prototype.isPlayerAdjacent = function (direction) {
-    var Player = exports.Player,
-        tile = this.board.getTile(this.point.add(direction));
-    return tile && tile instanceof Player;
+    var tile = this.board.getTile(this.point.add(direction));
+    return tile && tile.type === 'Player';
 };
 
 /**
@@ -311,7 +317,7 @@ Thing.prototype.getAdjacentThing = function (direction) {
 Thing.prototype.equals = function (template) {
 
     var type = template.type.toUpperCase(),
-        color = template.color ? colors.deserializeForeground(template.color) : undefined;
+        color = template.color ? deserializeForeground(template.color) : undefined;
 
     if (this.constructor.type.toUpperCase() === type) {
 
@@ -748,7 +754,7 @@ function Ammo(board) {
     Thing.call(this, board);
     this.spriteIndex = 132;
     this.background = undefined;
-    this.foreground = colors.Cyan;
+    this.foreground = Colors.Cyan;
 }
 Ammo.prototype = new Thing();
 Ammo.prototype.constructor = Ammo;
@@ -762,7 +768,7 @@ Ammo.prototype.serialize = function () {
 Ammo.prototype.deserialize = function (data) {
     Thing.prototype.deserialize.call(this, data);
     this.background = undefined;
-    this.foreground = colors.Cyan;
+    this.foreground = Colors.Cyan;
 };
 
 /**
@@ -800,7 +806,7 @@ function Bear(board) {
     UpdateableThing.call(this, board);
     this.spriteIndex = 153;
     this.background = undefined;
-    this.foreground = colors.Brown;
+    this.foreground = Colors.Brown;
     this.sensitivity = 9;
     this.speed = 3;
     this.conveyable = true;
@@ -828,7 +834,7 @@ Bear.prototype.serialize = function () {
 Bear.prototype.deserialize = function (data) {
     UpdateableThing.prototype.deserialize.call(this, data);
     this.background = undefined;
-    this.foreground = colors.Brown;
+    this.foreground = Colors.Brown;
     this.sensitivity = data.sensitivity || 9;
 };
 
@@ -916,7 +922,7 @@ function Blinker(board) {
     this.currentTick = 0;
     this.spriteIndex = 206;
     this.background = undefined;
-    this.foreground = colors.Yellow;
+    this.foreground = Colors.Yellow;
     this.blinkState = false;
 }
 Blinker.prototype = new UpdateableThing();
@@ -1033,7 +1039,7 @@ function BlinkWall(board) {
     Thing.call(this, board);
     this.horizontal = false;
     this.background = undefined;
-    this.foreground = colors.Yellow;
+    this.foreground = Colors.Yellow;
 }
 BlinkWall.prototype = new Thing();
 BlinkWall.prototype.constructor = BlinkWall;
@@ -1138,8 +1144,8 @@ Boulder.prototype.push = function (direction, pusher) {
 function BreakableWall(board) {
     Thing.call(this, board);
     this.spriteIndex = 177;
-    this.background = colors.Black;
-    this.foreground = colors.BrightCyan;
+    this.background = Colors.Black;
+    this.foreground = Colors.BrightCyan;
 }
 BreakableWall.prototype = new Thing();
 BreakableWall.prototype.constructor = BreakableWall;
@@ -1169,7 +1175,7 @@ BreakableWall.prototype.sendMessage = function (message) {
 function Bullet(board) {
     UpdateableThing.call(this, board);
     this.spriteIndex = 248;
-    this.foreground = colors.BrightWhite;
+    this.foreground = Colors.BrightWhite;
     this.background = undefined;
     this.direction = Direction.North;
     this.speed = 1;
@@ -1201,7 +1207,7 @@ Bullet.prototype.serialize = function () {
 Bullet.prototype.deserialize = function (data) {
     UpdateableThing.prototype.deserialize.call(this, data);
     this.background = undefined;
-    this.foreground = colors.BrightWhite;
+    this.foreground = Colors.BrightWhite;
     this.direction = Direction.fromName(data.direction);
     if (data.fromPlayer) {
         this.fromPlayer = data.fromPlayer;
@@ -1301,13 +1307,15 @@ Bullet.prototype.react = function () {
         }
 
         // If there is a ricochet to our right, reflect to the left if we're not blocked that way
-        if (this.getAdjacentThing(Direction.clockwise(this.direction)).type === 'Ricochet') {
+        thing = this.getAdjacentThing(Direction.clockwise(this.direction));
+        if (thing && thing.type === 'Ricochet') {
             this.ricochet(Direction.counterClockwise(this.direction));
             return;
         }
 
         // If there is a ricochet to our left, reflect to our right if we're not blocked that way
-        if (this.getAdjacentThing(Direction.counterClockwise(this.direction)).type === 'Ricochet') {
+        thing = this.getAdjacentThing(Direction.counterClockwise(this.direction));
+        if (thing && thing.type === 'Ricochet') {
             this.ricochet(Direction.clockwise(this.direction));
             return;
         }
@@ -1362,7 +1370,7 @@ Bullet.prototype.push = function () {
 function Centipede(board) {
     UpdateableThing.call(this, board);
     this.spriteIndex = 79;
-    this.foreground = colors.BrightBlue;
+    this.foreground = Colors.BrightBlue;
     this.background = undefined;
     this.speed = 3;
     this.follower = undefined;
@@ -1440,7 +1448,7 @@ Centipede.prototype.getAdjacentSegment = function () {
      * @return true if a candidate is an unlinked, non-head Centipede
      */
     function isUnlinkedSegment(candidate) {
-        return candidate && (candidate instanceof Centipede) && !candidate.linked && !candidate.nextSegment && !candidate.head;
+        return candidate && candidate.type === 'Centipede' && !candidate.linked && !candidate.nextSegment && !candidate.head;
     }
 
     var result;
@@ -1451,7 +1459,7 @@ Centipede.prototype.getAdjacentSegment = function () {
         delete this.nextSegment;
 
         // Sanity check before returning our result
-        if ((result instanceof Centipede) && !result.head) {
+        if (result && result.type === 'Centipede' && !result.head) {
             return result;
         }
 
@@ -1906,8 +1914,8 @@ Conveyor.prototype.doTick = function () {
 function Door(board) {
     Thing.call(this, board);
     this.spriteIndex = 10;
-    this.foreground = colors.BrightWhite;
-    this.background = colors.Blue;
+    this.foreground = Colors.BrightWhite;
+    this.background = Colors.Blue;
 }
 Door.prototype = new Thing();
 Door.prototype.constructor = Door;
@@ -1915,7 +1923,7 @@ Door.prototype.constructor = Door;
 Door.prototype.deserialize = function (data) {
 
     Thing.prototype.deserialize.call(this, data);
-    this.foreground = colors.BrightWhite;
+    this.foreground = Colors.BrightWhite;
 
     // Sanitize the color if necessary
     if (this.background) {
@@ -1924,12 +1932,12 @@ Door.prototype.deserialize = function (data) {
             this.background = this.background.darken();
         }
 
-        if (this.background === colors.Black) {
-            this.background = colors.White;
+        if (this.background === Colors.Black) {
+            this.background = Colors.White;
         }
 
     } else {
-        this.background = colors.Blue;
+        this.background = Colors.Blue;
     }
 
 };
@@ -1983,7 +1991,7 @@ function Duplicator(board) {
     this.spriteIndex = 250;
     this.background = undefined;
     this.currentStep = 0;
-    this.foreground = colors.BrightWhite;
+    this.foreground = Colors.BrightWhite;
 }
 Duplicator.prototype = new UpdateableThing();
 Duplicator.prototype.constructor = Duplicator;
@@ -1999,7 +2007,7 @@ Duplicator.prototype.serialize = function () {
 Duplicator.prototype.deserialize = function (data) {
     UpdateableThing.prototype.deserialize.call(this, data);
     this.background = undefined;
-    this.foreground = colors.BrightWhite;
+    this.foreground = Colors.BrightWhite;
     this.copyDirection = Direction.fromName(data.copyDirection);
 };
 
@@ -2075,8 +2083,8 @@ Explosion.MAX_TTL = 5;
 
 Explosion.prototype.deserialize = function (data) {
     UpdateableThing.prototype.deserialize.call(this, data);
-    this.radius = getOption(data, 'radius', 4);
-    this.timeToLive = getOption(data, 'timeToLive', Explosion.MAX_TTL);
+    this.radius = data.radius || 4;
+    this.timeToLive = data.timeToLive || Explosion.MAX_TTL;
 };
 
 Explosion.prototype.serialize = function () {
@@ -2088,9 +2096,9 @@ Explosion.prototype.serialize = function () {
 
 Explosion.prototype.doTick = function () {
 
-    var points;
-    var index;
-    var tile;
+    var points,
+        index,
+        tile;
 
     // If we're at the start of our explosion, send a BOMBED message to all affected Things
     if (this.timeToLive === Explosion.MAX_TTL) {
@@ -2121,10 +2129,10 @@ Explosion.prototype.getTorch = function () {
 
 Explosion.prototype.render = function (context) {
 
-    var points;
-    var index;
-    var sprite = this.board.game.resources.graphics.getSprite(176 + Math.round((2 * this.timeToLive) / Explosion.MAX_TTL));
-    var radius;
+    var points,
+        index,
+        sprite = this.board.game.resources.graphics.getSprite(176 + Math.round((2 * this.timeToLive) / Explosion.MAX_TTL)),
+        radius;
 
     if (this.timeToLive === Explosion.MAX_TTL) {
         radius = Math.round(this.radius / 2);
@@ -2135,7 +2143,7 @@ Explosion.prototype.render = function (context) {
     points = utilities.pointsInCircle(this.point, radius);
 
     for (index = 0; index < points.length; index += 1) {
-        sprite.draw(context, points[index].subtract(this.board.windowOrigin), colors.Yellow, colors.Red);
+        sprite.draw(context, points[index].subtract(this.board.windowOrigin), Colors.Yellow, Colors.Red);
     }
 
 };
@@ -2151,8 +2159,8 @@ Explosion.prototype.render = function (context) {
 function FakeWall(board) {
     Thing.call(this, board);
     this.spriteIndex = 178;
-    this.foreground = colors.Yellow;
-    this.background = colors.Black;
+    this.foreground = Colors.Yellow;
+    this.background = Colors.Black;
 }
 FakeWall.prototype = new Thing();
 FakeWall.prototype.constructor = FakeWall;
@@ -2187,8 +2195,8 @@ FakeWall.prototype.getSpriteIndex = function () {
 function Forest(board) {
     Thing.call(this, board);
     this.spriteIndex = 176;
-    this.foreground = colors.Black;
-    this.background = colors.Green;
+    this.foreground = Colors.Black;
+    this.background = Colors.Green;
 }
 Forest.prototype = new Thing();
 Forest.noteCycle = ['e', '-b', 'f#', 'b', 'f', 'c', 'g', '+c'];
@@ -2211,8 +2219,8 @@ Forest.prototype.serialize = function () {
  */
 Forest.prototype.deserialize = function (data) {
     Thing.prototype.deserialize.call(this, data);
-    this.background = colors.Green;
-    this.foreground = colors.Black;
+    this.background = Colors.Green;
+    this.foreground = Colors.Black;
 };
 
 /**
@@ -2245,7 +2253,7 @@ function Gem(board) {
     Thing.call(this, board);
     this.spriteIndex = 4;
     this.background = undefined;
-    this.foreground = colors.BrightMagenta;
+    this.foreground = Colors.BrightMagenta;
     this.conveyable = true;
 }
 Gem.prototype = new Thing();
@@ -2280,9 +2288,7 @@ Gem.prototype.sendMessage = function (message) {
  */
 Gem.prototype.push = function (direction, pusher) {
 
-    var River = my.River;
-
-    if (pusher instanceof River) {
+    if (pusher.type === 'River') {
         this.move(direction, true);
     } else if (!this.move(direction)) {
         this.remove();
@@ -2295,7 +2301,7 @@ Gem.prototype.push = function (direction, pusher) {
 function Heart(board) {
     Thing.call(this, board);
     this.spriteIndex = 3;
-    this.foreground = colors.BrightRed;
+    this.foreground = Colors.BrightRed;
     this.background = undefined;
     this.conveyable = true;
 }
@@ -2310,7 +2316,7 @@ Heart.prototype.serialize = function () {
 
 Heart.prototype.deserialize = function (data) {
     Thing.prototype.deserialize.call(this, data);
-    this.foreground = colors.BrightRed;
+    this.foreground = Colors.BrightRed;
     this.background = undefined;
 };
 
@@ -2327,9 +2333,7 @@ Heart.prototype.sendMessage = function (message) {
 
 Heart.prototype.push = function (direction, pusher) {
 
-    var River = my.River;
-
-    if (pusher instanceof River) {
+    if (pusher.type === 'River') {
         this.move(direction, true);
     } else {
         this.move(direction);
@@ -2348,7 +2352,7 @@ Heart.prototype.push = function (direction, pusher) {
 function InvisibleWall(board) {
     Thing.call(this, board);
     this.spriteIndex = 0;
-    this.foreground = colors.BrightGreen;
+    this.foreground = Colors.BrightGreen;
 }
 InvisibleWall.prototype = new Thing();
 InvisibleWall.prototype.constructor = InvisibleWall;
@@ -2361,10 +2365,11 @@ InvisibleWall.prototype.constructor = InvisibleWall;
  */
 InvisibleWall.prototype.sendMessage = function (message) {
 
-    var Wall = my.Wall;
+    var Wall = exports.Wall,
+        replacement;
 
     if (message === 'TOUCH') {
-        var replacement = new Wall();
+        replacement = new Wall();
         replacement.foreground = this.foreground;
         replacement.background = this.background;
         this.oneTimeMessage('status.invisible');
@@ -2395,7 +2400,7 @@ function Key(board) {
     Thing.call(this, board);
     this.spriteIndex = 12;
     this.background = undefined;
-    this.foreground = colors.BrightBlue;
+    this.foreground = Colors.BrightBlue;
     this.conveyable = true;
 }
 Key.prototype = new Thing();
@@ -2408,8 +2413,8 @@ Key.prototype.deserialize = function (data) {
     this.foreground = this.foreground.lighten();
 
     // Grey and flashing keys don't exist either, so assume white
-    if (this.foreground instanceof colors.CyclingColor || this.foreground === colors.Grey) {
-        this.foreground = colors.BrightWhite;
+    if (this.foreground instanceof CyclingColor || this.foreground === Colors.Grey) {
+        this.foreground = Colors.BrightWhite;
     }
 
     this.background = undefined;
@@ -2457,12 +2462,9 @@ Key.prototype.sendMessage = function (message) {
  */
 Key.prototype.push = function (direction, pusher) {
 
-    var River = my.River;
-    var Player = my.Player;
-
-    if (pusher instanceof River) {
+    if (pusher.type === 'River') {
         this.move(direction, true);
-    } else if (!(pusher instanceof Player) && this.move(direction)) {
+    } else if (pusher.type !== 'Player' && this.move(direction)) {
         this.play('t--f', false, true);
     }
 };
@@ -2470,8 +2472,8 @@ Key.prototype.push = function (direction, pusher) {
 //--------------------------------------------------------------------------------
 function Lava(board) {
     Thing.call(this, board);
-    this.background = colors.BrightRed;
-    this.foreground = colors.BrightRed;
+    this.background = Colors.BrightRed;
+    this.foreground = Colors.BrightRed;
     this.cycleCount = 0;
     this.cycleRate = board.game.CYCLE_RATE * 5;
     this.spriteIndex = 176;
@@ -2487,17 +2489,16 @@ Lava.prototype.serialize = function () {
 
 Lava.prototype.deserialize = function (data) {
     Thing.prototype.deserialize.call(this, data);
-    this.background = colors.BrightRed;
-    this.foreground = colors.BrightRed;
+    this.background = Colors.BrightRed;
+    this.foreground = Colors.BrightRed;
 };
 
 Lava.prototype.updateWhileUnder = function () {
 
-    var Player = my.Player;
     var thing = this.board.getTile(this.point);
 
     // If a player stepped on the lava...
-    if (thing instanceof Player) {
+    if (thing.type === 'Player') {
 
         // Damage the player every five cycles
         this.cycleCount += 1;
@@ -2506,7 +2507,7 @@ Lava.prototype.updateWhileUnder = function () {
             thing.sendMessage('SHOT');
         }
 
-    } else if (thing instanceof Scriptable) {
+    } else if (thing.type === 'Scriptable') {
 
         // Scriptables get sent a LAVA message
         thing.sendMessage('LAVA');
@@ -2576,7 +2577,8 @@ LineWall.prototype.getSpriteIndex = function () {
     }
 
     function isLineAdjacent(source, direction) {
-        return source.board.getTile(source.point.add(direction)) instanceof LineWall;
+        var tile = source.board.getTile(source.point.add(direction));
+        return tile && tile.type === 'LineWall';
     }
 
     var surroundingPattern = '';
@@ -2600,7 +2602,7 @@ function Lion(board) {
     UpdateableThing.call(this, board);
     this.intelligence = 3;
     this.spriteIndex = 234;
-    this.foreground = colors.BrightRed;
+    this.foreground = Colors.BrightRed;
     this.background = undefined;
     this.speed = 2;
     this.conveyable = true;
@@ -2628,7 +2630,7 @@ Lion.prototype.serialize = function () {
 Lion.prototype.deserialize = function (data) {
     UpdateableThing.prototype.deserialize.call(this, data);
     this.background = undefined;
-    this.foreground = colors.BrightRed;
+    this.foreground = Colors.BrightRed;
     this.intelligence = data.intelligence;
 };
 
@@ -2659,9 +2661,7 @@ Lion.prototype.sendMessage = function (message) {
  */
 Lion.prototype.push = function (direction, pusher) {
 
-    var River = my.River;
-
-    if (pusher instanceof River) {
+    if (pusher.type === 'River') {
         this.move(direction, true);
     } else if (!this.move(direction)) {
         this.play('t+c---c++++c--c');
@@ -2691,19 +2691,17 @@ Lion.prototype.seekPlayer = function () {
  */
 Lion.prototype.doTick = function () {
 
-    var Player = my.Player;
-    var River = my.River;
-    var direction = this.seekPlayer() ? this.getPlayerDirection() : Direction.random();
+    var direction = this.seekPlayer() ? this.getPlayerDirection() : Direction.random(),
+        thing = this.board.getTile(this.point.add(direction));
 
-    var thing = this.board.getTile(this.point.add(direction));
-    if (thing && thing instanceof Player) {
+    if (thing && thing.type === 'Player') {
         thing.sendMessage('SHOT');
         this.remove();
         return;
     }
 
     // Don't move in the direction of a River
-    if (thing && thing instanceof River && thing.direction === Direction.opposite(direction)) {
+    if (thing && thing.type === 'River' && thing.direction === Direction.opposite(direction)) {
         return;
     }
 
@@ -2721,8 +2719,8 @@ Lion.prototype.doTick = function () {
 function Passage(board) {
     Thing.call(this, board);
     this.spriteIndex = 240;
-    this.foreground = colors.BrightWhite;
-    this.background = colors.Blue;
+    this.foreground = Colors.BrightWhite;
+    this.background = Colors.Blue;
     this.targetBoard = undefined;
     this.passageId = 0;
     this.glow = true;
@@ -2762,9 +2760,9 @@ Passage.prototype.serialize = function () {
  */
 Passage.prototype.deserialize = function (data) {
     Thing.prototype.deserialize.call(this, data);
-    this.foreground = colors.BrightWhite;
+    this.foreground = Colors.BrightWhite;
     if (!this.background) {
-        this.background = colors.Blue;
+        this.background = Colors.Blue;
     }
     this.targetBoard = data.targetBoard;
     this.passageId = data.passageId;
@@ -2785,8 +2783,8 @@ function Player(board) {
     this.name = 'Player';
     this.spriteIndex = 2;
     this.point = new Point(-1, -1);
-    this.foreground = colors.BrightWhite;
-    this.background = colors.Blue;
+    this.foreground = Colors.BrightWhite;
+    this.background = Colors.Blue;
     this.conveyable = true;
 
     if (board) {
@@ -2831,10 +2829,9 @@ Player.prototype.push = function (direction) {
 Player.prototype.move = function (direction) {
 
     // Remember our current location
-    var startingPoint = this.point.clone();
-
-    // Calculate our new location
-    var newLocation = this.point.add(direction);
+    var startingPoint = this.point.clone(),
+        newLocation = this.point.add(direction),
+        thing;
 
     // First, check if the direction is outside the board
     if (this.board.isOutside(newLocation)) {
@@ -2849,7 +2846,7 @@ Player.prototype.move = function (direction) {
     }
 
     // If we're not moving off board, inspect the thing we're moving to
-    var thing = this.board.getTile(newLocation);
+    thing = this.board.getTile(newLocation);
 
     // If there's a tile there, send it a touch message
     if (thing) {
@@ -2912,8 +2909,8 @@ Player.prototype.doTick = function () {
  */
 Player.prototype.update = function () {
 
-    var k = this.game.keyboard;
-    var key = k.getMostRecentPress([k.UP, k.RIGHT, k.DOWN, k.LEFT]);
+    var k = this.game.keyboard,
+        key = k.getMostRecentPress([k.UP, k.RIGHT, k.DOWN, k.LEFT]);
 
     if (k.isPressed(k.SHIFT) || k.isPressed(k.SPACE)) {
 
@@ -2997,8 +2994,8 @@ Player.prototype.useTorch = function () {
  */
 Player.prototype.getTorch = function () {
 
-    var torchLife = this.game.getCounterValue('TORCHLIFE');
-    var torchStrength = MAX_TORCH_STRENGTH;
+    var torchLife = this.game.getCounterValue('TORCHLIFE'),
+        torchStrength = MAX_TORCH_STRENGTH;
 
     // If we've got a torch...
     if (torchLife > 0) {
@@ -3107,7 +3104,7 @@ function Ricochet(board) {
     Thing.call(this, board);
     this.spriteIndex = 42;
     this.background = undefined;
-    this.foreground = colors.BrightGreen;
+    this.foreground = Colors.BrightGreen;
 }
 Ricochet.prototype = new Thing();
 Ricochet.prototype.constructor = Ricochet;
@@ -3127,7 +3124,7 @@ Ricochet.prototype.serialize = function () {
 Ricochet.prototype.deserialize = function (data) {
     Thing.prototype.deserialize.call(this, data);
     this.background = undefined;
-    this.foreground = colors.BrightGreen;
+    this.foreground = Colors.BrightGreen;
 };
 
 //--------------------------------------------------------------------------------
@@ -3135,8 +3132,8 @@ Ricochet.prototype.deserialize = function (data) {
 function River(board) {
     Thing.call(this, board);
     this.direction = Direction.North;
-    this.background = colors.Blue;
-    this.foreground = colors.BrightBlue;
+    this.background = Colors.Blue;
+    this.foreground = Colors.BrightBlue;
     this.speed = 1;
     this.initialize();
 }
@@ -3188,8 +3185,8 @@ River.prototype.serialize = function () {
 
 River.prototype.deserialize = function (data) {
     UpdateableThing.prototype.deserialize.call(this, data);
-    this.background = colors.Blue;
-    this.foreground = colors.BrightBlue;
+    this.background = Colors.Blue;
+    this.foreground = Colors.BrightBlue;
     this.direction = Direction.fromName(data.direction);
     this.initialize();
 };
@@ -3207,7 +3204,7 @@ function Ruffian(board) {
     UpdateableThing.call(this, board);
     this.spriteIndex = 5;
     this.background = undefined;
-    this.foreground = colors.BrightMagenta;
+    this.foreground = Colors.BrightMagenta;
     this.intelligence = 5;
     this.restingTime = 5;
     this.moving = false;
@@ -3240,7 +3237,7 @@ Ruffian.prototype.serialize = function () {
 Ruffian.prototype.deserialize = function (data) {
     UpdateableThing.prototype.deserialize.call(this, data);
     this.background = undefined;
-    this.foreground = colors.BrightMagenta;
+    this.foreground = Colors.BrightMagenta;
     this.intelligence = data.intelligence || 5;
     this.restingTime = data.restingTime || 5;
 };
@@ -3253,7 +3250,7 @@ Ruffian.prototype.deserialize = function (data) {
  */
 Ruffian.prototype.push = function (direction, pusher) {
 
-    if (pusher instanceof River) {
+    if (pusher && pusher.type === 'River') {
         this.move(direction, true);
     } else if (!this.move(direction)) {
         this.remove();
@@ -3321,14 +3318,14 @@ Ruffian.prototype.doTick = function () {
         var thing = this.board.getTile(this.point.add(this.orientation));
 
         // If it's the player, attack it
-        if (thing && thing instanceof Player) {
+        if (thing && thing.type === 'Player') {
             thing.sendMessage('SHOT');
             this.remove();
             return;
         }
 
         // Don't move in the direction of a River
-        if (thing && thing instanceof River && thing.direction === Direction.opposite(this.orientation)) {
+        if (thing && thing.type === 'River' && thing.direction === Direction.opposite(this.orientation)) {
             return;
         }
 
@@ -3350,7 +3347,7 @@ function Signpost(board) {
     Thing.call(this, board);
     this.spriteIndex = 209;
     this.background = undefined;
-    this.foreground = colors.Brown;
+    this.foreground = Colors.Brown;
     this.text = undefined;
 }
 Signpost.prototype = new Thing();
@@ -3366,15 +3363,15 @@ Signpost.prototype.serialize = function () {
 Signpost.prototype.deserialize = function (data) {
     Thing.prototype.deserialize.call(this, data);
     this.background = undefined;
-    this.foreground = colors.Brown;
+    this.foreground = Colors.Brown;
     this.text = data.text;
 };
 
 Signpost.prototype.sendMessage = function (message) {
 
-    var lines;
-    var index;
-    var text;
+    var lines,
+        index,
+        text;
 
     if (message === 'TOUCH') {
 
@@ -3409,7 +3406,7 @@ function SliderEw(board) {
     Thing.call(this, board);
     this.spriteIndex = 29;
     this.background = undefined;
-    this.foreground = colors.BrightWhite;
+    this.foreground = Colors.BrightWhite;
 }
 SliderEw.prototype = new Thing();
 SliderEw.prototype.constructor = SliderEw;
@@ -3438,7 +3435,7 @@ function SliderNs(board) {
     Thing.call(this, board);
     this.spriteIndex = 18;
     this.background = undefined;
-    this.foreground = colors.BrightWhite;
+    this.foreground = Colors.BrightWhite;
 }
 SliderNs.prototype = new Thing();
 SliderNs.prototype.constructor = SliderNs;
@@ -3466,7 +3463,7 @@ function Snake(board) {
     UpdateableThing.call(this, board);
     this.spriteIndex = 235;
     this.background = undefined;
-    this.foreground = colors.Green;
+    this.foreground = Colors.Green;
     this.conveyable = true;
     this.speed = 3;
 }
@@ -3513,15 +3510,15 @@ Snake.prototype.sendMessage = function (message) {
  */
 Snake.prototype.doTick = function () {
 
-    var direction = this.getSmartDirection();
-    var thing;
+    var direction = this.getSmartDirection(),
+        thing;
 
     if (direction) {
 
-        this.foreground = colors.BrightGreen;
+        this.foreground = Colors.BrightGreen;
 
         thing = this.board.getTile(this.point.add(direction));
-        if (thing && thing instanceof Player) {
+        if (thing && thing.type === 'Player') {
             thing.sendMessage('SHOT');
             this.remove();
             return;
@@ -3529,7 +3526,7 @@ Snake.prototype.doTick = function () {
         this.move(direction, true);
 
     } else {
-        this.foreground = colors.Green;
+        this.foreground = Colors.Green;
     }
 
 
@@ -3559,7 +3556,7 @@ SolidWall.prototype.constructor = SolidWall;
 function Spider(board) {
     UpdateableThing.call(this, board);
     this.spriteIndex = 15;
-    this.foreground = colors.BrightRed;
+    this.foreground = Colors.BrightRed;
     this.background = undefined;
     this.intelligence = 5;
     this.speed = 1;
@@ -3610,9 +3607,8 @@ Spider.prototype.seekPlayer = function () {
  * return true if a provided direction is attackable, false otherwise
  */
 Spider.prototype.isAttackable = function (direction) {
-    var SpiderWeb = my.SpiderWeb;
     var thing = this.board.getTile(this.point.add(direction));
-    return thing && (thing instanceof SpiderWeb || thing instanceof Player);
+    return thing && (thing.type === 'SpiderWeb' || thing.type === 'Player');
 };
 
 /**
@@ -3652,26 +3648,25 @@ Spider.prototype.push = function (direction) {
  */
 Spider.prototype.doTick = function () {
 
-    var SpiderWeb = my.SpiderWeb;
-
     // Get a direction based on our intelligence
-    var direction = this.seekPlayer() ? this.getPlayerDirection() : Direction.random(this.getAttackableDirections());
+    var direction = this.seekPlayer() ? this.getPlayerDirection() : Direction.random(this.getAttackableDirections()),
+        thing;
 
     // If a direction was decided upon...
     if (direction !== undefined) {
 
         // Determine any obstacle in our way
-        var thing = this.board.getTile(this.point.add(direction));
+        thing = this.board.getTile(this.point.add(direction));
 
         // If it's a player, attack it
-        if (thing && thing instanceof Player) {
+        if (thing && thing.type === 'Player') {
             thing.sendMessage('SHOT');
             this.remove();
             return;
         }
 
         // Move along spider webs
-        if (thing && thing instanceof SpiderWeb) {
+        if (thing && thing.type === 'SpiderWeb') {
             this.move(direction, true);
         }
 
@@ -3688,7 +3683,7 @@ Spider.prototype.doTick = function () {
 function SpiderWeb(board) {
     Thing.call(this, board);
     this.spriteIndex = undefined;
-    this.foreground = colors.Grey;
+    this.foreground = Colors.Grey;
     this.background = undefined;
 }
 SpiderWeb.prototype = new Thing();
@@ -3725,7 +3720,7 @@ SpiderWeb.prototype.getSpriteIndex = function () {
 
     function isLineAdjacent(source, direction) {
         var tile = source.board.getTile(source.point.add(direction));
-        return (tile && (tile instanceof SpiderWeb || (tile.under && (tile.under instanceof SpiderWeb))));
+        return (tile && (tile.type === 'SpiderWeb' || (tile.under && tile.under.type === 'SpiderWeb')));
     }
 
     var surroundingPattern = '';
@@ -3902,10 +3897,11 @@ Teleporter.prototype.push = function (direction) {
         return;
     }
 
-    var currentPoint = this.point.add(Direction.opposite(this.orientation));
-    var destinationPoint = this.point.add(this.orientation);
-    var thing;
-    var success = this.board.getTile(destinationPoint) instanceof Teleporter ? false : this.board.moveTile(currentPoint, destinationPoint);
+    var currentPoint = this.point.add(Direction.opposite(this.orientation)),
+        destinationPoint = this.point.add(this.orientation),
+        thing,
+        tile = this.board.getTile(destinationPoint),
+        success = tile && tile.type === 'Teleporter' ? false : this.board.moveTile(currentPoint, destinationPoint);
 
     // If we couldn't move the tile to the other side of this teleporter...
     if (!success) {
@@ -3915,7 +3911,7 @@ Teleporter.prototype.push = function (direction) {
 
             // If we found a matching teleporter...
             thing = this.board.getTile(destinationPoint);
-            if (thing && thing instanceof Teleporter && thing.orientation === Direction.opposite(this.orientation)) {
+            if (thing && thing.type === 'Teleporter' && thing.orientation === Direction.opposite(this.orientation)) {
 
                 // Move the tile to the matching teleporter's destination
                 if (this.board.moveTile(currentPoint, destinationPoint.add(this.orientation))) {
@@ -3950,8 +3946,8 @@ function Text(board) {
     this.i18n = {
         en: 0
     };
-    this.foreground = colors.BrightWhite;
-    this.background = colors.Blue;
+    this.foreground = Colors.BrightWhite;
+    this.background = Colors.Blue;
 }
 Text.prototype = new Thing();
 Text.prototype.constructor = Text;
@@ -3976,7 +3972,7 @@ Text.prototype.deserialize = function (data) {
 
     Thing.prototype.deserialize.call(this, data);
     this.i18n = data.i18n;
-    this.foreground = colors.BrightWhite;
+    this.foreground = Colors.BrightWhite;
 
 };
 
@@ -4009,7 +4005,7 @@ function ThrowingStar(board) {
     this.speed = 1;
     this.spriteIndex = 179;
     this.animationIndex = Math.floor(Math.random() * ThrowingStar.animationFrames.length - 1);
-    this.foreground = colors.Cycle;
+    this.foreground = Colors.Cycle;
     this.timeToLive = 255;
     this.nextMove = Math.floor(Math.random() * 2);
 }
@@ -4036,7 +4032,7 @@ ThrowingStar.prototype.serialize = function () {
  */
 ThrowingStar.prototype.deserialize = function (data) {
     UpdateableThing.prototype.deserialize.call(this, data);
-    this.foreground = colors.Cycle;
+    this.foreground = Colors.Cycle;
     this.background = undefined;
     this.timeToLive = data.timeToLive || 100;
 };
@@ -4058,6 +4054,9 @@ ThrowingStar.prototype.sendMessage = function (message) {
  */
 ThrowingStar.prototype.doTick = function () {
 
+    var direction,
+        thing;
+
     this.timeToLive -= 1;
     if (this.timeToLive <= 0) {
         this.remove();
@@ -4075,9 +4074,9 @@ ThrowingStar.prototype.doTick = function () {
 
         this.nextMove = 2;
 
-        var direction = this.getPlayerDirection();
-        var thing = this.board.getTile(this.point.add(direction));
-        if (thing instanceof BreakableWall || thing instanceof Player) {
+        direction = this.getPlayerDirection();
+        thing = this.board.getTile(this.point.add(direction));
+        if (thing && (thing.type === BreakableWall || thing.type === 'Player')) {
             thing.sendMessage('SHOT');
             this.remove();
             return;
@@ -4098,7 +4097,7 @@ ThrowingStar.prototype.doTick = function () {
 function Tiger(board) {
     UpdateableThing.call(this, board);
     this.spriteIndex = 227;
-    this.foreground = colors.BrightCyan;
+    this.foreground = Colors.BrightCyan;
     this.background = undefined;
     this.intelligence = 5;
     this.firingRate = 5;
@@ -4129,7 +4128,7 @@ Tiger.prototype.serialize = function () {
 Tiger.prototype.deserialize = function (data) {
     UpdateableThing.prototype.deserialize(this, data);
     this.background = undefined;
-    this.foreground = colors.BrightCyan;
+    this.foreground = Colors.BrightCyan;
     this.intelligence = data.intelligence === undefined ? 5 : data.intelligence;
     this.firingRate = data.firingRate === undefined ? 5 : data.firingRate;
 };
@@ -4161,7 +4160,7 @@ Tiger.prototype.sendMessage = function (message) {
  */
 Tiger.prototype.push = function (direction, pusher) {
 
-    if (pusher instanceof River) {
+    if (pusher && pusher.type === 'River') {
         this.move(direction, true);
     } else if (!this.move(direction)) {
         this.play('t+c---c++++c--c');
@@ -4201,22 +4200,23 @@ Tiger.prototype.shootPlayer = function () {
  */
 Tiger.prototype.doTick = function () {
 
-    var direction = this.seekPlayer() ? this.getPlayerDirection() : Direction.random();
+    var direction = this.seekPlayer() ? this.getPlayerDirection() : Direction.random(),
+        thing = this.board.getTile(this.point.add(direction)),
+        playerDirection;
 
-    var thing = this.board.getTile(this.point.add(direction));
-    if (thing && thing instanceof Player) {
+    if (thing && thing.type === 'Player') {
         thing.sendMessage('SHOT');
         this.remove();
         return;
     }
 
     // Don't attempt to move in the direction of a river
-    if (!(thing && thing instanceof River && thing.direction === Direction.opposite(direction))) {
+    if (!(thing && thing.type === 'River' && thing.direction === Direction.opposite(direction))) {
         this.move(direction, true);
     }
 
     if (this.shootPlayer()) {
-        var playerDirection = this.getPlayerDirection();
+        playerDirection = this.getPlayerDirection();
         ThingFactory.shoot(this.board, this.point.add(playerDirection), playerDirection);
     }
 
@@ -4244,7 +4244,7 @@ Torch.prototype.serialize = function () {
 Torch.prototype.deserialize = function (data) {
     Thing.prototype.deserialize.call(this, data);
     this.background = undefined;
-    this.foreground = colors.Brown;
+    this.foreground = Colors.Brown;
 };
 
 /**
@@ -4293,8 +4293,8 @@ Wall.prototype.constructor = Wall;
 function Water(board) {
     Thing.call(this, board);
     this.spriteIndex = 176;
-    this.background = colors.BrightWhite;
-    this.foreground = colors.BrightBlue;
+    this.background = Colors.BrightWhite;
+    this.foreground = Colors.BrightBlue;
 }
 Water.prototype = new Thing();
 Water.prototype.constructor = Water;
@@ -4307,8 +4307,8 @@ Water.prototype.serialize = function () {
 
 Water.prototype.deserialize = function (data) {
     Thing.prototype.deserialize.call(this, data);
-    this.background = colors.BrightWhite;
-    this.foreground = colors.BrightBlue;
+    this.background = Colors.BrightWhite;
+    this.foreground = Colors.BrightBlue;
 };
 
 /**
@@ -4317,7 +4317,7 @@ Water.prototype.deserialize = function (data) {
  * but false otherwise.
  */
 Water.prototype.isSurrenderable = function (sender) {
-    if (sender instanceof Bullet || sender instanceof ThrowingStar) {
+    if (sender && (sender.type === 'Bullet' || sender.type === 'ThrowingStar')) {
         return true;
     }
 };
@@ -4348,13 +4348,17 @@ Water.prototype.sendMessage = function (message) {
  */
 ThingFactory.deserialize = function (data, board) {
 
+    var thingMap,
+        ThingFunction,
+        result;
+
     if (data && data.type) {
 
-        var thingMap = ThingFactory.getThingMap();
+        thingMap = ThingFactory.getThingMap();
+        ThingFunction = thingMap[data.type.toUpperCase()];
 
-        var ThingFunction = thingMap[data.type.toUpperCase()];
         if (ThingFunction) {
-            var result = new ThingFunction(board);
+            result = new ThingFunction(board);
             result.deserialize(data);
             return result;
         }
@@ -4393,13 +4397,13 @@ ThingFactory.getThingMap = function () {
         ThingFactory.thingMap = {};
 
         // For each thing defined in this module...
-        for (thing in my) {
+        for (thing in exports.things) {
 
             // If it's a Thing with a defined type...
-            if (my.hasOwnProperty(thing) && my[thing].type) {
+            if (exports.things.hasOwnProperty(thing) && exports.things[thing].type) {
 
                 // Add it to our thing map by its uppercase name
-                ThingFactory.thingMap[thing.toUpperCase()] = my[thing];
+                ThingFactory.thingMap[thing.toUpperCase()] = exports.things[thing];
 
             }
         }
@@ -4418,10 +4422,8 @@ ThingFactory.getThingMap = function () {
 ThingFactory.shoot = function (board, point, direction, fromPlayer, throwingStar) {
 
     // First, get our destination tile
-    var tile = board.getTile(point);
-
-    // Create a bullet
-    var bullet = throwingStar ? new ThrowingStar(board) : new Bullet(board);
+    var tile = board.getTile(point),
+        bullet = throwingStar ? new ThrowingStar(board) : new Bullet(board);
 
     bullet.direction = direction;
     if (fromPlayer) {
@@ -4437,13 +4439,13 @@ ThingFactory.shoot = function (board, point, direction, fromPlayer, throwingStar
             board.game.resources.audio.play('t+c-c-c');
         }
 
-    } else if (fromPlayer && tile instanceof Ricochet) {
+    } else if (fromPlayer && tile && tile.type === 'Ricochet') {
 
         // The bullet is from the player and the tile is a Ricochet,
         // so shoot the messenger
         board.player.sendMessage('SHOT');
 
-    } else if (fromPlayer || tile instanceof Player || tile instanceof Scriptable || tile instanceof BreakableWall) {
+    } else if (fromPlayer || (tile && (tile.type === 'Player' || tile.type === 'Scriptable' || tile.type === 'BreakableWall'))) {
 
         // The bullet is from the player, or the tile is a Player or Scriptable
         if (fromPlayer) {
@@ -4455,8 +4457,8 @@ ThingFactory.shoot = function (board, point, direction, fromPlayer, throwingStar
 
 };
 
-my.Thing = Thing;
-my.UpdateableThing = UpdateableThing;
+exports.Thing = Thing;
+exports.UpdateableThing = UpdateableThing;
 
 defineThing('Scriptable', Scriptable);
 defineThing('ActiveBomb', ActiveBomb);

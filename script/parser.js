@@ -8,7 +8,7 @@
 
 'use strict';
 
-var ConstructorError = require('basic').ConstructorError;
+var ConstructorError = require('./basic').ConstructorError;
 
 /*
  * Assembly

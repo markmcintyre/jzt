@@ -8,14 +8,15 @@
 
 'use strict';
 
-var ConstructorError = require('basic').ConstructorError,
-    Point = require('basic').Point,
-    colors = require('graphics').colors,
-    utilities = require('basic').utilities,
-    JztScript = require('jzt-script').JztScript,
-    things = require('things').things,
-    Direction = require('basic').Direction,
-    i18n = require('i18n');
+var ConstructorError = require('./basic').ConstructorError,
+    Point = require('./basic').Point,
+    Colors = require('./graphics').Colors,
+    utilities = require('./basic').utilities,
+    JztScript = require('./jzt-script').JztScript,
+    things = require('./things').things,
+    ThingFactory = require('./things').ThingFactory,
+    Direction = require('./basic').Direction,
+    i18n = require('./i18n');
 
 /**
  * Board represents a single game board.
@@ -66,7 +67,7 @@ function Board(boardData, game) {
 
     this.DISPLAY_MESSAGE_TTL = game.FPS * 3; // 3 seconds
     this.DARK_SPRITE = game.resources.graphics.getSprite(176);
-    this.DARK_SPRITE_COLOR = colors.Grey;
+    this.DARK_SPRITE_COLOR = Colors.Grey;
 
     this.height = boardData.height;
     this.width = boardData.width;
@@ -357,7 +358,7 @@ Board.prototype.initializeTiles = function (tileDataCollection) {
         if (tileDataCollection.hasOwnProperty(index)) {
 
             tile = tileDataCollection[index];
-            thing = things.ThingFactory.deserialize(tile, this);
+            thing = ThingFactory.deserialize(tile, this);
 
             if (thing !== undefined) {
                 this.setTile(new Point(x, y), thing);
@@ -573,7 +574,7 @@ Board.prototype.changeTiles = function (fromTemplate, toTemplate) {
 
         if (tile && tile.equals(fromTemplate)) {
 
-            newThing = things.ThingFactory.deserialize(toTemplate, me);
+            newThing = ThingFactory.deserialize(toTemplate, me);
 
             if (newThing && toTemplate.color === undefined) {
                 newThing.foreground = tile.foreground;
@@ -893,7 +894,7 @@ Board.prototype.getPassage = function (passageId) {
     for (row = 0; row < this.height; row += 1) {
         for (column = 0; column < this.width; column += 1) {
             tile = this.getTile(new Point(column, row));
-            if (tile.type === 'Passage' && tile.passageId === passageId) {
+            if (tile && tile.type === 'Passage' && tile.passageId === passageId) {
                 return tile;
             }
         }
@@ -1093,12 +1094,12 @@ Board.prototype.render = function (c) {
 
     // Draw our border, if applicable
     if (this.windowOrigin.x < 0 || this.windowOrigin.y < 0) {
-        c.fillStyle = colors.Grey.rgbValue;
+        c.fillStyle = Colors.Grey.rgbValue;
         c.fillRect(0, 0, canvasWidth, canvasHeight);
     }
 
     // Draw our board background
-    c.fillStyle = !me.game.isEditor && me.dark ? this.game.DARK_PATTERN : colors.Black.rgbValue;
+    c.fillStyle = !me.game.isEditor && me.dark ? this.game.DARK_PATTERN : Colors.Black.rgbValue;
     startX = Math.max(-this.windowOrigin.x * this.game.resources.graphics.TILE_SIZE.x, 0);
     startY = Math.max(-this.windowOrigin.y * this.game.resources.graphics.TILE_SIZE.y, 0);
     endX = Math.min(this.width * this.game.resources.graphics.TILE_SIZE.x, this.windowSize.x * this.game.resources.graphics.TILE_SIZE.x);
@@ -1133,7 +1134,7 @@ Board.prototype.render = function (c) {
 
                 // The room is dark, so our background should be
                 // black instead of transparent
-                background = colors.Black;
+                background = Colors.Black;
 
             }
 
@@ -1144,7 +1145,7 @@ Board.prototype.render = function (c) {
 
             // There's nothing to render, but we're within the torch
             // radius, so draw an empty space over the 'darkness'
-            me.game.resources.graphics.fillTile(c, point.subtract(me.windowOrigin), colors.Black);
+            me.game.resources.graphics.fillTile(c, point.subtract(me.windowOrigin), Colors.Black);
 
         }
 
@@ -1213,7 +1214,7 @@ Board.prototype.updateSmartPath = function (targetPoint) {
 
             // Get our tile and existing path value
             tile = me.tiles[index];
-            validTile = (tile === undefined || tile.type === 'Bullet');
+            validTile = (tile === undefined || (tile && tile.type === 'Bullet'));
             pathValue = me.smartPath[index];
 
             // If there is neither a tile, nor an existing value then we're good to go
@@ -1245,7 +1246,7 @@ Board.prototype.updateSmartPath = function (targetPoint) {
 Board.prototype.updatePathWeights = function () {
 
     this.each(function (tile) {
-        if (tile.influenceSmartPath) {
+        if (tile && tile.influenceSmartPath) {
             tile.influenceSmartPath();
         }
     });
@@ -1379,7 +1380,7 @@ Board.prototype.renderMessage = function (c) {
     messagePoint.x = Math.floor((this.windowSize.x - this.displayMessage.length) / 2);
     messagePoint.y = this.windowSize.y - 1;
 
-    this.game.resources.graphics.drawString(c, messagePoint, this.displayMessage, colors.Cycle, colors.Black);
+    this.game.resources.graphics.drawString(c, messagePoint, this.displayMessage, Colors.Cycle, Colors.Black);
 
     this.displayMessageTick -= 1;
 
