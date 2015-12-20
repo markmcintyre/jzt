@@ -213,8 +213,7 @@ Thing.prototype.isPlayerVisible = function (distance) {
     var line = utilities.generateLineData(this.point, this.board.player.point),
         me = this,
         currentPoint = this.point,
-        result = true,
-        Player = exports.Player;
+        result = true;
 
     function isBlocked(point) {
         var tile = me.board.getTile(point);
@@ -733,7 +732,7 @@ ActiveBomb.prototype.doTick = function () {
 
     this.timeToLive -= 1;
     if (this.timeToLive < 0) {
-        explosion = new exports.Explosion(this.board);
+        explosion = new exports.things.Explosion(this.board);
         explosion.radius = this.radius;
         this.board.replaceTile(this.point, explosion);
     }
@@ -1024,7 +1023,7 @@ Blinker.prototype.blink = function () {
 };
 
 Blinker.prototype.createBlinkWall = function () {
-    var blinkWall = new exports.BlinkWall(this.board);
+    var blinkWall = new exports.things.BlinkWall(this.board);
     blinkWall.horizontal = (this.direction === Direction.North || this.direction === Direction.South) ? false : true;
     blinkWall.foreground = this.foreground;
     return blinkWall;
@@ -2365,7 +2364,7 @@ InvisibleWall.prototype.constructor = InvisibleWall;
  */
 InvisibleWall.prototype.sendMessage = function (message) {
 
-    var Wall = exports.Wall,
+    var Wall = exports.things.Wall,
         replacement;
 
     if (message === 'TOUCH') {
@@ -4076,7 +4075,7 @@ ThrowingStar.prototype.doTick = function () {
 
         direction = this.getPlayerDirection();
         thing = this.board.getTile(this.point.add(direction));
-        if (thing && (thing.type === BreakableWall || thing.type === 'Player')) {
+        if (thing && (thing.type === 'BreakableWall' || thing.type === 'Player')) {
             thing.sendMessage('SHOT');
             this.remove();
             return;

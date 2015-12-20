@@ -27,7 +27,8 @@ var formatVersion = '1.0.0',
     things = require('./things').things,
     Colors = require('./graphics').Colors,
     Popup = require('./popup').Popup,
-    GameState = require('./game-state').GameState;
+    GameState = require('./game-state').GameState,
+    deserializeForeground = require('./graphics').deserializeForeground;
 
 /**
  * Game represents a playable JZT game, including all Boards and a player.
@@ -1304,7 +1305,7 @@ Game.prototype.drawPauseScreen = function () {
     sprite = this.resources.graphics.getSprite(12);
     for (value = 0; value < keyValues.length; value += 1) {
         if (this.getCounterValue('KEY' + keyValues[value]) > 0) {
-            sprite.draw(this.context, position, Colors.deserializeForeground(keyValues[value]));
+            sprite.draw(this.context, position, deserializeForeground(keyValues[value]));
             position.x += 1;
         }
     }

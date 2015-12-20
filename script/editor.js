@@ -20,7 +20,10 @@ var darkColors = ['0', '1', '2', '3', '4', '5', '6', '7'],
     things = require('./things').things,
     Direction = require('./basic').Direction,
     Board = require('./board').Board,
-    serializeColor = require('./graphics').serialize;
+    serializeColor = require('./graphics').serialize,
+    deserializeBackground = require('./graphics').deserializeBackground,
+    deserializeForeground = require('./graphics').deserializeForeground,
+    getColor = require('./graphics').getColor;
 
 /**
  * Editor represents a JZT game editor, capable of creating and testing JZT game worlds,
@@ -393,8 +396,8 @@ Editor.prototype.plot = function () {
                          */
                         if (thing && thing.type === 'Text') {
                             thing.i18n[i18n.getLanguage()] = c;
-                            thing.foreground = Colors.deserializeForeground(this.activeTemplate.color);
-                            thing.background = Colors.deserializeBackground(this.activeTemplate.color);
+                            thing.foreground = deserializeForeground(this.activeTemplate.color);
+                            thing.background = deserializeBackground(this.activeTemplate.color);
                         } else {
                             thing = {type: 'Text', i18n: {}, color: this.activeTemplate.color};
                             thing.i18n[i18n.getLanguage()] = c;
@@ -910,7 +913,7 @@ Editor.prototype.createField = function (fieldName, field, template) {
         // Our field type is a color...
         element = document.createElement('select');
         for (index = 0; index < field.options.length; index += 1) {
-            element.options[element.options.length] = new Option(getFriendlyName(Colors.getColor(field.options[index]).name), field.options[index]);
+            element.options[element.options.length] = new Option(getFriendlyName(getColor(field.options[index]).name), field.options[index]);
         }
         nonStandard = true;
         element.addEventListener('change', function () {
@@ -919,13 +922,13 @@ Editor.prototype.createField = function (fieldName, field, template) {
                 foreground;
 
             oldValue = oldValue || field.defaultValue ? field.defaultValue : '**';
-            background = Colors.deserializeBackground(oldValue);
-            foreground = Colors.deserializeForeground(oldValue);
+            background = deserializeBackground(oldValue);
+            foreground = deserializeForeground(oldValue);
 
             if (field.foreground) {
-                template[fieldName] = serializeColor(background, Colors.getColor(element.value));
+                template[fieldName] = serializeColor(background, getColor(element.value));
             } else {
-                template[fieldName] = serializeColor(Colors.getColor(element.value), foreground);
+                template[fieldName] = serializeColor(getColor(element.value), foreground);
             }
 
             me.changeTemplateCallback(me.activeTemplate);
@@ -933,18 +936,18 @@ Editor.prototype.createField = function (fieldName, field, template) {
         }, false);
         if (template.hasOwnProperty(fieldName)) {
             if (field.foreground) {
-                color = Colors.deserializeForeground(template[fieldName]);
+                color = deserializeForeground(template[fieldName]);
                 element.value = color ? color.code : Colors.Yellow;
             } else {
-                color = Colors.deserializeBackground(template[fieldName]);
+                color = deserializeBackground(template[fieldName]);
                 element.value = color ? color.code : Colors.Blue;
             }
         } else if (field.defaultValue) {
             if (field.foreground) {
-                color = Colors.deserializeForeground(field.defaultValue);
+                color = deserializeForeground(field.defaultValue);
                 element.value = color ? color.code : Colors.Yellow;
             } else {
-                color = Colors.deserializeBackground(field.defaultValue);
+                color = deserializeBackground(field.defaultValue);
                 element.value = color ? color.code : Colors.Blue;
             }
         }
@@ -1013,7 +1016,7 @@ Editor.prototype.setTemplateForeground = function (foreground) {
         return;
     }
     if (this.activeTemplate.color) {
-        background = Colors.deserializeBackground(this.activeTemplate.color);
+        background = deserializeBackground(this.activeTemplate.color);
         this.activeTemplate.color = serializeColor(background, foreground);
     } else {
         this.activeTemplate.color = serializeColor(Colors.Black, foreground);
@@ -1027,7 +1030,7 @@ Editor.prototype.setTemplateBackground = function (background) {
         return;
     }
     if (this.activeTemplate.color) {
-        foreground = Colors.deserializeForeground(this.activeTemplate.color);
+        foreground = deserializeForeground(this.activeTemplate.color);
         this.activeTemplate.color = serializeColor(background, foreground);
     } else {
         this.activeTemplate.color = serializeColor(background, Colors.Yellow);

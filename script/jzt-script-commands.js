@@ -9,7 +9,7 @@
 'use strict';
 
 var ThingFactory = require('./things').ThingFactory,
-    Direction = require('./basic').Direction,
+    BasicDirection = require('./basic').Direction,
     ConstructorError = require('./basic').ConstructorError,
     GameState = require('./game-state').GameState,
     getBoardMessage = require('./i18n').getBoardMessage;
@@ -35,10 +35,10 @@ var CommandResult = Object.freeze({
  * The process function takes a direction and returns a final, calculated direction value.
  */
 var DirectionModifier = Object.freeze({
-    CW:   {name: 'Clockwise',              type: 'modifier', process: function (d) { return Direction.clockwise(d); }},
-    CCW:  {name: 'Counter-clockwise',      type: 'modifier', process: function (d) { return Direction.counterClockwise(d); }},
-    OPP:  {name: 'Opposite',               type: 'modifier', process: function (d) { return Direction.opposite(d); }},
-    RNDP: {name: 'Perpendicularly Random', type: 'modifier', process: function (d) { return Direction.randomPerpendicular(d); }}
+    CW:   {name: 'Clockwise',              type: 'modifier', process: function (d) { return BasicDirection.clockwise(d); }},
+    CCW:  {name: 'Counter-clockwise',      type: 'modifier', process: function (d) { return BasicDirection.counterClockwise(d); }},
+    OPP:  {name: 'Opposite',               type: 'modifier', process: function (d) { return BasicDirection.opposite(d); }},
+    RNDP: {name: 'Perpendicularly Random', type: 'modifier', process: function (d) { return BasicDirection.randomPerpendicular(d); }}
 });
 
 
@@ -52,20 +52,20 @@ var Direction = Object.freeze({
     SEEK:  {name: 'Toward player',            type: 'terminal', process: function (o) { return o.getPlayerDirection(); }},
     SMART: {name: 'Smart seek',               type: 'terminal', process: function (o) { return o.getSmartDirection() || o.getPlayerDirection(); }},
     FLOW:  {name: 'Current orientation',      type: 'terminal', process: function (o) { return o.orientation; }},
-    RAND:  {name: 'Random direction',         type: 'terminal', process: function () { return Direction.random(); }},
-    RANDF: {name: 'Random free direction',    type: 'terminal', process: function (o) { return Direction.random(o.getFreeDirections()); }},
-    RANDB: {name: 'Random blocked direction', type: 'terminal', process: function (o) { return Direction.random(o.getBlockedDirections()); }},
-    RNDEW: {name: 'Randomly East or West',    type: 'terminal', process: function () { return Direction.randomEastWest(); }},
-    RNDNS: {name: 'Randomly North or South',  type: 'terminal', process: function () { return Direction.randomNorthSouth(); }},
-    RNDNE: {name: 'Randomly North or East',   type: 'terminal', process: function () { return Direction.randomNorthEast(); }},
-    NORTH: {name: 'North',                    type: 'terminal', process: function () { return Direction.North; }},
-    EAST:  {name: 'East',                     type: 'terminal', process: function () { return Direction.East; }},
-    SOUTH: {name: 'South',                    type: 'terminal', process: function () { return Direction.South; }},
-    WEST:  {name: 'West',                     type: 'terminal', process: function () { return Direction.West; }},
-    N:     {name: 'North shorthand',          type: 'terminal', process: function () { return Direction.North; }},
-    E:     {name: 'East shorthand',           type: 'terminal', process: function () { return Direction.East; }},
-    S:     {name: 'South shorthand',          type: 'terminal', process: function () { return Direction.South; }},
-    W:     {name: 'West shorthand',           type: 'terminal', process: function () { return Direction.West; }}
+    RAND:  {name: 'Random direction',         type: 'terminal', process: function () { return BasicDirection.random(); }},
+    RANDF: {name: 'Random free direction',    type: 'terminal', process: function (o) { return BasicDirection.random(o.getFreeDirections()); }},
+    RANDB: {name: 'Random blocked direction', type: 'terminal', process: function (o) { return BasicDirection.random(o.getBlockedDirections()); }},
+    RNDEW: {name: 'Randomly East or West',    type: 'terminal', process: function () { return BasicDirection.randomEastWest(); }},
+    RNDNS: {name: 'Randomly North or South',  type: 'terminal', process: function () { return BasicDirection.randomNorthSouth(); }},
+    RNDNE: {name: 'Randomly North or East',   type: 'terminal', process: function () { return BasicDirection.randomNorthEast(); }},
+    NORTH: {name: 'North',                    type: 'terminal', process: function () { return BasicDirection.North; }},
+    EAST:  {name: 'East',                     type: 'terminal', process: function () { return BasicDirection.East; }},
+    SOUTH: {name: 'South',                    type: 'terminal', process: function () { return BasicDirection.South; }},
+    WEST:  {name: 'West',                     type: 'terminal', process: function () { return BasicDirection.West; }},
+    N:     {name: 'North shorthand',          type: 'terminal', process: function () { return BasicDirection.North; }},
+    E:     {name: 'East shorthand',           type: 'terminal', process: function () { return BasicDirection.East; }},
+    S:     {name: 'South shorthand',          type: 'terminal', process: function () { return BasicDirection.South; }},
+    W:     {name: 'West shorthand',           type: 'terminal', process: function () { return BasicDirection.West; }}
 });
 
 /**
@@ -208,7 +208,7 @@ function DieCommand(magnetically) {
 DieCommand.prototype.execute = function (owner) {
     owner.remove();
     if (this.magnetically) {
-        owner.board.player.push(Direction.opposite(owner.getPlayerDirection()));
+        owner.board.player.push(BasicDirection.opposite(owner.getPlayerDirection()));
     }
 };
 
@@ -375,7 +375,7 @@ MoveCommand.prototype.forcefulMove = function (owner) {
         direction = this.directionExpression.getResult(owner);
     } else {
         // We are stuck, continue trying that direction
-        direction = Direction.fromName(heap[stuck]);
+        direction = BasicDirection.fromName(heap[stuck]);
     }
 
     // If a direction is available
@@ -386,7 +386,7 @@ MoveCommand.prototype.forcefulMove = function (owner) {
         // If we were not successful, we're stuck
         if (!success) {
 
-            heap[stuck] = Direction.getShortName(direction);
+            heap[stuck] = BasicDirection.getShortName(direction);
 
             // We will try again until we're free
             return CommandResult.REPEAT;
