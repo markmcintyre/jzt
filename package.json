@@ -1,21 +1,22 @@
 {
-    "name": "JZT",
-    "description": "A DOS-era Adventure Game for the Web",
-    "version": "1.0.2",
-    "author": {
-        "name": "Mark McIntyre"
-    },
-    "dependencies": {
-        "lz-string": "~1.4.4",
-        "codemirror": "~5.10.0"
-    },
-    "devDependencies": {
-        "browserify": "~12.0.1"
-    },
-    "scripts": {
-        "build": "browserify -d src/jzt.js -s jzt > build/jzt.min.js",
-        "build-production": "browserify src/jzt.js -s jzt | uglifyjs -c -m > build/jzt.min.js",
-        "build-editor": "browserify -d src/ux/ux-editor.js -s jzt > build/jzt-editor.min.js",
-        "build-editor-production": "browserify -d src/ux/ux-editor.js -s jzt | uglifyjs -c -m > build/jzt-editor.min.js"
-    }
+  "name": "JZT",
+  "description": "A DOS-era Adventure Game for the Web",
+  "version": "1.0.2",
+  "author": {
+    "name": "Mark McIntyre"
+  },
+  "dependencies": {
+    "lz-string": "~1.4.4",
+    "codemirror": "~5.10.0"
+  },
+  "devDependencies": {
+    "browserify": "~12.0.1"
+  },
+  "scripts": {
+    "build": "browserify -d src/jzt.js -s jzt > build/jzt.min.js",
+    "build-production": "browserify src/jzt.js -s jzt | uglifyjs -c -m > build/jzt.min.js",
+    "build-editor": "browserify -d src/ux/ux-editor.js -s jzt > build/jzt-editor.min.js",
+    "build-editor-production": "browserify -d src/ux/ux-editor.js -s jzt | uglifyjs -c -m > build/jzt-editor.min.js"
+  },
+  "private": true
 }

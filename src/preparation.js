@@ -9,10 +9,11 @@
 
 'use strict';
 
-var meta = {
-    version: '1.0.2',
-    date: new Date('2015-01-04')
-};
+var packageMetadata = require('../package.json'),
+    meta = {
+        version: packageMetadata.version,
+        date: new Date('2015-12-21')
+    };
 
 // Define Object.freeze if it hasn't already been defined so
 // non-ECMAScript 5 browsers don't freak out
