@@ -770,6 +770,7 @@ function CyclingColor(code, name, cycleSequence) {
     }
 
     Color.call(this, code, name);
+    this.cycles = true;
     this.cycleSequence = cycleSequence;
     this.code = code;
     this.name = name;
@@ -877,15 +878,16 @@ exports.Colors = {};
     }
 
 }(colors, exports.Colors));
+exports.Colors.Cycle = cycle;
 
 // Exports
-exports.getColor = getColor;
-exports.deserializeForeground = deserializeForeground;
-exports.deserializeBackground = deserializeBackground;
-exports.serialize = serialize;
-exports.Colors.Cycle = cycle;
+exports.ColorUtilities = {
+    getColor: getColor,
+    deserializeForeground: deserializeForeground,
+    deserializeBackground: deserializeBackground,
+    serialize: serialize
+};
 exports.Color = Color;
-exports.CyclingColor = CyclingColor;
 exports.Graphics = Graphics;
 exports.Sprite = Sprite;
 exports.SpriteGrid = SpriteGrid;

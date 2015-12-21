@@ -22,7 +22,7 @@ var Literal = require('./parser').Literal,
     commands = require('./jzt-script-commands'),
     Colors = require('./graphics').Colors,
     ConstructorError = require('./basic').ConstructorError,
-    serializeColor = require('./graphics').serialize;
+    ColorUtilities = require('./graphics').ColorUtilities;
 
 /**
  * JztScriptParser
@@ -297,7 +297,7 @@ function JztScriptParser(validateOnly) {
         colorfulThing.assembler = validateOnly ? undefined : {
             assemble: function (assembly) {
                 var thing = assembly.pop();
-                thing.color = serializeColor(undefined, assembly.pop());
+                thing.color = ColorUtilities.serialize(undefined, assembly.pop());
                 assembly.push(thing);
             }
         };

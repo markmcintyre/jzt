@@ -10,10 +10,7 @@
 
 var Point = require('./basic').Point,
     Colors = require('./graphics').Colors,
-    CyclingColor = require('./graphics').CyclingColor,
-    deserializeForeground = require('./graphics').deserializeForeground,
-    deserializeBackground = require('./graphics').deserializeBackground,
-    serializeColor = require('./graphics').serialize,
+    ColorUtilities = require('./graphics').ColorUtilities,
     utilities = require('./basic').utilities,
     Direction = require('./basic').Direction,
     GameState = require('./game-state').GameState,
@@ -65,7 +62,7 @@ function Thing(board) {
 Thing.prototype.serialize = function () {
     var result = {};
     result.type = this.constructor.type;
-    result.color = serializeColor(this.background, this.foreground);
+    result.color = ColorUtilities.serialize(this.background, this.foreground);
     if (this.under) {
         result.under = this.under.serialize();
     }
@@ -81,8 +78,8 @@ Thing.prototype.serialize = function () {
 Thing.prototype.deserialize = function (data) {
 
     if (data.color) {
-        this.foreground = deserializeForeground(data.color);
-        this.background = deserializeBackground(data.color);
+        this.foreground = ColorUtilities.deserializeForeground(data.color);
+        this.background = ColorUtilities.deserializeBackground(data.color);
     } else {
         if (!this.foreground) {
             this.foreground = Colors.Yellow;
@@ -316,7 +313,7 @@ Thing.prototype.getAdjacentThing = function (direction) {
 Thing.prototype.equals = function (template) {
 
     var type = template.type.toUpperCase(),
-        color = template.color ? deserializeForeground(template.color) : undefined;
+        color = template.color ? ColorUtilities.deserializeForeground(template.color) : undefined;
 
     if (this.constructor.type.toUpperCase() === type) {
 
@@ -2412,7 +2409,7 @@ Key.prototype.deserialize = function (data) {
     this.foreground = this.foreground.lighten();
 
     // Grey and flashing keys don't exist either, so assume white
-    if (this.foreground instanceof CyclingColor || this.foreground === Colors.Grey) {
+    if (this.foreground.cycles || this.foreground === Colors.Grey) {
         this.foreground = Colors.BrightWhite;
     }
 
