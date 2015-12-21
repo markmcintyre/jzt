@@ -1,5 +1,5 @@
 /*jslint node: true, browser:true */
-/*global LZString, Base64, FileReader, alert, CodeMirror, jQuery */
+/*global FileReader, alert */
 
 'use strict';
 
@@ -7,6 +7,8 @@ var JztScript = require('../jzt-script').JztScript,
     JztScriptParser = require('../jzt-script-parser').JztScriptParser,
     SpiderWeb = require('../things').SpideWeb,
     Editor = require('../editor').Editor,
+    LZString = require('lz-string'),
+    CodeMirror = require('codemirror'),
     boardSelector,
     northSelector,
     eastSelector,
@@ -39,6 +41,8 @@ var JztScript = require('../jzt-script').JztScript,
     newBoardDialog,
     mainNavigation,
     parser;
+
+require('codemirror/addon/mode/simple');
 
 /**
  * Validates a current script and displays or hides a warning as appropriate.
@@ -211,7 +215,7 @@ function initializeOpenDialog(dialog) {
         }
 
         event.preventDefault();
-        jQuery(dialog.querySelector('.close-reveal-modal')).trigger('click');
+        dialog.querySelector('.close-reveal-modal').click();
 
     }, false);
 
@@ -321,7 +325,7 @@ function initializeNewBoardDialog(dialog) {
             }
         }
 
-        jQuery(dialog.querySelector('.close-reveal-modal')).trigger('click');
+        dialog.querySelector('.close-reveal-modal').click();
 
     });
 

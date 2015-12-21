@@ -5,7 +5,6 @@
  */
 
 /*jslint node: true */
-/*global LZString */
 
 
 'use strict';
@@ -20,7 +19,7 @@ var darkColors = ['0', '1', '2', '3', '4', '5', '6', '7'],
     things = require('./things').things,
     Direction = require('./basic').Direction,
     Board = require('./board').Board,
-    ColorUtilities = require('./graphics').ColorUtilties,
+    ColorUtilities = require('./graphics').ColorUtilities,
     ThingFactory = require('./things').ThingFactory;
 
 /**

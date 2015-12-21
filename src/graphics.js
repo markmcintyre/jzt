@@ -647,7 +647,7 @@ SpriteGrid.prototype.addArt = function (startingPoint, artString) {
 
             if (index + 1 <= artString.length) {
                 index += 1;
-                color = exports.getColor(artString.charAt(index));
+                color = exports.ColorUtilities.getColor(artString.charAt(index));
             }
 
             this.setTile(point, symbol, color);

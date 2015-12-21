@@ -26,9 +26,10 @@ var formatVersion = '1.0.0',
     Board = require('./board').Board,
     things = require('./things').things,
     Colors = require('./graphics').Colors,
+    ColorUtilities = require('./graphics').ColorUtilities,
     Popup = require('./popup').Popup,
     GameState = require('./game-state').GameState,
-    deserializeForeground = require('./graphics').deserializeForeground;
+    LZString = require('lz-string');
 
 /**
  * Game represents a playable JZT game, including all Boards and a player.
@@ -1305,7 +1306,7 @@ Game.prototype.drawPauseScreen = function () {
     sprite = this.resources.graphics.getSprite(12);
     for (value = 0; value < keyValues.length; value += 1) {
         if (this.getCounterValue('KEY' + keyValues[value]) > 0) {
-            sprite.draw(this.context, position, deserializeForeground(keyValues[value]));
+            sprite.draw(this.context, position, ColorUtilities.deserializeForeground(keyValues[value]));
             position.x += 1;
         }
     }
@@ -1399,3 +1400,4 @@ Game.prototype.onSettingsChanged = function (settings) {
 
 // Exports
 exports.Game = Game;
+exports.LZString = LZString;

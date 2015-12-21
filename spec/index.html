@@ -27,14 +27,14 @@
         <script type="text/javascript" src="../script/scroll.js" charset="utf-8"></script>
         <script type="text/javascript" src="../script/i18n.js" charset="utf-8"></script>
         <script type="text/javascript" src="../script/popup.js" charset="utf-8"></script>
-        <script type="text/javascript" src="../script/file-management.js" charset="utf-8"></script>-->
-        <script type="text/javascript" src="../script/thirdparty/lz-string-1.3.3.js" charset="utf-8"></script>
-        <script type="text/javascript" src="jzt.min.js" charset="utf-8"></script>
+        <script type="text/javascript" src="../script/file-management.js" charset="utf-8"></script>
+        <script type="text/javascript" src="../script/thirdparty/lz-string-1.3.3.js" charset="utf-8"></script>-->
+        <script type="text/javascript" src="../build/jzt.min.js" charset="utf-8"></script>
         <script type="text/javascript">
             var data = localStorage['currentGame'],
                 game;
 
-            data = LZString.decompressFromUTF16(data);
+            data = jzt.LZString.decompressFromUTF16(data);
             data = JSON.parse(data);
 
             game = new jzt.Game({

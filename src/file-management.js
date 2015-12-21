@@ -5,7 +5,6 @@
  */
 
 /*jslint node:true */
-/*global LZString */
 
 'use strict';
 
@@ -18,6 +17,7 @@ var ConstructorError = require('./basic').ConstructorError,
     DelayedEventScheduler = require('./basic').DelayedEventScheduler,
     Popup = require('./popup').Popup,
     Colors = require('./graphics').Colors,
+    LZString = require('lz-string'),
     i18n = require('./i18n'),
     action = {
         Up: 0,

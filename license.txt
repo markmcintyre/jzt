@@ -1,6 +1,0 @@
-/*
- * JZT: A Nostalgic DOS Game, Online
- * Copyright (c) {{JZT:YEAR}} Orangeline Interactive, Inc.
- * Created by Mark McIntyre.
- * All Rights Reserved.
- */
