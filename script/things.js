@@ -217,7 +217,7 @@ Thing.prototype.isPlayerVisible = function (distance) {
 
     function isBlocked(point) {
         var tile = me.board.getTile(point);
-        return tile && (tile !== me) && (tile.tyle !== 'Player');
+        return tile && (tile !== me) && (tile.type !== 'Player');
     }
 
     if (line.points.length > distance) {

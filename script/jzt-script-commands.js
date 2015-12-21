@@ -901,11 +901,11 @@ AlignedExpression.prototype.getResult = function (owner) {
  * PeepExpression
  */
 function PeepExpression(radius) {
-    this.radius = radius || 5;
+    this.radius = radius;
 }
 
 PeepExpression.prototype.getResult = function (owner) {
-    return owner.isPlayerVisible(this.distance);
+    return owner.isPlayerVisible(this.radius);
 };
 
 /**
