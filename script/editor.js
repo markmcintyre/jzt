@@ -23,7 +23,8 @@ var darkColors = ['0', '1', '2', '3', '4', '5', '6', '7'],
     serializeColor = require('./graphics').serialize,
     deserializeBackground = require('./graphics').deserializeBackground,
     deserializeForeground = require('./graphics').deserializeForeground,
-    getColor = require('./graphics').getColor;
+    getColor = require('./graphics').getColor,
+    ThingFactory = require('./things').ThingFactory;
 
 /**
  * Editor represents a JZT game editor, capable of creating and testing JZT game worlds,
@@ -415,7 +416,7 @@ Editor.prototype.plot = function () {
 
                 // It's something else
 
-                this.currentBoard.addThing(this.cursor, things.ThingFactory.deserialize(this.activeTemplate, this.currentBoard));
+                this.currentBoard.addThing(this.cursor, ThingFactory.deserialize(this.activeTemplate, this.currentBoard));
 
             }
 

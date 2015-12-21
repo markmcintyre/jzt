@@ -1,49 +1,39 @@
-/*jslint browser: true */
+/*jslint node: true */
 
-var jzt;
-var jztux;
+'use strict';
 
-jztux = (function (jzt, jztux) {
+var Game = require('../jzt').Game,
+    game,
+    origin;
 
-    'use strict';
+function receiveMessage(event) {
 
-    var game,
-        origin;
+    if (event.origin === origin) {
 
+        if (event.data.lastIndexOf('play-game:', 0) === 0) {
 
+            document.querySelector('canvas').classList.remove('loading');
 
-    function receiveMessage(event) {
-
-        if (event.origin === origin) {
-
-            if (event.data.lastIndexOf('play-game:', 0) === 0) {
-
-                document.querySelector('canvas').classList.remove('loading');
-
-                game = new jzt.Game({
-                    canvasElement: document.getElementById('jzt'),
-                    playTest: true,
-                    onLoadCallback: function (success) {
-                        if (success) {
-                            this.run(JSON.parse(event.data.substring(10)));
-                        }
+            game = new Game({
+                canvasElement: document.getElementById('jzt'),
+                playTest: true,
+                onLoadCallback: function (success) {
+                    if (success) {
+                        this.run(JSON.parse(event.data.substring(10)));
                     }
-                });
-
-            }
+                }
+            });
 
         }
 
     }
 
-    function initialize() {
-        origin = window.location.origin || window.location.protocol + '//' + window.location.host;
-        window.addEventListener('message', receiveMessage, false);
-        window.opener.postMessage('send-game', origin);
-    }
+}
 
-    initialize();
+function initialize() {
+    origin = window.location.origin || window.location.protocol + '//' + window.location.host;
+    window.addEventListener('message', receiveMessage, false);
+    window.opener.postMessage('send-game', origin);
+}
 
-    return jztux;
-
-}(jzt || {}, jztux || {}));
+initialize();

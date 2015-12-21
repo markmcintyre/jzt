@@ -1398,7 +1398,4 @@ Game.prototype.onSettingsChanged = function (settings) {
 };
 
 // Exports
-exports.GameState = GameState;
 exports.Game = Game;
-
-window.Game = Game;

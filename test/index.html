@@ -9,9 +9,9 @@
             <h1>JZT: Nostalgic DOS Game</h1>
         </header>
 
-        <canvas id="jzt" width="800" height="640"></canvas>
+        <canvas id="jzt" width="800" height="640" style="width: 800px; height: 640px"></canvas>
 
-        <script type="text/javascript" src="../script/preparation.js" charset="utf-8"></script>
+        <!--<script type="text/javascript" src="../script/preparation.js" charset="utf-8"></script>
         <script type="text/javascript" src="../script/jzt.js" charset="utf-8"></script>
         <script type="text/javascript" src="../script/basic.js" charset="utf-8"></script>
         <script type="text/javascript" src="../script/graphics.js" charset="utf-8"></script>
@@ -27,15 +27,17 @@
         <script type="text/javascript" src="../script/scroll.js" charset="utf-8"></script>
         <script type="text/javascript" src="../script/i18n.js" charset="utf-8"></script>
         <script type="text/javascript" src="../script/popup.js" charset="utf-8"></script>
-        <script type="text/javascript" src="../script/file-management.js" charset="utf-8"></script>
+        <script type="text/javascript" src="../script/file-management.js" charset="utf-8"></script>-->
         <script type="text/javascript" src="../script/thirdparty/lz-string-1.3.3.js" charset="utf-8"></script>
-        <!--<script type="text/javascript" src="jzt.min.js" charset="utf-8"></script>-->
+        <script type="text/javascript" src="jzt.min.js" charset="utf-8"></script>
         <script type="text/javascript">
-            var data = localStorage['currentGame'];
+            var data = localStorage['currentGame'],
+                game;
+
             data = LZString.decompressFromUTF16(data);
             data = JSON.parse(data);
 
-            var game = new jzt.Game({
+            game = new jzt.Game({
                 canvasElement: document.getElementById('jzt'),
                 onLoadCallback: function(success) {
                     if(success) {
