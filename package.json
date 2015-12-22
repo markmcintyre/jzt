@@ -10,13 +10,20 @@
     "codemirror": "~5.10.0"
   },
   "devDependencies": {
-    "browserify": "~12.0.1"
+    "browserify": "~12.0.1",
+    "npm-watch": "^0.0.1",
+    "uglify-js": "~2.6.1"
+  },
+  "watch": {
+    "build:js": "src/**/*.js"
   },
   "scripts": {
-    "build": "browserify -d src/jzt.js -s jzt > build/jzt.min.js",
-    "build-production": "browserify src/jzt.js -s jzt | uglifyjs -c -m > build/jzt.min.js",
-    "build-editor": "browserify -d src/ux/ux-editor.js -s jzt > build/jzt-editor.min.js",
-    "build-editor-production": "browserify -d src/ux/ux-editor.js -s jzt | uglifyjs -c -m > build/jzt-editor.min.js"
+    "watch": "npm-watch",
+    "build:js": "npm run build:game:js && npm run build:editor:js",
+    "build:game:js": "browserify -d src/jzt.js -s jzt > build/jzt.min.js",
+    "build:game:js:production": "browserify src/jzt.js -s jzt | uglifyjs -c -m > build/jzt.min.js",
+    "build:editor:js": "browserify -d src/ux/ux-editor.js -s jzt > build/jzt-editor.min.js",
+    "build:editor:js:production": "browserify -d src/ux/ux-editor.js -s jzt | uglifyjs -c -m > build/jzt-editor.min.js"
   },
   "private": true
 }
