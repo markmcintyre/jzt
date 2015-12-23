@@ -398,7 +398,7 @@ Editor.prototype.plot = function () {
                         } else {
                             thing = {type: 'Text', i18n: {}, color: this.activeTemplate.color};
                             thing.i18n[i18n.getLanguage()] = c;
-                            this.currentBoard.addThing(this.cursor, things.ThingFactory.deserialize(thing, this.currentBoard));
+                            this.currentBoard.addThing(this.cursor, ThingFactory.deserialize(thing, this.currentBoard));
                         }
                         this.cursor = this.cursor.add(Direction.East);
                     }
@@ -1207,13 +1207,13 @@ Editor.prototype.fill = function (point) {
     targetDetails = getDetails(thing);
 
     // Don't fill if we're already the correct type
-    if (getDetails(things.ThingFactory.deserialize(this.activeTemplate, this.currentBoard)) === targetDetails) {
+    if (getDetails(ThingFactory.deserialize(this.activeTemplate, this.currentBoard)) === targetDetails) {
         return;
     }
 
     // If we have an active template, add our thing
     if (this.activeTemplate) {
-        this.currentBoard.addThing(point, things.ThingFactory.deserialize(this.activeTemplate, this.currentBoard));
+        this.currentBoard.addThing(point, ThingFactory.deserialize(this.activeTemplate, this.currentBoard));
     } else {
         this.currentBoard.addThing(point, undefined);
     }

@@ -1,9 +1,9 @@
 /*jslint node: true */
+/*globals jzt */
 
 'use strict';
 
-var Game = require('../jzt').Game,
-    game,
+var game,
     origin;
 
 function receiveMessage(event) {
@@ -14,7 +14,7 @@ function receiveMessage(event) {
 
             document.querySelector('canvas').classList.remove('loading');
 
-            game = new Game({
+            game = new jzt.Game({
                 canvasElement: document.getElementById('jzt'),
                 playTest: true,
                 onLoadCallback: function (success) {

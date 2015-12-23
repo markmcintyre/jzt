@@ -1400,4 +1400,3 @@ Game.prototype.onSettingsChanged = function (settings) {
 
 // Exports
 exports.Game = Game;
-exports.LZString = LZString;
