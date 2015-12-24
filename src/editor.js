@@ -20,7 +20,8 @@ var darkColors = ['0', '1', '2', '3', '4', '5', '6', '7'],
     Direction = require('./basic').Direction,
     Board = require('./board').Board,
     ColorUtilities = require('./graphics').ColorUtilities,
-    ThingFactory = require('./things').ThingFactory;
+    ThingFactory = require('./things').ThingFactory,
+    metadata = require('./metadata');
 
 /**
  * Editor represents a JZT game editor, capable of creating and testing JZT game worlds,
@@ -1272,3 +1273,4 @@ Editor.prototype.drawCursor = function (context) {
 };
 
 exports.Editor = Editor;
+exports.version = metadata.version;

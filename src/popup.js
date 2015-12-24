@@ -11,7 +11,7 @@
 var Point = require('./basic').Point,
     SpriteGrid = require('./graphics').SpriteGrid,
     Colors = require('./graphics').Colors,
-    meta = require('./preparation').meta;
+    meta = require('./metadata');
 
 /**
  * Popup represents a pop-up box with a given position and size, capable of
@@ -239,7 +239,7 @@ function Splash(game) {
             );
         grid.addText(new Point(46 - meta.version.length, 15), meta.version, Colors.Grey);
         grid.addText(new Point(13, 18), 'Created by Mark McIntyre', Colors.Grey);
-        grid.addText(new Point(6, 19), '(c) ' + meta.date.getFullYear() + ' Orangeline Interactive, Inc.', Colors.Grey);
+        grid.addText(new Point(6, 19), '(c) ' + new Date(meta.date).getFullYear() + ' Orangeline Interactive, Inc.', Colors.Grey);
     }).end(4000);
 
 }

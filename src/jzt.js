@@ -29,7 +29,7 @@ var formatVersion = '1.0.0',
     ColorUtilities = require('./graphics').ColorUtilities,
     Popup = require('./popup').Popup,
     GameState = require('./game-state').GameState,
-    LZString = require('lz-string');
+    metadata = require('./metadata');
 
 /**
  * Game represents a playable JZT game, including all Boards and a player.
@@ -1400,3 +1400,4 @@ Game.prototype.onSettingsChanged = function (settings) {
 
 // Exports
 exports.Game = Game;
+exports.version = metadata.version;
