@@ -14,7 +14,7 @@ var darkColors = ['0', '1', '2', '3', '4', '5', '6', '7'],
     playerSprite,
     Point = require('./basic').Point,
     Graphics = require('./graphics').Graphics,
-    i18n = require('./i18n').i18n,
+    i18n = require('./i18n'),
     Colors = require('./graphics').Colors,
     things = require('./things').things,
     Direction = require('./basic').Direction,
@@ -394,8 +394,10 @@ Editor.prototype.plot = function () {
                          */
                         if (thing && thing.type === 'Text') {
                             thing.i18n[i18n.getLanguage()] = c;
-                            thing.foreground = ColorUtilities.deserializeForeground(this.activeTemplate.color);
-                            thing.background = ColorUtilities.deserializeBackground(this.activeTemplate.color);
+                            if (this.activeTemplate.color) {
+                                thing.foreground = ColorUtilities.deserializeForeground(this.activeTemplate.color);
+                                thing.background = ColorUtilities.deserializeBackground(this.activeTemplate.color);
+                            }
                         } else {
                             thing = {type: 'Text', i18n: {}, color: this.activeTemplate.color};
                             thing.i18n[i18n.getLanguage()] = c;

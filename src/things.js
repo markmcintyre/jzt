@@ -2004,7 +2004,11 @@ Duplicator.prototype.deserialize = function (data) {
     UpdateableThing.prototype.deserialize.call(this, data);
     this.background = undefined;
     this.foreground = Colors.BrightWhite;
-    this.copyDirection = Direction.fromName(data.copyDirection);
+
+    if (data.copyDirection) {
+        this.copyDirection = Direction.fromName(data.copyDirection);
+    }
+
 };
 
 Duplicator.prototype.doTick = function () {
@@ -3967,7 +3971,9 @@ Text.prototype.serialize = function () {
 Text.prototype.deserialize = function (data) {
 
     Thing.prototype.deserialize.call(this, data);
-    this.i18n = data.i18n;
+    this.i18n = data.i18n || {
+        en: 0
+    };
     this.foreground = Colors.BrightWhite;
 
 };
