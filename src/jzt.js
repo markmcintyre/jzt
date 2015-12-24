@@ -479,7 +479,7 @@ Game.prototype.movePlayerToPassage = function (passageId, boardName) {
 
     // Retrieve our new board (or the current board if it's the same)
     var newBoard = (boardName === this.currentBoard.name) ? this.currentBoard : this.getBoard(boardName),
-        passage = newBoard.getPassage(passageId);
+        passage = newBoard ? newBoard.getPassage(passageId) : undefined;
 
     // If the specified board does not exist, return
     if (newBoard === undefined) {

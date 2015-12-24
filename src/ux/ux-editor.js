@@ -223,29 +223,17 @@ function initializeOpenDialog(dialog) {
 }
 
 /**
- * Initializes a script options dialog
+ * Initializes a new script dialog
  *
- * @param dialog {object} - A dialog DOM element
+ * @param {object} dialog - A dialog DOM element
  */
-function initializeScriptDialog(dialog) {
+function initializeNewScriptDialog(dialog) {
 
-    scriptTab = dialog;
-    scriptSelector = dialog.querySelector('[data-id="selector"]');
-
-    scriptEditor = CodeMirror.fromTextArea(dialog.querySelector('[data-id="editor"]'), {
-        mode: 'jztscript',
-        theme: 'jzt',
-        lineNumbers: true,
-        lineWrapping: false
-    });
-
-    scriptWarning = dialog.querySelector('[data-id="warning"]');
-
-    // New Script Button
-    dialog.querySelector('[data-id="new"]').addEventListener('click', function () {
+    dialog.querySelector('[data-id="ok"]').addEventListener('click', function () {
 
         var script,
-            newName = window.prompt('Please enter a script name.', 'Untitled');
+            scriptElement = dialog.querySelector('[data-id="script-name"]'),
+            newName = scriptElement.value;
 
         if (newName) {
             newName = editor.getUniqueScriptName(newName);
@@ -256,10 +244,36 @@ function initializeScriptDialog(dialog) {
             selectScript(newName);
         }
 
+        // Reset the value
+        scriptElement.value = '';
+
+        dialog.querySelector('.close-reveal-modal').click();
+
     }, false);
 
+}
+
+/**
+ * Initializes a script options dialog
+ *
+ * @param dialog {object} - A dialog DOM element
+ */
+function initializeScriptTab(tab) {
+
+    scriptTab = tab;
+    scriptSelector = tab.querySelector('[data-id="selector"]');
+
+    scriptEditor = CodeMirror.fromTextArea(tab.querySelector('[data-id="editor"]'), {
+        mode: 'jztscript',
+        theme: 'jzt',
+        lineNumbers: true,
+        lineWrapping: false
+    });
+
+    scriptWarning = tab.querySelector('[data-id="warning"]');
+
     // Delete Script Button
-    dialog.querySelector('[data-id="delete"]').addEventListener('click', function () {
+    tab.querySelector('[data-id="delete"]').addEventListener('click', function () {
 
         var index,
             scriptName = scriptSelector.value;
@@ -688,7 +702,8 @@ function initializeEditorUx(options) {
     initializeBoardOptionsDialog(options.boardOptionsDialog);
     initializeWorldOptionsDialog(options.worldOptionsDialog);
     initializeOpenDialog(options.openDialog);
-    initializeScriptDialog(options.scriptDialog);
+    initializeScriptTab(options.scriptTab);
+    initializeNewScriptDialog(options.newScriptDialog);
     initializeNewBoardDialog(options.newBoardDialog);
     initializePrimaryUi(options);
 
