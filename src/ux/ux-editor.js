@@ -6,6 +6,7 @@
 var JztScript = require('../jzt-script').JztScript,
     JztScriptParser = require('../jzt-script-parser').JztScriptParser,
     SpiderWeb = require('../things').SpideWeb,
+    Audio = require('../audio').Audio,
     Editor = require('../editor').Editor,
     LZString = require('lz-string'),
     CodeMirror = require('codemirror'),
@@ -250,6 +251,34 @@ function initializeNewScriptDialog(dialog) {
         dialog.querySelector('.close-reveal-modal').click();
 
     }, false);
+
+}
+
+function initializeMusicDialog(dialog) {
+
+    var noteItems = dialog.querySelectorAll('[data-note]'),
+        playItems = dialog.querySelectorAll('[data-id="play"]'),
+        index,
+        audio = new Audio();
+
+    function playNoteItem(event) {
+        var note = event.target.getAttribute('data-note');
+        audio.play(note);
+    }
+
+    function playScore(event) {
+        var scoreId = event.target.getAttribute('data-score'),
+            score = dialog.querySelector('[data-id="' + scoreId + '"]').value;
+        audio.play(score);
+    }
+
+    for (index = 0; index < playItems.length; index += 1) {
+        playItems[index].addEventListener('click', playScore);
+    }
+
+    for (index = 0; index < noteItems.length; index += 1) {
+        noteItems[index].addEventListener('click', playNoteItem);
+    }
 
 }
 
@@ -721,6 +750,7 @@ function initializeEditorUx(options) {
     initializeScriptTab(options.scriptTab);
     initializeNewScriptDialog(options.newScriptDialog);
     initializeNewBoardDialog(options.newBoardDialog);
+    initializeMusicDialog(options.musicDialog);
     initializePrimaryUi(options);
 
 }
