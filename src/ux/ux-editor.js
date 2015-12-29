@@ -99,10 +99,10 @@ function initializeBoardOptionsDialog(dialog) {
             east: eastSelector.value,
             south: southSelector.value,
             west: westSelector.value,
-            northOffset: northOffsetSelector.value,
-            eastOffset: eastOffsetSelector.value,
-            southOffset: southOffsetSelector.value,
-            westOffset: westOffsetSelector.value,
+            northOffset: parseInt(northOffsetSelector.value, 10),
+            eastOffset: parseInt(eastOffsetSelector.value, 10),
+            southOffset: parseInt(southOffsetSelector.value, 10),
+            westOffset: parseInt(westOffsetSelector.value, 10),
             dark: darkSelector.checked,
             maxPlayerBullets: parseInt(maxPlayerBulletSelector.value, 10),
             reenter: reenterSelector.checked
@@ -370,7 +370,7 @@ function initializePrimaryUi(options) {
                 switch (toolType) {
                 case 'Passage':
                     activeTemplate.passageId = 1;
-                    activeTemplate.targetBoard = 'Untitled';
+                    activeTemplate.targetBoard = editor.boards[0].name;
                     break;
                 case 'Spider':
                     activeTemplate.under = new SpiderWeb().serialize();
@@ -534,6 +534,12 @@ function onBoardAdded(boardName) {
     titleBoardSelector.options[titleBoardSelector.options.length] = new Option(boardName, boardName);
     startingBoardSelector.options[startingBoardSelector.options.length] = new Option(boardName, boardName);
     victoryBoardSelector.options[victoryBoardSelector.options.length] = new Option(boardName, boardName);
+
+    // If our active template is for a passage, update the UI
+    if (editor.activeTemplate && editor.activeTemplate.type === 'Passage') {
+        editor.setActiveTemplate(editor.activeTemplate);
+    }
+
 }
 
 /**
@@ -560,6 +566,16 @@ function onBoardRemoved(boardName) {
     titleBoardSelector.remove(findIndex(titleBoardSelector, boardName));
     startingBoardSelector.remove(findIndex(startingBoardSelector, boardName));
     victoryBoardSelector.remove(findIndex(victoryBoardSelector, boardName));
+
+    // If our active template is for a passage, ensure we have a board that exists
+    if (editor.activeTemplate && editor.activeTemplate.type === 'Passage') {
+
+        if (!editor.getBoard(editor.activeTemplate.targetBoard)) {
+            editor.activeTemplate.targetBoard = editor.boards[0].name;
+        }
+
+        editor.setActiveTemplate(editor.activeTemplate);
+    }
 
 }
 
@@ -594,10 +610,10 @@ function onBoardOptionsChanged(options) {
     eastSelector.value = options.east || '';
     southSelector.value = options.south || '';
     westSelector.value = options.west || '';
-    northOffsetSelector.value = options.northOffset || '';
-    eastOffsetSelector.value = options.eastOffset || '';
-    southOffsetSelector.value = options.southOffset || '';
-    westOffsetSelector.value = options.westOffset || '';
+    northOffsetSelector.value = options.northOffset || 0;
+    eastOffsetSelector.value = options.eastOffset || 0;
+    southOffsetSelector.value = options.southOffset || 0;
+    westOffsetSelector.value = options.westOffset || 0;
     darkSelector.checked = options.dark;
     reenterSelector.checked = options.reenter;
     maxPlayerBulletSelector.value = options.maxPlayerBullets === undefined ? -1 : options.maxPlayerBullets;
@@ -675,7 +691,7 @@ function initializeEditorUx(options) {
         start: [
             // The regex matches the token, the token property contains the type
             {regex: /"(?:[^\\]|\\.)*?"/, token: "string"},
-            {regex: /\b(become|change|char|die|end|give|if|lock|move|play|put|scroll|send|set|take|throwstar|torch|restore|say|shoot|stand|unlock|victory|wait|walk|zap)\b/, token: "command"},
+            {regex: /\b(become|change|char|die|end|give|go|if|lock|move|play|put|scroll|send|set|take|throwstar|torch|restore|say|shoot|stand|unlock|victory|wait|walk|zap)\b/, token: "command"},
             {regex: /(?:not|adjacent|blocked|aligned|peep|exists)\b/, token: "expression"},
             {regex: /\d/i, token: "number"},
             {regex: /:.*/, token: "label"},

@@ -952,6 +952,15 @@ Editor.prototype.createField = function (fieldName, field, template) {
             }
         }
 
+    } else if (field.type === 'board') {
+
+        // Our field if a color
+        element = document.createElement('select');
+
+        this.boards.forEach(function (board) {
+            element.options[element.options.length] = new Option(board.name);
+        });
+
     } else {
 
         // Our field type is anything else...
