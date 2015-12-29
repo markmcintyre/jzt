@@ -143,10 +143,29 @@ BecomeCommand.prototype.execute = function (owner) {
     // Create our new thing
     var newThing = ThingFactory.deserialize(this.thingTemplate, owner.board);
 
+
     // Replace our owner's tile with the new thing
     owner.board.replaceTile(owner.point, newThing);
 
 };
+
+/**
+ * ColorCommand
+ *
+ * When executed, an owner's foreground color will change to a color
+ * specified by this command's color.
+ */
+function ColorCommand(newForeground) {
+    this.newForeground = newForeground;
+}
+
+/**
+ * Change a provided owner's color.
+ */
+ColorCommand.prototype.execute = function (owner) {
+    owner.foreground = this.newForeground;
+};
+
 
 /**
  * ChangeCommand
@@ -651,6 +670,22 @@ StandCommand.prototype.execute = function (owner) {
 };
 
 /**
+ * SpeedCommand
+ *
+ * When executed, sets an owner's speed
+ */
+function SpeedCommand(speed) {
+    this.speed = speed || 3;
+}
+
+/*
+ * Sets a provided owner's speed
+ */
+SpeedCommand.prototype.execute = function (owner) {
+    owner.speed = this.speed;
+};
+
+/**
  * TakeCommand
  *
  * When executed, subtracts a provided value from a given counter.
@@ -964,6 +999,7 @@ exports.Label = Label;
 exports.BecomeCommand = BecomeCommand;
 exports.ChangeCommand = ChangeCommand;
 exports.CharCommand = CharCommand;
+exports.ColorCommand = ColorCommand;
 exports.DieCommand = DieCommand;
 exports.EndCommand = EndCommand;
 exports.GiveCommand = GiveCommand;
@@ -975,6 +1011,7 @@ exports.PutCommand = PutCommand;
 exports.ScrollCommand = ScrollCommand;
 exports.SendCommand = SendCommand;
 exports.SetCommand = SetCommand;
+exports.SpeedCommand = SpeedCommand;
 exports.TakeCommand = TakeCommand;
 exports.ThrowStarCommand = ThrowStarCommand;
 exports.TorchCommand = TorchCommand;

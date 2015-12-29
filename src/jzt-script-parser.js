@@ -487,6 +487,26 @@ function JztScriptParser(validateOnly) {
     }
 
     /**
+     * Color Statement Parser
+     * Creates and returns a new 'color' statement parser
+     * @return A 'color' statement parser.
+     */
+    function createColorStatementParser() {
+
+        var color = new Sequence();
+
+        color.addDiscard(new Literal('Color'));
+        color.add(createColorParser());
+
+        color.assembler = createAssembler(function (assembly) {
+            var newColor = assembly.pop();
+            assembly.push(new commands.ColorCommand(newColor));
+        });
+
+        return color;
+    }
+
+    /**
      * Change Statement Parser
      * Creates and returns a new 'change' statement parser
      * @return A 'change' statement parser
@@ -791,6 +811,29 @@ function JztScriptParser(validateOnly) {
     }
 
     /**
+     * Speed Statement Parser
+     * Creates and returns a 'speed' statement parser
+     * @return A 'speed' statement parser.
+     */
+    function createSpeedStatementParser() {
+
+        var speed = new Sequence();
+
+        // Add speed sequence items
+        speed.addDiscard(new Literal('Speed'));
+        speed.add(new ParserNumber());
+
+        // Define assembler
+        speed.assembler = createAssembler(function (assembly) {
+            var newSpeed = assembly.peek() && assembly.peek().name === 'NUMBER' ? assembly.pop().value : undefined;
+            assembly.push(new commands.SpeedCommand(newSpeed));
+        });
+
+        return speed;
+
+    }
+
+    /**
      * Take Statement Parser
      * Creates and returns a 'take' statement parser.
      * @return A 'take' statement parser.
@@ -1021,6 +1064,7 @@ function JztScriptParser(validateOnly) {
         statementOptions.add(createBecomeStatementParser());
         statementOptions.add(createChangeStatementParser());
         statementOptions.add(createCharStatementParser());
+        statementOptions.add(createColorStatementParser());
         statementOptions.add(createDieStatementParser());
         statementOptions.add(createEndStatementParser());
         statementOptions.add(createGoStatementParser());
@@ -1032,6 +1076,7 @@ function JztScriptParser(validateOnly) {
         statementOptions.add(createScrollStatementParser());
         statementOptions.add(createSendStatementParser());
         statementOptions.add(createSetStatementParser());
+        statementOptions.add(createSpeedStatementParser());
         statementOptions.add(createTakeStatementParser());
         statementOptions.add(createThrowStarStatementParser());
         statementOptions.add(createTorchStatementParser());
