@@ -404,6 +404,20 @@ function JztScriptParser(validateOnly) {
     }
 
     /**
+     * Lit Expression Parser
+     * Creates and returns a lit expression parser.
+     * @return A lit expression parser.
+     */
+    function createLitExpressionParser() {
+        var litExpression = new Sequence();
+        litExpression.addDiscard(new Literal('Lit'));
+        litExpression.assembler = createAssembler(function (assembly) {
+            assembly.push(new commands.LitExpression());
+        });
+        return litExpression;
+    }
+
+    /**
      * Testing Expression Parser
      * Creates and returns a testing expression parser.
      * @return A testing expression parser.
@@ -441,6 +455,7 @@ function JztScriptParser(validateOnly) {
         expression.add(createAlignedExpressionParser());
         expression.add(createPeepExpressionParser());
         expression.add(createExistsExpressionParser());
+        expression.add(createLitExpressionParser());
         expression.add(createTestingExpressionParser());
         return expression;
     }

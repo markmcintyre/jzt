@@ -41,6 +41,7 @@ function Board(boardData, game) {
     this.smartPath = [];
     this.customRenderSet = [];
     this.torches = [];
+    this.previousTorches = [];
     this.focusPoint = new Point(0, 0);
     this.maxPlayerBullets = boardData.maxPlayerBullets !== undefined ? boardData.maxPlayerBullets : Infinity;
     this.playerBullets = 0;
@@ -923,14 +924,22 @@ Board.prototype.addMessage = function (message) {
 Board.prototype.isLit = function (point, thing) {
 
     var index,
+        torches = this.torches,
         torch;
 
     if (thing && thing.glow) {
         return true;
     }
 
-    for (index = 0; index < this.torches.length; index += 1) {
-        torch = this.torches[index];
+    // If we're between torch updates, use the previous value
+    if (torches.length <= 0) {
+        if (this.previousTorches.length > 0) {
+            torches = this.previousTorches;
+        }
+    }
+
+    for (index = 0; index < torches.length; index += 1) {
+        torch = torches[index];
         if (torch.contains(point)) {
             return true;
         }
@@ -976,6 +985,7 @@ Board.prototype.update = function () {
 
     // If the board is dark, initialize our torches
     if (this.dark) {
+        this.previousTorches = this.torches;
         this.torches = [];
     }
 

@@ -956,6 +956,21 @@ ExistsExpression.prototype.getResult = function (owner) {
 };
 
 /**
+ * LitExpression
+ *
+ *
+ */
+function LitExpression() {
+    if (!(this instanceof LitExpression)) {
+        throw ConstructorError;
+    }
+}
+
+LitExpression.prototype.getResult = function (owner) {
+    return owner.board.isLit(owner.point);
+};
+
+/**
  * TestingExpression
  */
 function TestingExpression(counter, operand, value) {
@@ -1031,4 +1046,5 @@ exports.BlockedExpression = BlockedExpression;
 exports.AlignedExpression = AlignedExpression;
 exports.PeepExpression = PeepExpression;
 exports.ExistsExpression = ExistsExpression;
+exports.LitExpression = LitExpression;
 exports.TestingExpression = TestingExpression;
