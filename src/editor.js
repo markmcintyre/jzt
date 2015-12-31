@@ -480,6 +480,10 @@ Editor.prototype.moveCursor = function (direction) {
  * @param options {object} - A set of options to apply to the current board.
  */
 Editor.prototype.setBoardOptions = function (options) {
+
+    var oldName = this.currentBoard.name,
+        newName = options.name;
+
     this.currentBoard.dark = options.dark;
     this.currentBoard.north = options.north !== '' ? options.north : undefined;
     this.currentBoard.south = options.south !== '' ? options.south : undefined;
@@ -491,7 +495,19 @@ Editor.prototype.setBoardOptions = function (options) {
     this.currentBoard.westOffset = options.westOffset !== '' ? options.westOffset : undefined;
     this.currentBoard.reenter = options.reenter;
     this.currentBoard.maxPlayerBullets = options.maxPlayerBullets < 0 ? undefined : options.maxPlayerBullets;
-    this.changeBoardOptionsCallback(options);
+
+    // If the board's name has changed, we have to do a rename
+    if (newName && oldName !== newName) {
+
+        this.renameBoard(oldName, newName);
+
+        // Switching the board will invoke our callback
+        this.switchBoard(newName);
+
+    } else {
+        this.changeBoardOptionsCallback(options);
+    }
+
 };
 
 /**
@@ -600,7 +616,8 @@ Editor.prototype.switchBoard = function (boardName) {
         southOffset: board.southOffset,
         westOffset: board.westOffset,
         dark: board.dark,
-        reenter: board.reenter
+        reenter: board.reenter,
+        name: board.name
     };
     this.changeBoardOptionsCallback(boardOptions);
 
@@ -1280,6 +1297,51 @@ Editor.prototype.drawCursor = function (context) {
     context.fillText('(' + (this.cursor.x + 1) + ', ' + (this.cursor.y + 1) + ')', 5, 15);
     context.fillStyle = 'white';
     context.fillText('(' + (this.cursor.x + 1) + ', ' + (this.cursor.y + 1) + ')', 4, 14);
+
+};
+
+Editor.prototype.renameBoard = function (oldName, newName) {
+
+    function renameProperty(obj, propertyName) {
+        if (obj[propertyName] === oldName) {
+            obj[propertyName] = newName;
+        }
+    }
+
+    // Sanity check
+    if (!oldName || !newName || oldName === newName) {
+        return;
+    }
+
+    // Ensure we have a unique name
+    newName = this.getUniqueBoardName(newName);
+
+    // Rename world options
+    renameProperty(this.game, 'titleBoard');
+    renameProperty(this.game, 'startingBoard');
+    renameProperty(this.game, 'victoryBoard');
+
+    // For each board in the game...
+    this.boards.forEach(function (board) {
+
+        // Rename our board references
+        renameProperty(board, 'name');
+        renameProperty(board, 'north');
+        renameProperty(board, 'east');
+        renameProperty(board, 'south');
+        renameProperty(board, 'west');
+
+        // Also rename any Passages with that board
+        board.each(function (tile) {
+            if (tile && tile.type === 'Passage' && tile.targetBoard && tile.targetBoard === oldName) {
+                tile.targetBoard = newName;
+            }
+        });
+
+    });
+
+    this.removeBoardCallback(oldName);
+    this.addBoardCallback(newName);
 
 };
 

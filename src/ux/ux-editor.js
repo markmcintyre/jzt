@@ -10,6 +10,7 @@ var JztScript = require('../jzt-script').JztScript,
     Editor = require('../editor').Editor,
     LZString = require('lz-string'),
     CodeMirror = require('codemirror'),
+    boardNameInput,
     boardSelector,
     northSelector,
     eastSelector,
@@ -96,6 +97,7 @@ function initializeBoardOptionsDialog(dialog) {
      */
     function onChange() {
         editor.setBoardOptions({
+            name: boardNameInput.value,
             north: northSelector.value,
             east: eastSelector.value,
             south: southSelector.value,
@@ -110,6 +112,7 @@ function initializeBoardOptionsDialog(dialog) {
         });
     }
 
+    boardNameInput = dialog.querySelector('[data-id="board-name"]');
     northSelector = dialog.querySelector('[data-id="north"]');
     eastSelector = dialog.querySelector('[data-id="east"]');
     southSelector = dialog.querySelector('[data-id="south"]');
@@ -122,6 +125,7 @@ function initializeBoardOptionsDialog(dialog) {
     reenterSelector = dialog.querySelector('[data-id="reenter"]');
     maxPlayerBulletSelector = dialog.querySelector('[data-id="max-player-bullets"]');
 
+    boardNameInput.addEventListener('change', onChange, false);
     northSelector.addEventListener('change', onChange, false);
     eastSelector.addEventListener('change', onChange, false);
     southSelector.addEventListener('change', onChange, false);
@@ -550,61 +554,46 @@ function onGameOptionsChanged(options) {
 }
 
 /**
- * An event handler to be invoked when a board has been added.
+ * An event handler to be invoked when our collection of boards has changed.
  *
- * @param boardName {string} - A name of a board that's been added.
  */
-function onBoardAdded(boardName) {
-    boardSelector.options[boardSelector.options.length] = new Option(boardName, boardName);
-    northSelector.options[northSelector.options.length] = new Option(boardName, boardName);
-    southSelector.options[southSelector.options.length] = new Option(boardName, boardName);
-    eastSelector.options[eastSelector.options.length] = new Option(boardName, boardName);
-    westSelector.options[westSelector.options.length] = new Option(boardName, boardName);
-    titleBoardSelector.options[titleBoardSelector.options.length] = new Option(boardName, boardName);
-    startingBoardSelector.options[startingBoardSelector.options.length] = new Option(boardName, boardName);
-    victoryBoardSelector.options[victoryBoardSelector.options.length] = new Option(boardName, boardName);
+function onBoardsChanged() {
+
+    function initializeSelector(selector, addNone) {
+
+        // First remove old items
+        while (selector.options.length > 0) {
+            selector.remove(0);
+        }
+
+        // If we need a 'None' option, add it now
+        if (addNone) {
+            selector.options[0] = new Option('None', '');
+        }
+
+        // Add board names
+        editor.boards.forEach(function (board) {
+            selector.options[selector.options.length] = new Option(board.name, board.name);
+        });
+
+    }
+
+    initializeSelector(boardSelector);
+    initializeSelector(northSelector, true);
+    initializeSelector(eastSelector, true);
+    initializeSelector(southSelector, true);
+    initializeSelector(westSelector, true);
+    initializeSelector(titleBoardSelector, true);
+    initializeSelector(startingBoardSelector);
+    initializeSelector(victoryBoardSelector, true);
 
     // If our active template is for a passage, update the UI
     if (editor.activeTemplate && editor.activeTemplate.type === 'Passage') {
         editor.setActiveTemplate(editor.activeTemplate);
     }
 
-}
-
-/**
- * An event handler to be invoked when a board has been removed.
- *
- * @param boardName {string} = A name of a board that's been removed.
- */
-function onBoardRemoved(boardName) {
-
-    function findIndex(element, name) {
-        var index;
-        for (index = 0; index < element.length; index += 1) {
-            if (element.options[index].value === name) {
-                return index;
-            }
-        }
-    }
-
-    boardSelector.remove(findIndex(boardSelector, boardName));
-    northSelector.remove(findIndex(northSelector, boardName));
-    eastSelector.remove(findIndex(eastSelector, boardName));
-    southSelector.remove(findIndex(southSelector, boardName));
-    westSelector.remove(findIndex(westSelector, boardName));
-    titleBoardSelector.remove(findIndex(titleBoardSelector, boardName));
-    startingBoardSelector.remove(findIndex(startingBoardSelector, boardName));
-    victoryBoardSelector.remove(findIndex(victoryBoardSelector, boardName));
-
-    // If our active template is for a passage, ensure we have a board that exists
-    if (editor.activeTemplate && editor.activeTemplate.type === 'Passage') {
-
-        if (!editor.getBoard(editor.activeTemplate.targetBoard)) {
-            editor.activeTemplate.targetBoard = editor.boards[0].name;
-        }
-
-        editor.setActiveTemplate(editor.activeTemplate);
-    }
+    // Update our world options
+    onGameOptionsChanged(editor.game);
 
 }
 
@@ -635,6 +624,7 @@ function onBoardChanged(boardName) {
  */
 function onBoardOptionsChanged(options) {
 
+    boardNameInput.value = options.name || editor.currentBoard.name;
     northSelector.value = options.north || '';
     eastSelector.value = options.east || '';
     southSelector.value = options.south || '';
@@ -734,8 +724,8 @@ function initializeEditorUx(options) {
     editArea = options.editArea;
     templates = {};
     editor = new Editor(editArea, {
-        addBoard: onBoardAdded,
-        removeBoard: onBoardRemoved,
+        addBoard: onBoardsChanged,
+        removeBoard: onBoardsChanged,
         changeBoard: onBoardChanged,
         changeMode: onModeChanged,
         changeTemplate: onTemplateChanged,
