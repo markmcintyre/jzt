@@ -927,6 +927,12 @@ Board.prototype.isLit = function (point, thing) {
         torches = this.torches,
         torch;
 
+    // If the board isn't dark, we're inherently lit
+    if (!this.dark) {
+        return true;
+    }
+
+    // If the thing is glowing, it's considered lit
     if (thing && thing.glow) {
         return true;
     }
