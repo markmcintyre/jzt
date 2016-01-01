@@ -181,8 +181,11 @@ function initializeWorldOptionsDialog(dialog) {
  */
 function initializeOpenDialog(dialog) {
 
-    // Load Game
-    dialog.querySelector('[data-id="open"]').addEventListener('change', function () {
+    var openInput = dialog.querySelector('[data-id="open"]'),
+        okButton = dialog.querySelector('[data-id="open-button"]'),
+        json;
+
+    openInput.addEventListener('change', function () {
 
         var fileReader,
             file;
@@ -194,19 +197,11 @@ function initializeOpenDialog(dialog) {
 
             fileReader.onload = function () {
 
-                var json;
-
                 if (file.type === 'application/json') {
                     json = fileReader.result;
                 } else {
                     json = fileReader.result.split(',')[1];
                     json = LZString.decompressFromBase64(json);
-                }
-
-                try {
-                    editor.deserialize(JSON.parse(json));
-                } catch (exception) {
-                    alert(exception);
                 }
 
             };
@@ -222,6 +217,23 @@ function initializeOpenDialog(dialog) {
         event.preventDefault();
 
     }, false);
+
+
+    okButton.addEventListener('click', function () {
+
+        if (json) {
+
+            try {
+                editor.deserialize(JSON.parse(json));
+                openInput.value = '';
+            } catch (exception) {
+                alert(exception);
+            }
+
+        }
+
+
+    });
 
 
 }
@@ -511,7 +523,7 @@ function initializePrimaryUi(options) {
 
     itemSelector.addEventListener('change', onToolChange, false);
 
-    children = mainNavigation.querySelectorAll('[data-noaction]');
+    children = document.querySelectorAll('[data-noaction]');
     for (index = 0; index < children.length; index += 1) {
         children[index].addEventListener('click', onNoActionClick, false);
     }

@@ -685,14 +685,22 @@ Editor.prototype.setMode = function (mode) {
 };
 
 Editor.prototype.removeBoard = function (boardName) {
+
     var index,
         found = -1;
+
+    // You can't remove the last board
+    if (this.boards.length <= 1) {
+        return;
+    }
+
     for (index = 0; index < this.boards.length; index += 1) {
         if (this.boards[index].name === boardName) {
             found = index;
             break;
         }
     }
+
     if (found >= 0) {
         this.boards.splice(found, 1);
         this.removeBoardCallback(boardName);
