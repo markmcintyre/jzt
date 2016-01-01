@@ -476,17 +476,15 @@ function initializePrimaryUi(options) {
     }, false);
 
     // Download
-    mainNavigation.querySelector('[data-menu-item="download"]').addEventListener('click', function () {
+    mainNavigation.querySelector('[data-menu-item="download"]').addEventListener('click', function (event) {
 
         /*jslint regexp: true */
 
         var game = editor.serialize(),
             link;
 
-        link = document.createElement('a');
-        link.download = game.name.replace(/[^a-z0-9_\-]/gi, '-').toLowerCase() + '.jzt';
-        link.href = 'data:application/octet-stream;charset=utf-8;base64,' +     LZString.compressToBase64(JSON.stringify(game));
-        link.click();
+        event.target.download = game.name.replace(/[^a-z0-9_\-]/gi, '-').toLowerCase() + '.jzt';
+        event.target.href = 'data:application/octet-stream;charset=utf-8;base64,' +     LZString.compressToBase64(JSON.stringify(game));
 
     }, false);
 
@@ -518,7 +516,7 @@ function initializePrimaryUi(options) {
         children[index].addEventListener('click', onNoActionClick, false);
     }
 
-    options.sidebarTabs.on('toggled', function () {
+    options.foundation.on('change.zf.tabs', function () {
         scriptEditor.refresh();
     });
 
