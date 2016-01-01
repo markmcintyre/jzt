@@ -5,7 +5,7 @@
 
 var JztScript = require('../jzt-script').JztScript,
     JztScriptParser = require('../jzt-script-parser').JztScriptParser,
-    SpiderWeb = require('../things').SpideWeb,
+    SpiderWeb = require('../things').things.SpiderWeb,
     Audio = require('../audio').Audio,
     Editor = require('../editor').Editor,
     LZString = require('lz-string'),
@@ -220,7 +220,6 @@ function initializeOpenDialog(dialog) {
         }
 
         event.preventDefault();
-        dialog.querySelector('.close-reveal-modal').click();
 
     }, false);
 
@@ -251,8 +250,6 @@ function initializeNewScriptDialog(dialog) {
 
         // Reset the value
         scriptElement.value = '';
-
-        dialog.querySelector('.close-reveal-modal').click();
 
     }, false);
 
@@ -372,8 +369,6 @@ function initializeNewBoardDialog(dialog) {
             }
         }
 
-        dialog.querySelector('.close-reveal-modal').click();
-
     });
 
 }
@@ -386,7 +381,6 @@ function initializeNewBoardDialog(dialog) {
 function initializePrimaryUi(options) {
 
     var index,
-        mainMenu,
         children;
 
     function onToolChange(event) {
@@ -451,7 +445,6 @@ function initializePrimaryUi(options) {
     }
 
     mainNavigation = options.mainNavigation;
-    mainMenu = mainNavigation.querySelector('section.top-bar-section');
     modeSelector = options.modeSelector;
     playButton = options.playButton;
     boardSelector = options.boardSelector;
@@ -476,14 +469,14 @@ function initializePrimaryUi(options) {
     }, false);
 
     // New
-    mainMenu.querySelector('[data-menu-item="new"]').addEventListener('click', function () {
+    mainNavigation.querySelector('[data-menu-item="new"]').addEventListener('click', function () {
         if (window.confirm('Are you sure you want to start a new game world?')) {
             editor.newGame();
         }
     }, false);
 
     // Download
-    mainMenu.querySelector('[data-menu-item="download"]').addEventListener('click', function () {
+    mainNavigation.querySelector('[data-menu-item="download"]').addEventListener('click', function () {
 
         /*jslint regexp: true */
 
@@ -498,7 +491,7 @@ function initializePrimaryUi(options) {
     }, false);
 
     // New Board
-    mainMenu.querySelector('[data-menu-item="new-board"]').addEventListener('click', function () {
+    mainNavigation.querySelector('[data-menu-item="new-board"]').addEventListener('click', function () {
 
         newBoardDialog.querySelector('[data-id="name"]').value = 'Untitled Board';
         newBoardDialog.querySelector('[data-id="width"]').value = '50';
@@ -509,7 +502,7 @@ function initializePrimaryUi(options) {
     }, false);
 
     // Delete Board
-    mainMenu.querySelector('[data-menu-item="delete-board"]').addEventListener('click', function () {
+    mainNavigation.querySelector('[data-menu-item="delete-board"]').addEventListener('click', function () {
 
         editor.removeBoard(editor.currentBoard.name);
 

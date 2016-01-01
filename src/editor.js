@@ -864,7 +864,7 @@ Editor.prototype.createField = function (fieldName, field, template) {
         // Our field type is a boolean, so create a sliding toggle
 
         // Establish our template (based on Foundation framework's toggle markup)
-        elementTemplate = '<input id="{{fieldId}}" type="checkbox"><label for="{{fieldId}}"></label>';
+        elementTemplate = '<input type="checkbox" class="switch-input" id="{{fieldId}}"><label class="switch-paddle" for="{{fieldId}}"></label>';
         elementTemplate = elementTemplate.replace(/\{\{fieldId\}\}/g, fieldName + '-checkbox');
 
         element = document.createElement('div');
