@@ -901,7 +901,7 @@ Editor.prototype.createField = function (fieldName, field, template) {
         // This is a non-standard form element, naturally
         nonStandard = true;
 
-        elementTemplate = '<button class="large secondary button dropdown expand spritepicker" data-dropdown="{{fieldId}}" data-options="align: right"><div class="sprite"></div></button><div id="{{fieldId}}" data-dropdown-content class="f-dropdown medium content"><div class="sprites" /></div><input type="hidden">';
+        elementTemplate = '<button type="button" class="hollow secondary expanded button dropdown spritepicker" data-toggle="{{fieldId}}"><div class="sprite"></div></button><div id="{{fieldId}}" data-dropdown class="dropdown-pane bottom sprites"></div><input type="hidden">';
         elementTemplate = elementTemplate.replace(/\{\{fieldId\}\}/g, fieldName + '-spritepicker');
 
         element = document.createElement('div');

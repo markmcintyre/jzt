@@ -309,7 +309,7 @@ function initializeScriptTab(tab) {
         mode: 'jztscript',
         theme: 'jzt',
         lineNumbers: true,
-        lineWrapping: false
+        lineWrapping: true
     });
 
     scriptWarning = tab.querySelector('[data-id="warning"]');
@@ -425,6 +425,11 @@ function initializePrimaryUi(options) {
             }
 
             editor.setActiveTemplate(activeTemplate);
+
+            // We may need to reinitialize foundation plugins
+            if (toolType === 'Scriptable') {
+                options.foundation.find('#template-customizer').foundation();
+            }
 
         } else {
             editor.setActiveTemplate(undefined);
