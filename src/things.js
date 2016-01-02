@@ -281,6 +281,7 @@ Thing.prototype.move = function (direction, weak) {
  * Removes this Thing from its owner board.
  */
 Thing.prototype.remove = function () {
+    this.removed = true;
     this.board.deleteTile(this.point);
 };
 
@@ -482,6 +483,11 @@ UpdateableThing.prototype.getBlockedDirections = function () {
  * Updates this UpdateableThing for a single execution cycle.
  */
 UpdateableThing.prototype.update = function () {
+
+    // Ensure that we haven't been removed already
+    if (this.removed) {
+        return;
+    }
 
     if (this.board.game.state === GameState.GameOver) {
         this.doTick();
