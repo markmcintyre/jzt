@@ -979,11 +979,19 @@ Editor.prototype.createField = function (fieldName, field, template) {
 
     } else if (field.type === 'board') {
 
-        // Our field if a color
         element = document.createElement('select');
 
         this.boards.forEach(function (board) {
             element.options[element.options.length] = new Option(board.name);
+        });
+
+    } else if (field.type === 'script') {
+
+        element = document.createElement('select');
+
+        element.options[0] = new Option('None', '');
+        this.currentBoard.scripts.forEach(function (script) {
+            element.options[element.options.length] = new Option(script.name);
         });
 
     } else {

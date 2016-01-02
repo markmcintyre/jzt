@@ -81,6 +81,11 @@ function selectScript(scriptName) {
         scriptTab.classList.add('noscript');
     }
 
+    // If our active template is for a Scriptable, update the UI
+    if (editor.activeTemplate && editor.activeTemplate.type === 'Scriptable') {
+        editor.setActiveTemplate(editor.activeTemplate);
+    }
+
     validateScript();
 
 }
