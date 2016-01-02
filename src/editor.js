@@ -1272,6 +1272,7 @@ Editor.prototype.render = function (context) {
     this.currentBoard.focusPoint = this.focusPoint;
     this.currentBoard.render(context);
     playerSprite.draw(context, this.playerPosition.subtract(this.currentBoard.windowOrigin), Colors.BrightWhite, Colors.Blue);
+    this.drawAdjacentMarkers(context);
     this.drawCursor(context);
 };
 
@@ -1305,6 +1306,148 @@ Editor.prototype.drawCursor = function (context) {
     context.fillText('(' + (this.cursor.x + 1) + ', ' + (this.cursor.y + 1) + ')', 5, 15);
     context.fillStyle = 'white';
     context.fillText('(' + (this.cursor.x + 1) + ', ' + (this.cursor.y + 1) + ')', 4, 14);
+
+};
+
+Editor.prototype.drawAdjacentMarkers = function (context) {
+
+    var xSize = this.graphics.TILE_SIZE.x,
+        ySize = this.graphics.TILE_SIZE.y,
+        pointStart,
+        pointEnd,
+        adjacentBoard,
+        me = this,
+        outsideLocation = new Point(0, 0),
+        point = new Point(0, 0);
+
+    function getAvailability(tilePoint, direction, adjacentBoard) {
+
+        if (!adjacentBoard) {
+            return false;
+        }
+
+        outsideLocation.x = tilePoint.x;
+        outsideLocation.y = tilePoint.y;
+
+        switch (direction) {
+        case Direction.North:
+            outsideLocation.y = adjacentBoard.height - 1;
+            outsideLocation.x += me.currentBoard.northOffset;
+            break;
+        case Direction.East:
+            outsideLocation.x = 0;
+            outsideLocation.y += me.currentBoard.eastOffset;
+            break;
+        case Direction.South:
+            outsideLocation.y = 0;
+            outsideLocation.x += me.currentBoard.southOffset;
+            break;
+        case Direction.West:
+            outsideLocation.x = adjacentBoard.width - 1;
+            outsideLocation.y += me.currentBoard.westOffset;
+            break;
+        }
+
+        return adjacentBoard.isFreeOrSurrenderable(outsideLocation);
+
+    }
+
+    function drawIndicator(tilePoint, direction, adjacentBoard) {
+
+        var free = getAvailability(tilePoint, direction, adjacentBoard),
+            xPos = tilePoint.subtract(me.currentBoard.windowOrigin).x * xSize,
+            xPosEnd = xPos + xSize,
+            yPos = tilePoint.subtract(me.currentBoard.windowOrigin).y * ySize,
+            yPosEnd = yPos + ySize;
+
+
+        context.strokeStyle = free ? 'rgba(0, 255, 0, 0.75)' : 'rgba(255, 0, 0, 0.75)';
+        context.lineWidth = free ? 4 : 8;
+        context.beginPath();
+
+        switch (direction) {
+        case Direction.North:
+            yPos += (context.lineWidth / 2);
+            yPosEnd = yPos;
+            break;
+        case Direction.East:
+            xPosEnd -= (context.lineWidth / 2);
+            xPos = xPosEnd;
+            break;
+        case Direction.South:
+            yPosEnd -= (context.lineWidth / 2);
+            yPos = yPosEnd;
+            break;
+        case Direction.West:
+            xPos += (context.lineWidth / 2);
+            xPosEnd = xPos;
+            break;
+        }
+
+        context.moveTo(xPos, yPos);
+        context.lineTo(xPosEnd, yPosEnd);
+
+        context.stroke();
+
+    }
+
+    if (this.cursor.x <= 0) {
+
+        // We are on the left edge…
+        adjacentBoard = this.getBoard(this.currentBoard.west);
+
+        point.x = 0;
+        pointStart = Math.max(0, me.currentBoard.windowOrigin.y);
+        pointEnd = Math.min(me.currentBoard.height, pointStart + me.currentBoard.windowSize.y);
+
+        for (point.y = pointStart; point.y < pointEnd; point.y += 1) {
+            drawIndicator(point, Direction.West, adjacentBoard);
+        }
+
+
+    }
+
+    if (this.cursor.x >= this.currentBoard.width - 1) {
+
+        // We are on the right edge
+        adjacentBoard = this.getBoard(this.currentBoard.east);
+
+        point.x = this.currentBoard.width - 1;
+        pointStart = Math.max(0, me.currentBoard.windowOrigin.y);
+        pointEnd = Math.min(me.currentBoard.height, pointStart + me.currentBoard.windowSize.y);
+        for (point.y = pointStart; point.y < pointEnd; point.y += 1) {
+            drawIndicator(point, Direction.East, adjacentBoard);
+        }
+
+    }
+
+    if (this.cursor.y <= 0) {
+
+        // We are on the top edge
+        adjacentBoard = this.getBoard(this.currentBoard.north);
+
+        point.y = 0;
+        pointStart = Math.max(0, me.currentBoard.windowOrigin.x);
+        pointEnd = Math.min(me.currentBoard.width, pointStart + me.currentBoard.windowSize.x);
+        for (point.x = pointStart; point.x < pointEnd; point.x += 1) {
+            drawIndicator(point, Direction.North, adjacentBoard);
+        }
+
+    }
+
+    if (this.cursor.y >= this.currentBoard.height - 1) {
+
+        // We are on the bottom edge
+        adjacentBoard = this.getBoard(this.currentBoard.south);
+
+        point.y = this.currentBoard.height - 1;
+        pointStart = Math.max(0, me.currentBoard.windowOrigin.x);
+        pointEnd = Math.min(me.currentBoard.width, pointStart + me.currentBoard.windowSize.x);
+        for (point.x = pointStart; point.x < pointEnd; point.x += 1) {
+            drawIndicator(point, Direction.South, adjacentBoard);
+        }
+
+    }
 
 };
 
