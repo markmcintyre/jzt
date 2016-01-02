@@ -49,6 +49,7 @@ function Editor(editorElement, configuration) {
     this.changeGameOptionsCallback = configuration.changeGameOptions;
 
     this.mode = Editor.Mode.DRAW;
+    this.scrollPosition = new Point(0, 0);
 
     this.boards = [];
     this.cursor = new Point(0, 0);
@@ -1205,12 +1206,59 @@ Editor.prototype.onCanvasMouseUp = function (event) {
 
 Editor.prototype.onCanvasScroll = function (event) {
 
-    var deltaX = Math.round(event.deltaX / 10),
-        deltaY = Math.round(event.deltaY / 10);
-    deltaX = deltaX > 2 ? 2 : deltaX < -2 ? -2 : deltaX;
-    deltaY = deltaY > 2 ? 2 : deltaY < -2 ? -2 : deltaY;
+    var xSize = this.graphics.TILE_SIZE.x,
+        ySize = this.graphics.TILE_SIZE.y,
+        halfWindowWidth = Math.floor(this.currentBoard.windowSize.x / 2),
+        halfWindowHeight = Math.floor(this.currentBoard.windowSize.y / 2),
+        tileDeltaX = 0,
+        tileDeltaY = 0;
 
-    this.focusPoint = this.focusPoint.add(new Point(deltaX, deltaY));
+    this.scrollPosition.x += event.deltaX;
+    this.scrollPosition.y += event.deltaY;
+
+    if (this.scrollPosition.x > 0) {
+
+        while (this.scrollPosition.x > xSize) {
+            this.scrollPosition.x -= xSize;
+            tileDeltaX += 1;
+        }
+
+    } else {
+
+        while (this.scrollPosition.x < 0) {
+            this.scrollPosition.x += xSize;
+            tileDeltaX -= 1;
+        }
+
+    }
+
+    if (this.scrollPosition.y > 0) {
+        while (this.scrollPosition.y > ySize) {
+            this.scrollPosition.y -= ySize;
+            tileDeltaY += 1;
+        }
+    } else {
+        while (this.scrollPosition.y < 0) {
+            this.scrollPosition.y += ySize;
+            tileDeltaY -= 1;
+        }
+    }
+
+
+    this.focusPoint = this.focusPoint.add(new Point(tileDeltaX, tileDeltaY));
+
+    if (this.focusPoint.x < halfWindowWidth) {
+        this.focusPoint.x = halfWindowWidth;
+    } else if (this.focusPoint.x > (this.currentBoard.width - halfWindowWidth)) {
+        this.focusPoint.x = this.currentBoard.width - halfWindowWidth;
+    }
+
+    if (this.focusPoint.y < halfWindowHeight) {
+        this.focusPoint.y = halfWindowHeight;
+    } else if (this.focusPoint.y > this.currentBoard.height - halfWindowHeight) {
+        this.focusPoint.y = this.currentBoard.height - halfWindowHeight;
+    }
+
     event.preventDefault();
     this.render(this.context);
 
