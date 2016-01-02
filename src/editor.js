@@ -146,7 +146,7 @@ Editor.Thing = {
 
 
     Door: {
-        color: {type: 'color', defaultValue: '1F', options: ['1', '2', '3', '4', '5', '6', '7'], foreground: false, label: 'Color'}
+        color: {type: 'color', defaultValue: '1F', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: false, label: 'Color'}
     },
 
     Duplicator: {
@@ -797,6 +797,8 @@ Editor.prototype.createField = function (fieldName, field, template) {
         elementTemplate,
         innerElement,
         color,
+        colorName,
+        option,
         nonStandard = false;
 
     function getFriendlyName(name) {
@@ -938,7 +940,9 @@ Editor.prototype.createField = function (fieldName, field, template) {
         // Our field type is a color...
         element = document.createElement('select');
         for (index = 0; index < field.options.length; index += 1) {
-            element.options[element.options.length] = new Option(getFriendlyName(ColorUtilities.getColor(field.options[index]).name), field.options[index]);
+            colorName = ColorUtilities.getColor(field.options[index]).name;
+            option = new Option(getFriendlyName(colorName), field.options[index]);
+            element.options[element.options.length] = option;
         }
         nonStandard = true;
         element.addEventListener('change', function () {

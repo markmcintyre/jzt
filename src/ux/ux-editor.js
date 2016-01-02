@@ -42,6 +42,7 @@ var JztScript = require('../jzt-script').JztScript,
     scriptTab,
     newBoardDialog,
     mainNavigation,
+    foundation,
     parser;
 
 require('codemirror/addon/mode/simple');
@@ -186,9 +187,7 @@ function initializeWorldOptionsDialog(dialog) {
  */
 function initializeOpenDialog(dialog) {
 
-    var openInput = dialog.querySelector('[data-id="open"]'),
-        okButton = dialog.querySelector('[data-id="open-button"]'),
-        json;
+    var openInput = dialog.querySelector('[data-id="open"]');
 
     openInput.addEventListener('change', function () {
 
@@ -202,11 +201,24 @@ function initializeOpenDialog(dialog) {
 
             fileReader.onload = function () {
 
+                var json;
+
                 if (file.type === 'application/json') {
                     json = fileReader.result;
                 } else {
                     json = fileReader.result.split(',')[1];
                     json = LZString.decompressFromBase64(json);
+                }
+
+                if (json) {
+
+                    try {
+                        editor.deserialize(JSON.parse(json));
+                        openInput.value = '';
+                    } catch (exception) {
+                        alert(exception);
+                    }
+
                 }
 
             };
@@ -222,24 +234,6 @@ function initializeOpenDialog(dialog) {
         event.preventDefault();
 
     }, false);
-
-
-    okButton.addEventListener('click', function () {
-
-        if (json) {
-
-            try {
-                editor.deserialize(JSON.parse(json));
-                openInput.value = '';
-            } catch (exception) {
-                alert(exception);
-            }
-
-        }
-
-
-    });
-
 
 }
 
@@ -269,6 +263,14 @@ function initializeNewScriptDialog(dialog) {
         scriptElement.value = '';
 
     }, false);
+
+}
+
+function initializeConfirmDeleteBoardDialog(dialog) {
+
+    dialog.querySelector('[data-id="delete-button"]').addEventListener('click', function () {
+        editor.removeBoard(editor.currentBoard.name);
+    });
 
 }
 
@@ -431,10 +433,6 @@ function initializePrimaryUi(options) {
 
             editor.setActiveTemplate(activeTemplate);
 
-            // We may need to reinitialize foundation plugins
-            if (toolType === 'Scriptable') {
-                options.foundation.find('#template-customizer').foundation();
-            }
 
         } else {
             editor.setActiveTemplate(undefined);
@@ -520,16 +518,6 @@ function initializePrimaryUi(options) {
         event.preventDefault();
 
     }, false);
-
-    // Delete Board
-    mainNavigation.querySelector('[data-menu-item="delete-board"]').addEventListener('click', function () {
-
-        editor.removeBoard(editor.currentBoard.name);
-
-        event.preventDefault();
-
-    }, false);
-
 
     itemSelector.addEventListener('change', onToolChange, false);
 
@@ -666,6 +654,9 @@ function onTemplateChanged(newTemplate) {
             itemSelector.value = newTemplate.type;
         }
 
+        // Initialize foundation plugins
+        foundation.find('#template-customizer').foundation();
+
     } else {
         itemSelector.value = '';
         templateEditor.value = '(None)';
@@ -735,6 +726,7 @@ function initializeEditorUx(options) {
     });
 
     editArea = options.editArea;
+    foundation = options.foundation;
     templates = {};
     editor = new Editor(editArea, {
         addBoard: onBoardsChanged,
@@ -753,6 +745,7 @@ function initializeEditorUx(options) {
     initializeScriptTab(options.scriptTab);
     initializeNewScriptDialog(options.newScriptDialog);
     initializeNewBoardDialog(options.newBoardDialog);
+    initializeConfirmDeleteBoardDialog(options.confirmDeleteBoardDialog);
     initializeMusicDialog(options.musicDialog);
     initializePrimaryUi(options);
 
