@@ -464,7 +464,6 @@ PutCommand.prototype.execute = function (owner) {
     var newThing,
         direction = this.directionExpression.getResult(owner),
         point = owner.point.add(direction),
-        obstacle,
         isFreeSpace;
 
     // If our point is off the board, return immediately
@@ -472,28 +471,24 @@ PutCommand.prototype.execute = function (owner) {
         return;
     }
 
-
-    // Get the tile in the way, if applicable
-    obstacle = owner.board.getTile(point);
-
-    // Determine if there is free space, or if we can make some by pushing an obstacle
-    isFreeSpace = obstacle ? owner.board.moveTile(owner.point, point, false, true) : true;
-
     // Create our new thing
     newThing = ThingFactory.deserialize(this.thingTemplate, owner.board);
 
+    if (newThing) {
 
-    // Depending on if there's space and a thing available...
-    if (isFreeSpace && newThing) {
+        // Give whatever's in the way a nudge first
+        owner.board.moveTile(owner.point, point, false, true);
 
-        // There's space, so add our thing
-        owner.board.addThing(point, newThing);
+        // If the space is free to put something, do it
+        if (owner.board.isFreeOrSurrenderable(point)) {
+            owner.board.addThing(point, newThing, true);
+        }
 
-    } else if (!isFreeSpace && !newThing) {
+    } else {
 
-        // There's no free space, and we're putting emptiness,
-        // so delete the existing tile.
-        owner.board.deleteTile(point);
+        if (!owner.board.player.point.equals(point)) {
+            owner.board.deleteTile(point);
+        }
 
     }
 
