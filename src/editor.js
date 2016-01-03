@@ -715,17 +715,27 @@ Editor.prototype.removeBoard = function (boardName) {
 
 Editor.prototype.createBoard = function (boardName, width, height) {
 
-    var template = {
-            name: boardName,
-            playerX: Math.floor(width / 2),
-            playerY: Math.floor(height / 2),
-            height: height,
-            width: width,
-            tiles: [],
-            scripts: []
-        },
+    var template,
         row,
         column;
+
+    if (width > 200) {
+        width = 200;
+    }
+
+    if (height > 200) {
+        height = 200;
+    }
+
+    template = {
+        name: boardName,
+        playerX: Math.floor(width / 2),
+        playerY: Math.floor(height / 2),
+        height: height,
+        width: width,
+        tiles: [],
+        scripts: []
+    };
 
     for (row = 0; row < height; row += 1) {
         for (column = 0; column < width; column += 1) {
