@@ -49,8 +49,6 @@ function Thing(board) {
     this.point = new Point(0, 0);
     this.foreground = Colors.Yellow;
     this.background = undefined;
-    this.x = 0;
-    this.y = 0;
     this.type = this.constructor.type;
 }
 
