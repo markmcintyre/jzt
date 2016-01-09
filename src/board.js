@@ -348,8 +348,7 @@ Board.prototype.initializePlayer = function (player) {
  */
 Board.prototype.initializeTiles = function (tileDataCollection) {
 
-    var x = 0,
-        y = 0,
+    var point = new Point(0, 0),
         index,
         tile,
         thing;
@@ -362,14 +361,14 @@ Board.prototype.initializeTiles = function (tileDataCollection) {
             thing = ThingFactory.deserialize(tile, this);
 
             if (thing !== undefined) {
-                this.setTile(new Point(x, y), thing);
+                this.setTile(point, thing);
                 this.initializeTorch(thing);
             }
 
-            x += 1;
-            if (x >= this.width) {
-                x = 0;
-                y += 1;
+            point.x += 1;
+            if (point.x >= this.width) {
+                point.x = 0;
+                point.y += 1;
             }
 
         }
