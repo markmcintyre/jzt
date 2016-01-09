@@ -848,7 +848,7 @@ Bear.prototype.deserialize = function (data) {
  */
 Bear.prototype.push = function (direction, pusher) {
 
-    if (pusher.type === 'River') {
+    if (pusher && pusher.type === 'River') {
         this.move(direction, true);
     } else if (!this.move(direction)) {
         this.play('t+c---c++++c--c');
@@ -1128,7 +1128,7 @@ Boulder.prototype.constructor = Boulder;
  */
 Boulder.prototype.push = function (direction, pusher) {
 
-    if (pusher.type === 'River') {
+    if (pusher && pusher.type === 'River') {
         this.move(direction, true);
     } else if (this.move(direction)) {
         this.play('t--f', false, true);
@@ -2294,7 +2294,7 @@ Gem.prototype.sendMessage = function (message) {
  */
 Gem.prototype.push = function (direction, pusher) {
 
-    if (pusher.type === 'River') {
+    if (pusher && pusher.type === 'River') {
         this.move(direction, true);
     } else if (!this.move(direction)) {
         this.remove();
@@ -2339,7 +2339,7 @@ Heart.prototype.sendMessage = function (message) {
 
 Heart.prototype.push = function (direction, pusher) {
 
-    if (pusher.type === 'River') {
+    if (pusher && pusher.type === 'River') {
         this.move(direction, true);
     } else {
         this.move(direction);
@@ -2468,9 +2468,11 @@ Key.prototype.sendMessage = function (message) {
  */
 Key.prototype.push = function (direction, pusher) {
 
-    if (pusher.type === 'River') {
+    if (pusher && pusher.type === 'Player') {
+        return;
+    } else if (pusher && pusher.type === 'River') {
         this.move(direction, true);
-    } else if (pusher.type !== 'Player' && this.move(direction)) {
+    } else if (this.move(direction)) {
         this.play('t--f', false, true);
     }
 };
@@ -2667,7 +2669,7 @@ Lion.prototype.sendMessage = function (message) {
  */
 Lion.prototype.push = function (direction, pusher) {
 
-    if (pusher.type === 'River') {
+    if (pusher && pusher.type === 'River') {
         this.move(direction, true);
     } else if (!this.move(direction)) {
         this.play('t+c---c++++c--c');
