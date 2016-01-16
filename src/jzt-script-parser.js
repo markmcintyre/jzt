@@ -253,6 +253,7 @@ function JztScriptParser(validateOnly) {
         thing.add(new Literal('Ricochet'));
         thing.add(new Literal('River'));
         thing.add(new Literal('Ruffian'));
+        thing.add(new Literal('Scriptable'));
         thing.add(new Literal('Signpost'));
         thing.add(new Literal('SliderEw'));
         thing.add(new Literal('SliderNs'));
