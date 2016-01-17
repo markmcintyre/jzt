@@ -208,9 +208,9 @@ function initializeOpenDialog(dialog) {
                 if (file.type === 'application/json') {
                     json = fileReader.result;
                 } else {
-                    data = new Uint8Array(fileReader.result);
+                    data = fileReader.result.split(',')[1];
                     try {
-                        json = LZString.decompressFromUint8Array(data);
+                        json = LZString.decompressFromBase64(data);
                     } catch (decodeException) {
                         alert('Couldn\'t read game world.\n' + decodeException);
                     }
@@ -232,7 +232,7 @@ function initializeOpenDialog(dialog) {
             if (file.type === 'application/json') {
                 fileReader.readAsText(file);
             } else {
-                fileReader.readAsArrayBuffer(file);
+                fileReader.readAsDataURL(file);
             }
 
         }
