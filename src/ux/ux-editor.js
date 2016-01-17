@@ -1,5 +1,5 @@
 /*jslint node: true, browser:true */
-/*global FileReader, alert */
+/*global FileReader, Blob, Uint8Array, alert */
 
 'use strict';
 
@@ -43,6 +43,7 @@ var JztScript = require('../jzt-script').JztScript,
     newBoardDialog,
     mainNavigation,
     foundation,
+    downloadUrl,
     parser;
 
 require('codemirror/addon/mode/simple');
@@ -201,13 +202,18 @@ function initializeOpenDialog(dialog) {
 
             fileReader.onload = function () {
 
-                var json;
+                var json,
+                    data;
 
                 if (file.type === 'application/json') {
                     json = fileReader.result;
                 } else {
-                    json = fileReader.result.split(',')[1];
-                    json = LZString.decompressFromBase64(json);
+                    data = new Uint8Array(fileReader.result);
+                    try {
+                        json = LZString.decompressFromUint8Array(data);
+                    } catch (decodeException) {
+                        alert('Couldn\'t read game world.\n' + decodeException);
+                    }
                 }
 
                 if (json) {
@@ -226,7 +232,7 @@ function initializeOpenDialog(dialog) {
             if (file.type === 'application/json') {
                 fileReader.readAsText(file);
             } else {
-                fileReader.readAsDataURL(file);
+                fileReader.readAsArrayBuffer(file);
             }
 
         }
@@ -501,10 +507,19 @@ function initializePrimaryUi(options) {
         /*jslint regexp: true */
 
         var game = editor.serialize(),
-            link;
+            link,
+            compressedGame = LZString.compressToUint8Array(JSON.stringify(game));
+
+        // Revoke our old URL, if applicable
+        if (downloadUrl) {
+            window.URL.revokeObjectURL(downloadUrl);
+        }
+
+        // Create our new URL
+        downloadUrl = window.URL.createObjectURL(new Blob([compressedGame], {type: 'application/octet-stream'}));
 
         event.target.download = game.name.replace(/[^a-z0-9_\-]/gi, '-').toLowerCase() + '.jzt';
-        event.target.href = 'data:application/octet-stream;charset=utf-8;base64,' +     LZString.compressToBase64(JSON.stringify(game));
+        event.target.href = downloadUrl;
 
     }, false);
 
