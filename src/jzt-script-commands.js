@@ -354,15 +354,13 @@ MoveCommand.prototype.move = function (owner) {
     // If a direction is available
     if (direction) {
 
+        // Move and reduce our count by one
+        owner.move(direction);
+        heap[count] -= 1;
+
         // If we are to go a number of times...
         if (heap[count] > 0) {
-
-            heap[count] -= 1;
-
-            if (owner.move(direction)) {
-                return CommandResult.REPEAT;
-            }
-
+            return CommandResult.REPEAT;
         } else {
             delete heap[count];
         }

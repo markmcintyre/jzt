@@ -250,8 +250,25 @@ Thing.prototype.isPlayerVisible = function (distance) {
  * @return true if a Player thing is directly adjacent in a given direction, false otherwise.
  */
 Thing.prototype.isPlayerAdjacent = function (direction) {
-    var tile = this.board.getTile(this.point.add(direction));
-    return tile && tile.type === 'Player';
+
+    var me = this,
+        result = false;
+
+    function testDirection(directionToTest) {
+        var tile = me.board.getTile(me.point.add(directionToTest));
+        if (tile && tile.type === 'Player') {
+            result = true;
+        }
+    }
+
+    if (direction) {
+        testDirection(direction);
+    } else {
+        Direction.each(testDirection);
+    }
+
+    return result;
+
 };
 
 /**
