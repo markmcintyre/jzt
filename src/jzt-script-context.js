@@ -173,7 +173,8 @@ JztScriptContext.prototype.executeTick = function () {
 
     var message,
         command,
-        result;
+        result,
+        displayScroll = this.scrollContent.length > 0;
 
     // If our owner has a message waiting...
     if (this.owner.messageQueue.length > 0) {
@@ -197,12 +198,14 @@ JztScriptContext.prototype.executeTick = function () {
 
             result = command.execute(this.owner);
 
-            // If the command doesn't modify the scroll, and there's scroll content...
-            if (this.scrollContent.length > 0 && !command.modifiesScroll) {
+            // If we modify the scroll, don't display it yet
+            if (command.modifiesScroll) {
+                displayScroll = false;
+            }
 
-                // It's time to show the scroll content
+            // If we've got scroll content, display it
+            if (displayScroll) {
                 this.displayScroll();
-
             }
 
             switch (result) {
@@ -241,6 +244,13 @@ JztScriptContext.prototype.executeTick = function () {
                 throw 'Unexpected command execution.';
             }
 
+        }
+
+    } else {
+
+        // Even if we're not running, if we've got scroll content we need to show it
+        if (displayScroll) {
+            this.displayScroll();
         }
 
     }
