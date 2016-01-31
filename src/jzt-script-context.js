@@ -82,7 +82,7 @@ JztScriptContext.prototype.inDefaultState = function () {
         labelIndex;
 
     // Look for evidence that we're not in a default state
-    if (this.commandIndex > 0) {
+    if (this.commandIndex !== 0) {
 
         // We aren't at the first command
         defaultState = false;
