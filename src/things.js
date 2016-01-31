@@ -2565,6 +2565,7 @@ Lava.prototype.isSurrenderable = function () {
  */
 function LineWall(board) {
     Thing.call(this, board);
+    this.foreground = Colors.BrightBlue;
     this.spriteIndex = undefined;
 }
 LineWall.prototype = new Thing();
