@@ -833,6 +833,25 @@ Editor.prototype.createField = function (fieldName, field, template) {
         }
     }
 
+    function getBestAvailableColor(desiredColor) {
+
+        var exactMatch,
+            bestGuess;
+
+        field.options.forEach(function (option) {
+            if (option === desiredColor.code) {
+                exactMatch = option;
+            } else if (desiredColor.isLight() && option === desiredColor.darken().code) {
+                bestGuess = option;
+            } else if (desiredColor.isDark() && option === desiredColor.lighten().code) {
+                bestGuess = option;
+            }
+        });
+
+        return ColorUtilities.getColor(exactMatch || bestGuess);
+
+    }
+
     function initializeSpritePosition(domElement) {
 
         var row, column, spriteIndex;
@@ -976,18 +995,18 @@ Editor.prototype.createField = function (fieldName, field, template) {
         }, false);
         if (template.hasOwnProperty(fieldName)) {
             if (field.foreground) {
-                color = ColorUtilities.deserializeForeground(template[fieldName]);
+                color = getBestAvailableColor(ColorUtilities.deserializeForeground(template[fieldName]));
                 element.value = color ? color.code : Colors.Yellow;
             } else {
-                color = ColorUtilities.deserializeBackground(template[fieldName]);
+                color = getBestAvailableColor(ColorUtilities.deserializeBackground(template[fieldName]));
                 element.value = color ? color.code : Colors.Blue;
             }
         } else if (field.defaultValue) {
             if (field.foreground) {
-                color = ColorUtilities.deserializeForeground(field.defaultValue);
+                color = getBestAvailableColor(ColorUtilities.deserializeForeground(field.defaultValue));
                 element.value = color ? color.code : Colors.Yellow;
             } else {
-                color = ColorUtilities.deserializeBackground(field.defaultValue);
+                color = getBestAvailableColor(ColorUtilities.deserializeBackground(field.defaultValue));
                 element.value = color ? color.code : Colors.Blue;
             }
         }
