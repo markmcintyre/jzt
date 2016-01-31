@@ -3210,7 +3210,9 @@ River.prototype.deserialize = function (data) {
     UpdateableThing.prototype.deserialize.call(this, data);
     this.background = Colors.Blue;
     this.foreground = Colors.BrightBlue;
-    this.direction = Direction.fromName(data.direction);
+    if (data.direction) {
+        this.direction = Direction.fromName(data.direction);
+    }
     this.initialize();
 };
 
