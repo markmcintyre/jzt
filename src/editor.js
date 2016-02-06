@@ -356,77 +356,79 @@ Editor.prototype.plot = function () {
         index,
         c;
 
+    // Get our existing thing, if any
+    thing = this.currentBoard.getTile(this.cursor);
+
     // No need to plot the same tile twice
-    if (!this.previousPlot || !this.previousPlot.equals(this.cursor)) {
+    if (this.previousPlot && this.previousPlot.equals(this.cursor) && thing && thing.type === this.activeTemplate.type) {
+        return;
+    }
 
-        this.previousPlot = this.cursor;
+    // Update our previous plot
+    this.previousPlot = this.cursor;
 
-        // If there is a template available...
-        if (this.activeTemplate) {
+    // If there is a template available...
+    if (this.activeTemplate) {
 
-            // Which template have we got?
+        // Which template have we got?
 
-            if (this.activeTemplate.type === 'Player') {
+        if (this.activeTemplate.type === 'Player') {
 
-                // It's a player
+            // It's a player
 
-                this.currentBoard.defaultPlayerX = this.cursor.x;
-                this.currentBoard.defaultPlayerY = this.cursor.y;
-                this.playerPosition.x = this.currentBoard.defaultPlayerX;
-                this.playerPosition.y = this.currentBoard.defaultPlayerY;
+            this.currentBoard.defaultPlayerX = this.cursor.x;
+            this.currentBoard.defaultPlayerY = this.cursor.y;
+            this.playerPosition.x = this.currentBoard.defaultPlayerX;
+            this.playerPosition.y = this.currentBoard.defaultPlayerY;
 
-            } else if (this.activeTemplate.type === 'Text') {
+        } else if (this.activeTemplate.type === 'Text') {
 
-                // It's Text
+            // It's Text
 
-                if (this.activeTemplate.text) {
+            if (this.activeTemplate.text) {
 
-                    // Output a text character for each character in the string
-                    for (index = 0; index < this.activeTemplate.text.length; index += 1) {
+                // Output a text character for each character in the string
+                for (index = 0; index < this.activeTemplate.text.length; index += 1) {
 
-                        c = this.activeTemplate.text.charAt(index);
-                        c = this.graphics.convertSpecialCharacter(c);
+                    c = this.activeTemplate.text.charAt(index);
+                    c = this.graphics.convertSpecialCharacter(c);
 
-                        thing = this.currentBoard.getTile(this.cursor);
-
-                        /* If there's already a Text thing in our position, set it's character
-                         * depending on the active language, and change its color if necessary.
-                         * Otherwise, we can go ahead and add a brand new Text Thing.
-                         */
-                        if (thing && thing.type === 'Text') {
-                            thing.i18n[i18n.getLanguage()] = c;
-                            if (this.activeTemplate.color) {
-                                thing.foreground = ColorUtilities.deserializeForeground(this.activeTemplate.color);
-                                thing.background = ColorUtilities.deserializeBackground(this.activeTemplate.color);
-                            }
-                        } else {
-                            thing = {type: 'Text', i18n: {}, color: this.activeTemplate.color};
-                            thing.i18n[i18n.getLanguage()] = c;
-                            this.currentBoard.addThing(this.cursor, ThingFactory.deserialize(thing, this.currentBoard));
+                    /* If there's already a Text thing in our position, set it's character
+                     * depending on the active language, and change its color if necessary.
+                     * Otherwise, we can go ahead and add a brand new Text Thing.
+                     */
+                    if (thing && thing.type === 'Text') {
+                        thing.i18n[i18n.getLanguage()] = c;
+                        if (this.activeTemplate.color) {
+                            thing.foreground = ColorUtilities.deserializeForeground(this.activeTemplate.color);
+                            thing.background = ColorUtilities.deserializeBackground(this.activeTemplate.color);
                         }
-                        this.cursor = this.cursor.add(Direction.East);
+                    } else {
+                        thing = {type: 'Text', i18n: {}, color: this.activeTemplate.color};
+                        thing.i18n[i18n.getLanguage()] = c;
+                        this.currentBoard.addThing(this.cursor, ThingFactory.deserialize(thing, this.currentBoard));
                     }
-
-
-                    this.cursor = this.previousPlot;
-
+                    this.cursor = this.cursor.add(Direction.East);
                 }
 
-            } else {
 
-                // It's something else
-
-                this.currentBoard.addThing(this.cursor, ThingFactory.deserialize(this.activeTemplate, this.currentBoard));
+                this.cursor = this.previousPlot;
 
             }
 
-
         } else {
 
-            // No active template, means we should plot an empty space
-            this.currentBoard.addThing(this.cursor, undefined);
+            // It's something else
+
+            this.currentBoard.addThing(this.cursor, ThingFactory.deserialize(this.activeTemplate, this.currentBoard));
 
         }
+
+
+    } else {
+
+        // No active template, means we should plot an empty space
+        this.currentBoard.addThing(this.cursor, undefined);
 
     }
 
