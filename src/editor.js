@@ -409,6 +409,10 @@ Editor.prototype.plot = function () {
                         this.currentBoard.addThing(this.cursor, ThingFactory.deserialize(thing, this.currentBoard));
                     }
                     this.cursor = this.cursor.add(Direction.East);
+
+                    // Update our thing to the new cursor position
+                    thing = this.currentBoard.getTile(this.cursor);
+
                 }
 
 
