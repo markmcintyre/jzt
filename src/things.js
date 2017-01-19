@@ -2319,6 +2319,33 @@ Gem.prototype.push = function (direction, pusher) {
 
 //--------------------------------------------------------------------------------
 
+function GeoFence(board) {
+    Thing.call(this, board);
+    this.foreground = Colors.Grey;
+    this.background = undefined;
+}
+GeoFence.restrictions = ['Scriptable', 'Lion', 'Tiger', 'Bear', 'Ruffian', 'Centipede', 'Spider', 'Snake'];
+GeoFence.prototype = new Thing();
+GeoFence.prototype.constructor = GeoFence;
+
+GeoFence.prototype.isSurrenderable = function (sender) {
+    if (sender && (GeoFence.restrictions.indexOf(sender.type) < 0)) {
+        return true;
+    }
+}
+
+/**
+ * Returns a sprite index to be used to represent this GeoFence.
+ * If we detect that we are in a game editor, 176 will be used. Otherwise, 0.
+ *
+ * @return A sprite index.
+ */
+GeoFence.prototype.getSpriteIndex = function () {
+    return this.board.game.isEditor ? 176 : 0;
+};
+
+//--------------------------------------------------------------------------------
+
 function Heart(board) {
     Thing.call(this, board);
     this.spriteIndex = 3;
@@ -4506,6 +4533,7 @@ defineThing('Explosion', Explosion);
 defineThing('FakeWall', FakeWall);
 defineThing('Forest', Forest);
 defineThing('Gem', Gem);
+defineThing('GeoFence', GeoFence);
 defineThing('Heart', Heart);
 defineThing('InvisibleWall', InvisibleWall);
 defineThing('Key', Key);

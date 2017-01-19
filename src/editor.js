@@ -163,6 +163,8 @@ Editor.Thing = {
         color: {type: 'color', defaultValue: '0D', options: allColorsNoBlack, foreground: true, label: 'Color'}
     },
 
+    GeoFence: {},
+
     InvisibleWall: {
         color: {type: 'color', defaultValue: '0A', options: allColorsNoBlack, foreground: true, label: 'Color'}
     },
