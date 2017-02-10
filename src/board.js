@@ -643,6 +643,11 @@ Board.prototype.moveTile = function (oldPoint, newPoint, weak, ghost) {
     // If we are blocked, but the path is surrenderable...
     if (!this.isOutside(newPoint) && obstacle.isSurrenderable(thing)) {
 
+        // Check if the obstacle is on something that's not surrenderable to us.
+        if(obstacle.under && !obstacle.under.isSurrenderable(thing)) {
+            return false;
+        }
+
         if (!ghost) {
             // If our thing isn't undefined
             if (thing !== undefined) {
@@ -663,6 +668,11 @@ Board.prototype.moveTile = function (oldPoint, newPoint, weak, ghost) {
 
         // If an obstacle was encountered
         if (obstacle) {
+
+            // Check if the obstacle is on something that's not surrenderable to us.
+            if(obstacle.under && !obstacle.under.isSurrenderable(thing)) {
+                return false;
+            }
 
             // Try to push the obstacle out of the way
             teleported = obstacle.push(oldPoint.directionTo(newPoint), thing);
@@ -916,6 +926,10 @@ Board.prototype.addMessage = function (message) {
  * Retrieves whether or not a provided point falls within any of this
  * Board's torches.
  *
+ * Note: Unlike the rendering routine, we use the torch values from the previous
+ * update cycle here, since updates happening on this board may still be
+ * changing the torch status.
+ *
  * @param point A Point to test if it's inside a torch circle
  * @param thing A thing at the point to test if it's glowing (or lit by torches)
  * @return true if a provided point is within any torch circle, false otherwise
@@ -923,7 +937,7 @@ Board.prototype.addMessage = function (message) {
 Board.prototype.isLit = function (point, thing) {
 
     var index,
-        torches = this.torches,
+        torches = this.previousTorches,
         torch;
 
     // If the board isn't dark, we're inherently lit
@@ -936,13 +950,7 @@ Board.prototype.isLit = function (point, thing) {
         return true;
     }
 
-    // If we're between torch updates, use the previous value
-    if (torches.length <= 0) {
-        if (this.previousTorches.length > 0) {
-            torches = this.previousTorches;
-        }
-    }
-
+    // Loop through our torches and see if we're lit
     for (index = 0; index < torches.length; index += 1) {
         torch = torches[index];
         if (torch.contains(point)) {
