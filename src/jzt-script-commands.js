@@ -288,8 +288,7 @@ function IfCommand(label, expression) {
  * Jumps to an owner's label if this command's expression evaluates to true.
  */
 IfCommand.prototype.execute = function (owner) {
-    if (this.expression.getResult(owner)) {
-        owner.scriptContext.jumpToLabel(this.label);
+    if (this.expression.getResult(owner) && owner.scriptContext.jumpToLabel(this.label)) {
         return CommandResult.CONTINUE_AFTER_JUMP;
     }
     return CommandResult.CONTINUE;
@@ -578,8 +577,10 @@ SendCommand.prototype.execute = function (owner) {
         index;
 
     if (this.recipient === 'SELF') {
-        owner.scriptContext.jumpToLabel(this.message);
-        return CommandResult.CONTINUE_AFTER_JUMP;
+        if (owner.scriptContext.jumpToLabel(this.message)) {
+            return CommandResult.CONTINUE_AFTER_JUMP;
+        }
+        return CommandResult.CONTINUE;
     }
 
     if (this.recipient === 'ALL') {
@@ -960,7 +961,7 @@ function LitExpression() {
 }
 
 LitExpression.prototype.getResult = function (owner) {
-    return owner.board.isLit(owner.point);
+    return owner.board.isLit(owner.point, undefined, true);
 };
 
 /**

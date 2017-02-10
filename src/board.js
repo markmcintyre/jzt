@@ -932,12 +932,14 @@ Board.prototype.addMessage = function (message) {
  *
  * @param point A Point to test if it's inside a torch circle
  * @param thing A thing at the point to test if it's glowing (or lit by torches)
+ * @param previousStep Whether to check if we were lit after the last cycle
+ *           instead of the current cycle (which may or not be done updating).
  * @return true if a provided point is within any torch circle, false otherwise
  */
-Board.prototype.isLit = function (point, thing) {
+Board.prototype.isLit = function (point, thing, previousStep) {
 
     var index,
-        torches = this.previousTorches,
+        torches = previousStep ? this.previousTorches : this.torches,
         torch;
 
     // If the board isn't dark, we're inherently lit

@@ -269,6 +269,7 @@ JztScriptContext.prototype.doneTick = function () {
  * name.
  *
  * @param label A name of a label to which to jump.
+ * @return {boolean} True if the jump was successful, false otherwise.
  */
 JztScriptContext.prototype.jumpToLabel = function (label) {
 
@@ -289,19 +290,13 @@ JztScriptContext.prototype.jumpToLabel = function (label) {
             // Increment our jump count for this tick
             this.jumpCount += 1;
 
-        } else {
-
-            // All the labels were zapped, so stop.
-            this.stop();
+            return true;
 
         }
 
-    } else {
-
-        // There was no label to jump to, so stop.
-        this.stop();
-
     }
+
+    return false;
 
 };
 
