@@ -679,7 +679,7 @@ Editor.prototype.serialize = function (playTest) {
     result.titleBoard = this.game.titleBoard;
     result.startingBoard = playTest ? this.currentBoard.name : this.game.startingBoard;
     result.victoryBoard = this.game.victoryBoard;
-    result.savedGame = true;
+    result.savedGame = playTest;
     result.author = this.game.author;
     result.boards = [];
     for (index = 0; index < this.boards.length; index += 1) {

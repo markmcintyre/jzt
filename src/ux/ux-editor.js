@@ -523,6 +523,28 @@ function initializePrimaryUi(options) {
 
     }, false);
 
+    // Download as JSON
+    mainNavigation.querySelector('[data-menu-item="downloadjson"]').addEventListener('click', function (event) {
+
+        /*jslint regexp: true */
+
+        var game = editor.serialize(),
+            json = JSON.stringify(game),
+            link;
+
+        // Revoke our old URL, if applicable
+        if (downloadUrl) {
+            window.URL.revokeObjectURL(downloadUrl);
+        }
+
+        // Create our new URL
+        downloadUrl = window.URL.createObjectURL(new Blob([json], {type: 'application/json'}));
+
+        event.target.download = game.name.replace(/[^a-z0-9_\-]/gi, '-').toLowerCase() + '.json';
+        event.target.href = downloadUrl;
+
+    }, false);
+
     // New Board
     mainNavigation.querySelector('[data-menu-item="new-board"]').addEventListener('click', function () {
 
