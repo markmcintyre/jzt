@@ -2072,7 +2072,7 @@ Duplicator.prototype.doTick = function () {
                 cloned = true;
 
                 // Create our new thing
-                this.board.addThing(targetPoint, cloneThing.clone());
+                this.board.addThing(targetPoint, cloneThing.clone(), true);
 
             }
 
@@ -3532,10 +3532,12 @@ Snake.prototype.serialize = function () {
 /**
  * Attempts to push this Snake in a provided direction.
  */
-Snake.prototype.push = function (direction) {
-    if (!this.move(direction)) {
-        this.remove();
+Snake.prototype.push = function (direction, pusher) {
+    if (pusher && pusher.type === 'River') {
+        this.move(direction, true);
+    } else if (!this.move(direction)) {
         this.play('t+c---c++++c--c');
+        this.remove();
     }
 };
 
