@@ -10,7 +10,7 @@ function receiveMessage(event) {
 
     if (event.origin === origin) {
 
-        if (event.data.lastIndexOf('play-game:', 0) === 0) {
+        if (event.data && event.data.lastIndexOf && (event.data.lastIndexOf('play-game:', 0) === 0)) {
 
             document.querySelector('canvas').classList.remove('loading');
 

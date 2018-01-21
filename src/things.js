@@ -2547,6 +2547,11 @@ Lava.prototype.updateWhileUnder = function () {
 
     var thing = this.board.getTile(this.point);
 
+    // If there's nothing on us, there's nothing to do
+    if (!thing) {
+        return;
+    }
+
     // If a player stepped on the lava...
     if (thing.type === 'Player') {
 
