@@ -489,7 +489,7 @@ Game.prototype.movePlayerToPassage = function (passageId, boardName) {
     if (passage) {
         newBoard.entryPoint = passage.point;
         this.setBoard(newBoard, passage.point);
-        this.setState(GameState.Paused);
+        this.pause(false);
     }
 
 };
@@ -814,7 +814,7 @@ Game.prototype.run = function (game) {
             // otherwise start from the title screen.
             if (this.savedGame) {
                 this.setBoard(this.startingBoard);
-                this.setState(GameState.Paused);
+                this.pause(true);
             } else {
                 this.setState(GameState.Title);
             }
@@ -879,6 +879,22 @@ Game.prototype.loop = function () {
 };
 
 /**
+ * Pauses the current game.
+ * @param {boolean} showStats - true if we should show player and game status
+ *                              false otherwise.
+ */
+Game.prototype.pause = function (showStats) {
+
+    if (showStats === undefined) {
+        showStats = true;
+    }
+
+    this.showStatsWhenPaused = showStats;
+    this.setState(GameState.Paused);
+
+};
+
+/**
  * Ends the game completely.
  */
 Game.prototype.end = function () {
@@ -930,7 +946,7 @@ Game.prototype.update = function (delta) {
 
             // The user wants to pause
             this.resources.audio.play('++se.tc.e.sc');
-            this.setState(GameState.Paused);
+            this.pause(true);
 
         } else if (this.keyboard.isPressed(this.keyboard.S)) {
 
@@ -1267,6 +1283,10 @@ Game.prototype.drawPauseScreen = function () {
             result += '/' + me.getCounterValue(counter + '_MAX').toString();
         }
         return result;
+    }
+
+    if (! this.showStatsWhenPaused) {
+        return;
     }
 
     // If we haven't yet defined a status popup in our language, do it now
