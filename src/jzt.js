@@ -27,6 +27,7 @@ var formatVersion = '1.0.0',
     things = require('./things').things,
     Colors = require('./graphics').Colors,
     ColorUtilities = require('./graphics').ColorUtilities,
+    utilities = require('./basic').utilities,
     Popup = require('./popup').Popup,
     GameState = require('./game-state').GameState,
     metadata = require('./metadata');
@@ -75,6 +76,7 @@ function Game(configuration) {
     this.CYCLE_RATE = Math.round(this.FPS / this.CPS);
     this.CYCLE_TICKS = Math.floor(1000 / this.FPS) * this.CYCLE_RATE;
     this.FPS_INTERVAL = 1000 / this.FPS;
+    this.TRANSITION_STEPS = 10;
 
     this.version = formatVersion;
     this.loopId = undefined;
@@ -83,6 +85,11 @@ function Game(configuration) {
     this.loadingAnimationIndex = 0;
     this.screenEffectIndex = 0;
     this.previousStates = [];
+    this.transition = {
+        animationIndex: 0,
+        type: 'irisOut',
+        callback: undefined
+    };
 
     this.onLoadCallback = configuration.onLoadCallback;
     this.player = undefined;
@@ -479,7 +486,8 @@ Game.prototype.movePlayerToPassage = function (passageId, boardName) {
 
     // Retrieve our new board (or the current board if it's the same)
     var newBoard = (boardName === this.currentBoard.name) ? this.currentBoard : this.getBoard(boardName),
-        passage = newBoard ? newBoard.getPassage(passageId) : undefined;
+        passage = newBoard ? newBoard.getPassage(passageId) : undefined,
+        me = this;
 
     // If the specified board does not exist, return
     if (newBoard === undefined) {
@@ -487,9 +495,21 @@ Game.prototype.movePlayerToPassage = function (passageId, boardName) {
     }
 
     if (passage) {
+
         newBoard.entryPoint = passage.point;
-        this.setBoard(newBoard, passage.point);
-        this.pause(false);
+
+        this.transition.type = 'irisOut';
+        this.transition.callback = function () {
+            me.setBoard(newBoard, passage.point);
+            me.transition.type = 'irisIn';
+            me.transition.animationIndex = 0;
+            me.transition.callback = function () {
+                me.setState(GameState.Playing);
+            }
+        };
+
+        this.setState(GameState.Transition);
+
     }
 
 };
@@ -644,6 +664,11 @@ Game.prototype.setState = function (state) {
 
         // Splashy Splashy!
         this.splash = new Splash(this);
+
+    } else if (state === GameState.Transition) {
+
+        // Transition init
+        this.transition.animationIndex = 0;
 
     }
 
@@ -1037,11 +1062,24 @@ Game.prototype.update = function (delta) {
 
     } else if (this.state === GameState.Loading) {
 
-
         // We're loading
         this.loadingAnimationIndex += 1;
         if (this.loadingAnimationIndex >= things.Conveyor.animationFrames.length * 4) {
             this.loadingAnimationIndex = 0;
+        }
+
+    } else if (this.state === GameState.Transition) {
+
+        // We're in a transition state
+        this.transition.animationIndex += 1;
+        if (this.transition.animationIndex >= this.TRANSITION_STEPS) {
+
+            // Perform our callback
+            this.transition.callback();
+
+            // Re-initialize for saftey
+            this.transition.animationIndex = 0;
+
         }
 
     } else if (this.state === GameState.Splash) {
@@ -1333,6 +1371,28 @@ Game.prototype.drawPauseScreen = function () {
 
 };
 
+Game.prototype.drawTransition = function () {
+
+    // TODO: Draw transition
+    var circle,
+        maxWidth = Math.min(this.currentBoard.width, this.screenWidth),
+        maxHeight = Math.min(this.currentBoard.height, this.screenHeight),
+        radius = Math.max(Math.round(maxWidth / 2), maxHeight),
+        me = this;
+
+    circle = utilities.generateCircleData(this.player.point, (this.transition.type === 'irisOut' ? this.TRANSITION_STEPS - this.transition.animationIndex : this.transition.animationIndex) * Math.floor(radius / this.TRANSITION_STEPS))
+
+    this.currentBoard.eachDisplayable(function (thing, point) {
+
+        if (!circle.contains(point)) {
+            me.resources.graphics.fillTile(me.context, point.subtract(me.currentBoard.windowOrigin), Colors.Grey);
+        }
+
+    });
+
+
+};
+
 /**
  * Renders a visual representation of this Game to its associated HTML5 Canvas element.
  */
@@ -1388,6 +1448,11 @@ Game.prototype.draw = function () {
         // We're in an error state (oh my!)
         this.drawScreenEffect();
         this.drawErrorScreen();
+
+    } else if (this.state === GameState.Transition) {
+
+        // We're in a transition state
+        this.drawTransition();
 
     }
 

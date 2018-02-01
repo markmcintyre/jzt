@@ -22,7 +22,8 @@ var GameState = {
     Reading: 4,
     Title: 5,
     Victory: 6,
-    FileManagement: 7
+    FileManagement: 7,
+    Transition: 8
 };
 
 exports.GameState = GameState;
