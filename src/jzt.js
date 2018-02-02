@@ -1371,17 +1371,45 @@ Game.prototype.drawPauseScreen = function () {
 
 };
 
+/**
+ * Draws a transition animation, based on data in our transition object.
+ *
+ * The transition consists of a growing or shrinking circle (depending on Whether
+ * or not the transition type is 'irisOut' or another value.) The radius is
+ * determined as the maximum distance to one of the corners of the screen,
+ * where the corners of the screen are the intersection between the window
+ * and the board dimensions.
+ */
 Game.prototype.drawTransition = function () {
 
-    // TODO: Draw transition
+    // Calculate the intersecting rectangle between the window and our
+    // current board's dimensions, and use it to find the distance between
+    // the player and each of the four corners of that rectangle.
+
     var circle,
-        maxWidth = Math.min(this.currentBoard.width, this.screenWidth),
-        maxHeight = Math.min(this.currentBoard.height, this.screenHeight),
-        radius = Math.max(Math.round(maxWidth / 2), maxHeight),
-        me = this;
+        me = this,
+        intersectionX1 = Math.max(this.currentBoard.windowOrigin.x, 0),
+        intersectionY1 = Math.max(this.currentBoard.windowOrigin.y, 0),
+        intersectionX2 = Math.min(this.currentBoard.windowOrigin.x + this.currentBoard.windowSize.x, this.currentBoard.width),
+        intersectionY2 = Math.min(this.currentBoard.windowOrigin.y + this.currentBoard.windowSize.y, this.currentBoard.height),
+        d1 = Math.sqrt((intersectionX1/2 - this.player.point.x/2) * (intersectionX1/2 - this.player.point.x/2) + (intersectionY1 - this.player.point.y) * (intersectionY1 - this.player.point.y)),
+        d2 = Math.sqrt((intersectionX1/2 - this.player.point.x/2) * (intersectionX1/2 - this.player.point.x/2) + (intersectionY2 - this.player.point.y) * (intersectionY2 - this.player.point.y)),
+        d3 = Math.sqrt((intersectionX2/2 - this.player.point.x/2) * (intersectionX2/2 - this.player.point.x/2) + (intersectionY2 - this.player.point.y) * (intersectionY2 - this.player.point.y)),
+        d4 = Math.sqrt((intersectionX2/2 - this.player.point.x/2) * (intersectionX2/2 - this.player.point.x/2) + (intersectionY1 - this.player.point.y) * (intersectionY1 - this.player.point.y)),
+        progress,
+        radius;
 
-    circle = utilities.generateCircleData(this.player.point, (this.transition.type === 'irisOut' ? this.TRANSITION_STEPS - this.transition.animationIndex : this.transition.animationIndex) * Math.floor(radius / this.TRANSITION_STEPS))
+    // Determine our progress through the animation
+    progress = this.transition.animationIndex / this.TRANSITION_STEPS;
+    progress = this.transition.type === 'irisOut' ? 1 - progress : progress;
 
+    // The radius is the largest distance from the player to a corner
+    radius = Math.max(d1, d2, d3, d4) * progress;
+
+    // Get our circle data
+    circle = utilities.generateCircleData(this.player.point, Math.ceil(radius));
+
+    // Draw everything outside our circle radius as a grey tile
     this.currentBoard.eachDisplayable(function (thing, point) {
 
         if (!circle.contains(point)) {
