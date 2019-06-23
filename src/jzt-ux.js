@@ -1,6 +1,6 @@
 /**
  * JZT User Experience
- * Copyright © 2014 Orangeline Interactive, Inc.
+ * Copyright © 2014 Mark McIntyre
  * @author Mark McIntyre
  */
 

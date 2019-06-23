@@ -1,6 +1,6 @@
 /**
  * JZT Popup
- * Copyright © 2013 Orangeline Interactive, Inc.
+ * Copyright © 2013 Mark McIntyre
  * @author Mark McIntyre
  */
 
@@ -239,7 +239,7 @@ function Splash(game) {
             );
         grid.addText(new Point(46 - meta.version.length, 15), meta.version, Colors.Grey);
         grid.addText(new Point(13, 18), 'Created by Mark McIntyre', Colors.Grey);
-        grid.addText(new Point(6, 19), '(c) ' + new Date(meta.date).getFullYear() + ' Orangeline Interactive, Inc.', Colors.Grey);
+        grid.addText(new Point(6, 19), '(c) ' + new Date(meta.date).getFullYear() + ' Mark McIntyre', Colors.Grey);
     }).end(4000);
 
 }
