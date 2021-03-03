@@ -306,6 +306,20 @@
             equal(command.message, 'OK', 'Expecting OK');
         });
         
+        test('SendDir Statement', function() {
+            var command;
+            ok(parser.parse('senddir n something', 'senddir n something'));
+            ok(parser.parse('senddir ccw opp seek something'), 'senddir ccw opp seek something');
+            throws(function(){parser.parse('senddir')}, NEWLINE_ERROR, 'senddir');
+            
+            command = parser.parse('senddir n something')[0];
+            ok(command instanceof commands.SendDirCommand, 'Expecting SendDirCommand');
+            equal(command.message, 'SOMETHING', 'Expecting SOMETHING');
+            ok(command.directionExpression instanceof commands.DirectionExpression, 'Expecting DirectionExpression');
+            equal(command.directionExpression.terminal, commands.Direction.NORTH, 'Expecting NORTH');
+
+        });
+
         test('Set Statement', function(){
             var command;
             ok(parser.parse('set flag'), 'set flag');

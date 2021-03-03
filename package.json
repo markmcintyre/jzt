@@ -1,7 +1,7 @@
 {
-  "name": "JZT",
+  "name": "jzt",
   "description": "A DOS-era Adventure Game for the Web",
-  "version": "1.0.45",
+  "version": "1.0.53",
   "author": {
     "name": "Mark McIntyre"
   },
@@ -11,7 +11,7 @@
   },
   "devDependencies": {
     "browserify": "~12.0.1",
-    "npm-watch": "^0.0.1",
+    "npm-watch": "^0.6.0",
     "uglify-js": "~2.6.1"
   },
   "watch": {
@@ -25,7 +25,8 @@
     "prebuild:game:js:production": "npm version patch && node ./task/create-metadata.js > src/metadata.json",
     "build:game:js:production": "browserify src/jzt.js -s jzt | uglifyjs -c -m > build/jzt.min.js",
     "build:editor:js": "browserify -d src/ux/ux-editor.js -s jztEditor > build/jzt-editor.min.js && browserify -d src/ux/ux-editor-play.js -s jztPlayer > build/jzt-editor-play.min.js",
-    "build:editor:js:production": "browserify -d src/ux/ux-editor.js -s jztEditor | uglifyjs -c -m > build/jzt-editor.min.js && browserify -d src/ux/ux-editor-play.js -s jztPlayer | uglifyjs -c -m > build/jzt-editor-play.min.js"
+    "build:editor:js:production": "browserify -d src/ux/ux-editor.js -s jztEditor | uglifyjs -c -m > build/jzt-editor.min.js && browserify -d src/ux/ux-editor-play.js -s jztPlayer | uglifyjs -c -m > build/jzt-editor-play.min.js",
+    "postinstall": "npm run build:js:production"
   },
   "private": true
 }

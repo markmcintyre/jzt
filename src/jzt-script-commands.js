@@ -553,6 +553,41 @@ ScrollCommand.prototype.execute = function (owner) {
 };
 
 /**
+ * SendDirCommand
+ * 
+ * When executed, sends a message to a provided recipient immediately
+ * adjacent as determined by a provided direction expression.
+ */
+function SendDirCommand(directionExpression, message) {
+    this.directionExpression = directionExpression;
+    this.message = message;
+}
+
+/**
+ * Sends a message to any Thing immediately adjacent to its owner.
+ */
+SendDirCommand.prototype.execute = function (owner) {
+
+    // Get our final direction
+    var direction = this.directionExpression.getResult(owner);
+
+    // If a direction is valid...
+    if (direction) {
+
+        // Get the resulting tile
+        var tile = owner.board.getTile(owner.point.add(direction));
+
+        // If it exists, send it a message
+        if (tile) {
+            tile.sendMessage(this.message);
+        }
+
+    }
+    
+
+};
+
+/**
  * SendCommand
  *
  * When executed, sends a message to a provided recipient via a
@@ -660,6 +695,7 @@ function StandCommand() {
  * Halts a provided owner from walking.
  */
 StandCommand.prototype.execute = function (owner) {
+    owner.pushable = false;
     owner.walkDirection = undefined;
 };
 
@@ -1018,6 +1054,7 @@ exports.MoveCommand = MoveCommand;
 exports.PlayCommand = PlayCommand;
 exports.PutCommand = PutCommand;
 exports.ScrollCommand = ScrollCommand;
+exports.SendDirCommand = SendDirCommand;
 exports.SendCommand = SendCommand;
 exports.SetCommand = SetCommand;
 exports.SpeedCommand = SpeedCommand;

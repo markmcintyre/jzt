@@ -241,6 +241,7 @@ function JztScriptParser(validateOnly) {
         thing.add(new Literal('FakeWall'));
         thing.add(new Literal('Forest'));
         thing.add(new Literal('Gem'));
+        thing.add(new Literal('GeoFence'));
         thing.add(new Literal('Heart'));
         thing.add(new Literal('InvisibleWall'));
         thing.add(new Literal('Key'));
@@ -803,6 +804,32 @@ function JztScriptParser(validateOnly) {
         return send;
     }
 
+
+    /**
+     * SendDir Statement Parser
+     * Creates and returns a 'senddir' statement parser.
+     * @return A 'senddir' statement parser.
+     */
+    function createSendDirStatementParser() {
+
+        var sendDir = new Sequence();
+
+        // Add SendDir sequence items
+        sendDir.addDiscard(new Literal('SendDir'));
+        sendDir.add(createDirectionParser());
+        sendDir.add(new Word());
+
+        // Define assembler
+        sendDir.assembler = createAssembler(function (assembly) {
+            var message = assembly.pop().value.toUpperCase(),
+                direction = assembly.pop();
+            assembly.push(new commands.SendDirCommand(direction, message));
+        });
+
+        return sendDir;
+
+    }
+
     /**
      * Set Statement Parser
      * Creates and returns a 'set' statement paser
@@ -1091,6 +1118,7 @@ function JztScriptParser(validateOnly) {
         statementOptions.add(createPutStatementParser());
         statementOptions.add(createScrollStatementParser());
         statementOptions.add(createSendStatementParser());
+        statementOptions.add(createSendDirStatementParser());
         statementOptions.add(createSetStatementParser());
         statementOptions.add(createSpeedStatementParser());
         statementOptions.add(createTakeStatementParser());

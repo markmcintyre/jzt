@@ -751,7 +751,7 @@ function initializeEditorUx(options) {
         start: [
             // The regex matches the token, the token property contains the type
             {regex: /"(?:[^\\]|\\.)*?"/, token: "string"},
-            {regex: /\b(become|color|change|char|die|end|give|go|if|lock|move|play|put|scroll|send|set|speed|take|throwstar|torch|try|restore|say|shoot|stand|unlock|victory|wait|walk|zap)\b/, token: "command"},
+            {regex: /\b(become|color|change|char|die|end|give|go|if|lock|move|play|put|scroll|send|senddir|set|speed|take|throwstar|torch|try|restore|say|shoot|stand|unlock|victory|wait|walk|zap)\b/, token: "command"},
             {regex: /(?:not|adjacent|blocked|aligned|peep|exists)\b/, token: "expression"},
             {regex: /\d/i, token: "number"},
             {regex: /:.*/, token: "label"},
