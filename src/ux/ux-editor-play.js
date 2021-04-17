@@ -8,21 +8,28 @@ var game,
 
 function receiveMessage(event) {
 
+    var button = document.querySelector('button');
+
     if (event.origin === origin) {
 
         if (event.data && event.data.lastIndexOf && (event.data.lastIndexOf('play-game:', 0) === 0)) {
 
-            document.querySelector('canvas').classList.remove('loading');
+            button.innerText = 'Click to play';
+            button.addEventListener('click', function () {
 
-            game = new jzt.Game({
-                canvasElement: document.getElementById('jzt'),
-                playTest: true,
-                onLoadCallback: function (success) {
-                    if (success) {
-                        this.run(JSON.parse(event.data.substring(10)));
+                button.remove();
+
+                game = new jzt.Game({
+                    canvasElement: document.getElementById('jzt'),
+                    playTest: true,
+                    onLoadCallback: function (success) {
+                        if (success) {
+                            this.run(JSON.parse(event.data.substring(10)));
+                        }
                     }
-                }
-            });
+                });
+
+            }); 
 
         }
 

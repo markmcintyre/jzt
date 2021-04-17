@@ -31,14 +31,71 @@ var ConstructorError = require('./basic').ConstructorError,
  * Some of our percussive instruments can be represented as a crude assemblage of notes
  * played very rapidly.
  */
-    percussiveCowbell = [103, 103, 105, 80, 103, 103, 105, 80, 103, 103, 105, 80, 103, 103, 105, 80],
-    percussiveHighSnare = [12, 71, 87, 83, 94, 12, 92, 89, 85, 99, 12, 92, 68, 79, 103],
-    percussiveHighWoodblock = [80, 79, 80, 68, 80, 79, 80, 70, 80, 83, 78, 80, 81, 80],
-    percussiveLowSnare = [12, 97, 93, 76, 88, 81, 12, 97, 93, 76, 88, 81, 12, 97, 93, 76, 88, 81],
-    percussiveLowWoodblock = [12, 74, 74, 73, 73, 12, 74, 74, 75, 75, 12, 74, 74, 75, 75, 76, 76],
-    percussiveBassDrum = [54, 52, 50, 5, 12, 30, 58, 56, 54, 5, 12, 30, 62, 60, 58, 5, 12],
-
+    percussiveSounds = {
+        tick: [],
+        tweet: [],
+        cowbell: [],
+        snare: [],
+        woodblock: [],
+        lowSnare: [],
+        tom: [],
+        lowWoodblock: [],
+        bass: []
+    },
     SONG_BAR_LENGTH = 1.8;
+
+/**
+ * Initializes our percussive instruments.
+ */
+function initalizePercussiveSounds() {
+
+    var index;
+
+    // Tick
+    percussiveSounds.tick.push(3200);
+
+    // Tweet
+    for (index = 0; index < 14; ++index) {
+        percussiveSounds.tweet.push(index * 100 + 1000); 
+    }
+
+    // Cowbell
+    for (index = 0; index < 16; ++index) {
+        percussiveSounds.cowbell.push((index % 2) * 1600 + 1600 + (index % 4) + 1600);
+    }
+
+    // Snare
+    for (index = 0; index < 14; ++index) {
+        percussiveSounds.snare.push(Math.random() * 1600 + 800);
+    }
+
+    // Woodblock
+    for (index = 0; index < 8; ++index) {
+        percussiveSounds.woodblock.push(1600);
+        percussiveSounds.woodblock.push(Math.random() * 1600 + 800);
+    }
+
+    // Low Snare
+    for (index = 0; index < 14; ++index) {
+        percussiveSounds.lowSnare.push(((index % 2) * 880) + 880 + ((index % 3) * 440));
+    }
+
+    // Tom
+    for (index = 0; index < 14; ++index) {
+        percussiveSounds.tom.push(700 - (index * 12));
+    }
+
+    // Low Woodblock
+    for (index = 0; index < 14; ++index) {
+        percussiveSounds.lowWoodblock.push((index * 20 + 1200) - Math.random() * index * 40);
+    }
+
+    // Bass
+    for (index = 0; index < 14; ++index) {
+        percussiveSounds.bass.push(Math.random() * 440 + 220);
+    }
+
+}
 
 /**
  * Note represents a single melodic note, taking a numeric index from 0 to 107, with 0 representing C-0
@@ -166,8 +223,11 @@ AudioSong.prototype.addPercussiveSound = function (noteArray, currentDuration) {
 
     for (index in noteArray) {
         if (noteArray.hasOwnProperty(index)) {
-            this.notes.push(new AudioNote(noteArray[index], 0.001));
-            remainingDuration -= 0.001;
+            this.notes.push({
+                frequency: noteArray[index], 
+                duration: 0.0015
+            });
+            remainingDuration -= 0.0015;
         }
     }
 
@@ -223,7 +283,6 @@ AudioSong.prototype.parse = function (notation) {
         tripletDuration = currentDuration / 3,
         tripletCount = -1,
         timeAndHalf = false,
-        percussiveNote,
         currentNote,
         currentChar,
         nextChar,
@@ -297,40 +356,31 @@ AudioSong.prototype.parse = function (notation) {
             currentNote = new AudioNote(11);
             break;
         case '0':
-            percussiveNote = new AudioNote(0, 0.005);
-            percussiveNote.bendTo(56);
-            this.notes.push(percussiveNote);
-            this.addRest(currentDuration - 0.005);
+            this.addPercussiveSound(percussiveSounds.tick, currentDuration);
             break;
         case '1':
-            percussiveNote = new AudioNote(72, 0.015);
-            percussiveNote.bendTo(87);
-            this.notes.push(percussiveNote);
-            this.addRest(currentDuration - 0.015);
+            this.addPercussiveSound(percussiveSounds.tweet, currentDuration);
             break;
         case '2':
-            this.addPercussiveSound(percussiveCowbell, currentDuration);
+            this.addPercussiveSound(percussiveSounds.cowbell, currentDuration);
             break;
         case '4':
-            this.addPercussiveSound(percussiveHighSnare, currentDuration);
+            this.addPercussiveSound(percussiveSounds.snare, currentDuration);
             break;
         case '5':
-            this.addPercussiveSound(percussiveHighWoodblock, currentDuration);
+            this.addPercussiveSound(percussiveSounds.woodblock, currentDuration);
             break;
         case '6':
-            this.addPercussiveSound(percussiveLowSnare, currentDuration);
+            this.addPercussiveSound(percussiveSounds.lowSnare, currentDuration);
             break;
         case '7':
-            percussiveNote = new AudioNote(65, 0.015);
-            percussiveNote.bendTo(60);
-            this.notes.push(percussiveNote);
-            this.addRest(currentDuration - 0.015);
+            this.addPercussiveSound(percussiveSounds.tom, currentDuration);
             break;
         case '8':
-            this.addPercussiveSound(percussiveLowWoodblock, currentDuration);
+            this.addPercussiveSound(percussiveSounds.lowWoodblock, currentDuration);
             break;
         case '9':
-            this.addPercussiveSound(percussiveBassDrum, currentDuration);
+            this.addPercussiveSound(percussiveSounds.bass, currentDuration);
             break;
         default:
             currentNote = undefined;
@@ -572,4 +622,5 @@ Audio.prototype.play = function (notation, uninterruptable) {
     }
 };
 
+initalizePercussiveSounds();
 exports.Audio = Audio;

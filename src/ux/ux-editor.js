@@ -284,16 +284,17 @@ function initializeMusicDialog(dialog) {
 
     var noteItems = dialog.querySelectorAll('[data-note]'),
         playItems = dialog.querySelectorAll('[data-id="play"]'),
-        index,
-        audio = new Audio();
+        index;
 
     function playNoteItem(event) {
-        var note = event.target.getAttribute('data-note');
+        var audio = new Audio(),
+            note = event.target.getAttribute('data-note')
         audio.play(note);
     }
 
     function playScore(event) {
-        var scoreId = event.target.getAttribute('data-score'),
+        var audio = new Audio(),
+            scoreId = event.target.getAttribute('data-score'),
             score = dialog.querySelector('[data-id="' + scoreId + '"]').value;
         audio.play(score);
     }
