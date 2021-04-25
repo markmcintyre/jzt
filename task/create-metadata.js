@@ -1,9 +1,7 @@
 /*jslint node: true */
 
-var nodePackage = require('../package.json'),
-    result = {};
-
-result.version = nodePackage.version;
+var result = {};
+result.version = process.env.npm_package_version;
 result.date = Date.now();
 
 console.log(JSON.stringify(result));
