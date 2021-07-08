@@ -99,6 +99,9 @@ FileManagement.prototype.open = function (dialogType, noEmptySlot) {
         this.dialogType = dialogType;
     }
 
+    // Set our title
+    this.popup.title = i18n.getMessage(this.dialogType === FileManagement.Type.SAVE ? 'file.save' : 'file.load')
+
     // Re-initialize our index and scrolling offset
     this.selectedIndex = 0;
     this.offset = 0;
@@ -136,7 +139,6 @@ FileManagement.prototype.open = function (dialogType, noEmptySlot) {
 
     // Initalize our dialog title and sprite grid
     this.popup.redraw();
-    this.initializeTitle();
     this.initializeSlots();
 
 };
@@ -340,15 +342,6 @@ FileManagement.prototype.saveFile = function () {
     // Save to local storage
     localStorage[metaName] = JSON.stringify(file);
     localStorage[saveName] = gameData;
-
-};
-
-FileManagement.prototype.initializeTitle = function () {
-
-    var message = ' ' + i18n.getMessage(this.dialogType === FileManagement.Type.SAVE ? 'file.save' : 'file.load') + ' ',
-        position = Math.round((this.width - message.length) / 2);
-
-    this.spriteGrid.addText(new Point(position, 0), message, Colors.BrightWhite);
 
 };
 

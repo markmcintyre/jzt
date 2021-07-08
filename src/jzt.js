@@ -430,11 +430,14 @@ Game.prototype.getCounterValue = function (counter) {
  */
 Game.prototype.setCounterValue = function (counter, value) {
 
-    var maxCounter = counter + '_MAX';
+    var maxCounter = counter + '_MAX',
+        oldValue = 0;
 
     // If the counter doesn't already exist, create it now
     if (this.counters[counter] === undefined) {
         this.counters[counter] = 0;
+    } else {
+        oldValue = this.counters[counter];
     }
 
     // If we have a corresponding maximum, ensure we don't exceed it
@@ -452,6 +455,18 @@ Game.prototype.setCounterValue = function (counter, value) {
 
         // Set our counter value
         this.counters[counter] = value;
+
+    }
+
+    // Notify our listeners if the value has changed
+    if (oldValue !== value) {
+
+        // Notify our listeners
+        this.notifyListeners('counter', {
+            'counter': counter,
+            'value': value,
+            'oldValue': oldValue
+        });
 
     }
 
@@ -1329,17 +1344,16 @@ Game.prototype.drawPauseScreen = function () {
 
     // If we haven't yet defined a status popup in our language, do it now
     if (this.statusPopup === undefined || this.statusPopup.language !== i18n.Messages.currentLanguage) {
-        this.statusPopup = new Popup(new Point(this.screenWidth - (pauseWidth + 1), 1), new Point(pauseWidth, 10), this);
+        this.statusPopup = new Popup(new Point(this.screenWidth - (pauseWidth + 1), 1), new Point(pauseWidth, 8), this);
         this.statusPopup.language = i18n.Messages.currentLanguage;
+        this.statusPopup.setTitle(i18n.getMessage('pause.paused'));
         spriteGrid = this.statusPopup.spriteGrid;
-        value = i18n.getMessage('pause.paused');
-        spriteGrid.addText(new Point(Math.floor((pauseWidth - value.length) / 2), 1), value, Colors.White);
-        spriteGrid.addText(new Point(1, 3), i18n.getMessage('pause.health'), Colors.Yellow);
-        spriteGrid.addText(new Point(1, 4), i18n.getMessage('pause.ammo'), Colors.Yellow);
-        spriteGrid.addText(new Point(1, 5), i18n.getMessage('pause.gems'), Colors.Yellow);
-        spriteGrid.addText(new Point(1, 6), i18n.getMessage('pause.torches'), Colors.Yellow);
-        spriteGrid.addText(new Point(1, 7), i18n.getMessage('pause.score'), Colors.Yellow);
-        spriteGrid.addText(new Point(1, 8), i18n.getMessage('pause.keys'), Colors.Yellow);
+        spriteGrid.addText(new Point(1, 1), i18n.getMessage('pause.health'), Colors.Yellow);
+        spriteGrid.addText(new Point(1, 2), i18n.getMessage('pause.ammo'), Colors.Yellow);
+        spriteGrid.addText(new Point(1, 3), i18n.getMessage('pause.gems'), Colors.Yellow);
+        spriteGrid.addText(new Point(1, 4), i18n.getMessage('pause.torches'), Colors.Yellow);
+        spriteGrid.addText(new Point(1, 5), i18n.getMessage('pause.score'), Colors.Yellow);
+        spriteGrid.addText(new Point(1, 6), i18n.getMessage('pause.keys'), Colors.Yellow);
     }
 
     // Make sure we don't position our popup over the player
@@ -1353,14 +1367,14 @@ Game.prototype.drawPauseScreen = function () {
     this.statusPopup.render(this.context);
 
     // Draw our status values
-    this.resources.graphics.drawString(this.context, position.add(new Point(13, 3)), getCounterValue('HEALTH'), Colors.BrightWhite);
-    this.resources.graphics.drawString(this.context, position.add(new Point(13, 4)), getCounterValue('AMMO'), Colors.BrightWhite);
-    this.resources.graphics.drawString(this.context, position.add(new Point(13, 5)), getCounterValue('GEMS'), Colors.BrightWhite);
-    this.resources.graphics.drawString(this.context, position.add(new Point(13, 6)), getCounterValue('TORCHES'), Colors.BrightWhite);
-    this.resources.graphics.drawString(this.context, position.add(new Point(13, 7)), getCounterValue('SCORE'), Colors.BrightWhite);
+    this.resources.graphics.drawString(this.context, position.add(new Point(13, 1)), getCounterValue('HEALTH'), Colors.BrightWhite);
+    this.resources.graphics.drawString(this.context, position.add(new Point(13, 2)), getCounterValue('AMMO'), Colors.BrightWhite);
+    this.resources.graphics.drawString(this.context, position.add(new Point(13, 3)), getCounterValue('GEMS'), Colors.BrightWhite);
+    this.resources.graphics.drawString(this.context, position.add(new Point(13, 4)), getCounterValue('TORCHES'), Colors.BrightWhite);
+    this.resources.graphics.drawString(this.context, position.add(new Point(13, 5)), getCounterValue('SCORE'), Colors.BrightWhite);
 
     // Draw our keys
-    position = position.add(new Point(13, 8));
+    position = position.add(new Point(13, 6));
     sprite = this.resources.graphics.getSprite(12);
     for (value = 0; value < keyValues.length; value += 1) {
         if (this.getCounterValue('KEY' + keyValues[value]) > 0) {

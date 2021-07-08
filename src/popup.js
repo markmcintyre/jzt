@@ -33,6 +33,7 @@ function Popup(position, size, game) {
 
     }
 
+    this.title = undefined;
     this.size = size;
     this.game = game;
     this.graphics = game.resources.graphics;
@@ -40,6 +41,11 @@ function Popup(position, size, game) {
     this.setColor(Colors.Blue, Colors.BrightWhite);
 
 }
+
+Popup.prototype.setTitle = function (title) {
+    this.title = title;
+    this.redraw();
+};
 
 /**
  * Renders this Popup to a specified context.
@@ -115,7 +121,9 @@ Popup.prototype.createBorder = function (spriteGrid) {
 
     var point = new Point(0, 0),
         width = this.size.x,
-        height = this.size.y;
+        height = this.size.y,
+        fullTitle,
+        titlePosition;
 
     // Top Left Corner
     spriteGrid.setTile(new Point(0, 0), 218, this.foreground);
@@ -144,6 +152,13 @@ Popup.prototype.createBorder = function (spriteGrid) {
 
     // Bottom Right Corner
     spriteGrid.setTile(new Point(width - 1, height - 1), 217, this.foreground);
+
+    // Title
+    if (this.title) {
+        fullTitle = ' ' + this.title + ' ';
+        titlePosition = Math.round((width - fullTitle.length) / 2);
+        this.spriteGrid.addText(new Point(titlePosition, 0), fullTitle, this.foreground);
+    }
 
 };
 

@@ -22,9 +22,7 @@ var ConstructorError = require('./basic').ConstructorError,
  */
 function Scroll(owner) {
 
-    var index,
-        spaceSprite,
-        dotSprite;
+    var spaceSprite;
 
     if (!(this instanceof Scroll)) {
         throw ConstructorError;
@@ -34,28 +32,22 @@ function Scroll(owner) {
     this.graphics = owner.resources.graphics;
     this.lines = [];
     this.position = 0;
+    this.cursor = 0;
     this.screenWidth = owner.screenWidth;
     this.screenHeight = owner.screenHeight;
     this.width = 48;
     this.textAreaWidth = this.width - 8;
     this.height = 0;
     this.fullHeight = Math.min(Math.floor(owner.context.canvas.height / this.graphics.TILE_SIZE.y) - 2, 24);
+    this.textAreaHeight = this.fullHeight - 4;
     this.state = Scroll.ScrollState.Opening;
     this.origin = new Point(0, 0);
-    this.dots = [];
     this.cycleCount = 0;
+    this.labels = [];
     this.eventScheduler = new DelayedEventScheduler(this.game.CYCLE_TICKS * 2, 0);
     spaceSprite = this.graphics.getSprite(32);
-    dotSprite = this.graphics.getSprite(7);
-    for (index = 0; index < this.textAreaWidth - 1; index += 1) {
-        if (index % 5 === 0) {
-            this.dots.push(dotSprite);
-        } else {
-            this.dots.push(spaceSprite);
-        }
-    }
-    this.dots.push(dotSprite);
     this.setHeight(0);
+    this.setPosition(0);
 }
 
 /**
@@ -115,6 +107,7 @@ Scroll.prototype.addLine = function (line, center, lineLabel) {
 
         if (lineLabel) {
             sprites.label = lineLabel;
+            me.labels.push(me.lines.length);
         }
 
         me.lines.push(sprites);
@@ -166,14 +159,68 @@ Scroll.prototype.addLine = function (line, center, lineLabel) {
 
 };
 
+Scroll.prototype.setPosition = function(position) {
+
+    if(position > this.lines.length - this.textAreaHeight) {
+        position = this.lines.length - this.textAreaHeight;
+    }
+    if(position < 0) {
+        position = 0;
+    }
+
+    this.position = position;
+
+};
+
 /**
  * Updates this scroll's position to be one line higher.
  */
 Scroll.prototype.scrollUp = function () {
-    this.position -= 1;
-    if (this.position < 0) {
-        this.position = 0;
+
+    var visibleLabels = this.getVisibleLabels(),
+        index;
+
+    if(visibleLabels.length) {
+
+        if(visibleLabels[0] === this.cursor) {
+            this.setPosition(this.position - 1);
+        } else {
+            index = visibleLabels.length - 1;
+            while(visibleLabels[index] >= this.cursor) {
+                index -= 1;
+            }
+            this.cursor = visibleLabels[index];
+        }
+
+    } else {
+        this.setPosition(this.position - 1);
     }
+};
+
+/**
+ * Updates this scroll's position to be one line lower.
+ */
+ Scroll.prototype.scrollDown = function () {
+    
+    var visibleLabels = this.getVisibleLabels(),
+        index;
+
+    if(visibleLabels.length) {
+
+        if(visibleLabels[visibleLabels.length-1] === this.cursor) {
+            this.setPosition(this.position + 1);
+        } else {
+            index = 0;
+            while(visibleLabels[index] <= this.cursor) {
+                index += 1;
+            }
+            this.cursor = visibleLabels[index];
+        }
+
+    } else {
+        this.setPosition(this.position + 1);
+    }
+
 };
 
 /**
@@ -189,14 +236,23 @@ Scroll.prototype.setTitle = function (title) {
     }
 };
 
-/**
- * Updates this scroll's position to be one line lower.
- */
-Scroll.prototype.scrollDown = function () {
-    this.position += 1;
-    if (this.position >= this.lines.length) {
-        this.position = this.lines.length - 1;
+Scroll.prototype.getVisibleLabels = function () {
+
+    var labels = [],
+        index = 0;
+
+    if(this.labels.length) {
+
+        for( index = this.position; index < Math.min(this.lines.length, this.position + this.textAreaHeight); ++index) {
+            if (this.lines[index].label) {
+                labels.push(index);
+            }
+        }
+
     }
+
+    return labels;
+
 };
 
 /**
@@ -205,7 +261,7 @@ Scroll.prototype.scrollDown = function () {
  * @return a label name, or undefined if no such label is selected.
  */
 Scroll.prototype.getCurrentLabel = function () {
-    return this.lines[this.position].label;
+    return this.lines[this.cursor].label;
 };
 
 /**
@@ -222,8 +278,6 @@ Scroll.prototype.setHeight = function (height) {
     if (this.textAreaHeight < 0) {
         this.textAreaHeight = 0;
     }
-
-    this.middlePosition = Math.floor(this.textAreaHeight / 2);
 
     this.origin.x = Math.floor((this.screenWidth - this.width) / 2);
     this.origin.y = Math.floor((this.screenHeight - this.height) / 2);
@@ -262,7 +316,8 @@ Scroll.prototype.doTick = function () {
  */
 Scroll.prototype.update = function () {
 
-    var k = this.game.keyboard;
+    var k = this.game.keyboard,
+        visibleLabels;
 
     // Determine our scroll state
     if (this.state === Scroll.ScrollState.Opening) {
@@ -270,16 +325,22 @@ Scroll.prototype.update = function () {
         // Our scroll is opening, so
         // increase our scroll's height on both ends
         this.setHeight(this.height + 2);
-
+        this.setPosition(0);
+        
         // If we have reached our full height, update our state to Open
-        if (this.height >= this.fullHeight) {
+        if (this.height >= Math.min(this.fullHeight, this.lines.length + 4)) {
+            this.setHeight(Math.min(this.fullHeight, this.lines.length + 4));
+            visibleLabels = this.getVisibleLabels();
+            if(visibleLabels.length) {
+                this.cursor = visibleLabels[0];
+            }
             this.state = Scroll.ScrollState.Open;
         }
 
     } else if (this.state === Scroll.ScrollState.Open) {
 
         // Our scroll is open
-
+        
         // Depending on which key was pressed...
         if (k.isPressed(k.UP)) {
 
@@ -341,7 +402,9 @@ Scroll.prototype.update = function () {
  */
 Scroll.prototype.clearLines = function () {
     this.lines = [];
-    this.position = 0;
+    this.labels = [];
+    this.setPosition(0);
+    this.cursor = 0;
 };
 
 /**
@@ -353,7 +416,7 @@ Scroll.prototype.clearLines = function () {
  */
 Scroll.prototype.drawLine = function (scrollIndex) {
 
-    var lineIndex = this.position + scrollIndex - this.middlePosition,
+    var lineIndex = this.position + scrollIndex,
         line = this.lines[lineIndex],
         offset = this.title ? 3 : 1,
         point;
@@ -365,14 +428,6 @@ Scroll.prototype.drawLine = function (scrollIndex) {
         point.x += 4;
         point.y += offset + scrollIndex;
         this.drawText(line, point);
-
-    } else if (lineIndex === -1 || lineIndex === this.lines.length) {
-
-        // Draw some dots before the first line and after the last
-        point = this.origin.clone();
-        point.x += 4;
-        point.y += offset + scrollIndex;
-        this.drawText(this.dots, point);
 
     }
 
@@ -474,7 +529,7 @@ Scroll.prototype.render = function (context) {
         this.graphics.drawSprites(context, new Point(x, y), sprites, Colors.BrightWhite);
     }
 
-    if (!this.title || this.height > 5) {
+    if (!this.title || this.height > 4) {
 
         // Draw Lines
         for (lineIndex = 0; lineIndex < this.textAreaHeight; lineIndex += 1) {
@@ -495,7 +550,7 @@ Scroll.prototype.render = function (context) {
             this.drawLine(lineIndex);
 
             // Draw the cursor
-            if (lineIndex === this.middlePosition) {
+            if (this.state === Scroll.ScrollState.Open && this.labels.length && this.position + lineIndex === this.cursor) {
                 sprite = this.graphics.getSprite(175);
                 sprite.draw(context, new Point(x + 2, y), Colors.BrightRed);
                 sprite = this.graphics.getSprite(174);
