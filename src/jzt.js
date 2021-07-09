@@ -1465,6 +1465,7 @@ Game.prototype.draw = function () {
     } else if (this.state === GameState.Reading) {
 
         // We're reading
+        this.drawScreenEffect();
         this.scroll.render(this.context);
 
     } else if (this.state === GameState.FileManagement) {

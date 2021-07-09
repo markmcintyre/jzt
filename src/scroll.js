@@ -454,6 +454,58 @@ Scroll.prototype.drawText = function (sprites, point) {
 };
 
 /**
+ * Draws a scroll bar to the Scroll's graphics context at a provided point for a provided height.
+ * 
+ * @param {*} context A context onto which to draw a scrollbar
+ * @param {*} point A point at which to draw a scrollbar
+ * @param {*} height A height of a scroll bar to draw
+ * @param {*} currentIndex An index to represent on a scrollbar
+ * @param {*} visibleCount A number of visible indicies to represent on a scrollbar
+ * @param {*} maximumIndex  A maximum index for a scrollbar
+ */
+Scroll.prototype.drawScrollBar = function (context, point, height, currentIndex, visibleCount, maximumIndex) {
+
+    var thumbPosition,
+        thumbHeight = Math.max(1, Math.floor((height - 2) * (visibleCount / maximumIndex))),
+        index;
+
+    // Clone our point
+    point = point.clone();
+
+    // Determine our thumb position
+    thumbPosition = Math.ceil((height - 2 - thumbHeight) * (currentIndex / maximumIndex));
+    thumbPosition = Math.min(height - 2 - thumbHeight - 1, thumbPosition) + 1;
+
+    for (index = 0; index < height; index += 1, point.y += 1) {
+
+        // Determine what to draw
+        if (index === 0) {
+
+            // Draw our top arrow
+            this.graphics.getSprite(30).draw(context, point, Colors.BrightBlue);
+
+        } else if (index === height - 1) {
+
+            // Draw our bottom arrow
+            this.graphics.getSprite(31).draw(context, point, Colors.BrightBlue);
+
+        } else if (index >= thumbPosition && index <= thumbPosition + thumbHeight) {
+
+            // Draw our position indicator
+            this.graphics.getSprite(219).draw(context, point, Colors.BrightBlue);
+
+        } else {
+
+            // Draw our shaded area
+            this.graphics.getSprite(177).draw(context, point, Colors.BrightBlue);
+
+        }
+
+    }
+
+};
+
+/**
  * Renders a visual representation of this Scroll instance to a provided graphics context.
  *
  * @param context A graphics context to which to render this Scroll instance.
@@ -472,27 +524,24 @@ Scroll.prototype.render = function (context) {
     context.fillRect(x * this.graphics.TILE_SIZE.x, y * this.graphics.TILE_SIZE.y, this.width * this.graphics.TILE_SIZE.x, this.height * this.graphics.TILE_SIZE.y);
 
     // Draw top
-    sprites.push(this.graphics.getSprite(198));
-    sprites.push(this.graphics.getSprite(209));
-    index = this.width - 3;
-    sprite = this.graphics.getSprite(205);
+    sprites.push(this.graphics.getSprite(218));
+    index = this.width - 1;
+    sprite = this.graphics.getSprite(196);
 
     while ((index - 1) > 0) {
         index -= 1;
         sprites.push(sprite);
     }
 
-    sprites.push(this.graphics.getSprite(209));
-    sprites.push(this.graphics.getSprite(181));
+    sprites.push(this.graphics.getSprite(191));
     this.graphics.drawSprites(context, new Point(x, y), sprites, Colors.BrightWhite);
 
     if (this.title && this.height > 3) {
 
         // Draw Title Area
         sprites = [];
-        sprites.push(this.graphics.getSprite(32));
         sprites.push(this.graphics.getSprite(179));
-        index = this.width - 3;
+        index = this.width - 1;
         sprite = this.graphics.getSprite(32);
 
         while ((index - 1) > 0) {
@@ -501,7 +550,6 @@ Scroll.prototype.render = function (context) {
         }
 
         sprites.push(this.graphics.getSprite(179));
-        sprites.push(sprite);
         y += 1;
         point = new Point(x, y);
         this.graphics.drawSprites(context, point, sprites, Colors.BrightWhite);
@@ -515,16 +563,14 @@ Scroll.prototype.render = function (context) {
     if (this.title && this.height > 2) {
         // Draw Title Separator
         sprites = [];
-        sprites.push(sprite);
         sprites.push(this.graphics.getSprite(195));
-        index = this.width - 3;
+        index = this.width - 1;
         sprite = this.graphics.getSprite(196);
         while ((index - 1) > 0) {
             index -= 1;
             sprites.push(sprite);
         }
         sprites.push(this.graphics.getSprite(180));
-        sprites.push(this.graphics.getSprite(32));
         y += 1;
         this.graphics.drawSprites(context, new Point(x, y), sprites, Colors.BrightWhite);
     }
@@ -535,16 +581,14 @@ Scroll.prototype.render = function (context) {
         for (lineIndex = 0; lineIndex < this.textAreaHeight; lineIndex += 1) {
 
             sprites = [];
-            sprites.push(this.graphics.getSprite(32));
             sprites.push(this.graphics.getSprite(179));
-            index = this.width - 3;
+            index = this.width - 1;
             sprite = this.graphics.getSprite(32);
             while ((index - 1) > 0) {
                 index -= 1;
                 sprites.push(sprite);
             }
             sprites.push(this.graphics.getSprite(179));
-            sprites.push(sprite);
             y += 1;
             this.graphics.drawSprites(context, new Point(x, y), sprites, Colors.BrightWhite);
             this.drawLine(lineIndex);
@@ -564,20 +608,25 @@ Scroll.prototype.render = function (context) {
     if (this.height > 1) {
         // Draw bottom
         sprites = [];
-        sprites.push(this.graphics.getSprite(198));
-        sprites.push(this.graphics.getSprite(207));
-        index = this.width - 3;
-        sprite = this.graphics.getSprite(205);
+        sprites.push(this.graphics.getSprite(192));
+        index = this.width - 1;
+        sprite = this.graphics.getSprite(196);
         while ((index - 1) > 0) {
             index -= 1;
             sprites.push(sprite);
         }
-        sprites.push(this.graphics.getSprite(207));
-        sprites.push(this.graphics.getSprite(181));
+        sprites.push(this.graphics.getSprite(217));
         y += 1;
         this.graphics.drawSprites(context, new Point(x, y), sprites, Colors.BrightWhite);
     }
 
+    // Draw our scrollbar
+    if (this.state === Scroll.ScrollState.Open && this.lines.length > this.textAreaHeight) {
+
+        this.drawScrollBar(context, new Point(this.origin.x + this.width - 2, this.origin.y + 3), this.height - 4, this.position, this.textAreaHeight, this.lines.length - 1);
+
+    }
+ 
 };
 
 exports.Scroll = Scroll;
