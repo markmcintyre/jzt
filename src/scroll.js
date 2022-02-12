@@ -466,15 +466,16 @@ Scroll.prototype.drawText = function (sprites, point) {
 Scroll.prototype.drawScrollBar = function (context, point, height, currentIndex, visibleCount, maximumIndex) {
 
     var thumbPosition,
-        thumbHeight = Math.max(1, Math.floor((height - 2) * (visibleCount / maximumIndex))),
+        scrollbarArea = height - 2,
+        thumbHeight = Math.max(1, Math.floor(scrollbarArea * (visibleCount / maximumIndex))),
+        lastIndex = maximumIndex - visibleCount,
         index;
 
     // Clone our point
     point = point.clone();
 
     // Determine our thumb position
-    thumbPosition = Math.ceil((height - 2 - thumbHeight) * (currentIndex / maximumIndex));
-    thumbPosition = Math.min(height - 2 - thumbHeight - 1, thumbPosition) + 1;
+    thumbPosition = Math.ceil((scrollbarArea - thumbHeight - 2) * (currentIndex / lastIndex));
 
     for (index = 0; index < height; index += 1, point.y += 1) {
 
@@ -489,7 +490,7 @@ Scroll.prototype.drawScrollBar = function (context, point, height, currentIndex,
             // Draw our bottom arrow
             this.graphics.getSprite(31).draw(context, point, Colors.BrightBlue);
 
-        } else if (index >= thumbPosition && index <= thumbPosition + thumbHeight) {
+        } else if (index >= thumbPosition + 1 && index <= thumbPosition + 1 + thumbHeight) {
 
             // Draw our position indicator
             this.graphics.getSprite(219).draw(context, point, Colors.BrightBlue);
