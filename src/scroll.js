@@ -32,7 +32,7 @@ function Scroll(owner) {
     this.graphics = owner.resources.graphics;
     this.lines = [];
     this.position = 0;
-    this.cursor = 0;
+    this.cursor = -1;
     this.screenWidth = owner.screenWidth;
     this.screenHeight = owner.screenHeight;
     this.width = 48;
@@ -159,6 +159,11 @@ Scroll.prototype.addLine = function (line, center, lineLabel) {
 
 };
 
+/**
+ * Sets a position for this scroll.
+ * 
+ * @param {object} position - A scroll position
+ */
 Scroll.prototype.setPosition = function(position) {
 
     if(position > this.lines.length - this.textAreaHeight) {
@@ -194,6 +199,7 @@ Scroll.prototype.scrollUp = function () {
 
     } else {
         this.setPosition(this.position - 1);
+        this.cursor = -1;
     }
 };
 
@@ -219,6 +225,7 @@ Scroll.prototype.scrollUp = function () {
 
     } else {
         this.setPosition(this.position + 1);
+        this.cursor = -1;
     }
 
 };
@@ -236,6 +243,10 @@ Scroll.prototype.setTitle = function (title) {
     }
 };
 
+/**
+ * Retrieves an array of labels that are actively visible in the scroll.
+ * @returns An array of labels
+ */
 Scroll.prototype.getVisibleLabels = function () {
 
     var labels = [],
@@ -261,7 +272,7 @@ Scroll.prototype.getVisibleLabels = function () {
  * @return a label name, or undefined if no such label is selected.
  */
 Scroll.prototype.getCurrentLabel = function () {
-    return this.lines[this.cursor].label;
+    return this.cursor >= 0 ? this.lines[this.cursor].label : undefined;
 };
 
 /**
@@ -284,6 +295,9 @@ Scroll.prototype.setHeight = function (height) {
 
 };
 
+/**
+ * Performs a "tick" on this scroll.
+ */
 Scroll.prototype.doTick = function () {
 
     var event = this.eventScheduler.takeEvent(),
@@ -300,7 +314,7 @@ Scroll.prototype.doTick = function () {
 
         currentLabel = this.getCurrentLabel();
 
-        // Deliver our label to a registered listnere
+        // Deliver our label to a registered listener
         if (currentLabel && this.listener) {
             this.listener.sendMessage(currentLabel);
         }
@@ -352,14 +366,14 @@ Scroll.prototype.update = function () {
             // The down key was pressed, so scroll down one block
             this.eventScheduler.scheduleEvent(k.isPressed(k.DOWN), Scroll.ScrollAction.Down);
 
-        } else if (k.isPressed(k.ENTER) || k.isPressed(k.SPACE)) {
+        } else if (k.isPressed(k.ENTER)) {
 
-            // Enter or Space was pressed, so select the item
+            // Enter was pressed, so select the item
             this.eventScheduler.scheduleEvent(k.isPressed(k.ENTER), Scroll.ScrollAction.Select);
 
-        } else if (k.isPressed(k.ESCAPE)) {
+        } else if (k.isPressed(k.ESCAPE) || k.isPressed(k.SPACE)) {
 
-            // Escape was pressed, so close the scroll
+            // Space or Escape was pressed, so close the scroll
             this.eventScheduler.scheduleEvent(k.isPressed(k.ESCAPE), Scroll.ScrollAction.Exit);
 
         } else {
@@ -404,7 +418,7 @@ Scroll.prototype.clearLines = function () {
     this.lines = [];
     this.labels = [];
     this.setPosition(0);
-    this.cursor = 0;
+    this.cursor = -1;
 };
 
 /**
@@ -427,6 +441,8 @@ Scroll.prototype.drawLine = function (scrollIndex) {
         point = this.origin.clone();
         point.x += 4;
         point.y += offset + scrollIndex;
+
+        line.selected = this.position + scrollIndex === this.cursor;
         this.drawText(line, point);
 
     }
@@ -447,7 +463,11 @@ Scroll.prototype.drawText = function (sprites, point) {
     }
     if (sprites.label) {
         color = Colors.BrightWhite;
-        this.graphics.getSprite(16).draw(this.game.context, point, Colors.BrightMagenta);
+        if (sprites.selected) {
+            this.graphics.getSprite(16).draw(this.game.context, point, Colors.Cycle);
+        } else {
+            this.graphics.getSprite(7).draw(this.game.context, point, Colors.BrightWhite);
+        }
         point.x += 2;
     }
     this.graphics.drawSprites(this.game.context, point, sprites, color, undefined);
@@ -595,12 +615,14 @@ Scroll.prototype.render = function (context) {
             this.drawLine(lineIndex);
 
             // Draw the cursor
-            if (this.state === Scroll.ScrollState.Open && this.labels.length && this.position + lineIndex === this.cursor) {
-                sprite = this.graphics.getSprite(175);
-                sprite.draw(context, new Point(x + 2, y), Colors.BrightRed);
-                sprite = this.graphics.getSprite(174);
-                sprite.draw(context, new Point(x + this.width - 3, y), Colors.BrightRed);
-            }
+            //if (this.state === Scroll.ScrollState.Open && this.labels.length && this.position + lineIndex === this.cursor) {
+            //    sprite = this.graphics.getSprite(16);
+            //    sprite.draw(context, new Point(x + 4, y), Colors.Cycle);
+                //sprite = this.graphics.getSprite(175);
+                //sprite.draw(context, new Point(x + 2, y), Colors.BrightRed);
+                //sprite = this.graphics.getSprite(174);
+                //sprite.draw(context, new Point(x + this.width - 3, y), Colors.BrightRed);
+            //}
 
         }
 
