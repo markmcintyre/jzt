@@ -199,7 +199,8 @@ Scroll.prototype.scrollUp = function () {
 
     } else {
         this.setPosition(this.position - 1);
-        this.cursor = -1;
+        visibleLabels = this.getVisibleLabels();
+        this.cursor = visibleLabels.length ? visibleLabels[0] : -1;
     }
 };
 
@@ -225,7 +226,8 @@ Scroll.prototype.scrollUp = function () {
 
     } else {
         this.setPosition(this.position + 1);
-        this.cursor = -1;
+        visibleLabels = this.getVisibleLabels();
+        this.cursor = visibleLabels.length ? visibleLabels[0] : -1;
     }
 
 };
@@ -466,7 +468,7 @@ Scroll.prototype.drawText = function (sprites, point) {
         if (sprites.selected) {
             this.graphics.getSprite(16).draw(this.game.context, point, Colors.Cycle);
         } else {
-            this.graphics.getSprite(7).draw(this.game.context, point, Colors.BrightWhite);
+            this.graphics.getSprite(7).draw(this.game.context, point, Colors.White);
         }
         point.x += 2;
     }
@@ -613,16 +615,6 @@ Scroll.prototype.render = function (context) {
             y += 1;
             this.graphics.drawSprites(context, new Point(x, y), sprites, Colors.BrightWhite);
             this.drawLine(lineIndex);
-
-            // Draw the cursor
-            //if (this.state === Scroll.ScrollState.Open && this.labels.length && this.position + lineIndex === this.cursor) {
-            //    sprite = this.graphics.getSprite(16);
-            //    sprite.draw(context, new Point(x + 4, y), Colors.Cycle);
-                //sprite = this.graphics.getSprite(175);
-                //sprite.draw(context, new Point(x + 2, y), Colors.BrightRed);
-                //sprite = this.graphics.getSprite(174);
-                //sprite.draw(context, new Point(x + this.width - 3, y), Colors.BrightRed);
-            //}
 
         }
 
