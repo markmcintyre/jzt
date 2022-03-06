@@ -1,7 +1,7 @@
 {
   "name": "jzt",
   "description": "A DOS-era Adventure Game for the Web",
-  "version": "1.0.55",
+  "version": "1.0.56",
   "private": true,
   "author": {
     "name": "Mark McIntyre"
@@ -20,26 +20,20 @@
   },
   "scripts": {
     "clean": "rm -rf build && rm -f src/metadata.json && mkdir build",
-
     "build:metadata": "node task/create-metadata.js > src/metadata.json",
     "build:header": "node task/create-header.js > build/header.txt",
-
     "build:editor": "browserify -d src/ux/ux-editor.js -s jztEditor | uglifyjs -c -m | cat build/header.txt - > build/jzt-editor.min.js && browserify -d src/ux/ux-editor-play.js -s jztPlayer | uglifyjs -c -m | cat build/header.txt - > build/jzt-editor-play.min.js",
     "build:editor:dev": "browserify -d src/ux/ux-editor.js -s jztEditor > build/jzt-editor.min.js && browserify -d src/ux/ux-editor-play.js -s jztPlayer > build/jzt-editor-play.min.js",
-
-    "build:game": "browserify src/jzt.js -s jzt | uglifyjs -c -m | cat build/header.txt - > build/jzt.min.js", 
+    "build:game": "browserify src/jzt.js -s jzt | uglifyjs -c -m | cat build/header.txt - > build/jzt.min.js",
     "build:game:dev": "browserify -d src/jzt.js -s jzt > build/jzt.min.js",
-
     "prebuild": "npm run clean && npm run build:metadata && npm run build:header",
     "build": "npm run build:game && npm run build:editor",
     "postbuild": "rm -f build/header.txt",
     "prebuild:dev": "npm run prebuild",
     "build:dev": "npm run build:game:dev && npm run build:editor:dev",
     "postbuild:dev": "npm run postbuild",
-
     "default": "npm run build:dev",
     "deploy": "npm version patch && npm run build",
     "postinstall": "npm run build"
-
   }
 }
