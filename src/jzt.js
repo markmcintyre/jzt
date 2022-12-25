@@ -122,10 +122,6 @@ function Game(configuration) {
 
     this.context = this.canvasElement.getContext('2d');
     this.context.imageSmoothingEnabled = false;
-    this.context.webkitImageSmoothingEnabled = false;
-    this.context.mozImageSmoothingEnabled = false;
-    this.context.msImageSmoothingEnabled = false;
-    this.context.oImageSmoothingEnabled = false;
 
     // Initialize our audio and graphics resources
     this.resources = {

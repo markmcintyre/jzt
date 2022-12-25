@@ -291,8 +291,6 @@ Editor.prototype.initializeBoardElement = function (board) {
     this.context = this.canvasElement.getContext('2d');
     this.game.context = this.context;
     this.context.imageSmoothingEnabled = false;
-    this.context.webkitImageSmoothingEnabled = false;
-    this.context.mozImageSmoothingEnabled = false;
 
     // Assign our focus
     this.focusPoint = new Point(board.defaultPlayerX, board.defaultPlayerY);

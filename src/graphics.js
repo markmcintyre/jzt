@@ -223,8 +223,6 @@ function Graphics(onLoadCallback) {
         buffer.height = me.TILE_SIZE.y;
         context = buffer.getContext('2d');
         context.imageSmoothingEnabled = false;
-        context.webkitImageSmoothingEnabled = false;
-        context.mozImageSmoothingEnabled = false;
         sprite = me.getSprite(176);
         sprite.draw(context, new Point(0, 0), exports.Colors.Grey, exports.Colors.Black);
         me.DARK_IMAGE = buffer;
