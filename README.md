@@ -11,6 +11,6 @@ This was also a hacky personal project that for whatever reason I never really t
 Still, I'm open sourcing it because, why not? If you're hoping to get it up and running today on your own machine, though, I suggest you wait.
 
 So, here's my task list:
-- [ ] #1
-- [ ] #2
+- [ ] https://github.com/markmcintyre/jzt/issues/1
+- [ ] https://github.com/markmcintyre/jzt/issues/2
 - [ ] …Profit?
