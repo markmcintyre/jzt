@@ -275,7 +275,7 @@ Game.prototype.loadGame = function (game) {
                     } catch (exception) {
 
                         // Any exeptions indicate a catestrophic error
-                        me.catestrophicError(i18n.getMessage('status.loaderror'));
+                        me.catestrophicError(i18n.getMessage('status.loaderror'), exception);
 
                     }
 
@@ -290,7 +290,7 @@ Game.prototype.loadGame = function (game) {
         } catch (exception) {
 
             // If anything bad happens, all bets are off
-            this.catestrophicError(i18n.getMessage('status.loaderror'));
+            this.catestrophicError(i18n.getMessage('status.loaderror'), exception);
 
         }
 
@@ -311,7 +311,12 @@ Game.prototype.loadGame = function (game) {
  *
  * @param {string} message - A message to display to the user.
  */
-Game.prototype.catestrophicError = function (message) {
+Game.prototype.catestrophicError = function (message, exception) {
+
+    if (exception) {
+        console.error(message, exception, exception.stack || exception);
+    }
+
     this.catestrophicErrorMessage = message;
     this.setState(GameState.Error);
 };
@@ -909,7 +914,7 @@ Game.prototype.loop = function () {
         }
 
     } catch (exception) {
-        this.catestrophicError(i18n.getMessage('status.fatalerror'));
+        this.catestrophicError(i18n.getMessage('status.fatalerror'), exception);
     }
 
 };
@@ -1443,7 +1448,7 @@ Game.prototype.draw = function () {
             this.currentBoard.render(this.context);
         } catch (exception) {
             this.errorInRender = true;
-            this.catestrophicError(i18n.getMessage('status.fatalerror'));
+            this.catestrophicError(i18n.getMessage('status.fatalerror'), exception);
         }
 
     } else {
