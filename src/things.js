@@ -1480,6 +1480,8 @@ Centipede.prototype.getAdjacentSegment = function () {
             return result;
         }
 
+        return undefined;
+
     }
 
     // Try North
@@ -1593,6 +1595,11 @@ Centipede.prototype.move = function (direction) {
 
     var myPlace = this.point.clone();
 
+    // If we've already moved, there's a circular reference and we can stop
+    if (this.moved) {
+        return;
+    }
+
     // If we're a head, check to see if we're attacking the player
     if (this.head && this.isPlayerAdjacent(direction)) {
         this.board.player.sendMessage('SHOT');
@@ -1603,8 +1610,15 @@ Centipede.prototype.move = function (direction) {
     this.board.moveTile(this.point, this.point.add(direction), true);
 
     if (this.follower) {
+        // We've got a follower, so note that we've already moved.
+        this.moved = true;
+
+        // Move our follower to our old location
         direction = this.follower.point.directionTo(myPlace);
         this.follower.move(direction);
+
+        // Clear the flag that we've moved
+        this.moved = false;
     }
 
 };
