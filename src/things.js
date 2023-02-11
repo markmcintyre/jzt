@@ -1417,6 +1417,8 @@ Centipede.prototype.serialize = function () {
     }
     if (this.follower) {
         result.nextSegment = Direction.getShortName(this.point.directionTo(this.follower.point));
+    } else {
+        result.nextSegment = 'X';
     }
     return result;
 };
@@ -1436,7 +1438,14 @@ Centipede.prototype.deserialize = function (data) {
         this.orientation = Direction.fromName(data.orientation);
     }
     if (data.nextSegment) {
-        this.nextSegment = Direction.fromName(data.nextSegment);
+
+        if (data.nextSegment === 'X') {
+            // End of the centipede
+            this.nextSegment = undefined;
+        } else {
+            // Direction of the next segment
+            this.nextSegment = Direction.fromName(data.nextSegment);
+        }
     }
     if (this.deviance > 10) {
         this.deviance = 10;
@@ -1471,11 +1480,18 @@ Centipede.prototype.getAdjacentSegment = function () {
     var result;
 
     // If a next segment direction was explicitly defined...
-    if (this.nextSegment) {
-        result = this.board.getTile(this.point.add(this.nextSegment));
+    if (this.hasOwnProperty('nextSegment')) {
+
+        // Undefined means it's the end of the centipede, but
+        // if it's not undefined, it's a direction pointing to the next
+        if (this.nextSegment) {
+            result = this.board.getTile(this.point.add(this.nextSegment));
+        }
+        
+        // We no longer need the properly
         delete this.nextSegment;
 
-        // Sanity check before returning our result
+        // If our result is actually a segment, return it
         if (result && result.type === 'Centipede' && !result.head) {
             return result;
         }
