@@ -5,12 +5,13 @@ const browserify = require('browserify-middleware');
 const {Liquid} = require('liquidjs');
 const port = 3000;
 
-const GENERATOR_PATH = path.join(__dirname, 'generator');
-const SRC_PATH = path.join(__dirname, '..', 'src');
+const srcDir = path.join(__dirname, '..', 'src');
+const siteDir = path.join(srcDir, 'site');
+
 const engine = new Liquid();
 
 app.get('/', (req, res) => {
-    engine.renderFile(path.join(GENERATOR_PATH, 'index.html.liquid'), {
+    engine.renderFile(path.join(siteDir, 'index.html.liquid'), {
         environment: 'dev',
         world: {
             name: 'Development Instance',
@@ -20,18 +21,18 @@ app.get('/', (req, res) => {
       });
 });
 app.get('/style.css', (req, res) => {
-    res.sendFile(path.join(GENERATOR_PATH, 'style.css'));
+    res.sendFile(path.join(siteDir, 'style.css'));
 });
-app.get('/script.js', browserify(path.join(GENERATOR_PATH, 'script.js'), {
+app.get('/script.js', browserify(path.join(siteDir, 'script.js'), {
     debug: true
 }));
-app.get('/jzt.min.js', browserify(path.join(SRC_PATH, 'jzt.js'), {
+app.get('/jzt.min.js', browserify(path.join(srcDir, 'jzt.js'), {
     debug: true,
     standalone: 'jzt'
 }));
-app.get('/dev.js', browserify(path.join(GENERATOR_PATH, 'dev.js')));
+app.get('/dev.js', browserify(path.join(siteDir, 'dev.js')));
 app.get('/dev.css', (req, res) => {
-    res.sendFile(path.join(GENERATOR_PATH, 'dev.css'));
+    res.sendFile(path.join(siteDir, 'dev.css'));
 });
 app.listen(port, () => {
     console.log(`✅ JZT development server running.`);

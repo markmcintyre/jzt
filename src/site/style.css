@@ -1,0 +1,26 @@
+body {
+  background-color: #4A4A4A;
+  color: white;
+  font-family: sans-serif;
+}
+
+.game {
+  display: flex;
+  flex-direction: column;
+  max-width: 800px;
+  margin: 2em auto 0 auto;
+}
+
+.slide {
+  overflow: hidden;
+  max-height: 0;
+  visibility: hidden;
+  opacity: 0;
+  transition: all 1s ease-in-out;
+}
+
+.slide.in {
+  opacity: 1;
+  max-height: 150px;
+  visibility: visible;
+}

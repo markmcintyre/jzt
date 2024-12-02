@@ -23,7 +23,7 @@
   },
   "scripts": {
     "pregenerate-site": "npm run prebuild && npm run build:game && npm run postbuild",
-    "generate-site": "node task/generator/generate-site.js --",
+    "generate-site": "node task/generate-site.js --",
     "dev": "nodemon task/serve.js",
     "clean": "rm -rf build && rm -f src/metadata.json && mkdir build",
     "build:metadata": "node task/create-metadata.js > src/metadata.json",

@@ -33,15 +33,13 @@ function generateSite(world) {
     }
   }
 
-  const buildDir = path.resolve(__dirname, '../../build/');
-
-  const engine = new Liquid({
-    root: path.resolve(__dirname)
-  });
+  const buildDir = path.resolve(__dirname, '..', '..', 'build');
+  const siteDir = path.resolve(__dirname, '..', 'src', 'site');
+  const engine = new Liquid();
 
   const worldData = fs.readFileSync(world, 'utf8');
 
-  engine.renderFile('index.html.liquid', {
+  engine.renderFile(path.resolve(sitedir, 'index.html.liquid'), {
     environment: 'production',
     filename: path.basename(world),
     world: getWorldDetails(worldData)
@@ -51,8 +49,8 @@ function generateSite(world) {
   });
 
   
-  fs.copyFile(path.resolve(__dirname, 'script.js'), path.resolve(buildDir, 'script.js'), handleError);
-  fs.copyFile(path.resolve(__dirname, 'style.css'), path.resolve(buildDir, 'style.css'), handleError);
+  fs.copyFile(path.resolve(siteDir, 'script.js'), path.resolve(buildDir, 'script.js'), handleError);
+  fs.copyFile(path.resolve(siteDir, 'style.css'), path.resolve(buildDir, 'style.css'), handleError);
   fs.copyFile(world, path.resolve(buildDir, path.basename(world)), handleError);
 
 }
