@@ -15,12 +15,15 @@
     "browserify-middleware": "^8.1.1",
     "express": "^4.18.2",
     "nodemon": "^1.19.4",
-    "uglify-js": "~2.6.1"
+    "uglify-js": "~2.6.1",
+    "liquidjs": "~10.19.0"
   },
   "watch": {
     "build:js": "src/**/*.js"
   },
   "scripts": {
+    "pregenerate-site": "npm run prebuild && npm run build:game && npm run postbuild",
+    "generate-site": "node task/generator/generate-site.js --",
     "dev": "nodemon task/serve.js",
     "clean": "rm -rf build && rm -f src/metadata.json && mkdir build",
     "build:metadata": "node task/create-metadata.js > src/metadata.json",
