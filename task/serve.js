@@ -15,6 +15,7 @@ app.get('/', (req, res) => {
         environment: 'dev',
         world: {
             name: 'Development Instance',
+            author: 'Mark McIntyre'
         }
       }).then((result) => {
         res.send(result)

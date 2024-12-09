@@ -1,117 +1,75 @@
 <!DOCTYPE html>
 <html>
   <head>
-      <title>JZT — {{world.name}}</title>
-      <meta charset="utf-8" />
-      <link rel="stylesheet" href="style.css" />
-      <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>JZT — {{world.name}}</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://fonts.cdnfonts.com/css/pixgamer" rel="stylesheet">
   </head>
   <body>
 
-    <section id="content">
-      <section class="game">
-        <div id="game-area" data-jzt-world="{{filename}}">
-          <div class="alert slide">
-              <div class="wrapper">
-                  <div class="close">✕</div>
-                  <h3 class="message"></h3>
-                  <div class="score">Your Score: <span class="value"></span></div>
-                  <div class="playtime">Your Play Time: <span class="value"></span></div>
-                  <button class="social-share" data-game-title="{{world.name}}">
-                      Share
-                      <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
-                          <path fill="white" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92zM18 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM6 13c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm12 7.02c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"></path>
-                          </svg>
-                  </button>
-                  <span class="clipboard">Copied results to clipboard</span>
-              </div>
-          </div>
-          <div class="start">
-              <div class="instructions">Click to play.</div>
-              <div class="keyboard-required">A keyboard will be required.</div>
-          </div>
-          <canvas width="800" height="640"></canvas>
-      </div>
-      <div id="settings-bar" class="inactive">
-          <span class="mute button" title="Mute">
-              <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" width="512px" height="512px" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve">
-                  <g>
-                      <g>
-                              <path fill="#AAA" stroke="#AAA" stroke-width="11.1516" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="    M47.205,308.271h106.337l163.207-163.205V66.75L179.782,203.721H47.205c-12.317,0-22.303,9.986-22.303,22.303v59.939    C24.902,298.274,34.888,308.271,47.205,308.271z"/>
-                              <polygon fill="#AAA" stroke="#AAA" stroke-width="11.1516" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" points="    212.729,341.215 316.748,445.238 316.748,237.203   "/>
-                      </g>
-                      <path class="strike" fill="#AAA" d="M442.856,38.189c7.613-7.612,19.961-7.612,27.574,0l0,0c7.613,7.613,7.613,19.957,0,27.58L62.375,473.803   c-7.623,7.623-19.962,7.623-27.574,0l0,0c-7.623-7.601-7.623-19.95,0-27.573L442.856,38.189z"/>
-                      <path fill="#AAA" d="M432.13,130.19c61.616,89.049,53.002,212.365-26.225,291.591c-4.355,4.355-4.355,11.413,0,15.769   c2.179,2.178,5.032,3.268,7.885,3.268c2.854,0,5.707-1.09,7.886-3.268c87.938-87.938,96.553-225.33,26.386-323.297L432.13,130.19z"/>
-                  </g>
-              </svg>
-          </span>
-          <span class="full-screen button" title="Full Screen">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
-                  <path stroke="#AAA" fill="#AAA" fill-rule="evenodd" d="M1 1v6h2V3h4V1H1zm2 12H1v6h6v-2H3v-4zm14 4h-4v2h6v-6h-2v4zm0-16h-4v2h4v4h2V1h-2z"/>
-              </svg>
-          </span>
-      </div>
-      </section>
-    
-    <section class="supplment">
+    <header>
+      <h1>{{world.name}}</h1>
+      <h2>A JZT game world by {{world.author}}</h2>
+    </header>
 
-    <details open>
-        <summary>{{world.name}}</summary>
-        <dl>
-            <dd>Author</dd>
-            <dt>{{world.author}}</dt>
-        </dl>
-    </details>
-    <details>
-        <summary>How to Play</summary>
-        <div class="key-map">
-
-            <div class="instruction">
-                <div class="description">Move</div>
-                <div class="keys">
-                    <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd> <kbd>←</kbd>
-                </div>
+    <section class="game">
+      <div class="game-area" data-jzt-world="{{filename}}">
+        <!--<div class="alert slide">
+            <div class="wrapper">
+              <div class="close">✕</div>
+              <h3 class="message"></h3>
+              <div class="score">Your Score: <span class="value"></span></div>
+              <div class="playtime">Your Play Time: <span class="value"></span></div>
+              <button class="social-share" data-game-title="{{world.name}}">
+                Share
+                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                  <path fill="white" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92zM18 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM6 13c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm12 7.02c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"></path>
+                </svg>
+              </button>
+              <span class="clipboard">Copied results to clipboard</span>
             </div>
-
-            <div class="instruction">
-                <div class="description">Shoot</div>
-                <div class="keys">
-                    <kbd>Space</kbd> + <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd> <kbd>←</kbd>
-                </div>
-            </div>
-
-            <div class="instruction">
-                <div class="description">Pause, View Stats</div>
-                <div class="keys">
-                    <kbd>P</kbd>
-                </div>
-            </div>
-
-            <div class="instruction">
-                <div class="description">Use Torch</div>
-                <div class="keys">
-                    <kbd>T</kbd>
-                </div>
-            </div>
-
-            <div class="instruction">
-                <div class="description">Save</div>
-                <div class="keys">
-                    <kbd>S</kbd>
-                </div>
-            </div>
-
-            <div class="instruction">
-                <div class="description">Restore</div>
-                <div class="keys">
-                    <kbd>R</kbd>
-                </div>
-            </div>
-
+        </div>-->
+        <div class="start">
+            <div class="instructions">Click to play.</div>
+            <div class="keyboard-required">A keyboard will be required.<br/>(We’re old-school that way.)</div>
         </div>
-    </details>
-
+        <!--<canvas width="800" height="640"></canvas>-->
+      </div>
+      <div class="settings-bar">
+        {% if environment != "production" %}
+        <span class="button load-world" title="Load World" style="justify-self: left">
+          Load World…
+        </span>
+        {% endif %}
+        <span class="mute button" title="Mute">
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" width="512px" height="512px" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve">
+                <g>
+                    <g>
+                      <path fill="#AAA" stroke="#AAA" stroke-width="11.1516" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="    M47.205,308.271h106.337l163.207-163.205V66.75L179.782,203.721H47.205c-12.317,0-22.303,9.986-22.303,22.303v59.939    C24.902,298.274,34.888,308.271,47.205,308.271z"/>
+                      <polygon fill="#AAA" stroke="#AAA" stroke-width="11.1516" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" points="    212.729,341.215 316.748,445.238 316.748,237.203   "/>
+                    </g>
+                    <path class="strike" fill="#AAA" d="M442.856,38.189c7.613-7.612,19.961-7.612,27.574,0l0,0c7.613,7.613,7.613,19.957,0,27.58L62.375,473.803   c-7.623,7.623-19.962,7.623-27.574,0l0,0c-7.623-7.601-7.623-19.95,0-27.573L442.856,38.189z"/>
+                    <path fill="#AAA" d="M432.13,130.19c61.616,89.049,53.002,212.365-26.225,291.591c-4.355,4.355-4.355,11.413,0,15.769   c2.179,2.178,5.032,3.268,7.885,3.268c2.854,0,5.707-1.09,7.886-3.268c87.938-87.938,96.553-225.33,26.386-323.297L432.13,130.19z"/>
+                </g>
+            </svg>
+        </span>
+        <span class="full-screen button" title="Full Screen">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+              <path stroke="#AAA" fill="#AAA" fill-rule="evenodd" d="M1 1v6h2V3h4V1H1zm2 12H1v6h6v-2H3v-4zm14 4h-4v2h6v-6h-2v4zm0-16h-4v2h4v4h2V1h-2z"/>
+            </svg>
+        </span>
+      </div>
     </section>
+    
+    <!-- Please show your support by leaving this footer intact. -->
+    <footer>
+      <ul>
+        <li><a href="https://jzt.xyz/">JZT</a> is created with <span class="gem">◆</span> by Mark McIntyre</li>
+        <li><a href="https://jzt.xyz">Make your own JZT games.</a> It's open source!</li>
+      </ul>
+    </footer>
 
     <script type="text/javascript" src="jzt.min.js" charset="utf-8"></script>
     <script type="text/javascript" src="script.js" charset="utf-8"></script>
