@@ -237,7 +237,7 @@ function Splash(game) {
         grid.addText(new Point(1, 14), 'Running autoexec.bat', Colors.White);
     }).then(1300, function () {
         grid.addText(new Point(1, 15), 'C:\\>cd JZT', Colors.White);
-        grid.addText(new Point(1, 16), 'C:\\JZT\\>exe', Colors.White);
+        grid.addText(new Point(1, 16), 'C:\\JZT>jzt.exe', Colors.White);
     }).then(2000, function () {
         grid.clear();
         grid.addArt(new Point(7, 5),
@@ -253,8 +253,8 @@ function Splash(game) {
             ' 0 0 0 0▀F▀F▀F▀F F F F F F▀F▀F▀F▀F▀F▀F'
             );
         grid.addText(new Point(46 - meta.version.length, 15), meta.version, Colors.Grey);
-        grid.addText(new Point(13, 18), 'Created by Mark McIntyre', Colors.Grey);
-        grid.addText(new Point(6, 19), '(c) ' + new Date(meta.date).getFullYear() + ' Mark McIntyre', Colors.Grey);
+        grid.addText(new Point(13, 17), 'Created by Mark McIntyre', Colors.White);
+        grid.addText(new Point(21, 18), '(c) ' + new Date(meta.date).getFullYear(), Colors.White);
     }).end(4000);
 
 }

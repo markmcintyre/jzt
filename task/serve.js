@@ -9,13 +9,22 @@ const srcDir = path.join(__dirname, '..', 'src');
 const siteDir = path.join(srcDir, 'site');
 
 const engine = new Liquid();
+const unknownAuthorNames = [
+    'a JZT wizard',
+    'a binary byte shaper',
+    'an ASCII architect',
+    'a pixel pixie',
+    'a level luminary',
+    'a virtual visionary',
+    'a construct cartographer'
+];
 
 app.get('/', (req, res) => {
     engine.renderFile(path.join(siteDir, 'index.html.liquid'), {
         environment: 'dev',
         world: {
             name: 'Development Instance',
-            author: 'Mark McIntyre'
+            author: `${unknownAuthorNames[Math.floor(Math.random() * unknownAuthorNames.length) ]}`,
         }
       }).then((result) => {
         res.send(result)

@@ -24,6 +24,7 @@ header {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  background: linear-gradient(#333, #4a4a4a);
 }
 
 header h1,
@@ -42,6 +43,10 @@ header h2 {
   color: silver;
 }
 
+header cite {
+  all: unset;
+}
+
 .game {
   grid-area: game;
   position: relative;
@@ -51,6 +56,12 @@ header h2 {
 .game-area {
   position: absolute;
   background-color: black;
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
+  image-rendering: crisp-edges;
 }
 
 .start {
@@ -98,6 +109,10 @@ header h2 {
   overflow: hidden;
 }
 
+.game:fullscreen .settings-bar {
+  height: 0;
+}
+
 .settings-bar .button {
   margin: 1em;
   cursor: pointer;
@@ -130,11 +145,20 @@ footer {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  background: linear-gradient(#4a4a4a, #333);
 }
 
 footer a,
 footer a:visited {
-  color: #ddd;
+  color: silver;
+  text-decoration-color: transparent;
+  transition: text-underline-offset 300ms ease-out, text-decoration-color 300ms;
+  text-underline-offset: 0.25em;
+}
+
+footer:hover a {
+  text-decoration-color: #8888ff;
+  text-underline-offset: 1px;
 }
 
 footer a:hover {

@@ -1,0 +1,46 @@
+.loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background-color: #000088;
+}
+
+.loader .button {
+  display: inline-block;
+  padding: .5rem 1rem;
+  font-size: 2rem;
+  font-family: "PixGamer", monospace;
+  border: 3px solid #8888ff;
+  background-color: #000088;
+  color: #8888ff;
+  cursor: pointer;
+  box-shadow: 16px 16px #000064;
+}
+
+.loader .button:active {
+  transform: translate(6px, 6px);
+  box-shadow: 10px 10px #000064;
+}
+
+.loader .button:hover {
+  color: silver;
+  border-color: silver;
+}
+
+.loader label.button svg,
+.loader button svg {
+    fill: currentColor;
+    margin-right: .25em;
+    margin-bottom: .15em;
+    vertical-align: middle;
+}
+
+.start.hidden {
+  display: none;
+}
+
+input[type=file] {
+  display: none;
+}
