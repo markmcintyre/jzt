@@ -1,79 +1,121 @@
-const fs = require('fs');
+const fs = require('node:fs/promises');
 const path = require('node:path');
 const {Liquid} = require('liquidjs');
 const LZString = require('lz-string');
 
-function getWorldDetails(worldData, confirmedJson) {
+const repositoryRoot = path.resolve(__dirname, '..');
+const defaultOutputDirectory = path.resolve(__dirname, '..', 'build');
+const siteDir = path.resolve(__dirname, '..', 'src', 'site');
 
-  let result;
+function parseArguments(argumentsList) {
+  const options = {};
+
+  for (let index = 0; index < argumentsList.length; index += 1) {
+    const argument = argumentsList[index];
+    if (argument === '--world' || argument === '--output') {
+      const value = argumentsList[index + 1];
+      if (!value || value.startsWith('--')) {
+        throw new Error(`${argument} requires a value.`);
+      }
+      options[argument.slice(2)] = value;
+      index += 1;
+    } else if (argument !== '--') {
+      throw new Error(`Unknown argument: ${argument}`);
+    }
+  }
+
+  if (!options.world) {
+    throw new Error('A world file is required. Use --world <path>.');
+  }
+
+  return {
+    worldPath: path.resolve(process.cwd(), options.world),
+    outputDirectory: path.resolve(process.cwd(), options.output || defaultOutputDirectory)
+  };
+}
+
+function parseWorld(worldData, worldPath) {
+  const jsonText = Buffer.isBuffer(worldData) ? worldData.toString('utf8') : worldData;
+  let world;
 
   try {
-    result = JSON.parse(worldData);
-
-    return {
-      name: result.name,
-      author: result.author
+    world = JSON.parse(jsonText);
+  } catch (jsonError) {
+    let decompressed;
+    if (Buffer.isBuffer(worldData)) {
+      decompressed = LZString.decompressFromUint8Array(new Uint8Array(worldData));
     }
-
-  } catch(error) {
-    if (!confirmedJson) {
-      const uncompressedData = LZString.decompressFromBase64(worldData);
-      return getWorldDetails(uncompressedData, true);
+    if (!decompressed) {
+      decompressed = LZString.decompressFromBase64(jsonText.trim());
     }
-    throw error;
+    if (!decompressed) {
+      throw new Error(`World "${worldPath}" is not valid JSON or compressed JZT data.`);
+    }
+    try {
+      world = JSON.parse(decompressed);
+    } catch (decompressedJsonError) {
+      throw new Error(`World "${worldPath}" is not valid JSON or compressed JZT data.`);
+    }
   }
 
+  if (!world || typeof world !== 'object' || Array.isArray(world)) {
+    throw new Error(`World "${worldPath}" must contain a JSON object.`);
+  }
+  if (world.version !== '1.0.0') {
+    throw new Error(`World "${worldPath}" has incompatible version "${world.version || 'missing'}"; expected 1.0.0.`);
+  }
+  for (const field of ['name', 'author']) {
+    if (typeof world[field] !== 'string' || world[field].trim() === '') {
+      throw new Error(`World "${worldPath}" is missing required metadata field "${field}".`);
+    }
+  }
+
+  return world;
 }
 
-function generateSite(world) {
+async function generateSite(worldPath, outputDirectory = defaultOutputDirectory) {
+  const worldData = await fs.readFile(worldPath);
+  const world = parseWorld(worldData, worldPath);
 
-  const handleError = (error) => {
-    if(error) {
-      console.error(error);
-    }
-  }
 
-  const buildDir = path.resolve(__dirname, '..', '..', 'build');
-  const siteDir = path.resolve(__dirname, '..', 'src', 'site');
+  const filename = path.basename(worldPath);
+  const outputFile = path.join(outputDirectory, filename);
   const engine = new Liquid();
 
-  const worldData = fs.readFileSync(world, 'utf8');
-
-  engine.renderFile(path.resolve(sitedir, 'index.html.liquid'), {
+  await fs.mkdir(outputDirectory, {recursive: true});
+  const renderedPage = await engine.renderFile(path.join(siteDir, 'index.html.liquid'), {
     environment: 'production',
-    filename: path.basename(world),
-    world: getWorldDetails(worldData)
-  }).then((result) => {
-    const outputFile = path.resolve(buildDir, 'index.html');
-    fs.writeFile(outputFile, result, handleError);
+    filename,
+    world
   });
 
-  
-  fs.copyFile(path.resolve(siteDir, 'script.js'), path.resolve(buildDir, 'script.js'), handleError);
-  fs.copyFile(path.resolve(siteDir, 'style.css'), path.resolve(buildDir, 'style.css'), handleError);
-  fs.copyFile(world, path.resolve(buildDir, path.basename(world)), handleError);
+  await Promise.all([
+    fs.writeFile(path.join(outputDirectory, 'index.html'), renderedPage),
+    fs.copyFile(path.join(siteDir, 'script.js'), path.join(outputDirectory, 'script.js')),
+    fs.copyFile(path.join(siteDir, 'style.css'), path.join(outputDirectory, 'style.css')),
+    fs.writeFile(outputFile, JSON.stringify(world)),
+    fs.copyFile(path.join(repositoryRoot, 'license.md'), path.join(outputDirectory, 'license.md'))
+  ]);
 
+  const runtimeSource = path.join(defaultOutputDirectory, 'jzt.min.js');
+  if (path.resolve(runtimeSource) !== path.resolve(path.join(outputDirectory, 'jzt.min.js'))) {
+    await fs.copyFile(runtimeSource, path.join(outputDirectory, 'jzt.min.js'));
+  }
+
+  return {filename, name: world.name, author: world.author};
 }
 
-(function main() {
+async function main() {
+  const {worldPath, outputDirectory} = parseArguments(process.argv.slice(2));
+  await generateSite(worldPath, outputDirectory);
+  console.log(`Generated player site in ${outputDirectory}.`);
+}
 
-  const worldArg = process.argv.indexOf('--world');
-  const worldValue = worldArg >= 0 ? process.argv[worldArg+1] : undefined;
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error.message);
+    process.exitCode = 1;
+  });
+}
 
-  console.log(`WorldArg position: ${worldArg}`);
-  console.log(`WorldArg Value: ${worldValue}`);
-
-  if (!worldValue) {
-    console.error('A .jzt file is required to generate a site.');
-  } else {
-  
-    fs.stat(worldValue, (error, stats) => {
-      if (error === null) {
-        generateSite(worldValue);
-      } else {
-        console.error(`Could not open world ${worldValue}.`);
-      }
-    });
-  
-  }
-})();
+module.exports = {generateSite, parseArguments, parseWorld};

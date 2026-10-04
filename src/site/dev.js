@@ -3,67 +3,56 @@ const LZString = require('lz-string');
 document.addEventListener('readystatechange', (event) => {
 
   if (event.target.readyState !== 'complete') {
-      return;
+    return;
   }
 
   const loaderElement = document.querySelector('.loader');
+  const startLoader = document.querySelector('.game-area .start');
+  const loadError = document.querySelector('.load-error');
 
   document.getElementById('load-world').addEventListener('change', function (event) {
+    const file = event.target.files && event.target.files[0];
 
-    var fileReader,
-        file;
+    if (!file) {
+      return;
+    }
 
-    if (event.target.files && event.target.files[0]) {
+    const fileReader = new FileReader();
+    const isJson = file.type === 'application/json' || /\.json$/i.test(file.name);
 
-        file = event.target.files[0];
-        fileReader = new FileReader();
+    fileReader.onload = function () {
+      let json;
 
-        fileReader.onload = function () {
-
-            var json,
-                data;
-
-            if (file.type === 'application/json') {
-                json = fileReader.result;
-            } else {
-                data = fileReader.result.split(',')[1];
-                try {
-                    json = LZString.decompressFromBase64(data);
-                } catch (decodeException) {
-                    alert('Couldn\'t read game world.\n' + decodeException);
-                }
-            }
-
-            if (json) {
-
-                try {
-                    const startLoader = document.querySelector('.start');
-                    const gameTitle = document.querySelector('header h1');
-                    const gameAuthor = document.querySelector('header h2 cite');
-                    gameData = JSON.parse(json);
-                    gameTitle.innerHTML = gameData.name;
-                    gameAuthor.innerHTML = gameData.author;
-                    startLoader.gameData = gameData;
-                    startLoader.classList.remove('hidden');
-                    loaderElement.remove();
-                } catch (exception) {
-                    console.error(exception);
-                }
-
-            }
-
-        };
-
-        if (file.type === 'application/json') {
-            fileReader.readAsText(file);
+      try {
+        if (isJson) {
+          json = fileReader.result;
         } else {
-            fileReader.readAsDataURL(file);
+          json = LZString.decompressFromUint8Array(new Uint8Array(fileReader.result));
         }
 
+        const gameData = JSON.parse(json);
+        const gameTitle = document.querySelector('header h1');
+        const gameAuthor = document.querySelector('header h2 cite');
+        gameTitle.textContent = gameData.name;
+        gameAuthor.textContent = gameData.author;
+        startLoader.gameData = gameData;
+        startLoader.classList.remove('hidden');
+        loadError.textContent = '';
+        loaderElement.remove();
+      } catch (exception) {
+        loadError.textContent = 'Could not read that world file.';
+        startLoader.classList.remove('hidden');
+        console.error(exception);
+      }
+    };
+
+    if (isJson) {
+      fileReader.readAsText(file);
+    } else {
+      fileReader.readAsArrayBuffer(file);
     }
 
     event.preventDefault();
-
   }, false);
 
 });

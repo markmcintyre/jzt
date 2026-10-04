@@ -1,5 +1,5 @@
 body {
-  background-color: #4A4A4A;
+  background-color: #555;
   color: white;
   font-family: "PixGamer", monospace;
   font-size: 1.2rem;
@@ -11,7 +11,6 @@ body {
   width: 100vw;
   height: 100vh;
   grid-template-rows: 5rem auto 5rem;
-  grid-template-columns: 1fr;
   grid-template-areas:
     "header"
     "game"
@@ -24,7 +23,7 @@ header {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background: linear-gradient(#333, #4a4a4a);
+  background: linear-gradient(#333, #555);
 }
 
 header h1,
@@ -38,6 +37,7 @@ header h2 {
 header h1 {
   font-size: 2rem;
 }
+
 header h2 {
   font-size: 1.5rem;
   color: silver;
@@ -49,25 +49,49 @@ header cite {
 
 .game {
   grid-area: game;
-  position: relative;
-  overflow: hidden;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: auto;
 }
 
 .game-area {
-  position: absolute;
-  background-color: black;
+  aspect-ratio: 1.25;
+  max-width: 800px;
+  min-width: 400px;
+  width: 100%;
+  margin: 0 auto;
+  position: relative;
+  flex: 0 0 auto;
 }
 
 canvas {
+  aspect-ratio: 1.25;
+  background-color: #555;
+  image-rendering: crisp-edges;
+  display: none;
   width: 100%;
   height: 100%;
-  image-rendering: crisp-edges;
+  object-fit: contain;
+}
+
+#alert {
+  backdrop-filter: blur(20px);
+  background-color: rgba(255, 255, 255, 0.75);
+  padding: 1em;
+  border: none;
 }
 
 .start {
+  background-color: black;
+  background: radial-gradient(ellipse at top, #333, #111),
+    radial-gradient(ellipse at bottom, black, transparent);
   font-size: 1.8rem;
-  display: flex;
+  width: 100%;
   height: 100%;
+  box-sizing: border-box;
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -98,15 +122,23 @@ canvas {
   opacity: 1;
   transform: scale(1.2);
 }
+
+.load-error {
+  color: #ff8888;
+  font-size: .65em;
+  max-width: 80%;
+  text-align: center;
+}
+
 .settings-bar {
-  position: absolute;
-  left: 0;
   background-color: #1a1a1a;
   height: 60px;
   display: flex;
   justify-content: flex-end;
   align-items: center;
   overflow: hidden;
+  margin: auto;
+  flex: 0 0 auto;
 }
 
 .game:fullscreen .settings-bar {
@@ -121,7 +153,7 @@ canvas {
 .settings-bar .button:active {
   scale: 1.2;
 }
- 
+
 .settings-bar .button svg path,
 .settings-bar .button svg polygon {
   transition-property: stroke, fill;
@@ -139,13 +171,31 @@ svg {
   height: 24px;
 }
 
+.how-to-play {
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  color: silver;
+  font-size: .8rem;
+  padding: .5rem 1rem;
+}
+
+.how-to-play h3,
+.how-to-play p {
+  margin: 0;
+}
+
+.how-to-play h3 {
+  color: white;
+  font-size: 1rem;
+}
+
 footer {
   color: silver;
   padding: 0 1em;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  background: linear-gradient(#4a4a4a, #333);
+  background: linear-gradient(#555, #333);
 }
 
 footer a,
@@ -159,6 +209,15 @@ footer a:visited {
 footer:hover a {
   text-decoration-color: #8888ff;
   text-underline-offset: 1px;
+}
+
+footer small {
+  opacity: 0;
+  transition: opacity 1s;
+}
+
+footer:hover small {
+  opacity: 1;
 }
 
 footer a:hover {
