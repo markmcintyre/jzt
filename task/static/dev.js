@@ -6,10 +6,12 @@ document.addEventListener('readystatechange', (event) => {
         return;
     }
 
+    const body = document.querySelector('body');
     const gameElement = document.getElementById("jzt");
     const game = new jzt.Game({
         canvasElement: gameElement
     });
+    const exportButton = document.getElementById('export-site');
 
     document.getElementById('open-world').addEventListener('change', function (event) {
 
@@ -41,7 +43,8 @@ document.addEventListener('readystatechange', (event) => {
 
                     try {
                         game.run(JSON.parse(json));
-                        openInput.value = '';
+                        body.classList.remove('unloaded');
+                        body.classList.add('loaded');
                     } catch (exception) {
                         console.error(exception);
                     }

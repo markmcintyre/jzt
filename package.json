@@ -15,12 +15,15 @@
     "browserify-middleware": "^8.1.1",
     "express": "^4.18.2",
     "nodemon": "^1.19.4",
-    "uglify-js": "~2.6.1"
+    "uglify-js": "~2.6.1",
+    "liquidjs": "~10.19.0"
   },
   "watch": {
     "build:js": "src/**/*.js"
   },
   "scripts": {
+    "pregenerate-site": "npm run prebuild && npm run build:game && npm run postbuild",
+    "generate-site": "node task/generate-site.js --",
     "dev": "nodemon task/serve.js",
     "clean": "rm -rf build && rm -f src/metadata.json && mkdir build",
     "build:metadata": "node task/create-metadata.js > src/metadata.json",
@@ -30,6 +33,9 @@
     "build:game": "browserify src/jzt.js -s jzt | uglifyjs -c -m | cat build/header.txt - > build/jzt.min.js",
     "build:game:dev": "browserify -d src/jzt.js -s jzt > build/jzt.min.js",
     "prebuild": "npm run clean && npm run build:metadata && npm run build:header",
+    "package:itch": "node task/package-itch.js --",
+    "preview:itch": "node task/preview-itch.js --",
+    "publish:itch": "node task/publish-itch.js --",
     "build": "npm run build:game && npm run build:editor",
     "postbuild": "rm -f build/header.txt",
     "prebuild:dev": "npm run prebuild",

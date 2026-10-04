@@ -1,0 +1,242 @@
+body {
+  background-color: #555;
+  color: white;
+  font-family: "PixGamer", monospace;
+  font-size: 1.2rem;
+  font-weight: 400;
+  font-style: normal;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  width: 100vw;
+  height: 100vh;
+  grid-template-rows: 5rem auto 5rem;
+  grid-template-areas:
+    "header"
+    "game"
+    "footer";
+}
+
+header {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: linear-gradient(#333, #555);
+}
+
+header h1,
+header h2 {
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  font-weight: normal;
+}
+
+header h1 {
+  font-size: 2rem;
+}
+
+header h2 {
+  font-size: 1.5rem;
+  color: silver;
+}
+
+header cite {
+  all: unset;
+}
+
+.game {
+  grid-area: game;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: auto;
+}
+
+.game-area {
+  aspect-ratio: 1.25;
+  max-width: 800px;
+  min-width: 400px;
+  width: 100%;
+  margin: 0 auto;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+canvas {
+  aspect-ratio: 1.25;
+  background-color: #555;
+  image-rendering: crisp-edges;
+  display: none;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+#alert {
+  backdrop-filter: blur(20px);
+  background-color: rgba(255, 255, 255, 0.75);
+  padding: 1em;
+  border: none;
+}
+
+.start {
+  background-color: black;
+  background: radial-gradient(ellipse at top, #333, #111),
+    radial-gradient(ellipse at bottom, black, transparent);
+  font-size: 1.8rem;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  row-gap: .5em;
+  cursor: pointer;
+}
+
+.start .instructions,
+.start .keyboard-required {
+  opacity: 0.6;
+  transition-property: transform, opacity;
+  transition-duration: .25s;
+  transition-timing-function: steps(2, jump-start);
+}
+
+.start .instructions {
+  font-size: 1em;
+}
+
+.start .keyboard-required {
+  text-align: center;
+  color: gray;
+  font-size: .8em;
+}
+
+.start:hover .instructions,
+.start:hover .keyboard-required {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.load-error {
+  color: #ff8888;
+  font-size: .65em;
+  max-width: 80%;
+  text-align: center;
+}
+
+.settings-bar {
+  background-color: #1a1a1a;
+  height: 60px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  overflow: hidden;
+  margin: auto;
+  flex: 0 0 auto;
+}
+
+.game:fullscreen .settings-bar {
+  height: 0;
+}
+
+.settings-bar .button {
+  margin: 1em;
+  cursor: pointer;
+}
+
+.settings-bar .button:active {
+  scale: 1.2;
+}
+
+.settings-bar .button svg path,
+.settings-bar .button svg polygon {
+  transition-property: stroke, fill;
+  transition-duration: .25s;
+}
+
+.settings-bar .button:hover svg path,
+.settings-bar .button:hover svg polygon {
+  stroke: white;
+  fill: white;
+}
+
+svg {
+  width: 24px;
+  height: 24px;
+}
+
+.how-to-play {
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  color: silver;
+  font-size: .8rem;
+  padding: .5rem 1rem;
+}
+
+.how-to-play h3,
+.how-to-play p {
+  margin: 0;
+}
+
+.how-to-play h3 {
+  color: white;
+  font-size: 1rem;
+}
+
+footer {
+  color: silver;
+  padding: 0 1em;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  background: linear-gradient(#555, #333);
+}
+
+footer a,
+footer a:visited {
+  color: silver;
+  text-decoration-color: transparent;
+  transition: text-underline-offset 300ms ease-out, text-decoration-color 300ms;
+  text-underline-offset: 0.25em;
+}
+
+footer:hover a {
+  text-decoration-color: #8888ff;
+  text-underline-offset: 1px;
+}
+
+footer small {
+  opacity: 0;
+  transition: opacity 1s;
+}
+
+footer:hover small {
+  opacity: 1;
+}
+
+footer a:hover {
+  color: white;
+}
+
+footer .gem {
+  color: #80ff80;
+}
+
+footer ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+footer ul li {
+  display: inline;
+  text-align: right;
+}

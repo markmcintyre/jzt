@@ -205,12 +205,11 @@ function initializeOpenDialog(dialog) {
                 var json,
                     data;
 
-                if (file.type === 'application/json') {
+                if (file.type === 'application/json' || /\.json$/i.test(file.name)) {
                     json = fileReader.result;
                 } else {
-                    data = fileReader.result.split(',')[1];
                     try {
-                        json = LZString.decompressFromBase64(data);
+                        json = LZString.decompressFromUint8Array(new Uint8Array(fileReader.result));
                     } catch (decodeException) {
                         alert('Couldn\'t read game world.\n' + decodeException);
                     }
@@ -229,10 +228,10 @@ function initializeOpenDialog(dialog) {
 
             };
 
-            if (file.type === 'application/json') {
+            if (file.type === 'application/json' || /\.json$/i.test(file.name)) {
                 fileReader.readAsText(file);
             } else {
-                fileReader.readAsDataURL(file);
+                fileReader.readAsArrayBuffer(file);
             }
 
         }

@@ -2,24 +2,48 @@ const express = require('express');
 const app = express();
 const path = require('path');
 const browserify = require('browserify-middleware');
+const {Liquid} = require('liquidjs');
 const port = 3000;
 
-const DEV_INDEX = path.join(__dirname, 'static', 'index.html');
-const DEV_JS = path.join(__dirname, 'static', 'dev.js');
-const JZT_SRC = './src/jzt.js';
+const srcDir = path.join(__dirname, '..', 'src');
+const siteDir = path.join(srcDir, 'site');
+
+const engine = new Liquid();
+const unknownAuthorNames = [
+    'a JZT wizard',
+    'a binary byte shaper',
+    'an ASCII architect',
+    'a pixel pixie',
+    'a level luminary',
+    'a virtual visionary',
+    'a construct cartographer'
+];
 
 app.get('/', (req, res) => {
-    res.sendFile(DEV_INDEX);
+    engine.renderFile(path.join(siteDir, 'index.html.liquid'), {
+        environment: 'dev',
+        world: {
+            name: 'Development Instance',
+            author: `${unknownAuthorNames[Math.floor(Math.random() * unknownAuthorNames.length) ]}`,
+        }
+      }).then((result) => {
+        res.send(result)
+      });
 });
-
-app.get('/dev.js', browserify(DEV_JS, {
+app.get('/style.css', (req, res) => {
+    res.sendFile(path.join(siteDir, 'style.css'));
+});
+app.get('/script.js', browserify(path.join(siteDir, 'script.js'), {
     debug: true
 }));
-app.get('/jzt.min.js', browserify(JZT_SRC, {
+app.get('/jzt.min.js', browserify(path.join(srcDir, 'jzt.js'), {
     debug: true,
     standalone: 'jzt'
 }));
-
+app.get('/dev.js', browserify(path.join(siteDir, 'dev.js')));
+app.get('/dev.css', (req, res) => {
+    res.sendFile(path.join(siteDir, 'dev.css'));
+});
 app.listen(port, () => {
     console.log(`✅ JZT development server running.`);
     console.log(`👉 http://localhost:${port}`);
