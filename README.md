@@ -38,6 +38,8 @@ The selected output directory contains exactly:
 
 Editor bundles, development loaders, development styles, metadata headers, and unrelated assets are not included.
 
+The itch package renders `src/site/itch.html.liquid` as `index.html`. That template omits the standalone header and page gradients, keeps an 80px footer for embed sizing, and exposes the live-site-style How to Play instructions from a footer button.
+
 ## Preview an itch build
 
 Build the package and serve the production player in one command:

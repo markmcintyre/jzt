@@ -12,7 +12,7 @@ function parseArguments(argumentsList) {
 
   for (let index = 0; index < argumentsList.length; index += 1) {
     const argument = argumentsList[index];
-    if (argument === '--world' || argument === '--output') {
+    if (argument === '--world' || argument === '--output' || argument === '--template') {
       const value = argumentsList[index + 1];
       if (!value || value.startsWith('--')) {
         throw new Error(`${argument} requires a value.`);
@@ -23,14 +23,18 @@ function parseArguments(argumentsList) {
       throw new Error(`Unknown argument: ${argument}`);
     }
   }
-
   if (!options.world) {
     throw new Error('A world file is required. Use --world <path>.');
+  }
+  const templateName = options.template || 'index';
+  if (!['index', 'itch'].includes(templateName)) {
+    throw new Error(`Unknown site template "${templateName}". Use "index" or "itch".`);
   }
 
   return {
     worldPath: path.resolve(process.cwd(), options.world),
-    outputDirectory: path.resolve(process.cwd(), options.output || defaultOutputDirectory)
+    outputDirectory: path.resolve(process.cwd(), options.output || defaultOutputDirectory),
+    templateName
   };
 }
 
@@ -73,17 +77,17 @@ function parseWorld(worldData, worldPath) {
   return world;
 }
 
-async function generateSite(worldPath, outputDirectory = defaultOutputDirectory) {
+async function generateSite(worldPath, outputDirectory = defaultOutputDirectory, templateName = 'index') {
   const worldData = await fs.readFile(worldPath);
   const world = parseWorld(worldData, worldPath);
 
 
   const filename = path.basename(worldPath);
   const outputFile = path.join(outputDirectory, filename);
-  const engine = new Liquid();
+  const engine = new Liquid({root: siteDir});
 
   await fs.mkdir(outputDirectory, {recursive: true});
-  const renderedPage = await engine.renderFile(path.join(siteDir, 'index.html.liquid'), {
+  const renderedPage = await engine.renderFile(path.join(siteDir, `${templateName}.html.liquid`), {
     environment: 'production',
     filename,
     world
@@ -106,8 +110,8 @@ async function generateSite(worldPath, outputDirectory = defaultOutputDirectory)
 }
 
 async function main() {
-  const {worldPath, outputDirectory} = parseArguments(process.argv.slice(2));
-  await generateSite(worldPath, outputDirectory);
+  const {worldPath, outputDirectory, templateName} = parseArguments(process.argv.slice(2));
+  await generateSite(worldPath, outputDirectory, templateName);
   console.log(`Generated player site in ${outputDirectory}.`);
 }
 

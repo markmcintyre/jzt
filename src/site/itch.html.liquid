@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>JZT — {{world.name | escape}}</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    {% if environment != 'production' %}<link rel="stylesheet" href="dev.css" />{% endif %}
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://fonts.cdnfonts.com/css/pixgamer" rel="stylesheet">
+  </head>
+  <body class="itch">
+    {% render 'player.html.liquid', world: world, filename: filename, environment: environment, itch: true %}
+    <script type="text/javascript" src="jzt.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="script.js" charset="utf-8"></script>
+    {% if environment != 'production' %}
+      <script type="text/javascript" src="dev.js" charset="utf-8"></script>
+    {% endif %}
+  </body>
+</html>

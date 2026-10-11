@@ -141,6 +141,16 @@ canvas {
   flex: 0 0 auto;
 }
 
+.game:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  background-color: #555;
+}
+
+.game:fullscreen .game-area {
+  max-width: 100%;
+}
+
 .game:fullscreen .settings-bar {
   height: 0;
 }
@@ -171,22 +181,92 @@ svg {
   height: 24px;
 }
 
-.how-to-play {
-  flex: 0 0 auto;
+#how-to-play {
   box-sizing: border-box;
-  color: silver;
-  font-size: .8rem;
-  padding: .5rem 1rem;
-}
-
-.how-to-play h3,
-.how-to-play p {
-  margin: 0;
-}
-
-.how-to-play h3 {
+  width: min(800px, calc(100vw - 2rem));
+  max-width: calc(100vw - 2rem);
+  border: 0;
+  border-radius: 1rem;
+  padding: 2rem;
+  background-color: #555;
   color: white;
-  font-size: 1rem;
+}
+
+#how-to-play::backdrop {
+  background-color: rgba(0, 0, 0, .7);
+}
+
+#how-to-play .close {
+  float: right;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: silver;
+  font: inherit;
+  cursor: pointer;
+}
+
+#how-to-play h2 {
+  margin-top: 0;
+}
+
+.key-map {
+  display: table;
+  border-collapse: separate;
+  border-spacing: 0 10px;
+}
+
+.key-map .instruction {
+  display: table-row;
+}
+
+.key-map .keys,
+.key-map .description {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.key-map .description {
+  padding-right: 20px;
+}
+
+kbd {
+  display: inline-block;
+  min-width: 1em;
+  padding: .3em .5em;
+  font: normal 1rem "Lucida Grande", Lucida, Arial, sans-serif;
+  text-align: center;
+  text-decoration: none;
+  border-radius: .3em;
+  background: linear-gradient(#d2d2d2, #fff);
+  color: #323232;
+  text-shadow: 0 0 2px #fff;
+  box-shadow: inset 0 0 1px #fff, inset 0 0 .4em #c8c8c8, 0 .1em 0 #828282, 0 .11em 0 rgba(0, 0, 0, .4), 0 .1em .11em rgba(0, 0, 0, .9);
+}
+
+body.itch {
+  --itch-footer-height: 80px;
+  grid-template-rows: minmax(0, 1fr) var(--itch-footer-height);
+  grid-template-areas:
+    "game"
+    "footer";
+}
+
+body.itch .game-area {
+  min-width: 0;
+  width: 800px;
+  height: 640px;
+}
+
+body.itch .settings-bar {
+  width: 800px;
+}
+
+body.itch footer {
+  box-sizing: border-box;
+  height: var(--itch-footer-height);
+  padding: 0;
+  background: #555;
 }
 
 footer {
@@ -194,8 +274,24 @@ footer {
   padding: 0 1em;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   background: linear-gradient(#555, #333);
+}
+
+footer .how-to-play-link {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: silver;
+  font: inherit;
+  cursor: pointer;
+  align-self: flex-start;
+  margin-top: .4rem;
+}
+
+footer .how-to-play-link:hover {
+  color: white;
+  text-decoration: underline;
 }
 
 footer a,

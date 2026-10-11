@@ -71,7 +71,9 @@ function packageSite(worldPath, outputDirectory) {
       '--world',
       stagedWorldPath,
       '--output',
-      outputDirectory
+      outputDirectory,
+      '--template',
+      'itch'
     ], {cwd: repositoryRoot, stdio: 'inherit'});
     runNpmScript('postbuild');
 

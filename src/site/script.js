@@ -3,9 +3,12 @@ const gameArea = document.querySelector('.game-area');
 const settingsBar = document.querySelector('.settings-bar');
 const startLoader = document.querySelector('.game-area .start');
 const canvasElement = document.querySelector('.game canvas');
+const fullScreenButton = settingsBar.querySelector('.full-screen');
 const loadError = document.querySelector('.load-error');
-const howToPlay = document.querySelector('.how-to-play');
+const howToPlayButton = document.querySelector('.how-to-play-link');
+const howToPlayDialog = document.querySelector('#how-to-play');
 const gem = document.querySelector('.gem');
+const isItchBuild = document.body.classList.contains('itch');
 
 const aspectRatio = 1.25;
 const minWidth = 400;
@@ -54,16 +57,21 @@ class SlidingPanel {
 }
 
 const resizeGameArea = () => {
+  const fullScreenElement = document.fullscreenElement || document.webkitFullscreenElement;
+  const isFullScreen = fullScreenElement === gameElement;
   const settingsBarHeight = settingsBar.getBoundingClientRect().height;
-  const howToPlayHeight = howToPlay.getBoundingClientRect().height;
   const container = gameElement.getBoundingClientRect();
-  const gameAreaHeight = Math.max(minHeight, container.height - settingsBarHeight - howToPlayHeight);
-  const calculatedWidth = Math.max(minWidth, Math.min(container.width, gameAreaHeight * aspectRatio));
-  const calculatedHeight = Math.max(minHeight, calculatedWidth / aspectRatio);
+  const availableHeight = Math.max(0, container.height - settingsBarHeight);
+  const calculatedWidth = isItchBuild && !isFullScreen
+    ? Math.min(800, container.width, availableHeight * aspectRatio)
+    : Math.max(minWidth, Math.min(container.width, availableHeight * aspectRatio));
+  const calculatedHeight = isItchBuild && !isFullScreen
+    ? calculatedWidth / aspectRatio
+    : Math.max(minHeight, calculatedWidth / aspectRatio);
   gameArea.style.width = `${calculatedWidth}px`;
   gameArea.style.height = `${calculatedHeight}px`;
   settingsBar.style.width = `${calculatedWidth}px`;
-  howToPlay.style.width = `${calculatedWidth}px`;
+  howToPlayDialog.style.width = `${calculatedWidth}px`;
 };
 
 const settings = new JztSettings();
@@ -107,7 +115,27 @@ const startGame = async () => {
   }
 };
 
+const fullscreenErrorMessage = 'Could not enter fullscreen mode. If this game is embedded in an iframe, the iframe must allow fullscreen.';
+const updateFullScreenButton = () => {
+  const fullScreenElement = document.fullscreenElement || document.webkitFullscreenElement;
+  fullScreenButton.title = fullScreenElement === gameElement ? 'Exit Full Screen' : 'Full Screen';
+};
+
 window.addEventListener('resize', resizeGameArea);
+document.addEventListener('fullscreenchange', () => {
+  resizeGameArea();
+  updateFullScreenButton();
+});
+document.addEventListener('webkitfullscreenchange', () => {
+  resizeGameArea();
+  updateFullScreenButton();
+});
+document.addEventListener('fullscreenerror', (event) => {
+  console.error(fullscreenErrorMessage, event);
+});
+document.addEventListener('webkitfullscreenerror', (event) => {
+  console.error(fullscreenErrorMessage, event);
+});
 startLoader.addEventListener('click', startGame);
 startLoader.addEventListener('keydown', (event) => {
   if (event.key === 'Enter' || event.key === ' ') {
@@ -119,10 +147,29 @@ startLoader.addEventListener('keydown', (event) => {
 settingsBar.querySelector('.mute').addEventListener('click', () => {
   settings.isMuted = !settings.isMuted;
 });
-settingsBar.querySelector('.full-screen').addEventListener('click', () => {
-  const request = gameElement.requestFullscreen();
-  if (request) {
-    request.catch((exception) => console.error('Could not enter fullscreen mode.', exception));
+fullScreenButton.addEventListener('click', () => {
+  const fullScreenElement = document.fullscreenElement || document.webkitFullscreenElement;
+  const exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen;
+  const requestFullscreen = gameElement.requestFullscreen || gameElement.webkitRequestFullscreen;
+  const request = fullScreenElement
+    ? (exitFullscreen ? exitFullscreen.call(document) : null)
+    : (requestFullscreen ? requestFullscreen.call(gameElement) : null);
+  if (!request) {
+    console.error(fullscreenErrorMessage);
+  } else if (typeof request.catch === 'function') {
+    request.catch((exception) => console.error(fullscreenErrorMessage, exception));
+  }
+});
+
+howToPlayButton.addEventListener('click', () => {
+  howToPlayDialog.showModal();
+});
+howToPlayDialog.querySelector('.close').addEventListener('click', () => {
+  howToPlayDialog.close();
+});
+howToPlayDialog.addEventListener('click', (event) => {
+  if (event.target === howToPlayDialog) {
+    howToPlayDialog.close();
   }
 });
 

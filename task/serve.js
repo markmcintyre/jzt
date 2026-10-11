@@ -8,7 +8,7 @@ const port = 3000;
 const srcDir = path.join(__dirname, '..', 'src');
 const siteDir = path.join(srcDir, 'site');
 
-const engine = new Liquid();
+const engine = new Liquid({root: siteDir});
 const unknownAuthorNames = [
     'a JZT wizard',
     'a binary byte shaper',
