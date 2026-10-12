@@ -19,7 +19,7 @@ let gemColorIndex = 0;
 class JztSettings {
 
   #listeners = [];
-  #muted;
+  #muted = false;
 
   initialize(initialSettings) {
     this.#muted = initialSettings.audioMute;
@@ -76,6 +76,15 @@ const resizeGameArea = () => {
 
 const settings = new JztSettings();
 const panel = new SlidingPanel();
+const muteButton = settingsBar.querySelector('.mute');
+const updateMuteButton = () => {
+  const muted = settings.isMuted === true;
+  muteButton.classList.toggle('active', muted);
+  muteButton.title = muted ? 'Unmute' : 'Mute';
+};
+
+settings.addListener(updateMuteButton);
+updateMuteButton();
 
 const showLoadError = (exception) => {
   loadError.textContent = 'Could not load this world. Check the packaged world file and try again.';
@@ -107,6 +116,7 @@ const startGame = async () => {
       notificationListeners: [panel],
     });
     game.observeSettings(settings);
+    updateMuteButton();
     game.run(gameData);
     canvasElement.style.display = 'block';
     startLoader.remove();

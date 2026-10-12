@@ -137,7 +137,7 @@ canvas {
   justify-content: flex-end;
   align-items: center;
   overflow: hidden;
-  margin: auto;
+  margin: 0 auto;
   flex: 0 0 auto;
 }
 
@@ -176,6 +176,13 @@ canvas {
   fill: white;
 }
 
+#settings-bar .button .strike {
+  fill: #AAA;
+}
+
+#settings-bar .button.active svg .strike {
+  fill: tomato;
+}
 svg {
   width: 24px;
   height: 24px;
