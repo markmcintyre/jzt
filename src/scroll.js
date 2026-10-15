@@ -1,32 +1,13 @@
-/**
- * JZT Scroll
- * Copyright © 2014 Mark McIntyre
- * @author Mark McIntyre
- */
+import { Point, DelayedEventScheduler } from './basic.js';
+import { GameState } from './game-state.js';
+import { Colors } from './graphics.js';
 
-/*jslint node:true */
 
-'use strict';
 
-var ConstructorError = require('./basic').ConstructorError,
-    Point = require('./basic').Point,
-    DelayedEventScheduler = require('./basic').DelayedEventScheduler,
-    GameState = require('./game-state').GameState,
-    Colors = require('./graphics').Colors;
-
-/**
- * Scroll represents a scrollable window used for reading text and selecting options
- * from that text to be sent to a registered listener.
- *
- * @param owner a Game instance to own this Scroll.
- */
-function Scroll(owner) {
+export class Scroll {
+    constructor(owner) {
 
     var spaceSprite;
-
-    if (!(this instanceof Scroll)) {
-        throw ConstructorError;
-    }
 
     this.game = owner;
     this.graphics = owner.resources.graphics;
@@ -48,47 +29,15 @@ function Scroll(owner) {
     spaceSprite = this.graphics.getSprite(32);
     this.setHeight(0);
     this.setPosition(0);
-}
 
-/**
- * ScrollState is an enumerated type representing an activate state for this
- * Scroll's finite state machine.
- */
-Scroll.ScrollState = {
-    Opening: 0,
-    Open: 1,
-    Closing: 2,
-    Closed: 3
-};
+    }
 
-/**
- * ScrollAction is an enumerated type representing a performable action for
- * this Scroll.
- */
-Scroll.ScrollAction = {
-    Up: 0,
-    Down: 1,
-    Select: 2,
-    Exit: 3
-};
-
-/**
- * Opens this scroll, readying it for reading by a player.
- */
-Scroll.prototype.open = function () {
+    open() {
     this.state = Scroll.ScrollState.Opening;
-};
 
-/**
- * Adds a line of text to this scroll. This line can be optionally centered in
- * its window, and given a label which will present it for selection and delivery
- * to a registered listener.
- *
- * @param line A line of text to add to this Scroll instance.
- * @param center Whether or not to center the line in the window
- * @param lineLabel A label to be delivered to a registered listener if the line is selected.
- */
-Scroll.prototype.addLine = function (line, center, lineLabel) {
+    }
+
+    addLine(line, center, lineLabel) {
 
     var splitLine = line.split(/\s+/),
         index,
@@ -157,14 +106,10 @@ Scroll.prototype.addLine = function (line, center, lineLabel) {
     outputText(adjustedText);
 
 
-};
 
-/**
- * Sets a position for this scroll.
- * 
- * @param {object} position - A scroll position
- */
-Scroll.prototype.setPosition = function(position) {
+    }
+
+    setPosition(position) {
 
     if(position > this.lines.length - this.textAreaHeight) {
         position = this.lines.length - this.textAreaHeight;
@@ -175,12 +120,10 @@ Scroll.prototype.setPosition = function(position) {
 
     this.position = position;
 
-};
 
-/**
- * Updates this scroll's position to be one line higher.
- */
-Scroll.prototype.scrollUp = function () {
+    }
+
+    scrollUp() {
 
     var visibleLabels = this.getVisibleLabels(),
         index;
@@ -202,13 +145,11 @@ Scroll.prototype.scrollUp = function () {
         visibleLabels = this.getVisibleLabels();
         this.cursor = visibleLabels.length ? visibleLabels[0] : -1;
     }
-};
 
-/**
- * Updates this scroll's position to be one line lower.
- */
- Scroll.prototype.scrollDown = function () {
-    
+    }
+
+    scrollDown() {
+
     var visibleLabels = this.getVisibleLabels(),
         index;
 
@@ -230,26 +171,19 @@ Scroll.prototype.scrollUp = function () {
         this.cursor = visibleLabels.length ? visibleLabels[0] : -1;
     }
 
-};
+    }
 
-/**
- * Assigns a title for this scroll. The title will be displayed to the player at the top of
- * the scroll's window.
- */
-Scroll.prototype.setTitle = function (title) {
+    setTitle(title) {
     if (title) {
         this.title = this.graphics.textToSprites(title);
         this.title.center = true;
     } else {
         this.title = undefined;
     }
-};
 
-/**
- * Retrieves an array of labels that are actively visible in the scroll.
- * @returns An array of labels
- */
-Scroll.prototype.getVisibleLabels = function () {
+    }
+
+    getVisibleLabels() {
 
     var labels = [],
         index = 0;
@@ -266,24 +200,15 @@ Scroll.prototype.getVisibleLabels = function () {
 
     return labels;
 
-};
 
-/**
- * Retrieves the currently selected label, if applicable.
- *
- * @return a label name, or undefined if no such label is selected.
- */
-Scroll.prototype.getCurrentLabel = function () {
+    }
+
+    getCurrentLabel() {
     return this.cursor >= 0 ? this.lines[this.cursor].label : undefined;
-};
 
-/**
- * Assigns a height (in blocks) for this scroll. This height will be used when rendering
- * the scroll to the screen.
- *
- * @param height A height, in blocks, for this scroll.
- */
-Scroll.prototype.setHeight = function (height) {
+    }
+
+    setHeight(height) {
     this.height = height;
 
     this.textAreaHeight = this.title ? this.height - 4 : this.height - 2;
@@ -295,12 +220,10 @@ Scroll.prototype.setHeight = function (height) {
     this.origin.x = Math.floor((this.screenWidth - this.width) / 2);
     this.origin.y = Math.floor((this.screenHeight - this.height) / 2);
 
-};
 
-/**
- * Performs a "tick" on this scroll.
- */
-Scroll.prototype.doTick = function () {
+    }
+
+    doTick() {
 
     var event = this.eventScheduler.takeEvent(),
         currentLabel;
@@ -325,12 +248,10 @@ Scroll.prototype.doTick = function () {
         this.state = Scroll.ScrollState.Closing;
     }
 
-};
 
-/**
- * Updates this Scroll instance.
- */
-Scroll.prototype.update = function () {
+    }
+
+    update() {
 
     var k = this.game.keyboard,
         visibleLabels;
@@ -411,26 +332,18 @@ Scroll.prototype.update = function () {
 
     }
 
-};
 
-/**
- * Clears all the lines in this Scroll instance, and reset its position to 0.
- */
-Scroll.prototype.clearLines = function () {
+    }
+
+    clearLines() {
     this.lines = [];
     this.labels = [];
     this.setPosition(0);
     this.cursor = -1;
-};
 
-/**
- * Draws a single line from this Scroll at a provided scroll index. The scroll index
- * is a zero-based value representing a visible line of text, relative to the top
- * of the scroll's visible content area.
- *
- * @param scrollIndex an index of a line to be rendered.
- */
-Scroll.prototype.drawLine = function (scrollIndex) {
+    }
+
+    drawLine(scrollIndex) {
 
     var lineIndex = this.position + scrollIndex,
         line = this.lines[lineIndex],
@@ -449,15 +362,10 @@ Scroll.prototype.drawLine = function (scrollIndex) {
 
     }
 
-};
 
-/**
- * Draws some text to this Scroll's graphics context at a provided point.
- *
- * @param sprites An array of sprites to be drawn
- * @param point A Point at which to draw the sprites.
- */
-Scroll.prototype.drawText = function (sprites, point) {
+    }
+
+    drawText(sprites, point) {
     var color = Colors.Yellow;
     if (sprites.center) {
         color = Colors.BrightWhite;
@@ -473,19 +381,10 @@ Scroll.prototype.drawText = function (sprites, point) {
         point.x += 2;
     }
     this.graphics.drawSprites(this.game.context, point, sprites, color, undefined);
-};
 
-/**
- * Draws a scroll bar to the Scroll's graphics context at a provided point for a provided height.
- * 
- * @param {*} context A context onto which to draw a scrollbar
- * @param {*} point A point at which to draw a scrollbar
- * @param {*} height A height of a scroll bar to draw
- * @param {*} currentIndex An index to represent on a scrollbar
- * @param {*} visibleCount A number of visible indicies to represent on a scrollbar
- * @param {*} maximumIndex  A maximum index for a scrollbar
- */
-Scroll.prototype.drawScrollBar = function (context, point, height, currentIndex, visibleCount, maximumIndex) {
+    }
+
+    drawScrollBar(context, point, height, currentIndex, visibleCount, maximumIndex) {
 
     var thumbPosition,
         scrollbarArea = height - 2,
@@ -526,14 +425,10 @@ Scroll.prototype.drawScrollBar = function (context, point, height, currentIndex,
 
     }
 
-};
 
-/**
- * Renders a visual representation of this Scroll instance to a provided graphics context.
- *
- * @param context A graphics context to which to render this Scroll instance.
- */
-Scroll.prototype.render = function (context) {
+    }
+
+    render(context) {
 
     var sprites = [],
         sprite,
@@ -642,6 +537,9 @@ Scroll.prototype.render = function (context) {
 
     }
  
-};
 
-exports.Scroll = Scroll;
+    }
+}
+
+Scroll.ScrollState = { Opening: 0, Open: 1, Closing: 2, Closed: 3 };
+Scroll.ScrollAction = { Up: 0, Down: 1, Select: 2, Exit: 3 };

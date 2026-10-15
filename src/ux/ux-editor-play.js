@@ -1,10 +1,9 @@
-/*jslint node: true */
-/*globals jzt */
+/*jslint browser:true */
 
 'use strict';
 
-var game,
-    origin;
+let game;
+let origin;
 
 function receiveMessage(event) {
 
@@ -19,7 +18,7 @@ function receiveMessage(event) {
 
                 button.remove();
 
-                game = new jzt.Game({
+                game = new globalThis.jzt.Game({
                     canvasElement: document.getElementById('jzt'),
                     playTest: true,
                     onLoadCallback: function (success) {
@@ -44,3 +43,4 @@ function initialize() {
 }
 
 initialize();
+export {initialize};

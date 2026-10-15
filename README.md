@@ -11,6 +11,14 @@ npm run dev
 
 Open `http://localhost:3000` and use the world file chooser to play a world during development.
 
+Run the automated test suite with:
+
+```sh
+npm test
+```
+
+Build production browser artifacts with `npm run build`; use `npm run build:dev` for non-minified bundles with source maps.
+
 ## Package a world for itch.io
 
 Package any valid JZT world as a standalone HTML5 player:

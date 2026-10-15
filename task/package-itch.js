@@ -1,8 +1,11 @@
-const fs = require('node:fs');
-const os = require('node:os');
-const path = require('node:path');
-const {execFileSync} = require('node:child_process');
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {execFileSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const repositoryRoot = path.resolve(__dirname, '..');
 const defaultOutputDirectory = path.join(repositoryRoot, 'build');
 
@@ -99,7 +102,7 @@ function main() {
   packageSite(worldPath, outputDirectory);
 }
 
-if (require.main === module) {
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
   try {
     main();
   } catch (error) {
@@ -108,4 +111,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = {isInside, packageSite, parseArguments};
+export {isInside, packageSite, parseArguments};

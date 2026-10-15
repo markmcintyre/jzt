@@ -3,14 +3,16 @@
 
 'use strict';
 
-var JztScript = require('../jzt-script').JztScript,
-    JztScriptParser = require('../jzt-script-parser').JztScriptParser,
-    SpiderWeb = require('../things').things.SpiderWeb,
-    Audio = require('../audio').Audio,
-    Editor = require('../editor').Editor,
-    LZString = require('lz-string'),
-    CodeMirror = require('codemirror'),
-    boardNameInput,
+import {JztScript} from '../jzt-script.js';
+import {JztScriptParser} from '../jzt-script-parser.js';
+import {things} from '../things.js';
+import {Audio} from '../audio.js';
+import {Editor} from '../editor.js';
+import LZString from 'lz-string';
+import CodeMirror from 'codemirror';
+import 'codemirror/addon/mode/simple';
+
+let boardNameInput,
     boardSelector,
     northSelector,
     eastSelector,
@@ -46,7 +48,7 @@ var JztScript = require('../jzt-script').JztScript,
     downloadUrl,
     parser;
 
-require('codemirror/addon/mode/simple');
+const SpiderWeb = things.SpiderWeb;
 
 /**
  * Validates a current script and displays or hides a warning as appropriate.
@@ -820,4 +822,4 @@ window.onkeydown = function (event) {
     }
 };
 
-exports.initializeEditorUx = initializeEditorUx;
+export {initializeEditorUx};

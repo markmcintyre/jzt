@@ -8,8 +8,8 @@
 
 'use strict';
 
-var DEFAULT_LANGUAGE = 'en';
-var MESSAGES = {
+const DEFAULT_LANGUAGE = 'en';
+const MESSAGES = {
 
     // ENGLISH-LANGUAGE MESSAGES
     en: {
@@ -153,8 +153,8 @@ var MESSAGES = {
 
 };
 
-var currentLanguage;
-var currentMessages;
+let currentLanguage;
+let currentMessages;
 
 function findMessage(source, key) {
 
@@ -221,10 +221,10 @@ function getBoardMessage(board, potentialKey) {
 setLanguage(DEFAULT_LANGUAGE);
 
 // Exports
-exports.DefaultLanguage = DEFAULT_LANGUAGE;
-exports.Messages = MESSAGES;
-exports.getMessage = getMessage;
-exports.findMessage = findMessage;
-exports.getLanguage = getLanguage;
-exports.setLanguage = setLanguage;
-exports.getBoardMessage = getBoardMessage;
+export { DEFAULT_LANGUAGE as DefaultLanguage };
+export { MESSAGES as Messages };
+export { getMessage as getMessage };
+export { findMessage as findMessage };
+export { getLanguage as getLanguage };
+export { setLanguage as setLanguage };
+export { getBoardMessage as getBoardMessage };

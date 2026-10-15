@@ -8,15 +8,11 @@
 
 'use strict';
 
-var ConstructorError = require('./basic').ConstructorError,
-    Point = require('./basic').Point,
-    Colors = require('./graphics').Colors,
-    utilities = require('./basic').utilities,
-    JztScript = require('./jzt-script').JztScript,
-    things = require('./things').things,
-    ThingFactory = require('./things').ThingFactory,
-    Direction = require('./basic').Direction,
-    i18n = require('./i18n');
+import { Point, utilities, Direction } from './basic.js';
+import { Colors } from './graphics.js';
+import { JztScript } from './jzt-script.js';
+import { things, ThingFactory } from './things.js';
+import * as i18n from './i18n.js';
 
 /**
  * Board represents a single game board.
@@ -24,13 +20,11 @@ var ConstructorError = require('./basic').ConstructorError,
  * @param boardData Serialized board data to load and use for this Board.
  * @param game A Game instance to serve as owner of this board
  */
-function Board(boardData, game) {
-
-    if (!(this instanceof Board)) {
-        throw ConstructorError;
-    }
+class Board {
+    constructor(boardData, game) {
 
     this.validateData(boardData);
+
 
     this.name = boardData.name;
     this.game = game;
@@ -86,7 +80,7 @@ function Board(boardData, game) {
  *
  * @param data Data to be validated
  */
-Board.prototype.validateData = function (data) {
+    validateData(data) {
 
     // Let's hope for the best...
     var valid = true;
@@ -103,14 +97,14 @@ Board.prototype.validateData = function (data) {
         throw 'Invalid board data.';
     }
 
-};
+    }
 
 /**
  * Serializes this Board instance to an object.
  *
  * @return An object representation of this board data.
  */
-Board.prototype.serialize = function () {
+    serialize() {
 
     var result = {},
         index,
@@ -206,7 +200,7 @@ Board.prototype.serialize = function () {
 
     return result;
 
-};
+    }
 
 /**
  * Initializes scripts used by this Board based on provided script
@@ -214,7 +208,7 @@ Board.prototype.serialize = function () {
  *
  * @param scriptData Script data to be deserialized into Script instances.
  */
-Board.prototype.initializeScripts = function (scriptData) {
+    initializeScripts(scriptData) {
 
     var index, script;
 
@@ -236,9 +230,9 @@ Board.prototype.initializeScripts = function (scriptData) {
 
     }
 
-};
+    }
 
-Board.prototype.initializeI18n = function (i18nData) {
+    initializeI18n(i18nData) {
 
     var language,
         entry;
@@ -274,9 +268,9 @@ Board.prototype.initializeI18n = function (i18nData) {
 
     }
 
-};
+    }
 
-Board.prototype.getScriptables = function (name) {
+    getScriptables(name) {
 
     var result = [];
 
@@ -292,14 +286,14 @@ Board.prototype.getScriptables = function (name) {
 
     return result;
 
-};
+    }
 
 /**
  * Takes a provided player an initializes it for use on this board.
  *
  * @param A player instance to use on this board.
  */
-Board.prototype.initializePlayer = function (player) {
+    initializePlayer(player) {
 
     var scriptables,
         index,
@@ -338,7 +332,7 @@ Board.prototype.initializePlayer = function (player) {
         }
     }
 
-};
+    }
 
 /*
  * Intializes tile data given a collection of serialized tiles.
@@ -346,7 +340,7 @@ Board.prototype.initializePlayer = function (player) {
  * @param tileDataCollection an array of serialized tile data to be loaded
  *      into this Board.
  */
-Board.prototype.initializeTiles = function (tileDataCollection) {
+    initializeTiles(tileDataCollection) {
 
     var point = new Point(0, 0),
         index,
@@ -375,14 +369,14 @@ Board.prototype.initializeTiles = function (tileDataCollection) {
 
     }
 
-};
+    }
 
 /**
  * Initializes a Torch for a provided thing
  *
  * @param A thing for which to initialize a torch
  */
-Board.prototype.initializeTorch = function (thing) {
+    initializeTorch(thing) {
 
     var torch;
 
@@ -393,9 +387,9 @@ Board.prototype.initializeTorch = function (thing) {
             this.torches.push(torch);
         }
     }
-};
+    }
 
-Board.prototype.initializeWindow = function () {
+    initializeWindow() {
 
     var canvasWidth = this.game.context.canvas.width,
         canvasHeight = this.game.context.canvas.height;
@@ -419,9 +413,9 @@ Board.prototype.initializeWindow = function () {
     }
 
 
-};
+    }
 
-Board.prototype.updateWindowPosition = function () {
+    updateWindowPosition() {
 
     if (this.focusPoint) {
 
@@ -437,7 +431,7 @@ Board.prototype.updateWindowPosition = function () {
 
     }
 
-};
+    }
 
 /**
  * Retrieves a Script instance by its name for this Board.
@@ -445,7 +439,7 @@ Board.prototype.updateWindowPosition = function () {
  * @param scriptName A name of a Script instance
  * @return A Script instance.
  */
-Board.prototype.getScript = function (scriptName) {
+    getScript(scriptName) {
 
     var index, script;
 
@@ -462,7 +456,7 @@ Board.prototype.getScript = function (scriptName) {
 
     return undefined;
 
-};
+    }
 
 /**
  * Executes a provided callback function for each tile on this Board,
@@ -471,7 +465,7 @@ Board.prototype.getScript = function (scriptName) {
  *
  * @param callback A callback function to be executed for each tile
  */
-Board.prototype.each = function (callback) {
+    each(callback) {
 
     var values = this.tiles.slice(0),
         point = new Point(0, 0);
@@ -482,7 +476,7 @@ Board.prototype.each = function (callback) {
         }
     }
 
-};
+    }
 
 /**
  * Executes a provided callback function for each tile on this Board,
@@ -492,7 +486,7 @@ Board.prototype.each = function (callback) {
  *
  * @param callback A callback function to be executed for each tile, in reverse.
  */
-Board.prototype.eachBackwards = function (callback) {
+    eachBackwards(callback) {
 
     var values = this.tiles.slice(0),
         point = new Point(0, 0);
@@ -503,7 +497,7 @@ Board.prototype.eachBackwards = function (callback) {
         }
     }
 
-};
+    }
 
 /**
  * Executes a provided callback function for each tile on this Board that falls within
@@ -513,7 +507,7 @@ Board.prototype.eachBackwards = function (callback) {
  *
  * @param callback A callback function to be executed for each tile.
  */
-Board.prototype.eachDisplayable = function (callback) {
+    eachDisplayable(callback) {
 
     var values = this.tiles.slice(0),
         point = new Point(0, 0),
@@ -533,7 +527,7 @@ Board.prototype.eachDisplayable = function (callback) {
         }
     }
 
-};
+    }
 
 /**
  * Retrieves whether or not this Board has a provided number (or any) of a
@@ -542,7 +536,7 @@ Board.prototype.eachDisplayable = function (callback) {
  * @param {object} template - A Thing template object
  * @param {number} [count] - A minimum number of tiles on the board to test for, or undefined to test for any number
  */
-Board.prototype.hasTile = function (template, count) {
+    hasTile(template, count) {
 
     var tally = 0;
 
@@ -556,7 +550,7 @@ Board.prototype.hasTile = function (template, count) {
 
     return count === undefined ? tally > 0 : count <= 0 ? tally <= 0 : tally >= count;
 
-};
+    }
 
 /**
  * Changes all instances of tiles matching a provided template with a new instance based
@@ -565,7 +559,7 @@ Board.prototype.hasTile = function (template, count) {
  * @param fromTemplate A template to match existing things
  * @param toTemplate A template with which to replace matched things
  */
-Board.prototype.changeTiles = function (fromTemplate, toTemplate) {
+    changeTiles(fromTemplate, toTemplate) {
 
     var me = this,
         newThing;
@@ -585,7 +579,7 @@ Board.prototype.changeTiles = function (fromTemplate, toTemplate) {
 
     });
 
-};
+    }
 
 /**
  * Removes a tile from this Board at a provided Point. This function will also
@@ -594,7 +588,7 @@ Board.prototype.changeTiles = function (fromTemplate, toTemplate) {
  *
  * @param point A point on this Board to delete.
  */
-Board.prototype.deleteTile = function (point) {
+    deleteTile(point) {
 
     var thing = this.getTile(point);
 
@@ -603,7 +597,7 @@ Board.prototype.deleteTile = function (point) {
         this.setTile(point, thing.under);
     }
 
-};
+    }
 
 /**
  * Moves a tile on this Board from a specified Point to another Point.
@@ -617,7 +611,7 @@ Board.prototype.deleteTile = function (point) {
  * @param ghost Whether or not we should actually move the tile, or behave as if a ghost moved (without actually moving)
  * @return true if a move was successful, false otherwise.
  */
-Board.prototype.moveTile = function (oldPoint, newPoint, weak, ghost) {
+    moveTile(oldPoint, newPoint, weak, ghost) {
 
     var thing = this.getTile(oldPoint),
         obstacle = this.getTile(newPoint),
@@ -693,7 +687,7 @@ Board.prototype.moveTile = function (oldPoint, newPoint, weak, ghost) {
     }
 
     return false;
-};
+    }
 
 /**
  * Assigns a tile to a specific Point on this Board. This function does
@@ -702,7 +696,7 @@ Board.prototype.moveTile = function (oldPoint, newPoint, weak, ghost) {
  * @param point A point to be set to a specific tile
  * @param tile A tile to be set.
  */
-Board.prototype.setTile = function (point, tile) {
+    setTile(point, tile) {
 
     if (!this.isOutside(point)) {
 
@@ -728,7 +722,7 @@ Board.prototype.setTile = function (point, tile) {
         this.tiles[point.x + point.y * this.width] = tile;
 
     }
-};
+    }
 
 /**
  * Adds a Thing to a specific Point on this Board. This function
@@ -741,7 +735,7 @@ Board.prototype.setTile = function (point, tile) {
  * @param thing A Thing to add at a given point
  * @param respectSurrenderability Whether to respect the surrenderability of an item
  */
-Board.prototype.addThing = function (point, thing, respectSurrenderabilty) {
+    addThing(point, thing, respectSurrenderabilty) {
 
     var oldThing = this.getTile(point);
 
@@ -755,7 +749,7 @@ Board.prototype.addThing = function (point, thing, respectSurrenderabilty) {
 
     this.setTile(point, thing);
 
-};
+    }
 
 /**
  * Returns whether or not a specific point is free or surrenderable to a provided Thing.
@@ -764,12 +758,12 @@ Board.prototype.addThing = function (point, thing, respectSurrenderabilty) {
  * @param thing A thing used to test for surrenderability if a point is not free.
  * @return true if the provided spot is either free, or surrenderable to a provided thing.
  */
-Board.prototype.isFreeOrSurrenderable = function (point, thing) {
+    isFreeOrSurrenderable(point, thing) {
 
     var obstacle = this.getTile(point);
     return !this.isOutside(point) && ((!obstacle) || (obstacle.isSurrenderable(thing)));
 
-};
+    }
 
 /**
  * Retrieves a tile from this Board at a provided Point.
@@ -778,7 +772,7 @@ Board.prototype.isFreeOrSurrenderable = function (point, thing) {
  * @return a Thing located at a provided Point, or undefined if no such
  *          this is available at a given Point.
  */
-Board.prototype.getTile = function (point) {
+    getTile(point) {
 
     if (point.x >= this.width || point.x < 0 || point.y >= this.height || point.y < 0) {
         return undefined;
@@ -786,7 +780,7 @@ Board.prototype.getTile = function (point) {
 
     return this.tiles[point.x + point.y * this.width];
 
-};
+    }
 
 /**
  * Replaces an existing tile at a given Point with a provided Thing.
@@ -795,10 +789,10 @@ Board.prototype.getTile = function (point) {
  * @param point A point on this Board to be replaced
  * @param A Thing to be added to a given point.
  */
-Board.prototype.replaceTile = function (point, newTile) {
+    replaceTile(point, newTile) {
     this.deleteTile(point);
     this.addThing(point, newTile, true);
-};
+    }
 
 /**
  * Returns true if a provided Point is located outside of this Board's
@@ -808,7 +802,7 @@ Board.prototype.replaceTile = function (point, newTile) {
  * @return true if a provided Point is outisde this Board's boundaries,
  *         false otherwise.
  */
-Board.prototype.isOutside = function (point) {
+    isOutside(point) {
 
     if (point.y < 0 || point.y >= this.height) {
         return true;
@@ -820,7 +814,7 @@ Board.prototype.isOutside = function (point) {
 
     return false;
 
-};
+    }
 
 /**
  * Returns true if a provided Point is located outside of this Board's visible
@@ -829,7 +823,7 @@ Board.prototype.isOutside = function (point) {
  * @param point A point to check.
  * @return true if a provided Point is outside this Board's boundaries, false otherwise.
  */
-Board.prototype.isOutsideWindow = function (point) {
+    isOutsideWindow(point) {
     if (point.x < this.windowOrigin.x || point.x >= (this.windowOrigin.x + this.windowSize.x)) {
         return true;
     }
@@ -838,7 +832,7 @@ Board.prototype.isOutsideWindow = function (point) {
     }
 
     return false;
-};
+    }
 
 /**
  * Returns whether or not a provided Point is unoccupied.
@@ -846,11 +840,11 @@ Board.prototype.isOutsideWindow = function (point) {
  * @param point a Point to test.
  * @return true if a provided Point is free, false otherwise.
  */
-Board.prototype.isFree = function (point) {
+    isFree(point) {
 
     return !this.isOutside(point) && (!this.getTile(point));
 
-};
+    }
 
 /**
  * Requests to move this Board's player to a Board located
@@ -859,7 +853,7 @@ Board.prototype.isFree = function (point) {
  * @param direction An adjacent board direction to which to
  *        relocate a player.
  */
-Board.prototype.movePlayerOffBoard = function (direction) {
+    movePlayerOffBoard(direction) {
 
     var boardName,
         offset;
@@ -889,7 +883,7 @@ Board.prototype.movePlayerOffBoard = function (direction) {
     // Move our player to that board edge
     this.game.movePlayerToBoardEdge(Direction.opposite(direction), boardName, offset);
 
-};
+    }
 
 /**
  * Retrieves a Passage with a provided ID from this board.
@@ -897,7 +891,7 @@ Board.prototype.movePlayerOffBoard = function (direction) {
  * @param passageId an ID of a passage to retrieve
  * @return A Passage instance.
  */
-Board.prototype.getPassage = function (passageId) {
+    getPassage(passageId) {
 
     var row, column, tile;
 
@@ -910,7 +904,7 @@ Board.prototype.getPassage = function (passageId) {
         }
     }
 
-};
+    }
 
 /**
  * Adds a provided message to this Board's queue of messages to globally
@@ -918,9 +912,9 @@ Board.prototype.getPassage = function (passageId) {
  *
  * @param message A message to be delivered to all UpdateableThings.
  */
-Board.prototype.addMessage = function (message) {
+    addMessage(message) {
     this.messageQueue.push(message);
-};
+    }
 
 /**
  * Retrieves whether or not a provided point falls within any of this
@@ -936,7 +930,7 @@ Board.prototype.addMessage = function (message) {
  *           instead of the current cycle (which may or not be done updating).
  * @return true if a provided point is within any torch circle, false otherwise
  */
-Board.prototype.isLit = function (point, thing, previousStep) {
+    isLit(point, thing, previousStep) {
 
     var index,
         torches = previousStep ? this.previousTorches : this.torches,
@@ -962,7 +956,7 @@ Board.prototype.isLit = function (point, thing, previousStep) {
 
     return false;
 
-};
+    }
 
 /**
  * Returns whether or not another player bullet is permissable on the board
@@ -971,7 +965,7 @@ Board.prototype.isLit = function (point, thing, previousStep) {
  * @param displayMessage Whether or not to display a message if no shooting is allowed, ever.
  * @return true if another player bullet is allowed, false otherwise
  */
-Board.prototype.canPlayerShoot = function (displayMessage) {
+    canPlayerShoot(displayMessage) {
 
     if (displayMessage && this.maxPlayerBullets <= 0) {
         this.setDisplayMessage(i18n.getMessage('status.noshoot'));
@@ -979,13 +973,13 @@ Board.prototype.canPlayerShoot = function (displayMessage) {
 
     return this.playerBullets < this.maxPlayerBullets;
 
-};
+    }
 
 /**
  * Updates this Board instance by one tick in an execution cycle. This will also
  * update all UpdateableThings tracked by this Board.
  */
-Board.prototype.update = function () {
+    update() {
 
     var me = this;
 
@@ -1062,7 +1056,7 @@ Board.prototype.update = function () {
 
     });
 
-};
+    }
 
 /**
  * Returns whether or not this Board is the same as another board, either by
@@ -1071,19 +1065,19 @@ Board.prototype.update = function () {
  * @param otherBoard another Board or name of another board to test for equality.
  * @return true if this Board is the same by name, false otherwise
  */
-Board.prototype.equals = function (otherBoard) {
+    equals(otherBoard) {
 
     var otherName = (otherBoard instanceof Board) ? otherBoard.name : otherBoard;
     return this.name === otherName;
 
-};
+    }
 
 /**
  * Assigns a message to be temporarily displayed at the bottom of this Board.
  *
  * @param message a message to be displayed.
  */
-Board.prototype.setDisplayMessage = function (message, duration) {
+    setDisplayMessage(message, duration) {
 
     if (message !== undefined) {
         this.displayMessage = ' ' + message + ' ';
@@ -1095,7 +1089,7 @@ Board.prototype.setDisplayMessage = function (message, duration) {
         this.displayMessage = undefined;
         this.displayMessageTick = 0;
     }
-};
+    }
 
 /**
  * Renders a visual representation of this Board to a provided graphics
@@ -1103,7 +1097,7 @@ Board.prototype.setDisplayMessage = function (message, duration) {
  *
  * @param c A graphics context.
  */
-Board.prototype.render = function (c) {
+    render(c) {
 
     var me = this,
         canvasWidth = this.game.context.canvas.width,
@@ -1199,20 +1193,20 @@ Board.prototype.render = function (c) {
         this.renderMessage(c);
     }
 
-};
+    }
 
 /**
  * Sets a point on the "smart path" to be weighted differently, creating either an aversion
  * point or an attraction point.
  */
-Board.prototype.adjustSmartPathWeight = function (point, strengthDelta) {
+    adjustSmartPathWeight(point, strengthDelta) {
 
     var pathIndex = point.x + point.y * this.width;
     if (!this.isOutside(point) && this.smartPath[pathIndex] !== undefined) {
         this.smartPath[pathIndex] += strengthDelta;
     }
 
-};
+    }
 
 /**
  * Precomputes a "smart path" toward a provided target point. This will add path-finding information
@@ -1220,7 +1214,7 @@ Board.prototype.adjustSmartPathWeight = function (point, strengthDelta) {
  *
  * @param targetPoint A target point to which the smart path should be computed.
  */
-Board.prototype.updateSmartPath = function (targetPoint) {
+    updateSmartPath(targetPoint) {
 
     var me = this;
 
@@ -1266,9 +1260,9 @@ Board.prototype.updateSmartPath = function (targetPoint) {
     updatePath(targetPoint.x, targetPoint.y, 0);
     this.updatePathWeights();
 
-};
+    }
 
-Board.prototype.updatePathWeights = function () {
+    updatePathWeights() {
 
     this.each(function (tile) {
         if (tile && tile.influenceSmartPath) {
@@ -1276,7 +1270,7 @@ Board.prototype.updatePathWeights = function () {
         }
     });
 
-};
+    }
 
 /**
  * Retrieves a precomputed weighted value indicating the number of steps toward a pre-specified target
@@ -1285,7 +1279,7 @@ Board.prototype.updatePathWeights = function () {
  * @param point A Point for which to retrieve a smart value.
  * @return A weighted value indicating the number of steps toward a target.
  */
-Board.prototype.getSmartValue = function (point) {
+    getSmartValue(point) {
 
     var result;
 
@@ -1296,7 +1290,7 @@ Board.prototype.getSmartValue = function (point) {
     result = this.smartPath[point.x + point.y * this.width];
     return result === undefined ? Infinity : result;
 
-};
+    }
 
 /**
  * Retrieves a direction toward the currently computed smart path target from a specified
@@ -1305,7 +1299,7 @@ Board.prototype.getSmartValue = function (point) {
  * @param point A point from which to determine a direction toward our current smart target.
  * @return A Direction Point.
  */
-Board.prototype.getSmartDirection = function (point) {
+    getSmartDirection(point) {
 
     var directions = [],
         me = this,
@@ -1352,9 +1346,9 @@ Board.prototype.getSmartDirection = function (point) {
     // Otherwise pick one of our equal values randomly
     return Direction.random(directions);
 
-};
+    }
 
-Board.prototype.getMessage = function (key) {
+    getMessage(key) {
 
     var result,
         language = i18n.getLanguage();
@@ -1368,21 +1362,21 @@ Board.prototype.getMessage = function (key) {
 
     return result !== undefined ? result : '??? ' + key + ' ???';
 
-};
+    }
 
-Board.prototype.getMessageForLanguage = function (language, key) {
+    getMessageForLanguage(language, key) {
 
     if (this.i18n && this.i18n.hasOwnProperty(language) && this.i18n[language].hasOwnProperty(key)) {
         return this.i18n[language][key];
     }
 
-};
+    }
 
 /**
  * Indicates to this board that the player has been hurt. This will display
  * a message on the screen and re-enter if applicable.
  */
-Board.prototype.playerHurt = function () {
+    playerHurt() {
 
     this.setDisplayMessage(i18n.getMessage('status.hurt'));
 
@@ -1390,7 +1384,7 @@ Board.prototype.playerHurt = function () {
         this.moveTile(this.player.point, this.entryPoint);
     }
 
-};
+    }
 
 /**
  * Renders a visual message to a provided graphics context representing this Board's current
@@ -1398,7 +1392,7 @@ Board.prototype.playerHurt = function () {
  *
  * @param c A graphics context.
  */
-Board.prototype.renderMessage = function (c) {
+    renderMessage(c) {
 
     var messagePoint = new Point();
 
@@ -1413,6 +1407,8 @@ Board.prototype.renderMessage = function (c) {
         this.displayMessage = undefined;
     }
 
-};
+    }
 
-exports.Board = Board;
+}
+
+export { Board };

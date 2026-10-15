@@ -3,6 +3,7 @@
   "description": "A DOS-era Adventure Game for the Web",
   "version": "1.0.60",
   "private": true,
+  "type": "module",
   "author": {
     "name": "Mark McIntyre"
   },
@@ -11,36 +12,29 @@
     "lz-string": "~1.4.4"
   },
   "devDependencies": {
-    "browserify": "~12.0.1",
-    "browserify-middleware": "^8.1.1",
+    "esbuild": "^0.25.0",
     "express": "^4.18.2",
     "nodemon": "^1.19.4",
-    "uglify-js": "~2.6.1",
     "liquidjs": "~10.19.0"
   },
-  "watch": {
-    "build:js": "src/**/*.js"
-  },
   "scripts": {
-    "pregenerate-site": "npm run prebuild && npm run build:game && npm run postbuild",
-    "generate-site": "node task/generate-site.js --",
-    "dev": "nodemon task/serve.js",
+    "pregenerate-site": "npm run prebuild && npm run build:game",
+    "dev": "nodemon --watch src --watch task task/serve.js",
     "clean": "rm -rf build && rm -f src/metadata.json && mkdir build",
     "build:metadata": "node task/create-metadata.js > src/metadata.json",
-    "build:header": "node task/create-header.js > build/header.txt",
-    "build:editor": "browserify -d src/ux/ux-editor.js -s jztEditor | uglifyjs -c -m | cat build/header.txt - > build/jzt-editor.min.js && browserify -d src/ux/ux-editor-play.js -s jztPlayer | uglifyjs -c -m | cat build/header.txt - > build/jzt-editor-play.min.js",
-    "build:editor:dev": "browserify -d src/ux/ux-editor.js -s jztEditor > build/jzt-editor.min.js && browserify -d src/ux/ux-editor-play.js -s jztPlayer > build/jzt-editor-play.min.js",
-    "build:game": "browserify src/jzt.js -s jzt | uglifyjs -c -m | cat build/header.txt - > build/jzt.min.js",
-    "build:game:dev": "browserify -d src/jzt.js -s jzt > build/jzt.min.js",
-    "prebuild": "npm run clean && npm run build:metadata && npm run build:header",
+    "test": "node --test",
+    "build:editor": "node task/build.js editor",
+    "build:editor:dev": "node task/build.js editor --development",
+    "build:game": "node task/build.js game",
+    "build:game:dev": "node task/build.js game --development",
+    "prebuild": "npm run clean && npm run build:metadata",
     "package:itch": "node task/package-itch.js --",
     "preview:itch": "node task/preview-itch.js --",
     "publish:itch": "node task/publish-itch.js --",
     "build": "npm run build:game && npm run build:editor",
-    "postbuild": "rm -f build/header.txt",
+    "postbuild": ":",
     "prebuild:dev": "npm run prebuild",
-    "build:dev": "npm run build:game:dev && npm run build:editor:dev",
-    "postbuild:dev": "npm run postbuild",
+    "build:dev": "npm run build:game:dev && npm run build:editor:dev && node task/build.js dev --development",
     "default": "npm run build:dev",
     "deploy": "npm version patch && npm run build",
     "postinstall": "npm run build"

@@ -12,20 +12,18 @@
  * Action is an enumerated type representing a performable action for
  * this FileManagement.
  */
-var ConstructorError = require('./basic').ConstructorError,
-    Point = require('./basic').Point,
-    DelayedEventScheduler = require('./basic').DelayedEventScheduler,
-    Popup = require('./popup').Popup,
-    Colors = require('./graphics').Colors,
-    LZString = require('lz-string'),
-    i18n = require('./i18n'),
-    action = {
-        Up: 0,
-        Down: 1,
-        Select: 2,
-        Delete: 3,
-        Exit: 4
-    };
+import { Point, DelayedEventScheduler } from './basic.js';
+import { Popup } from './popup.js';
+import { Colors } from './graphics.js';
+import LZString from 'lz-string';
+import * as i18n from './i18n.js';
+const action = {
+    Up: 0,
+    Down: 1,
+    Select: 2,
+    Delete: 3,
+    Exit: 4
+};
 
 function getMetaName(timestamp) {
     return 'jzt-save-meta|' + (timestamp || '');
@@ -40,11 +38,8 @@ function getSaveName(timestamp) {
  *
  * @param owner a Game instance to own this FileManagement.
  */
-function FileManagement(owner) {
-
-    if (!(this instanceof FileManagement)) {
-        throw ConstructorError;
-    }
+class FileManagement {
+    constructor(owner) {
 
     this.game = owner;
     this.dialogType = FileManagement.Type.SAVE;
@@ -65,12 +60,8 @@ function FileManagement(owner) {
 
 }
 
-FileManagement.Type = {
-    SAVE: 1,
-    OPEN: 2
-};
 
-FileManagement.prototype.setAlert = function (message) {
+    setAlert(message) {
 
     // Cancel any keyboard events
     var k = this.game.keyboard;
@@ -80,15 +71,15 @@ FileManagement.prototype.setAlert = function (message) {
     this.alert = new Popup(undefined, new Point(message.length + 4, 3), this.game);
     this.alert.spriteGrid.addText(new Point(2, 1), message, Colors.BrightWhite, Colors.Blue);
 
-};
+    }
 
-FileManagement.prototype.clearAlert = function () {
+    clearAlert() {
 
     this.alert = undefined;
 
-};
+    }
 
-FileManagement.prototype.open = function (dialogType, noEmptySlot) {
+    open(dialogType, noEmptySlot) {
 
     var saveGameMetaPrefix = getMetaName(),
         file,
@@ -141,9 +132,9 @@ FileManagement.prototype.open = function (dialogType, noEmptySlot) {
     this.popup.redraw();
     this.initializeSlots();
 
-};
+    }
 
-FileManagement.prototype.update = function () {
+    update() {
 
     var k = this.game.keyboard;
 
@@ -184,9 +175,9 @@ FileManagement.prototype.update = function () {
         this.doTick();
     }
 
-};
+    }
 
-FileManagement.prototype.doTick = function () {
+    doTick() {
 
     var event = this.eventScheduler.takeEvent(),
         file;
@@ -275,9 +266,9 @@ FileManagement.prototype.doTick = function () {
     }
 
 
-};
+    }
 
-FileManagement.prototype.deleteFile = function (file) {
+    deleteFile(file) {
 
     var saveKey = getSaveName(file.timestamp),
         saveMetaKey = getMetaName(file.timestamp);
@@ -294,9 +285,9 @@ FileManagement.prototype.deleteFile = function (file) {
 
     this.open();
 
-};
+    }
 
-FileManagement.prototype.loadFile = function (file) {
+    loadFile(file) {
 
     var data,
         saveKey;
@@ -321,9 +312,9 @@ FileManagement.prototype.loadFile = function (file) {
     }
 
 
-};
+    }
 
-FileManagement.prototype.saveFile = function () {
+    saveFile() {
 
     var gameData,
         file = {
@@ -343,9 +334,9 @@ FileManagement.prototype.saveFile = function () {
     localStorage[metaName] = JSON.stringify(file);
     localStorage[saveName] = gameData;
 
-};
+    }
 
-FileManagement.prototype.initializeSlots = function () {
+    initializeSlots() {
 
     var index,
         me = this,
@@ -455,9 +446,9 @@ FileManagement.prototype.initializeSlots = function () {
 
     this.popup.setScrollBar(this.offset, this.files.length, boxesInView);
 
-};
+    }
 
-FileManagement.prototype.render = function (context) {
+    render(context) {
 
     if (this.alert) {
         this.alert.render(context);
@@ -465,6 +456,12 @@ FileManagement.prototype.render = function (context) {
         this.popup.render(context);
     }
 
+    }
+}
+
+FileManagement.Type = {
+    SAVE: 1,
+    OPEN: 2
 };
 
-exports.FileManagement = FileManagement;
+export { FileManagement };
