@@ -161,8 +161,12 @@ export class Graphics {
     }
   }
   fillTile(c, point, color) {
-    var destinationX = point.x * this.TILE_SIZE.x,
-      destinationY = point.y * this.TILE_SIZE.y;
+    this.fillTileAt(c, point.x, point.y, color);
+  }
+
+  fillTileAt(c, x, y, color) {
+    var destinationX = x * this.TILE_SIZE.x,
+      destinationY = y * this.TILE_SIZE.y;
 
     // Draw the tile
     if (color) {

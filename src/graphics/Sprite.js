@@ -12,8 +12,8 @@ export class Sprite {
     this.owner = owner;
   }
   /**
-   * Draws this Sprite instance on a provided context at a provided Point using a given
-   * foreground and background color.
+   * Draws this Sprite instance on a provided context at a provided Point using
+   * a given foreground and background color.
    *
    * @param context A 2D graphics context
    * @param point A Point
@@ -21,19 +21,35 @@ export class Sprite {
    * @param background A background color.
    */
   draw(context, point, foreground, background) {
+    this.drawAt(context, point.x, point.y, foreground, background);
+  }
+
+  /**
+   * Draws this Sprite instance at integer tile coordinates.
+   *
+   * This avoids allocating a temporary Point when callers already have
+   * separate coordinates.
+   *
+   * @param context A 2D graphics context
+   * @param x The tile-column coordinate
+   * @param y The tile-row coordinate
+   * @param foreground A foreground color.
+   * @param background A background color.
+   */
+  drawAt(context, x, y, foreground, background) {
     var blink, destinationX, destinationY;
 
     /*
-     * Back in the DOS days, a bright background would actually signal
-     * that the foreground color should blink. We're doing the same.
+     * Back in the DOS days, a bright background would actually signal that the
+     * foreground color should blink. We're doing the same.
      */
     if (background && background.isLight()) {
       blink = true;
       background = background.darken();
     }
 
-    destinationX = point.x * this.owner.TILE_SIZE.x;
-    destinationY = point.y * this.owner.TILE_SIZE.y;
+    destinationX = x * this.owner.TILE_SIZE.x;
+    destinationY = y * this.owner.TILE_SIZE.y;
 
     // Draw the background
     if (background) {
