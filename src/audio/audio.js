@@ -1,8 +1,18 @@
 import { AudioSong } from './audio-song.js';
 
+const MAX_SONG_CACHE_ENTRIES = 64;
+const MAX_SONG_CACHE_NOTES = 4096;
+
 class Audio {
   constructor() {
     /*jslint newcap: true */
+
+    this.songCache = new Map();
+    this.songCacheNotes = 0;
+    this.songCacheHits = 0;
+    this.songCacheMisses = 0;
+    this.songCacheEvictions = 0;
+    this.songCacheSkipped = 0;
 
     var audioContextFunction = window.AudioContext || window.webkitAudioContext;
 
@@ -88,6 +98,74 @@ class Audio {
   isPlaying() {
     return this.active && this.context.currentTime + this.delay < this.timestamp;
   }
+  /**
+   * Retrieves a parsed song from the bounded per-instance LRU cache.
+   *
+   * @param notation A textual music notation.
+   * @return A parsed AudioSong.
+   */
+  getSong(notation) {
+
+    var key = notation.toUpperCase(),
+      entry,
+      song,
+      noteCount,
+      oldestKey,
+      oldestEntry;
+
+    entry = this.songCache.get(key);
+    if (entry) {
+      this.songCache.delete(key);
+      this.songCache.set(key, entry);
+      this.songCacheHits += 1;
+      return entry.song;
+    }
+
+    this.songCacheMisses += 1;
+    song = new AudioSong(key);
+    noteCount = song.notes.length;
+
+    if (noteCount > MAX_SONG_CACHE_NOTES) {
+      this.songCacheSkipped += 1;
+      return song;
+    }
+    song.notes.forEach(note => Object.freeze(note));
+    Object.freeze(song.notes);
+    Object.freeze(song);
+
+    this.songCache.set(key, {song, noteCount});
+    this.songCacheNotes += noteCount;
+
+    while (this.songCache.size > MAX_SONG_CACHE_ENTRIES || this.songCacheNotes > MAX_SONG_CACHE_NOTES) {
+      oldestKey = this.songCache.keys().next().value;
+      oldestEntry = this.songCache.get(oldestKey);
+      this.songCache.delete(oldestKey);
+      this.songCacheNotes -= oldestEntry.noteCount;
+      this.songCacheEvictions += 1;
+    }
+
+    return song;
+
+  }
+
+  /**
+   * Returns diagnostics for the bounded song cache.
+   *
+   * @return A snapshot of cache usage and lookup counters.
+   */
+  getSongCacheStats() {
+    return {
+      hits:this.songCacheHits,
+      misses:this.songCacheMisses,
+      evictions:this.songCacheEvictions,
+      skipped:this.songCacheSkipped,
+      entries:this.songCache.size,
+      cachedNotes:this.songCacheNotes,
+      maxEntries:MAX_SONG_CACHE_ENTRIES,
+      maxNotes:MAX_SONG_CACHE_NOTES
+    };
+  }
+
 
   /**
    * Schedules a provided notation to begin playing immediately after any
@@ -103,8 +181,8 @@ class Audio {
     if (this.active) {
       var index, note, song, startTime;
 
-      // Create a song from our notation
-      song = new AudioSong(notation);
+      // Retrieve the parsed song from the bounded cache.
+      song = this.getSong(notation);
 
       // Update our starting timestamp
       if (this.timestamp < this.context.currentTime + this.delay) {
