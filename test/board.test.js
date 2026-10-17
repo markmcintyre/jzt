@@ -271,3 +271,64 @@ test('dark-board lighting keeps current and previous masks for moved sources', (
   board.update();
   assert.equal(board.isLit(new Point(7, 7)), false);
 });
+
+test('player bullet collection tracks movement, removal, and stale membership', () => {
+  const board = new Board(data(), game);
+  const bullet = {
+    type:'Bullet',
+    fromPlayer:true,
+    point:new Point(3, 1)
+  };
+
+  board.setTile(bullet.point, bullet);
+  assert.deepEqual(board.playerBulletThings, [bullet]);
+  assert.equal(board.assertCollectionConsistency(), true);
+
+  board.moveTile(bullet.point, new Point(4, 1));
+  assert.deepEqual(board.playerBulletThings, [bullet]);
+  assert.equal(board.assertCollectionConsistency(), true);
+
+  board.deleteTile(bullet.point);
+  assert.deepEqual(board.playerBulletThings, []);
+  assert.equal(board.assertCollectionConsistency(), true);
+
+  board.playerBulletThings.push(bullet);
+  assert.throws(() => board.assertCollectionConsistency(), /playerBulletThings collection is stale/);
+
+  const debugBoard = new Board(data(), {...game, debugCollections:true});
+  debugBoard.player = {point:new Point(1, 1)};
+  assert.doesNotThrow(() => debugBoard.update());
+});
+
+test('rare custom renderers are tracked without an update-time render set', () => {
+  const calls = [];
+  const renderGame = {
+    ...game,
+    isEditor:true,
+    context:{canvas:{width:80,height:80}},
+    resources:{
+      graphics:{
+        TILE_SIZE:{x:8,y:8},
+        getSprite:() => ({drawAt(){}})
+      }
+    }
+  };
+  const board = new Board(data(), renderGame);
+  const custom = {
+    type:'CustomRenderer',
+    point:new Point(2, 2),
+    getSpriteIndex(){return 0;},
+    render(){calls.push('render');}
+  };
+  const context = {fillRect(){}};
+
+  board.setTile(custom.point, custom);
+  assert.equal(board.customRenderCount, 1);
+  board.render(context);
+  assert.deepEqual(calls, ['render']);
+
+  board.deleteTile(custom.point);
+  assert.equal(board.customRenderCount, 0);
+  board.render(context);
+  assert.deepEqual(calls, ['render']);
+});

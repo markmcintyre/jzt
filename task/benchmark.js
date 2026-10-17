@@ -5,7 +5,7 @@ const sizes = [10, 64, 256];
 const warmupIterations = 10;
 const measuredIterations = 100;
 
-function createBoard(size) {
+function createBoard(size, requestedThingCount) {
   const graphics = {
     TILE_SIZE: {x:16, y:32},
     getSprite() {
@@ -37,8 +37,21 @@ function createBoard(size) {
     point:new Point(Math.floor(size / 2), Math.floor(size / 2))
   };
 
+  const thingCount = requestedThingCount === undefined ? Math.min(32, Math.max(1, Math.floor(size / 8))) : requestedThingCount;
+  for (let index = 0; index < thingCount; index += 1) {
+    const thing = {
+      type:'Fixture',
+      point:new Point(index % size, Math.floor(index / size)),
+      update(){},
+      updateOnReverse(){return false;}
+    };
+    board.setTile(thing.point, thing);
+  }
+  board.benchmarkFixtureCount = thingCount;
+
   return board;
 }
+
 
 function createLightingBoard(size, sourceCount) {
   const board = new Board({
@@ -118,26 +131,24 @@ function benchmarkLighting(size) {
 }
 function benchmark(size) {
   const board = createBoard(size);
-  const originalSlice = Array.prototype.slice;
   const originalCopy = board.copyTileSnapshot;
   const originalUpdateSmartPath = board.updateSmartPath;
-  let sliceCalls = 0;
-  let snapshotCopies = 0;
+  const originalEachSnapshot = board.eachSnapshot;
+  let tileSnapshotCopies = 0;
   let pathRebuilds = 0;
+  let boardCellScans = 0;
 
   board.updateSmartPath = function (targetPoint) {
     pathRebuilds += 1;
     return originalUpdateSmartPath.call(this, targetPoint);
   };
   board.copyTileSnapshot = function (snapshot) {
-    snapshotCopies += 1;
+    tileSnapshotCopies += 1;
     return originalCopy.call(this, snapshot);
   };
-  Array.prototype.slice = function (...args) {
-    if (this === board.tiles) {
-      sliceCalls += 1;
-    }
-    return originalSlice.apply(this, args);
+  board.eachSnapshot = function (callback, values, reverse) {
+    boardCellScans += this.width * this.height;
+    return originalEachSnapshot.call(this, callback, values, reverse);
   };
 
   try {
@@ -168,14 +179,16 @@ function benchmark(size) {
       forcedPathRebuilds:rebuildIterations,
       forcedPathMs:Number(rebuildElapsed.toFixed(3)),
       forcedPathPerUpdateMs:Number((rebuildElapsed / rebuildIterations).toFixed(4)),
-      snapshotCopies,
+      tileSnapshotCopies,
       pathRebuilds,
-      tileSliceCalls:sliceCalls
+      boardCellScans,
+      fixtureThings:board.benchmarkFixtureCount,
+      playerBulletThings:board.playerBulletThings.length
     };
   } finally {
-    Array.prototype.slice = originalSlice;
     board.copyTileSnapshot = originalCopy;
     board.updateSmartPath = originalUpdateSmartPath;
+    board.eachSnapshot = originalEachSnapshot;
   }
 }
 
