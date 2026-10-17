@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {AudioNote, AudioSong} from '../src/audio.js';
+import {Audio, AudioNote, AudioSong} from '../src/audio.js';
 
 test('AudioNote clamps indices and supports shifts and bends', () => {
   const note = new AudioNote(60, 0.5);
@@ -54,4 +54,81 @@ test('AudioSong accounts for every percussive tick duration', () => {
   assert.equal(song.notes[0].duration, 0.0015);
   assert.equal(song.notes[1].noteIndex, undefined);
   assert.equal(song.notes[1].duration, 1.8 / 4 - 0.0015);
+});
+
+class FakeAudioContext {
+  constructor() {
+    this.currentTime = 0;
+    this.destination = {};
+  }
+
+  createGain() {
+    return {
+      gain:{
+        value:0,
+        cancelScheduledValues(){},
+        setValueAtTime(){}
+      },
+      connect(){}
+    };
+  }
+
+  createOscillator() {
+    return {
+      frequency:{
+        cancelScheduledValues(){},
+        setValueAtTime(){},
+        linearRampToValueAtTime(){}
+      },
+      connect(){},
+      start(){}
+    };
+  }
+}
+
+test('Audio caches repeated songs with bounded LRU storage', () => {
+  const previousWindow = globalThis.window;
+  globalThis.window = {AudioContext:FakeAudioContext};
+
+  try {
+    const audio = new Audio();
+    const first = audio.getSong('q c');
+    const second = audio.getSong('Q C');
+    let stats = audio.getSongCacheStats();
+
+    assert.strictEqual(first, second);
+    assert.equal(Object.isFrozen(first), true);
+    assert.equal(Object.isFrozen(first.notes), true);
+    assert.equal(stats.hits, 1);
+    assert.equal(stats.misses, 1);
+    assert.equal(stats.entries, 1);
+
+    for (let index = 0; index < stats.maxEntries + 1; index += 1) {
+      audio.getSong('C' + ' '.repeat(index + 1));
+    }
+
+    stats = audio.getSongCacheStats();
+    assert.equal(stats.entries, stats.maxEntries);
+    assert.ok(stats.evictions > 0);
+    assert.ok(stats.cachedNotes <= stats.maxNotes);
+
+    const entriesBeforeOversizedSong = stats.entries;
+    audio.getSong('C'.repeat(stats.maxNotes + 1));
+    stats = audio.getSongCacheStats();
+    assert.equal(stats.entries, entriesBeforeOversizedSong);
+    assert.equal(stats.skipped, 1);
+
+    const playbackAudio = new Audio();
+    playbackAudio.playAfter('q c');
+    playbackAudio.playAfter('Q C');
+    stats = playbackAudio.getSongCacheStats();
+    assert.equal(stats.hits, 1);
+    assert.equal(stats.misses, 1);
+  } finally {
+    if (previousWindow === undefined) {
+      delete globalThis.window;
+    } else {
+      globalThis.window = previousWindow;
+    }
+  }
 });
