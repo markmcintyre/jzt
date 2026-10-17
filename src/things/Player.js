@@ -1,4 +1,4 @@
-import { Point, utilities, Direction, DelayedEventScheduler } from '../basic.js';
+import { Point, Direction, DelayedEventScheduler } from '../basic.js';
 import { Colors } from '../graphics.js';
 import { getMessage } from '../i18n.js';
 import { ThingFactory } from './thing-registry.js';
@@ -164,8 +164,8 @@ class Player extends UpdateableThing {
 
     super.update();
 
-    // To stay sufficiently responsive, the player torch has to be initialized explicitly here
-    this.board.initializeTorch(this);
+    // To stay sufficiently responsive, the player light source has to be updated explicitly here
+    this.board.updateLightSource(this);
   }
 
   /**
@@ -212,7 +212,7 @@ class Player extends UpdateableThing {
         torchStrength = Math.ceil((torchLife * MAX_TORCH_STRENGTH) / (TORCH_TTL / 3));
       }
 
-      return utilities.generateCircleData(this.point, torchStrength);
+      return {radius:torchStrength};
     }
   }
 

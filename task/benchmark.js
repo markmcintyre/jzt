@@ -39,6 +39,83 @@ function createBoard(size) {
 
   return board;
 }
+
+function createLightingBoard(size, sourceCount) {
+  const board = new Board({
+    name:'Lighting Benchmark',
+    width:size,
+    height:size,
+    dark:true,
+    playerX:Math.floor(size / 2),
+    playerY:Math.floor(size / 2),
+    tiles:Array(size * size).fill(0),
+    scripts:[]
+  }, {
+    FPS:30,
+    CYCLE_RATE:3,
+    isEditor:false,
+    state:1,
+    context:{canvas:{width:800, height:640}},
+    resources:{graphics:{
+      TILE_SIZE:{x:16, y:32},
+      getSprite(){return {};}
+    }},
+    notifyListeners(){}
+  });
+
+  board.tiles = Array(size * size).fill(undefined);
+  board.player = {
+    type:'Player',
+    point:new Point(Math.floor(size / 2), Math.floor(size / 2))
+  };
+
+  for (let index = 0; index < sourceCount; index += 1) {
+    const source = {
+      type:'TorchSource',
+      point:new Point(index % size, Math.floor(index / size)),
+      getTorch(){return {radius:4};}
+    };
+    board.setTile(source.point, source);
+    board.updateLightSource(source);
+  }
+
+  board.update();
+  return board;
+}
+
+function benchmarkLighting(size) {
+  const sourceCount = Math.min(32, Math.max(4, Math.floor(size / 4)));
+  const board = createLightingBoard(size, sourceCount);
+  const originalRebuild = board.rebuildLightMask;
+  let rebuilds = 0;
+  let lookups = 0;
+
+  board.rebuildLightMask = function () {
+    rebuilds += 1;
+    return originalRebuild.call(this);
+  };
+
+  const start = performance.now();
+  for (let iteration = 0; iteration < measuredIterations; iteration += 1) {
+    board.update();
+    for (let index = 0; index < size * size; index += 1) {
+      board.isLit({x:index % size, y:Math.floor(index / size)});
+      lookups += 1;
+    }
+  }
+
+  const elapsed = performance.now() - start;
+  return {
+    size,
+    sources:sourceCount,
+    updates:measuredIterations,
+    lightingElapsedMs:Number(elapsed.toFixed(3)),
+    lightingPerUpdateMs:Number((elapsed / measuredIterations).toFixed(4)),
+    lightingLookups:lookups,
+    lightingMaskRebuilds:rebuilds,
+    lightingGeometryCacheEntries:Object.keys(board.lightGeometryCache).length
+  };
+}
 function benchmark(size) {
   const board = createBoard(size);
   const originalSlice = Array.prototype.slice;
@@ -104,4 +181,5 @@ function benchmark(size) {
 
 for (const size of sizes) {
   console.log(JSON.stringify(benchmark(size)));
+  console.log(JSON.stringify(benchmarkLighting(size)));
 }

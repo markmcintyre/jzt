@@ -238,3 +238,36 @@ test('moveTile surrenders an occupied destination but rejects a non-surrenderabl
   assert.equal(board.getTile(new Point(2, 1)), mover);
   assert.equal(board.getTile(new Point(3, 1)), blocker);
 });
+
+test('dark-board lighting keeps current and previous masks for moved sources', () => {
+  const board = new Board(data({...data(), dark:true}), game);
+  let radius = 1;
+  const source = {
+    type:'TorchSource',
+    point:new Point(4, 4),
+    getTorch(){return radius > 0 ? {radius} : undefined;}
+  };
+
+  board.player = {point:new Point(1, 1)};
+  board.setTile(source.point, source);
+  board.updateLightSource(source);
+  board.update();
+
+  assert.equal(board.isLit(new Point(4, 4)), true);
+  assert.equal(board.isLit(new Point(0, 0)), false);
+
+  board.moveTile(source.point, new Point(7, 7));
+  board.update();
+
+  assert.equal(board.isLit(new Point(7, 7)), true);
+  assert.equal(board.isLit(new Point(4, 4)), false);
+  assert.equal(board.isLit(new Point(4, 4), undefined, true), true);
+
+  radius = 2;
+  board.update();
+  assert.equal(board.isLit(new Point(5, 7)), true);
+
+  board.deleteTile(source.point);
+  board.update();
+  assert.equal(board.isLit(new Point(7, 7)), false);
+});

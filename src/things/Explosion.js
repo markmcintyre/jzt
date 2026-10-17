@@ -50,10 +50,9 @@ class Explosion extends UpdateableThing {
   }
 
   getTorch() {
-    return utilities.generateCircleData(
-      this.point,
-      Math.round((this.radius * this.timeToLive) / (Explosion.MAX_TTL - 1)) + 2,
-    );
+    return {
+      radius:Math.round((this.radius * this.timeToLive) / (Explosion.MAX_TTL - 1)) + 2
+    };
   }
 
   render(context) {
