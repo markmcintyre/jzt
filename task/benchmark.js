@@ -39,23 +39,28 @@ function createBoard(size) {
 
   return board;
 }
-
 function benchmark(size) {
   const board = createBoard(size);
   const originalSlice = Array.prototype.slice;
   const originalCopy = board.copyTileSnapshot;
+  const originalUpdateSmartPath = board.updateSmartPath;
   let sliceCalls = 0;
   let snapshotCopies = 0;
+  let pathRebuilds = 0;
 
+  board.updateSmartPath = function (targetPoint) {
+    pathRebuilds += 1;
+    return originalUpdateSmartPath.call(this, targetPoint);
+  };
+  board.copyTileSnapshot = function (snapshot) {
+    snapshotCopies += 1;
+    return originalCopy.call(this, snapshot);
+  };
   Array.prototype.slice = function (...args) {
     if (this === board.tiles) {
       sliceCalls += 1;
     }
     return originalSlice.apply(this, args);
-  };
-  board.copyTileSnapshot = function (snapshot) {
-    snapshotCopies += 1;
-    return originalCopy.call(this, snapshot);
   };
 
   try {
@@ -72,17 +77,28 @@ function benchmark(size) {
     }
     const elapsed = performance.now() - start;
 
+    const rebuildIterations = 10;
+    const rebuildStart = performance.now();
+    for (let index = 0; index < rebuildIterations; index += 1) {
+      board.updateSmartPath(board.player.point);
+    }
+    const rebuildElapsed = performance.now() - rebuildStart;
     return {
       size,
       updates:measuredIterations,
       elapsedMs:Number(elapsed.toFixed(3)),
       perUpdateMs:Number((elapsed / measuredIterations).toFixed(4)),
+      forcedPathRebuilds:rebuildIterations,
+      forcedPathMs:Number(rebuildElapsed.toFixed(3)),
+      forcedPathPerUpdateMs:Number((rebuildElapsed / rebuildIterations).toFixed(4)),
       snapshotCopies,
+      pathRebuilds,
       tileSliceCalls:sliceCalls
     };
   } finally {
     Array.prototype.slice = originalSlice;
     board.copyTileSnapshot = originalCopy;
+    board.updateSmartPath = originalUpdateSmartPath;
   }
 }
 
