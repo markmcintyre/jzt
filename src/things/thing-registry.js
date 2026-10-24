@@ -1,11 +1,24 @@
 /** Registry and factory boundary for Things. */
-const things = {};
+const things = Object.create(null);
+let registryFrozen = false;
 
 function defineThing(name, ThingClass) {
+  if (registryFrozen) {
+    throw new Error('Thing registry is frozen.');
+  }
+
   things[name] = ThingClass;
   ThingClass.type = name;
   if (ThingFactory.thingMap !== undefined) {
     delete ThingFactory.thingMap;
+  }
+}
+
+function freezeThingRegistry() {
+  registryFrozen = true;
+  Object.freeze(things);
+  if (ThingFactory.thingMap !== undefined) {
+    Object.freeze(ThingFactory.thingMap);
   }
 }
 
@@ -27,12 +40,13 @@ const ThingFactory = {
 
   getThingMap() {
     if (this.thingMap === undefined) {
-      this.thingMap = {};
+      const map = Object.create(null);
       for (const thing in things) {
         if (Object.prototype.hasOwnProperty.call(things, thing) && things[thing].type) {
-          this.thingMap[thing.toUpperCase()] = things[thing];
+          map[thing.toUpperCase()] = things[thing];
         }
       }
+      this.thingMap = Object.freeze(map);
     }
     return this.thingMap;
   },
@@ -65,4 +79,4 @@ const ThingFactory = {
   }
 };
 
-export { things, defineThing, ThingFactory };
+export {things, defineThing, freezeThingRegistry, ThingFactory};

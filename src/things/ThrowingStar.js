@@ -1,5 +1,5 @@
 import { Colors } from '../graphics.js';
-import { defineThing } from './thing-registry.js';
+
 import { UpdateableThing } from './UpdateableThing.js';
 
 
@@ -89,5 +89,5 @@ class ThrowingStar extends UpdateableThing {
 ThrowingStar.animationFrames = [179, 47, 196, 92];
 
 
-defineThing('ThrowingStar', ThrowingStar);
+
 export { ThrowingStar };

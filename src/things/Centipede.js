@@ -1,6 +1,6 @@
 import { Direction } from '../basic.js';
 import { Colors } from '../graphics.js';
-import { defineThing } from './thing-registry.js';
+
 import { UpdateableThing } from './UpdateableThing.js';
 
 class Centipede extends UpdateableThing {
@@ -375,4 +375,5 @@ class Centipede extends UpdateableThing {
   }
 }
 
-defineThing('Centipede', Centipede);
+
+export { Centipede };

@@ -1,6 +1,6 @@
 import { Colors } from '../graphics.js';
 import { getMessage } from '../i18n.js';
-import { defineThing } from './thing-registry.js';
+
 import { Thing } from './Thing.js';
 
 
@@ -49,5 +49,5 @@ class Water extends Thing {
   }
 }
 
-defineThing('Water', Water);
+
 export { Water };

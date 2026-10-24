@@ -1,5 +1,5 @@
 import { Direction } from '../basic.js';
-import { defineThing } from './thing-registry.js';
+
 import { UpdateableThing } from './UpdateableThing.js';
 
 
@@ -109,5 +109,5 @@ Teleporter.animationFrames = {
 };
 
 
-defineThing('Teleporter', Teleporter);
+
 export { Teleporter };

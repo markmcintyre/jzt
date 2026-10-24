@@ -1,6 +1,6 @@
 import { Direction } from '../basic.js';
 import { Colors } from '../graphics.js';
-import { defineThing } from './thing-registry.js';
+
 import { UpdateableThing } from './UpdateableThing.js';
 import { Thing } from './Thing.js';
 
@@ -66,5 +66,5 @@ class River extends Thing {
   }
 }
 
-defineThing('River', River);
+
 export { River };

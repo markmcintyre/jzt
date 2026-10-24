@@ -1,5 +1,5 @@
 import { things } from './thing-registry.js';
-import { defineThing } from './thing-registry.js';
+
 import { UpdateableThing } from './UpdateableThing.js';
 
 
@@ -46,5 +46,5 @@ class ActiveBomb extends UpdateableThing {
   }
 }
 
-defineThing('ActiveBomb', ActiveBomb);
+
 export { ActiveBomb };

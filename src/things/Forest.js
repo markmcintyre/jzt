@@ -1,5 +1,5 @@
 import { Colors } from '../graphics.js';
-import { defineThing } from './thing-registry.js';
+
 import { Thing } from './Thing.js';
 
 
@@ -58,5 +58,5 @@ Forest.noteCycle = ['e', '-b', 'f#', 'b', 'f', 'c', 'g', '+c'];
 Forest.noteIndex = 0;
 
 
-defineThing('Forest', Forest);
+
 export { Forest };

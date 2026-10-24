@@ -8,10 +8,10 @@
 
 'use strict';
 
-import { Point, utilities, Direction } from './basic.js';
-import { Colors } from './graphics.js';
-import { JztScript } from './jzt-script.js';
-import { things, ThingFactory } from './things.js';
+import {Point, utilities, Direction} from './basic.js';
+import {Colors} from './graphics.js';
+import {JztScript} from './jzt-script.js';
+import {things, ThingFactory} from './things.js';
 import * as i18n from './i18n.js';
 
 const SMART_PATH_MAX_DISTANCE = 50;
@@ -1714,7 +1714,6 @@ class Board {
 
         // If it's the best one we've encountered...
         if (value < currentMin) {
-
             // Forget our previous directions
             directions = [];
 
@@ -1725,12 +1724,8 @@ class Board {
             currentMin = value;
 
         } else if (value === currentMin) {
-
-            // Our value is the same, so add this direction too
             directions.push(direction);
-
         }
-
     });
 
     // If no good directions were found, return undefined

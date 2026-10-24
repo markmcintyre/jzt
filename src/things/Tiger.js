@@ -1,7 +1,7 @@
 import { Direction } from '../basic.js';
 import { Colors } from '../graphics.js';
 import { ThingFactory } from './thing-registry.js';
-import { defineThing } from './thing-registry.js';
+
 import { UpdateableThing } from './UpdateableThing.js';
 
 
@@ -125,5 +125,5 @@ class Tiger extends UpdateableThing {
   }
 }
 
-defineThing('Tiger', Tiger);
+
 export { Tiger };

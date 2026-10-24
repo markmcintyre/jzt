@@ -1,6 +1,6 @@
 import { Colors } from '../graphics.js';
 import { things } from './thing-registry.js';
-import { defineThing } from './thing-registry.js';
+
 import { Thing } from './Thing.js';
 
 
@@ -40,5 +40,5 @@ class InvisibleWall extends Thing {
   }
 }
 
-defineThing('InvisibleWall', InvisibleWall);
+
 export { InvisibleWall };

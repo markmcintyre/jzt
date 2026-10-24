@@ -1,5 +1,5 @@
 import { Point } from '../basic.js';
-import { defineThing } from './thing-registry.js';
+
 import { UpdateableThing } from './UpdateableThing.js';
 
 
@@ -137,5 +137,5 @@ class Conveyor extends UpdateableThing {
 Conveyor.animationFrames = [179, 47, 45, 92];
 Conveyor.MoveAction = { MOVE: 1, TENTATIVE: 2 };
 
-defineThing('Conveyor', Conveyor);
+
 export { Conveyor };

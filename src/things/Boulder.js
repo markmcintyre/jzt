@@ -1,4 +1,4 @@
-import { defineThing } from './thing-registry.js';
+
 import { Thing } from './Thing.js';
 
 
@@ -22,5 +22,5 @@ class Boulder extends Thing {
   }
 }
 
-defineThing('Boulder', Boulder);
+
 export { Boulder };

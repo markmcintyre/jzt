@@ -1,7 +1,7 @@
 import { Direction } from '../basic.js';
 import { Colors } from '../graphics.js';
 import { things } from './thing-registry.js';
-import { defineThing } from './thing-registry.js';
+
 import { UpdateableThing } from './UpdateableThing.js';
 
 
@@ -102,5 +102,5 @@ class Blinker extends UpdateableThing {
   }
 }
 
-defineThing('Blinker', Blinker);
+
 export { Blinker };

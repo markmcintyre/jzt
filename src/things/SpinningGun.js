@@ -1,6 +1,6 @@
 import { Direction } from '../basic.js';
 import { ThingFactory } from './thing-registry.js';
-import { defineThing } from './thing-registry.js';
+
 import { UpdateableThing } from './UpdateableThing.js';
 
 
@@ -69,5 +69,5 @@ class SpinningGun extends UpdateableThing {
 SpinningGun.animationFrames = [24, 26, 25, 27];
 
 
-defineThing('SpinningGun', SpinningGun);
+
 export { SpinningGun };
