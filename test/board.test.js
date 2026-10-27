@@ -21,6 +21,90 @@ test('Board validates data, defaults dimensions and accesses boundaries', () => 
   assert.throws(() => new Board({...data(), width:9}, game), e => e === 'Invalid board data.');
 });
 
+test('eachDisplayable visits only the clamped visible window', () => {
+  const board = new Board(data(), game);
+  board.windowOrigin = new Point(-2, 8);
+  board.windowSize = new Point(4, 4);
+  const seen = [];
+
+  board.eachDisplayable((tile, point) => {
+    seen.push([point.x, point.y, tile]);
+  });
+
+  assert.deepEqual(seen.map(value => value.slice(0, 2)), [[0, 8], [1, 8], [0, 9], [1, 9]]);
+});
+
+test('updatePathWeights visits tile influencers without changing traversal behavior', () => {
+  const board = new Board(data(), game);
+  let calls = 0;
+  const influencer = {type:'Influencer', influenceSmartPath(){calls += 1;}};
+
+  board.setTile(new Point(2, 3), influencer);
+  board.updatePathWeights();
+
+  assert.equal(calls, 1);
+});
+
+test('Board updates east-moving convoys from the leading edge', () => {
+  const board = new Board(data(), {...game, CYCLE_RATE:1});
+  board.player = {type:'Player', point:new Point(5, 5)};
+  const calls = [];
+  const leading = {
+    type:'Mover',
+    updateOnReverse(){return true;},
+    update(){
+      calls.push(this.point.x);
+      board.moveTile(this.point, this.point.add(Direction.East), true);
+    }
+  };
+  const trailing = {
+    type:'Mover',
+    updateOnReverse(){return true;},
+    update(){
+      calls.push(this.point.x);
+      board.moveTile(this.point, this.point.add(Direction.East), true);
+    }
+  };
+
+  board.setTile(new Point(1, 1), trailing);
+  board.setTile(new Point(2, 1), leading);
+  board.update();
+
+  assert.deepEqual(calls, [2, 1]);
+  assert.equal(board.getTile(new Point(2, 1)), trailing);
+  assert.equal(board.getTile(new Point(3, 1)), leading);
+});
+
+test('Board updates west-moving convoys from the leading edge', () => {
+  const board = new Board(data(), {...game, CYCLE_RATE:1});
+  board.player = {type:'Player', point:new Point(5, 5)};
+  const calls = [];
+  const leading = {
+    type:'Mover',
+    updateOnReverse(){return false;},
+    update(){
+      calls.push(this.point.x);
+      board.moveTile(this.point, this.point.add(Direction.West), true);
+    }
+  };
+  const trailing = {
+    type:'Mover',
+    updateOnReverse(){return false;},
+    update(){
+      calls.push(this.point.x);
+      board.moveTile(this.point, this.point.add(Direction.West), true);
+    }
+  };
+
+  board.setTile(new Point(2, 1), leading);
+  board.setTile(new Point(3, 1), trailing);
+  board.update();
+
+  assert.deepEqual(calls, [2, 3]);
+  assert.equal(board.getTile(new Point(1, 1)), leading);
+  assert.equal(board.getTile(new Point(2, 1)), trailing);
+});
+
 test('Board serializes and moves an unblocked tile within bounds', () => {
   const board = new Board(data(), game);
   const tile = {point:new Point(1,1), type:'Fixture', serialize(){return {type:'Fixture'};}};

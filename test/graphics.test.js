@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Point} from '../src/basic.js';
-import {Colors, Color, ColorUtilities, SpriteGrid} from '../src/graphics.js';
+import {Colors, Color, ColorUtilities, Sprite, SpriteGrid} from '../src/graphics.js';
 import {SPRITE_DATA} from '../src/graphics/sprite-data.js';
 
 test('sprite data is a complete PNG data URL', () => {
@@ -38,6 +38,31 @@ test('SpriteGrid stores tiles, colors and text using focused graphics fake', () 
   assert.equal(grid.getTile(new Point(0, 1)).sprite.char, 'a');
   assert.equal(grid.getTile(new Point(1, 1)).sprite.char, 'b');
   grid.clear(); assert.equal(grid.getTile(new Point(1, 0)), undefined);
+});
+
+test('Sprite.drawAt draws at integer tile coordinates', () => {
+  const calls = [];
+  const context = {
+    fillRect(...args) { calls.push(['fillRect', ...args]); },
+    drawImage(...args) { calls.push(['drawImage', ...args]); }
+  };
+  const source = {};
+  const colorSpriteSources = [];
+  colorSpriteSources[Colors.White.index] = source;
+  const owner = {
+    TILE_SIZE:{x:8,y:16},
+    SPRITE_SIZE:{x:4,y:8},
+    colorSpriteSources,
+    blinkState:false
+  };
+  const sprite = new Sprite({x:1,y:2}, owner);
+
+  sprite.drawAt(context, 3, 4, Colors.White, Colors.Blue);
+
+  assert.deepEqual(calls, [
+    ['fillRect', 24, 64, 8, 16],
+    ['drawImage', source, 1, 2, 4, 8, 24, 64, 8, 16]
+  ]);
 });
 
 test('Color can be constructed with RGB values', () => {

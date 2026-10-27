@@ -33,6 +33,8 @@ class Board {
     this.dark = boardData.dark;
     this.reenter = boardData.reenter;
     this.smartPath = [];
+    this.forwardUpdateSnapshot = [];
+    this.reverseUpdateSnapshot = [];
     this.customRenderSet = [];
     this.torches = [];
     this.previousTorches = [];
@@ -479,6 +481,109 @@ class Board {
     }
 
 /**
+ * Copies the current board tiles into reusable update storage.
+ *
+ * @param snapshot An array to reuse for the snapshot
+ * @return The populated snapshot array
+ */
+    copyTileSnapshot(snapshot) {
+
+    var index,
+        size = this.width * this.height;
+
+    snapshot.length = size;
+    for (index = 0; index < size; index += 1) {
+        snapshot[index] = this.tiles[index];
+    }
+
+    return snapshot;
+
+    }
+
+/**
+ * Executes a callback over a provided tile snapshot in either traversal order.
+ *
+ * @param callback A callback function to be executed for each tile
+ * @param values A tile snapshot
+ * @param reverse Whether to traverse from the final tile backwards
+ */
+    eachSnapshot(callback, values, reverse) {
+
+    var point = new Point(0, 0),
+        y = reverse ? this.height - 1 : 0,
+        yEnd = reverse ? -1 : this.height,
+        yStep = reverse ? -1 : 1,
+        x,
+        xEnd,
+        xStep;
+
+    for (; y !== yEnd; y += yStep) {
+        x = reverse ? this.width - 1 : 0;
+        xEnd = reverse ? -1 : this.width;
+        xStep = reverse ? -1 : 1;
+        point.y = y;
+
+        for (; x !== xEnd; x += xStep) {
+            point.x = x;
+            callback(values[x + y * this.width], point);
+        }
+    }
+
+    }
+
+/**
+ * Executes a provided callback function for each tile on this Board without
+ * taking a snapshot of the tile collection.
+ *
+ * This is intended for read-only scans. Callers must not rely on mutation
+ * isolation; use each() when callbacks can move or replace tiles.
+ *
+ * @param callback A callback function to be executed for each tile
+ */
+    eachDirect(callback) {
+
+    var point = new Point(0, 0),
+        index;
+
+    for (point.y = 0; point.y < this.height; point.y += 1) {
+        for (point.x = 0; point.x < this.width; point.x += 1) {
+            index = point.x + point.y * this.width;
+            callback(this.tiles[index], point);
+        }
+    }
+
+    }
+
+/**
+ * Executes a provided callback function for each tile on this Board that falls within
+ * the displayable window.
+ *
+ * This is a read-only traversal and does not snapshot the full tile collection.
+ *
+ * @param callback A callback function to be executed for each tile.
+ */
+    eachDisplayable(callback) {
+
+    var point = new Point(0, 0),
+        startY = this.windowOrigin.y,
+        endY = startY + this.windowSize.y,
+        startX = this.windowOrigin.x,
+        endX = startX + this.windowSize.x;
+
+    startX = startX < 0 ? 0 : startX;
+    startY = startY < 0 ? 0 : startY;
+    endX = endX > this.width ? this.width : endX;
+    endY = endY > this.height ? this.height : endY;
+
+    for (point.y = startY; point.y < endY; point.y += 1) {
+        for (point.x = startX; point.x < endX; point.x += 1) {
+            callback(this.tiles[point.x + point.y * this.width], point);
+        }
+    }
+
+    }
+
+/**
  * Executes a provided callback function for each tile on this Board,
  * delivered in reverse order. The callback function will be provided with
  * a Thing instance and the point at which it occurs. If no Thing instance
@@ -499,35 +604,6 @@ class Board {
 
     }
 
-/**
- * Executes a provided callback function for each tile on this Board that falls within
- * this board's displayable window. The callback function will be provided with a Thing
- * instance and the point at which it occurs. If no Thing instance is available at a location
- * undefined is returned.
- *
- * @param callback A callback function to be executed for each tile.
- */
-    eachDisplayable(callback) {
-
-    var values = this.tiles.slice(0),
-        point = new Point(0, 0),
-        startY = this.windowOrigin.y,
-        endY = startY + this.windowSize.y,
-        startX = this.windowOrigin.x,
-        endX = startX + this.windowSize.x;
-
-    startX = startX < 0 ? 0 : startX;
-    startY = startY < 0 ? 0 : startY;
-    endX = endX > this.width ? this.width : endX;
-    endY = endY > this.height ? this.height : endY;
-
-    for (point.y = startY; point.y < endY; point.y += 1) {
-        for (point.x = startX; point.x < endX; point.x += 1) {
-            callback(values[point.x + point.y * this.width], point);
-        }
-    }
-
-    }
 
 /**
  * Retrieves whether or not this Board has a provided number (or any) of a
@@ -1008,7 +1084,8 @@ class Board {
      */
 
     // For each tile on our board...
-    this.each(function (tile) {
+    this.forwardUpdateSnapshot = this.copyTileSnapshot(this.forwardUpdateSnapshot);
+    this.eachSnapshot(function (tile) {
 
         if (tile) {
 
@@ -1044,17 +1121,18 @@ class Board {
 
         }
 
-    });
+    }, this.forwardUpdateSnapshot, false);
 
     // For each tile on our board in reverse...
-    this.eachBackwards(function (tile) {
+    this.reverseUpdateSnapshot = this.copyTileSnapshot(this.reverseUpdateSnapshot);
+    this.eachSnapshot(function (tile) {
 
         // If a tile wants to be udpated backwards, do it now
         if (tile && (typeof tile.update === 'function') && (typeof tile.updateOnReverse === 'function') && tile.updateOnReverse() && (tile.type !== 'Player')) {
             tile.update();
         }
 
-    });
+    }, this.reverseUpdateSnapshot, true);
 
     }
 
@@ -1158,13 +1236,24 @@ class Board {
             }
 
             // Draw our sprite
-            sprite.draw(c, point.subtract(me.windowOrigin), thing.foreground, background);
+            sprite.drawAt(
+                c,
+                point.x - me.windowOrigin.x,
+                point.y - me.windowOrigin.y,
+                thing.foreground,
+                background,
+            );
 
         } else if (!thing && me.dark) {
 
             // There's nothing to render, but we're within the torch
             // radius, so draw an empty space over the 'darkness'
-            me.game.resources.graphics.fillTile(c, point.subtract(me.windowOrigin), Colors.Black);
+            me.game.resources.graphics.fillTileAt(
+                c,
+                point.x - me.windowOrigin.x,
+                point.y - me.windowOrigin.y,
+                Colors.Black,
+            );
 
         }
 
@@ -1264,7 +1353,7 @@ class Board {
 
     updatePathWeights() {
 
-    this.each(function (tile) {
+    this.eachDirect(function (tile) {
         if (tile && tile.influenceSmartPath) {
             tile.influenceSmartPath();
         }

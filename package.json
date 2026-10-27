@@ -23,6 +23,7 @@
     "clean": "rm -rf build && rm -f src/metadata.json && mkdir build",
     "build:metadata": "node task/create-metadata.js > src/metadata.json",
     "test": "node --test",
+    "benchmark": "node --expose-gc task/benchmark.js",
     "build:editor": "node task/build.js editor",
     "build:editor:dev": "node task/build.js editor --development",
     "build:game": "node task/build.js game",

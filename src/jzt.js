@@ -1420,7 +1420,12 @@ class Game {
     this.currentBoard.eachDisplayable(function (thing, point) {
 
         if (!circle.contains(point)) {
-            me.resources.graphics.fillTile(me.context, point.subtract(me.currentBoard.windowOrigin), Colors.Grey);
+            me.resources.graphics.fillTileAt(
+                me.context,
+                point.x - me.currentBoard.windowOrigin.x,
+                point.y - me.currentBoard.windowOrigin.y,
+                Colors.Grey,
+            );
         }
 
     });
