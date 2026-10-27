@@ -1,5 +1,5 @@
 import { Colors } from '../graphics.js';
-import { defineThing } from './thing-registry.js';
+
 import { Thing } from './Thing.js';
 
 
@@ -46,5 +46,5 @@ class Ammo extends Thing {
   }
 }
 
-defineThing('Ammo', Ammo);
+
 export { Ammo };

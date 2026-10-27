@@ -1,5 +1,5 @@
 import { Colors } from '../graphics.js';
-import { defineThing } from './thing-registry.js';
+
 import { Thing } from './Thing.js';
 
 
@@ -28,5 +28,5 @@ class GeoFence extends Thing {
 GeoFence.restrictions = ['Scriptable', 'Lion', 'Tiger', 'Bear', 'Ruffian', 'Centipede', 'Spider', 'Snake'];
 
 
-defineThing('GeoFence', GeoFence);
+
 export { GeoFence };

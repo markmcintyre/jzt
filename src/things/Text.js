@@ -1,6 +1,6 @@
 import { Colors } from '../graphics.js';
 import { DefaultLanguage, getLanguage } from '../i18n.js';
-import { defineThing } from './thing-registry.js';
+
 import { Thing } from './Thing.js';
 
 
@@ -52,5 +52,5 @@ class Text extends Thing {
 
 }
 
-defineThing('Text', Text);
+
 export { Text };

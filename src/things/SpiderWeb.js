@@ -1,6 +1,6 @@
 import { Direction } from '../basic.js';
 import { Colors } from '../graphics.js';
-import { defineThing } from './thing-registry.js';
+
 import { Thing } from './Thing.js';
 
 
@@ -67,5 +67,5 @@ SpiderWeb.lineMap = {
 };
 
 
-defineThing('SpiderWeb', SpiderWeb);
+
 export { SpiderWeb };

@@ -1,5 +1,5 @@
 import { Colors } from '../graphics.js';
-import { defineThing } from './thing-registry.js';
+
 import { Thing } from './Thing.js';
 
 
@@ -28,5 +28,5 @@ class BlinkWall extends Thing {
   }
 }
 
-defineThing('BlinkWall', BlinkWall);
+
 export { BlinkWall };

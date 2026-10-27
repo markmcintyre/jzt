@@ -1,5 +1,5 @@
 /** Shared JZTScript command dependencies. */
-import { ThingFactory } from '../things.js';
+import { ThingFactory } from '../things/thing-registry.js';
 import { Direction as BasicDirection } from '../basic.js';
 import { GameState } from '../game-state.js';
 import { getBoardMessage } from '../i18n.js';

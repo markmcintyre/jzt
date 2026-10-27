@@ -1,6 +1,6 @@
 import { utilities, Direction } from '../basic.js';
 import { JztScriptContext } from '../jzt-script-context.js';
-import { defineThing } from './thing-registry.js';
+
 import { UpdateableThing } from './UpdateableThing.js';
 
 class Scriptable extends UpdateableThing {
@@ -159,6 +159,6 @@ class Scriptable extends UpdateableThing {
   }
 }
 
-defineThing('Scriptable', Scriptable);
+
 
 export { Scriptable };

@@ -1,5 +1,5 @@
 import { Colors } from '../graphics.js';
-import { defineThing } from './thing-registry.js';
+
 import { Thing } from './Thing.js';
 
 
@@ -31,5 +31,5 @@ class Ricochet extends Thing {
 
 }
 
-defineThing('Ricochet', Ricochet);
+
 export { Ricochet };

@@ -1,6 +1,6 @@
 import { Direction } from '../basic.js';
 import { Colors } from '../graphics.js';
-import { defineThing } from './thing-registry.js';
+
 import { UpdateableThing } from './UpdateableThing.js';
 
 
@@ -117,5 +117,5 @@ class Spider extends UpdateableThing {
   }
 }
 
-defineThing('Spider', Spider);
+
 export { Spider };

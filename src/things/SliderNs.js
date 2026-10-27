@@ -1,6 +1,6 @@
 import { Direction } from '../basic.js';
 import { Colors } from '../graphics.js';
-import { defineThing } from './thing-registry.js';
+
 import { Thing } from './Thing.js';
 
 
@@ -26,5 +26,5 @@ class SliderNs extends Thing {
 
 }
 
-defineThing('SliderNs', SliderNs);
+
 export { SliderNs };

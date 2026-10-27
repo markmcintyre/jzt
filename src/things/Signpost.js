@@ -1,7 +1,7 @@
 import { Colors } from '../graphics.js';
 import { GameState } from '../game-state.js';
 import { getBoardMessage, getMessage } from '../i18n.js';
-import { defineThing } from './thing-registry.js';
+
 import { Thing } from './Thing.js';
 
 
@@ -50,5 +50,5 @@ class Signpost extends Thing {
   }
 }
 
-defineThing('Signpost', Signpost);
+
 export { Signpost };

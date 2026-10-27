@@ -1,5 +1,5 @@
 import { Colors } from '../graphics.js';
-import { defineThing } from './thing-registry.js';
+
 import { Thing } from './Thing.js';
 
 
@@ -57,5 +57,5 @@ class Passage extends Thing {
 
 }
 
-defineThing('Passage', Passage);
+
 export { Passage };

@@ -1,6 +1,6 @@
 import { Direction } from '../basic.js';
 import { Colors } from '../graphics.js';
-import { defineThing } from './thing-registry.js';
+
 import { UpdateableThing } from './UpdateableThing.js';
 
 
@@ -84,5 +84,5 @@ class Duplicator extends UpdateableThing {
 Duplicator.animationFrames = [250, 249, 7, 9, 111, 79];
 
 
-defineThing('Duplicator', Duplicator);
+
 export { Duplicator };

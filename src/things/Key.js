@@ -1,6 +1,6 @@
 import { Colors } from '../graphics.js';
 import { getMessage } from '../i18n.js';
-import { defineThing } from './thing-registry.js';
+
 import { Thing } from './Thing.js';
 
 
@@ -73,5 +73,5 @@ class Key extends Thing {
 
 }
 
-defineThing('Key', Key);
+
 export { Key };

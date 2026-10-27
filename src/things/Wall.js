@@ -1,4 +1,4 @@
-import { defineThing } from './thing-registry.js';
+
 import { Thing } from './Thing.js';
 
 
@@ -9,5 +9,5 @@ class Wall extends Thing {
   }
 }
 
-defineThing('Wall', Wall);
+
 export { Wall };

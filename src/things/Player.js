@@ -2,7 +2,7 @@ import { Point, Direction, DelayedEventScheduler } from '../basic.js';
 import { Colors } from '../graphics.js';
 import { getMessage } from '../i18n.js';
 import { ThingFactory } from './thing-registry.js';
-import { defineThing } from './thing-registry.js';
+
 import { UpdateableThing } from './UpdateableThing.js';
 
 
@@ -230,5 +230,5 @@ class Player extends UpdateableThing {
   }
 }
 
-defineThing('Player', Player);
+
 export { Player };

@@ -5,6 +5,9 @@ import {Direction} from '../src/basic.js';
 import {GameState} from '../src/game-state.js';
 import {JztScript} from '../src/jzt-script.js';
 import {Thing, UpdateableThing, ThingFactory, things} from '../src/things.js';
+import {ThingFactory as RegistryThingFactory, defineThing} from '../src/things/thing-registry.js';
+import {initializeThingDefinitions} from '../src/things/thing-definitions.js';
+import {ThingFactory as CommandThingFactory} from '../src/jzt-script-commands/shared.js';
 
 function scriptBoard(script) {
   return {
@@ -110,13 +113,30 @@ test('UpdateableThing ticks at its cycle threshold and resets cycleCount', () =>
   assert.equal(thing.tickCount, 1);
 });
 
-test('ThingFactory exposes registered types and deserializes concrete things', () => {
+test('ThingFactory exposes one initialized registry boundary', () => {
   const board = {game:{}};
+
+  assert.strictEqual(ThingFactory, RegistryThingFactory);
+  assert.strictEqual(ThingFactory, CommandThingFactory);
   assert.equal(ThingFactory.isKnownThing('wall'), true);
+  assert.equal(Object.getPrototypeOf(things), null);
+  assert.equal(Object.isFrozen(things), true);
+
   const map = ThingFactory.getThingMap();
+  const mapAgain = ThingFactory.getThingMap();
+  assert.strictEqual(map, mapAgain);
+  assert.equal(Object.getPrototypeOf(map), null);
+  assert.equal(Object.isFrozen(map), true);
+  assert.equal(Object.keys(map).length, 46);
+  assert.equal(map.CENTIPEDE, things.Centipede);
   assert.equal(map.WALL.type, 'Wall');
   const wall = ThingFactory.deserialize({type:'Wall', color:'*F'}, board);
-  assert.ok(wall instanceof Thing); assert.equal(wall.serialize().type, 'Wall');
+  assert.ok(wall instanceof Thing);
+  assert.equal(wall.serialize().type, 'Wall');
   assert.equal(ThingFactory.deserialize({type:'missing'}, board), undefined);
   assert.equal(typeof things.Wall, 'function');
+
+  initializeThingDefinitions();
+  assert.strictEqual(ThingFactory.getThingMap(), map);
+  assert.throws(() => defineThing('LateThing', class {}), /Thing registry is frozen/);
 });
