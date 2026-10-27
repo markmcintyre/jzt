@@ -68,6 +68,7 @@ class Game {
     this.CYCLE_RATE = Math.round(this.FPS / this.CPS);
     this.CYCLE_TICKS = Math.floor(1000 / this.FPS) * this.CYCLE_RATE;
     this.FPS_INTERVAL = 1000 / this.FPS;
+    this.SIMULATION_STEP = this.FPS_INTERVAL;
     this.TRANSITION_STEPS = 10;
 
     this.version = formatVersion;
@@ -862,7 +863,6 @@ class Game {
 
         this.boundLoop = this.loop.bind(this);
         this.then = Date.now();
-        this.previousTimestamp = this.then;
 
         // Start the game loop
         this.loopId = requestAnimationFrame(this.boundLoop);
@@ -882,8 +882,7 @@ class Game {
     try {
 
         var now = Date.now(),
-            delta = now - this.then,
-            realDelta = now - this.previousTimestamp;
+            delta = now - this.then;
 
         this.loopId = requestAnimationFrame(this.boundLoop);
 
@@ -893,12 +892,9 @@ class Game {
             // of our framerate.
             this.then = now - (delta % this.FPS_INTERVAL);
 
-            // We still store the actual previous timestamp so that time-based
-            // calculations are properly tracked
-            this.previousTimestamp = now;
-
-            // Update our game
-            this.update(realDelta);
+            // Update one fixed simulation tick. Wall-clock stalls intentionally
+            // slow the game instead of causing a catch-up jump.
+            this.update();
 
             // Draw our game
             this.draw();
@@ -954,7 +950,9 @@ class Game {
 /**
  * Updates this Game's state by one execution tick.
  */
-    update(delta) {
+    update() {
+
+    var delta = this.SIMULATION_STEP;
 
     // Update our graphics resource
     this.resources.graphics.update();
