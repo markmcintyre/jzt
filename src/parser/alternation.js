@@ -1,0 +1,3 @@
+import { CollectionParser } from './collection-parser.js';
+class Alternation extends CollectionParser { constructor() { super(); this.assembler = undefined; this.subParsers = []; } match(assemblies) { var result = [], error, subParser, alternationResult, index; for (index = 0; index < this.subParsers.length; index += 1) { subParser = this.subParsers[index]; try { alternationResult = subParser.matchAndAssemble(assemblies); result = result.concat(alternationResult); } catch (tokenError) { error = tokenError; } } if (result.length <= 0 && error !== undefined) throw error; return result; } }
+export { Alternation };

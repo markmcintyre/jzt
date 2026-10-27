@@ -12,25 +12,19 @@
 /**
  * Format version represents the version of the game format that can be loaded.
  */
-var formatVersion = '1.0.0',
-    ConstructorError = require('./basic').ConstructorError,
-    KeyboardInput = require('./input').KeyboardInput,
-    Audio = require('./audio').Audio,
-    Graphics = require('./graphics').Graphics,
-    i18n = require('./i18n'),
-    Scroll = require('./scroll').Scroll,
-    FileManagement = require('./file-management').FileManagement,
-    Splash = require('./popup').Splash,
-    Point = require('./basic').Point,
-    Direction = require('./basic').Direction,
-    Board = require('./board').Board,
-    things = require('./things').things,
-    Colors = require('./graphics').Colors,
-    ColorUtilities = require('./graphics').ColorUtilities,
-    utilities = require('./basic').utilities,
-    Popup = require('./popup').Popup,
-    GameState = require('./game-state').GameState,
-    metadata = require('./metadata');
+const formatVersion = '1.0.0';
+import { KeyboardInput } from './input.js';
+import { Audio } from './audio.js';
+import { Graphics, Colors, ColorUtilities } from './graphics.js';
+import * as i18n from './i18n.js';
+import { Scroll } from './scroll.js';
+import { FileManagement } from './file-management.js';
+import { Splash, Popup } from './popup.js';
+import { Point, Direction, utilities } from './basic.js';
+import { Board } from './board.js';
+import { things } from './things.js';
+import { GameState } from './game-state.js';
+import metadata from './metadata.json' with { type: 'json' };
 
 /**
  * Game represents a playable JZT game, including all Boards and a player.
@@ -41,15 +35,13 @@ var formatVersion = '1.0.0',
  * - notificationListeners: An array of notification listeners to listen for game notifications
  * - settings: User-configurable settings object to observe
  */
-function Game(configuration) {
+class Game {
+    constructor(configuration) {
 
     var index;
 
-    if (!(this instanceof Game)) {
-        throw ConstructorError;
-    }
-
     // Ensure we were given a valid canvas element
+
     if (!configuration || !configuration.canvasElement || configuration.canvasElement.nodeName !== 'CANVAS') {
         throw 'Expected a valid canvas element in the configuration.';
     }
@@ -156,7 +148,7 @@ function Game(configuration) {
  *
  * @param {object} settings - A settings object
  */
-Game.prototype.observeSettings = function (settings) {
+    observeSettings(settings) {
 
     // Assign our callback
     settings.addListener(this.onSettingsChanged.bind(this));
@@ -164,7 +156,7 @@ Game.prototype.observeSettings = function (settings) {
     // Send our initial values
     settings.initialize(this.settings);
 
-};
+    }
 
 /**
  * Adds a provided notification listener to the set of listeners registered for this
@@ -172,16 +164,16 @@ Game.prototype.observeSettings = function (settings) {
  *
  * @param {object} notificationListener - A notification listener.
  */
-Game.prototype.addNotificationListener = function (notificationListener) {
+    addNotificationListener(notificationListener) {
     this.notificationListeners.push(notificationListener);
-};
+    }
 
 /**
  * Creates and returns a serializes object representing this Game's state.
  *
  * @return {object} - A serialized Game instance.
  */
-Game.prototype.serialize = function () {
+    serialize() {
 
     var result = {},
         index;
@@ -215,21 +207,21 @@ Game.prototype.serialize = function () {
 
     return result;
 
-};
+    }
 
 /**
  * Restarts the currently active game.
  */
-Game.prototype.restartGame = function () {
+    restartGame() {
     this.loadGame(this.gameUrl || this.cachedGame);
-};
+    }
 
 /**
  * Loads a provided game to this Game instance.
  *
  * @param {object|string} - A serialized game, or a URL where one can be downloaded.
  */
-Game.prototype.loadGame = function (game) {
+    loadGame(game) {
 
     var me = this,
         response,
@@ -303,7 +295,7 @@ Game.prototype.loadGame = function (game) {
 
     }
 
-};
+    }
 
 /**
  * Indicate that an unrecoverable error has occurred. This will interrupt
@@ -311,7 +303,7 @@ Game.prototype.loadGame = function (game) {
  *
  * @param {string} message - A message to display to the user.
  */
-Game.prototype.catestrophicError = function (message, exception) {
+    catestrophicError(message, exception) {
 
     if (exception) {
         console.error(message, exception, exception.stack || exception);
@@ -319,14 +311,14 @@ Game.prototype.catestrophicError = function (message, exception) {
 
     this.catestrophicErrorMessage = message;
     this.setState(GameState.Error);
-};
+    }
 
 /**
  * Deserializes a provided game instance and loads it to the current Game.
  *
  * @param {object} data - Serialized game data.
  */
-Game.prototype.deserialize = function (data) {
+    deserialize(data) {
 
     var index,
         board,
@@ -396,7 +388,7 @@ Game.prototype.deserialize = function (data) {
         this.run();
     }
 
-};
+    }
 
 /**
  * Adjusts a game counter by a provided value offset. This offset may be
@@ -405,23 +397,23 @@ Game.prototype.deserialize = function (data) {
  * @param counter A name of a counter
  * @param value A value by which to adjust a counter
  */
-Game.prototype.adjustCounter = function (counter, value) {
+    adjustCounter(counter, value) {
     this.setCounterValue(counter, this.getCounterValue(counter) + value);
-};
+    }
 
 /**
  * Retrieves a game counter's value.
  *
  * @param {string} counter - A name of a counter to retrieve.
  */
-Game.prototype.getCounterValue = function (counter) {
+    getCounterValue(counter) {
     if (this.counters[counter] === undefined) {
         return 0;
     }
 
     return this.counters[counter];
 
-};
+    }
 
 /**
  * Assigns a provided game counter to a provided value.
@@ -429,7 +421,7 @@ Game.prototype.getCounterValue = function (counter) {
  * @param counter A name of a counter to be assigned a value.
  * @param value A value for a counter.
  */
-Game.prototype.setCounterValue = function (counter, value) {
+    setCounterValue(counter, value) {
 
     var maxCounter = counter + '_MAX',
         oldValue = 0;
@@ -471,13 +463,13 @@ Game.prototype.setCounterValue = function (counter, value) {
 
     }
 
-};
+    }
 
 /**
  * A callback function to be executed once all graphic assets have been
  * loaded.
  */
-Game.prototype.onGraphicsLoaded = function () {
+    onGraphicsLoaded() {
 
     this.scroll = new Scroll(this);
     this.fileManagement = new FileManagement(this);
@@ -489,7 +481,7 @@ Game.prototype.onGraphicsLoaded = function () {
         this.onLoadCallback(true);
     }
 
-};
+    }
 
 /**
  * Moves this Game's Player instance to a specified Passage id on a given board name. This will cause
@@ -498,7 +490,7 @@ Game.prototype.onGraphicsLoaded = function () {
  * @param passageId An ID of a Passage
  * @param boardName A name of a Board to be loaded.
  */
-Game.prototype.movePlayerToPassage = function (passageId, boardName) {
+    movePlayerToPassage(passageId, boardName) {
 
     // Retrieve our new board (or the current board if it's the same)
     var newBoard = (boardName === this.currentBoard.name) ? this.currentBoard : this.getBoard(boardName),
@@ -528,7 +520,7 @@ Game.prototype.movePlayerToPassage = function (passageId, boardName) {
 
     }
 
-};
+    }
 
 /**
  * Assigns a GameState to this Game instance, changing the current state of this Game's finite
@@ -536,21 +528,21 @@ Game.prototype.movePlayerToPassage = function (passageId, boardName) {
  *
  * @param {number} state - A new state to replace the old one.
  */
-Game.prototype.pushState = function (state) {
+    pushState(state) {
     this.previousStates.push(this.state);
     this.keyboard.cancelInput();
     this.setState(state);
-};
+    }
 
 /**
  * Restores a GameState from this Game's state stack.
  */
-Game.prototype.restoreState = function () {
+    restoreState() {
     if (this.previousStates.length > 0) {
         this.keyboard.cancelInput();
         this.setState(this.previousStates.pop());
     }
-};
+    }
 
 /**
  * Assigns a GameState to this Game instance, changing the current state of this Game's finite
@@ -558,7 +550,7 @@ Game.prototype.restoreState = function () {
  *
  * @param state A GameState to be assigned to this Game.
  */
-Game.prototype.setState = function (state) {
+    setState(state) {
 
     // If we are to pause the game...
     if (state === GameState.Paused) {
@@ -691,7 +683,7 @@ Game.prototype.setState = function (state) {
     // Assign our new state
     this.state = state;
 
-};
+    }
 
 /**
  * Moves this Game's Player instance to a specified edge of a given board name.
@@ -702,7 +694,7 @@ Game.prototype.setState = function (state) {
  * @param edge A Direction representing an edge of a board
  * @param boardName A name of a Board to be loaded.
  */
-Game.prototype.movePlayerToBoardEdge = function (edge, boardName, offset) {
+    movePlayerToBoardEdge(edge, boardName, offset) {
 
     // Retrieve our new board (or the current board if it's the same)
     var newBoard = (boardName === this.currentBoard.name) ? this.currentBoard : this.getBoard(boardName),
@@ -751,20 +743,20 @@ Game.prototype.movePlayerToBoardEdge = function (edge, boardName, offset) {
     newBoard.entryPoint = newLocation;
     this.setBoard(newBoard, newLocation);
 
-};
+    }
 
 /**
  * Retrieves a deserialized Board instance by name.
  *
  * @param name A name of a Board.
  */
-Game.prototype.getBoard = function (name) {
+    getBoard(name) {
 
     if (this.boards.hasOwnProperty(name)) {
         return new Board(this.boards[name], this);
     }
 
-};
+    }
 
 /**
  * Assigns a given board or board name as this Game's current board,
@@ -777,7 +769,7 @@ Game.prototype.getBoard = function (name) {
  *              position will be used, or if that point it outside the new
  *              Board's boundaries, the board's default player position.
  */
-Game.prototype.setBoard = function (board, playerPoint) {
+    setBoard(board, playerPoint) {
 
     // First, erase the old player position if applicable
     if (this.currentBoard) {
@@ -825,12 +817,12 @@ Game.prototype.setBoard = function (board, playerPoint) {
 
     this.currentBoard.initializePlayer(this.player);
 
-};
+    }
 
 /**
  * Starts this Game's loop, effectively starting this Game.
  */
-Game.prototype.run = function (game) {
+    run(game) {
 
     if (game) {
         this.gameToLoad = game;
@@ -876,7 +868,7 @@ Game.prototype.run = function (game) {
         this.loopId = requestAnimationFrame(this.boundLoop);
     }
 
-};
+    }
 
 /**
  * Executes a single cycle of this Game's primary loop, effectively running
@@ -885,7 +877,7 @@ Game.prototype.run = function (game) {
  * Future Improvement: Use performance.now() and the parameter passed to this function by
  * requestAnimationFrame to do timing once browser support improves.
  */
-Game.prototype.loop = function () {
+    loop() {
 
     try {
 
@@ -917,14 +909,14 @@ Game.prototype.loop = function () {
         this.catestrophicError(i18n.getMessage('status.fatalerror'), exception);
     }
 
-};
+    }
 
 /**
  * Pauses the current game.
  * @param {boolean} showStats - true if we should show player and game status
  *                              false otherwise.
  */
-Game.prototype.pause = function (showStats) {
+    pause(showStats) {
 
     if (showStats === undefined) {
         showStats = true;
@@ -933,12 +925,12 @@ Game.prototype.pause = function (showStats) {
     this.showStatsWhenPaused = showStats;
     this.setState(GameState.Paused);
 
-};
+    }
 
 /**
  * Ends the game completely.
  */
-Game.prototype.end = function () {
+    end() {
 
     // Stop the game loop if it's running
     if (this.loopId) {
@@ -948,21 +940,21 @@ Game.prototype.end = function () {
 
     }
 
-};
+    }
 
 /**
  * Returns whether or not this Game is actively running.
  *
  * @return {boolean} - True if this Game is running, false otherwise.
  */
-Game.prototype.isRunning = function () {
+    isRunning() {
     return this.loopId;
-};
+    }
 
 /**
  * Updates this Game's state by one execution tick.
  */
-Game.prototype.update = function (delta) {
+    update(delta) {
 
     // Update our graphics resource
     this.resources.graphics.update();
@@ -1115,9 +1107,9 @@ Game.prototype.update = function (delta) {
 
     }
 
-};
+    }
 
-Game.prototype.initialLoad = function () {
+    initialLoad() {
 
     // Check if there's a game to load
     if (this.gameToLoad) {
@@ -1135,12 +1127,12 @@ Game.prototype.initialLoad = function () {
 
     }
 
-};
+    }
 
 /**
  * Checks this Game instance's counters and updates the game state as necessary.
  */
-Game.prototype.checkCounters = function (delta) {
+    checkCounters(delta) {
 
     var torchLife = this.getCounterValue('TORCHLIFE');
 
@@ -1169,14 +1161,14 @@ Game.prototype.checkCounters = function (delta) {
 
     }
 
-};
+    }
 
 /**
  * Displays a short, localizable message exactly once.
  *
  * @param messageKey A localization key for a message to display.
  */
-Game.prototype.oneTimeMessage = function (messageKey) {
+    oneTimeMessage(messageKey) {
 
     var message;
 
@@ -1194,7 +1186,7 @@ Game.prototype.oneTimeMessage = function (messageKey) {
 
     }
 
-};
+    }
 
 /**
  * Notifies listeners of a provided notification.
@@ -1202,7 +1194,7 @@ Game.prototype.oneTimeMessage = function (messageKey) {
  * @param {string} type - A type of message used to filter notification listeners.
  * @param {object} notification - A notification object that listeners will understand.
  */
-Game.prototype.notifyListeners = function (type, notification) {
+    notifyListeners(type, notification) {
 
     var index,
         notificationListener;
@@ -1214,12 +1206,12 @@ Game.prototype.notifyListeners = function (type, notification) {
         }
     }
 
-};
+    }
 
 /**
  * Draws a CRT-like screen effect over the current graphics canvas.
  */
-Game.prototype.drawScreenEffect = function () {
+    drawScreenEffect() {
 
     var line,
         lineSpacing = 10 * this.devicePixelRatio,
@@ -1262,12 +1254,12 @@ Game.prototype.drawScreenEffect = function () {
     }
     this.context.stroke();
 
-};
+    }
 
 /**
  * Draws an error screen over the current canvas.
  */
-Game.prototype.drawErrorScreen = function () {
+    drawErrorScreen() {
 
     var spriteGrid = this.errorPopup ? this.errorPopup.spriteGrid : undefined,
         popupWidth = this.catestrophicErrorMessage.length + 7;
@@ -1284,12 +1276,12 @@ Game.prototype.drawErrorScreen = function () {
 
     this.errorPopup.render(this.context);
 
-};
+    }
 
 /**
  * Draws an animated loading screen over the current canvas.
  */
-Game.prototype.drawLoadingScreen = function () {
+    drawLoadingScreen() {
 
     var spriteGrid = this.loadingPopup ? this.loadingPopup.spriteGrid : undefined,
         popupWidth = 24,
@@ -1310,12 +1302,12 @@ Game.prototype.drawLoadingScreen = function () {
     sprite = this.resources.graphics.getSprite(things.Conveyor.animationFrames[Math.floor(this.loadingAnimationIndex / 4)]);
     sprite.draw(this.context, this.loadingPopup.animationPosition, Colors.Cycle);
 
-};
+    }
 
 /**
  * Draws a pause screen with some player and gameplay statistics to the current canvas.
  */
-Game.prototype.drawPauseScreen = function () {
+    drawPauseScreen() {
 
     var spriteGrid,
         position,
@@ -1384,7 +1376,7 @@ Game.prototype.drawPauseScreen = function () {
         }
     }
 
-};
+    }
 
 /**
  * Draws a transition animation, based on data in our transition object.
@@ -1395,7 +1387,7 @@ Game.prototype.drawPauseScreen = function () {
  * where the corners of the screen are the intersection between the window
  * and the board dimensions.
  */
-Game.prototype.drawTransition = function () {
+    drawTransition() {
 
     // Calculate the intersecting rectangle between the window and our
     // current board's dimensions, and use it to find the distance between
@@ -1434,12 +1426,12 @@ Game.prototype.drawTransition = function () {
     });
 
 
-};
+    }
 
 /**
  * Renders a visual representation of this Game to its associated HTML5 Canvas element.
  */
-Game.prototype.draw = function () {
+    draw() {
 
     // If we've got a board and haven't failed to render it before...
     if (this.currentBoard && !this.errorInRender) {
@@ -1500,7 +1492,7 @@ Game.prototype.draw = function () {
 
     }
 
-};
+    }
 
 /**
  * An event handler called when an observed settings object has changed. Depending on
@@ -1508,7 +1500,7 @@ Game.prototype.draw = function () {
  *
  * @param {object} settings - A settings object that has changed
  */
-Game.prototype.onSettingsChanged = function (settings) {
+    onSettingsChanged(settings) {
 
     if (settings.hasOwnProperty('audioMute')) {
         this.settings.audioMute = settings.audioMute;
@@ -1525,8 +1517,10 @@ Game.prototype.onSettingsChanged = function (settings) {
         i18n.setLanguage(settings.language);
     }
 
-};
+    }
+
+}
 
 // Exports
-exports.Game = Game;
-exports.version = metadata.version;
+export { Game };
+export const version = metadata.version;

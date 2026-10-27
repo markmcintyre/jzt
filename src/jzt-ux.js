@@ -1,3 +1,5 @@
+import { NotificationListener } from './basic.js';
+
 /**
  * JZT User Experience
  * Copyright © 2014 Mark McIntyre
@@ -6,119 +8,21 @@
 
 /*jslint node: true */
 
-'use strict';
 
-var ConstructorError = require('./basic').ConstructorError,
-    NotificationListener = require('./basic').NotificationListener;
 
-function SlidingPanel(container) {
 
-    var index,
-        slideToggles = container.querySelectorAll('.slide-toggle');
 
-    if (!(this instanceof SlidingPanel)) {
-        throw ConstructorError;
-    }
 
-    this.container = container;
-    this.activePanel = undefined;
-    this.slideToggles = {};
-    this.bodyClickEvent = this.onBodyClick.bind(this);
 
-    for (index = 0; index < slideToggles.length; index += 1) {
-        this.addButton(slideToggles[index], slideToggles[index].getAttribute('data-panel'));
-    }
 
-}
 
-SlidingPanel.prototype.addButton = function (buttonElement, panelName) {
 
-    var me = this;
 
-    // Remember our toggle for later
-    this.slideToggles[panelName] = buttonElement;
 
-    // Add a click event
-    buttonElement.addEventListener('click', function (event) {
-        me.onButtonClick(event, panelName);
-    });
 
-};
 
-SlidingPanel.prototype.onButtonClick = function (event, panelName) {
 
-    // We're handling the event fully
-    event.stopPropagation();
-    event.preventDefault();
-
-    // If our panel isn't already open...
-    if (this.activePanel !== panelName) {
-        this.openPanel(panelName);
-    } else {
-        this.closePanels();
-    }
-
-};
-
-SlidingPanel.prototype.openPanel = function (panelName) {
-
-    var index,
-        slideToggle,
-        panelElement = document.querySelector('#' + this.container.id + ' .jzt-bottom-content div.panel.' + panelName),
-        contentPanels = document.querySelectorAll('#' + this.container.id + ' .jzt-bottom-content div.panel');
-
-    // Set our active panel
-    this.activePanel = panelName;
-
-    this.removeDecoration();
-
-    // Add an active class to the active slide toggle, if it exists
-    slideToggle = this.slideToggles[panelName];
-    if (slideToggle) {
-        slideToggle.classList.add('active');
-    }
-
-    // First, ensure our panels are hidden
-    for (index = 0; index < contentPanels.length; index += 1) {
-        contentPanels[index].style.display = 'none';
-    }
-
-    // Except for our main panel
-    panelElement.style.display = 'block';
-
-    // Add our open class
-    this.container.className = 'jzt-sliding-container open';
-
-    // Listen for panel closing clicks
-    document.addEventListener('click', this.bodyClickEvent);
-
-};
-
-SlidingPanel.prototype.removeDecoration = function () {
-
-    var index;
-
-    // Remove our active class from our slide toggles
-    for (index in this.slideToggles) {
-        if (this.slideToggles.hasOwnProperty(index)) {
-            this.slideToggles[index].classList.remove('active');
-        }
-    }
-
-};
-
-SlidingPanel.prototype.closePanels = function () {
-    this.activePanel = undefined;
-    this.removeDecoration();
-    this.container.className = 'jzt-sliding-container';
-};
-
-SlidingPanel.prototype.onBodyClick = function () {
-    this.closePanels();
-    document.removeEventListener('click', this.bodyClickEvent);
-};
-
-function setFullScreenButton(buttonElement, canvasElement) {
+export function setFullScreenButton(buttonElement, canvasElement) {
 
     function isFullScreen() {
         return document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement;
@@ -154,28 +58,161 @@ function setFullScreenButton(buttonElement, canvasElement) {
 
 }
 
-function DisplayableNotificationListener(configuration) {
 
-    if (!(this instanceof DisplayableNotificationListener)) {
-        throw ConstructorError;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Exports
+
+export class SlidingPanel {
+    constructor(container) {
+
+    var index,
+        slideToggles = container.querySelectorAll('.slide-toggle');
+
+    this.container = container;
+    this.activePanel = undefined;
+    this.slideToggles = {};
+    this.bodyClickEvent = this.onBodyClick.bind(this);
+
+    for (index = 0; index < slideToggles.length; index += 1) {
+        this.addButton(slideToggles[index], slideToggles[index].getAttribute('data-panel'));
     }
 
-    NotificationListener.call(this);
+
+    }
+
+    addButton(buttonElement, panelName) {
+
+    var me = this;
+
+    // Remember our toggle for later
+    this.slideToggles[panelName] = buttonElement;
+
+    // Add a click event
+    buttonElement.addEventListener('click', function (event) {
+        me.onButtonClick(event, panelName);
+    });
+
+
+    }
+
+    onButtonClick(event, panelName) {
+
+    // We're handling the event fully
+    event.stopPropagation();
+    event.preventDefault();
+
+    // If our panel isn't already open...
+    if (this.activePanel !== panelName) {
+        this.openPanel(panelName);
+    } else {
+        this.closePanels();
+    }
+
+
+    }
+
+    openPanel(panelName) {
+
+    var index,
+        slideToggle,
+        panelElement = document.querySelector('#' + this.container.id + ' .jzt-bottom-content div.panel.' + panelName),
+        contentPanels = document.querySelectorAll('#' + this.container.id + ' .jzt-bottom-content div.panel');
+
+    // Set our active panel
+    this.activePanel = panelName;
+
+    this.removeDecoration();
+
+    // Add an active class to the active slide toggle, if it exists
+    slideToggle = this.slideToggles[panelName];
+    if (slideToggle) {
+        slideToggle.classList.add('active');
+    }
+
+    // First, ensure our panels are hidden
+    for (index = 0; index < contentPanels.length; index += 1) {
+        contentPanels[index].style.display = 'none';
+    }
+
+    // Except for our main panel
+    panelElement.style.display = 'block';
+
+    // Add our open class
+    this.container.className = 'jzt-sliding-container open';
+
+    // Listen for panel closing clicks
+    document.addEventListener('click', this.bodyClickEvent);
+
+
+    }
+
+    removeDecoration() {
+
+    var index;
+
+    // Remove our active class from our slide toggles
+    for (index in this.slideToggles) {
+        if (this.slideToggles.hasOwnProperty(index)) {
+            this.slideToggles[index].classList.remove('active');
+        }
+    }
+
+
+    }
+
+    closePanels() {
+    this.activePanel = undefined;
+    this.removeDecoration();
+    this.container.className = 'jzt-sliding-container';
+
+    }
+
+    onBodyClick() {
+    this.closePanels();
+    document.removeEventListener('click', this.bodyClickEvent);
+
+    }
+}
+
+export class DisplayableNotificationListener extends NotificationListener {
+    constructor(configuration) {
+
+    super();
     this.warningButton = configuration.warningButton;
     this.warningElement = configuration.warningListElement;
-}
-DisplayableNotificationListener.prototype = new NotificationListener();
-DisplayableNotificationListener.prototype.constructor = DisplayableNotificationListener;
 
-DisplayableNotificationListener.prototype.addNotification = function (type, message) {
-    NotificationListener.prototype.addNotification.call(this, type, message);
+    }
+
+    addNotification(type, message) {
+    super.addNotification(type, message);
     if (type === 'warning') {
         this.warningButton.style.display = 'block';
     }
     this.updateListElement();
-};
 
-DisplayableNotificationListener.prototype.updateListElement = function () {
+    }
+
+    updateListElement() {
 
     var index,
         notification;
@@ -190,18 +227,18 @@ DisplayableNotificationListener.prototype.updateListElement = function () {
         }
     }
 
-};
 
-DisplayableNotificationListener.prototype.clear = function () {
+    }
+
+    clear() {
     this.updateListElement();
     this.warningButton.style.display = 'none';
-};
 
-function Settings(settingsElement) {
-
-    if (!(this instanceof Settings)) {
-        throw ConstructorError;
     }
+}
+
+export class Settings {
+    constructor(settingsElement) {
 
     this.listenerCallbacks = [];
     this.audioMuteElement = settingsElement.querySelector('input[name=\'audio-enabled\']');
@@ -212,20 +249,23 @@ function Settings(settingsElement) {
     this.audioVolumeElement.addEventListener('change', this.onVolumeChange.bind(this));
     this.languageElement.addEventListener('change', this.onLanguageChange.bind(this));
 
-}
 
-Settings.prototype.addListener = function (listenerCallback) {
+    }
+
+    addListener(listenerCallback) {
     this.listenerCallbacks.push(listenerCallback);
-};
 
-Settings.prototype.notify = function (settings) {
+    }
+
+    notify(settings) {
     var index;
     for (index = 0; index < this.listenerCallbacks.length; index += 1) {
         this.listenerCallbacks[index](settings);
     }
-};
 
-Settings.prototype.initialize = function (initialSettings) {
+    }
+
+    initialize(initialSettings) {
 
     if (initialSettings.audioActive) {
         this.audioMuteElement.checked = initialSettings.audioMute;
@@ -238,22 +278,21 @@ Settings.prototype.initialize = function (initialSettings) {
 
     this.languageElement.value = initialSettings.language;
 
-};
 
-Settings.prototype.onMuteChange = function (event) {
+    }
+
+    onMuteChange(event) {
     this.notify({audioMute: event.target.checked});
-};
 
-Settings.prototype.onVolumeChange = function (event) {
+    }
+
+    onVolumeChange(event) {
     this.notify({audioVolume: parseFloat(event.target.value) / 10});
-};
 
-Settings.prototype.onLanguageChange = function (event) {
+    }
+
+    onLanguageChange(event) {
     this.notify({language: event.target.value});
-};
 
-// Exports
-exports.setFullScreenButton = setFullScreenButton;
-exports.SlidingPanel = SlidingPanel;
-exports.DisplayableNotificationListener = DisplayableNotificationListener;
-exports.Settings = Settings;
+    }
+}

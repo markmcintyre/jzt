@@ -1,3 +1,8 @@
+import { Literal, Alternation, Empty, Sequence, Repetition, Number as ParserNumber, Word, NewLine, Assembly, String as ParserString } from './parser.js';
+import { Lexer } from './lexer.js';
+import * as commands from './jzt-script-commands.js';
+import { Colors, ColorUtilities } from './graphics.js';
+
 /**
  * JZTScript
  * Copyright © 2014 Mark McIntyre
@@ -6,32 +11,12 @@
 
 /*jslint node: true */
 
-'use strict';
-
-var Literal = require('./parser').Literal,
-    Alternation = require('./parser').Alternation,
-    Empty = require('./parser').Empty,
-    Sequence = require('./parser').Sequence,
-    Repetition = require('./parser').Repetition,
-    ParserNumber = require('./parser').Number,
-    Word = require('./parser').Word,
-    NewLine = require('./parser').NewLine,
-    Assembly = require('./parser').Assembly,
-    ParserString = require('./parser').String,
-    Lexer = require('./lexer').Lexer,
-    commands = require('./jzt-script-commands'),
-    Colors = require('./graphics').Colors,
-    ConstructorError = require('./basic').ConstructorError,
-    ColorUtilities = require('./graphics').ColorUtilities;
-
 /**
  * JztScriptParser
  */
-function JztScriptParser(validateOnly) {
 
-    if (!(this instanceof JztScriptParser)) {
-        throw ConstructorError;
-    }
+export class JztScriptParser {
+    constructor(validateOnly) {
 
     function popAllTokensUntil(assembly, tokenName, tokenValue, discardFence) {
 
@@ -1159,9 +1144,10 @@ function JztScriptParser(validateOnly) {
 
     this.parser = createJztScriptParser();
 
-}
 
-JztScriptParser.prototype.parse = function (script) {
+    }
+
+    parse(script) {
 
     var lexer,
         tokens,
@@ -1184,6 +1170,6 @@ JztScriptParser.prototype.parse = function (script) {
 
     return result.stack;
 
-};
 
-exports.JztScriptParser = JztScriptParser;
+    }
+}

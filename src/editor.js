@@ -8,19 +8,15 @@
 
 'use strict';
 
-var darkColors = ['0', '1', '2', '3', '4', '5', '6', '7'],
-    allColorsNoBlack = ['9', 'A', 'B', 'C', 'D', 'E', 'F', '7', '1', '2', '3', '4', '5', '6', '8'],
-    playerSprite,
-    Point = require('./basic').Point,
-    Graphics = require('./graphics').Graphics,
-    i18n = require('./i18n'),
-    Colors = require('./graphics').Colors,
-    things = require('./things').things,
-    Direction = require('./basic').Direction,
-    Board = require('./board').Board,
-    ColorUtilities = require('./graphics').ColorUtilities,
-    ThingFactory = require('./things').ThingFactory,
-    metadata = require('./metadata');
+const darkColors = ['0', '1', '2', '3', '4', '5', '6', '7'];
+const allColorsNoBlack = ['9', 'A', 'B', 'C', 'D', 'E', 'F', '7', '1', '2', '3', '4', '5', '6', '8'];
+let playerSprite;
+import { Point, Direction } from './basic.js';
+import { Graphics, Colors, ColorUtilities } from './graphics.js';
+import * as i18n from './i18n.js';
+import { things, ThingFactory } from './things.js';
+import { Board } from './board.js';
+import metadata from './metadata.json' with { type: 'json' };
 
 /**
  * Editor represents a JZT game editor, capable of creating and testing JZT game worlds,
@@ -29,7 +25,8 @@ var darkColors = ['0', '1', '2', '3', '4', '5', '6', '7'],
  * @param editorElement {object} - A DOM element representing the editor
  * @param configuration {object} - Configuration values.
  */
-function Editor(editorElement, configuration) {
+class Editor {
+    constructor(editorElement, configuration) {
 
     var mockGame,
         me = this;
@@ -91,182 +88,13 @@ function Editor(editorElement, configuration) {
 
 }
 
-/**
- * Editor.Mode is an enumerated type representing a "mode" for drawing actions.
- */
-Editor.Mode = {
-    DRAW: 0,
-    SELECT: 1,
-    FILL: 2
-};
-
-/**
- * The Editor knows about several Things used by JZT, and defines their configurable properties.
- * This enumerated type structure defines these so that UI elements can be generated and used
- * to configure them.
- */
-Editor.Thing = {
-
-    Bear: {
-        sensitivity: {type: 'number', min: 1, max: 10, defaultValue: 1, label: 'Sensitivity'}
-    },
-
-    Blinker: {
-        direction: {type: 'direction', defaultValue: 'N', label: 'Direction'},
-        period: {type: 'number', min: 1, max: 50, defaultValue: 3, label: 'Period'},
-        delay: {type: 'number', min: 0, max: 50, defaultValue: 0, label: 'Delay'},
-        color: {type: 'color', defaultValue: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
-    },
-
-    Bomb: {
-        radius: {type: 'number', defaultValue: 4, min: 2, max: 20, label: 'Radius', advanced: true},
-        color: {type: 'color', defaultValue: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
-    },
-
-    Boulder: {
-        color: {type: 'color', defaultValue: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
-    },
-
-    BreakableWall: {
-        color: {type: 'color', defaultValue: '0B', options: allColorsNoBlack, foreground: true, label: 'Color'}
-    },
-
-    Centipede: {
-        head: {type: 'boolean', defaultValue: false, label: 'Head'},
-        deviance: {type: 'number', min: 0, max: 10, defaultValue: 0, label: 'Deviance'},
-        intelligence: {type: 'number', min: 0, max: 10, defaultValue: 0, label: 'Intelligence'},
-        color: {type: 'color', defaultValue: '*9', options: allColorsNoBlack, foreground: true, label: 'Color'}
-    },
-
-    Conveyor: {
-        color: {type: 'color', defaultValue: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'},
-        clockwise: {type: 'boolean', defaultValue: true, label: 'Clockwise'}
-    },
-
-
-
-    Door: {
-        color: {type: 'color', defaultValue: '1F', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: false, label: 'Color'}
-    },
-
-    Duplicator: {
-        copyDirection: {type: 'direction', defaultValue: 'E', label: 'Clone Direction'},
-        speed: {type: 'number', min: 1, max: 10, defaultValue: 5, label: 'Speed'}
-    },
-
-    FakeWall: {
-        color: {type: 'color', defaultValue: '0E', options: allColorsNoBlack, foreground: true, label: 'Color'}
-    },
-
-    Gem: {
-        color: {type: 'color', defaultValue: '0D', options: allColorsNoBlack, foreground: true, label: 'Color'}
-    },
-
-    GeoFence: {},
-
-    InvisibleWall: {
-        color: {type: 'color', defaultValue: '0A', options: allColorsNoBlack, foreground: true, label: 'Color'}
-    },
-
-    Key: {
-        color: {type: 'color', defaultValue: '*9', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
-    },
-
-    LineWall: {
-        color: {type: 'color', defaultValue: '09', options: allColorsNoBlack, foreground: true, label: 'Color'}
-    },
-
-    Lion: {
-        intelligence: {type: 'number', min: 1, max: 10, defaultValue: 3, label: 'Intelligence'}
-    },
-
-    Passage: {
-        color: {type: 'color', defaultValue: '1F', options: ['1', '2', '3', '4', '5', '6', '7'], foreground: false, label: 'Color'},
-        passageId: {type: 'text', defaultValue: 'Door 1', label: 'ID'},
-        targetBoard: {type: 'board', label: 'Target Board'}
-    },
-
-    Pusher: {
-        speed: {type: 'number', defaultValue: 3, min: '1', max: '10', label: 'Speed', advanced: true},
-        orientation: {type: 'direction', defaultValue: 'S', label: 'Direction'},
-        color: {type: 'color', defaultValue: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
-    },
-
-    River: {
-        direction: {type: 'direction', defaultValue: 'N', label: 'Direction'}
-    },
-
-    Ruffian: {
-        intelligence: {type: 'number', defaultValue: 5, min: '1', max: '10', label: 'Intelligence'},
-        restingTime: {type: 'number', defaultValue: 5, min: '1', max: '20', label: 'Resting time'}
-    },
-
-    Scriptable: {
-        spriteIndex: {type: 'sprite', defaultValue: 1, label: 'Character'},
-        color: {type: 'color', defaultValue: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'},
-        name: {type: 'text', defaultValue: 'Unknown', label: 'Name'},
-        script: {type: 'script', label: 'Script'},
-        speed: {type: 'number', min: 1, max: 10, defaultValue: 3, label: 'Speed'}
-    },
-
-    Signpost: {
-        text: {type: 'text', label: 'Signpost Text'}
-    },
-
-    SliderEw: {
-        color: {type: 'color', defaultValue: '*F', options: allColorsNoBlack, foreground: true, label: 'Color'}
-    },
-
-    SliderNs: {
-        color: {type: 'color', defaultValue: '*F', options: allColorsNoBlack, foreground: true, label: 'Color'}
-    },
-
-    Snake: {
-        speed: {type: 'number', defaultValue: 3, min: 1, max: 10, label: 'Speed'}
-    },
-
-    SolidWall: {
-        color: {type: 'color', defaultValue: '0E', options: allColorsNoBlack, foreground: true, label: 'Color'}
-    },
-
-    Spider: {
-        intelligence: {type: 'number', defaultValue: 5, min: 1, max: 5, label: 'Intelligence'},
-        color: {type: 'color', defaultValue: '*C', options: allColorsNoBlack, foreground: true, label: 'Color'}
-    },
-
-    SpinningGun: {
-        intelligence: {type: 'number', defaultValue: 5, min: 1, max: 5, label: 'Intelligence'},
-        firingRate: {type: 'number', defaultValue: 5, min: 1, max: 10, label: 'Firing rate'},
-        color: {type: 'color', defaultValue: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
-    },
-
-    Teleporter: {
-        orientation: {type: 'direction', defaultValue: 'E', label: 'Direction'},
-        color: {type: 'color', defaultValue: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
-    },
-
-    Text: {
-        color: {type: 'color', defaultValue: '0F', options: darkColors, foreground: false, label: 'Color'},
-        text: {type: 'text', defaultValue: '', label: 'Text'}
-    },
-
-    Tiger: {
-        intelligence: {type: 'number', min: 1, max: 10, defaultValue: 3, label: 'Intelligence'},
-        firingRate: {type: 'number', min: 1, max: 20, defaultValue: 5, label: 'Firing rate'}
-    },
-
-    Wall: {
-        color: {type: 'color', defaultValue: '0E', options: allColorsNoBlack, foreground: true, label: 'Color'}
-    }
-
-};
 
 /**
  * Initializes this Editor's primary Board DOM element.
  *
  * @param board {object} - A DOM element to be initialized.
  */
-Editor.prototype.initializeBoardElement = function (board) {
+    initializeBoardElement(board) {
 
     // Remove the old canvas
     if (this.canvasElement) {
@@ -296,14 +124,14 @@ Editor.prototype.initializeBoardElement = function (board) {
     this.focusPoint = new Point(board.defaultPlayerX, board.defaultPlayerY);
     this.cursor = this.focusPoint;
 
-};
+    }
 
 /**
  * Sets this Editor's cursor position to a provided point, ensuring that the
  * position is within the restricted range, and that "drawing mode" being enabled
  * will contine to plot tiles.
  */
-Editor.prototype.setCursorPosition = function (point) {
+    setCursorPosition(point) {
 
     this.cursor = point;
 
@@ -327,12 +155,12 @@ Editor.prototype.setCursorPosition = function (point) {
 
     this.render(this.context);
 
-};
+    }
 
 /**
  * Toggles the existence of a Thing at the current cursor position.
  */
-Editor.prototype.togglePlot = function () {
+    togglePlot() {
 
     var thing = this.currentBoard.getTile(this.cursor);
 
@@ -343,13 +171,13 @@ Editor.prototype.togglePlot = function () {
         this.plot();
     }
 
-};
+    }
 
 /**
  * Plots a Thing, based on this Editor's active template, at this Editor's
  * current cursor position.
  */
-Editor.prototype.plot = function () {
+    plot() {
 
     var thing,
         index,
@@ -437,12 +265,12 @@ Editor.prototype.plot = function () {
 
     this.render(this.context);
 
-};
+    }
 
 /**
  * Creates a new game world.
  */
-Editor.prototype.newGame = function () {
+    newGame() {
     this.deserialize({
         name: 'Untitled World',
         version: this.game.version,
@@ -451,12 +279,12 @@ Editor.prototype.newGame = function () {
         startingBoard: 'Untitled Board',
         boards: [this.createBoard('Untitled Board', 50, 20)]
     });
-};
+    }
 
 /**
  * Moves this Editor's cursor in a given direction.
  */
-Editor.prototype.moveCursor = function (direction) {
+    moveCursor(direction) {
 
     var startX,
         endX;
@@ -478,14 +306,14 @@ Editor.prototype.moveCursor = function (direction) {
 
     }
 
-};
+    }
 
 /**
  * Sets this Editor's currently active board to a provided set of options.
  *
  * @param options {object} - A set of options to apply to the current board.
  */
-Editor.prototype.setBoardOptions = function (options) {
+    setBoardOptions(options) {
 
     var oldName = this.currentBoard.name,
         newName = options.name;
@@ -514,14 +342,14 @@ Editor.prototype.setBoardOptions = function (options) {
         this.changeBoardOptionsCallback(options);
     }
 
-};
+    }
 
 /**
  * Sets this Editor's current game world's options to a provided set.
  *
  * @param options {object} - A set of options to apply to this Editor's current game world.
  */
-Editor.prototype.setGameOptions = function (options) {
+    setGameOptions(options) {
     this.game.name = options.name;
     this.game.id = options.id;
     this.game.author = options.author;
@@ -529,7 +357,7 @@ Editor.prototype.setGameOptions = function (options) {
     this.game.startingBoard = options.startingBoard;
     this.game.victoryBoard = options.victoryBoard;
     this.changeGameOptionsCallback(options);
-};
+    }
 
 /**
  * Generates a unique board name given a candidate name. This ensures that no
@@ -538,7 +366,7 @@ Editor.prototype.setGameOptions = function (options) {
  * @param candidate {string} - A name to turn unique, if it's not already
  * @return {string} - A unique board name based on a given candidate
  */
-Editor.prototype.getUniqueBoardName = function (candidate) {
+    getUniqueBoardName(candidate) {
 
     var index = 2,
         currentTry = candidate;
@@ -550,7 +378,7 @@ Editor.prototype.getUniqueBoardName = function (candidate) {
 
     return currentTry;
 
-};
+    }
 
 /**
  * Generates a unique script name given a candidate name. This ensures that no two scripts
@@ -559,7 +387,7 @@ Editor.prototype.getUniqueBoardName = function (candidate) {
  * @param candidate {string} - A name to turn unique, if it's not already
  * @return {string} - A unique script name based on a given candidate, for this Editor's current board.
  */
-Editor.prototype.getUniqueScriptName = function (candidate) {
+    getUniqueScriptName(candidate) {
 
     var index = 2,
         currentTry = candidate;
@@ -571,7 +399,7 @@ Editor.prototype.getUniqueScriptName = function (candidate) {
 
     return currentTry;
 
-};
+    }
 
 /**
  * Retrieves a board from this Editor's current game world.
@@ -579,7 +407,7 @@ Editor.prototype.getUniqueScriptName = function (candidate) {
  * @param boardName {string} - A name of a board to retrieve
  * @return {object} - A game board with a provided name.
  */
-Editor.prototype.getBoard = function (boardName) {
+    getBoard(boardName) {
     var index;
 
     for (index = 0; index < this.boards.length; index += 1) {
@@ -589,14 +417,14 @@ Editor.prototype.getBoard = function (boardName) {
     }
 
     return undefined;
-};
+    }
 
 /**
  * Switches this Editor's current board to a board with a provided name.
  *
  * @param boardName {string} - A name of a board to switch to
  */
-Editor.prototype.switchBoard = function (boardName) {
+    switchBoard(boardName) {
 
     var board = this.getBoard(boardName),
         boardOptions;
@@ -627,9 +455,9 @@ Editor.prototype.switchBoard = function (boardName) {
     };
     this.changeBoardOptionsCallback(boardOptions);
 
-};
+    }
 
-Editor.prototype.deserialize = function (data) {
+    deserialize(data) {
 
     var index,
         board,
@@ -665,9 +493,9 @@ Editor.prototype.deserialize = function (data) {
 
     this.switchBoard(data.startingBoard);
 
-};
+    }
 
-Editor.prototype.serialize = function (playTest) {
+    serialize(playTest) {
     var result = {},
         index;
     result.name = this.game.name;
@@ -683,14 +511,14 @@ Editor.prototype.serialize = function (playTest) {
         result.boards.push(this.boards[index].serialize());
     }
     return result;
-};
+    }
 
-Editor.prototype.setMode = function (mode) {
+    setMode(mode) {
     this.mode = mode;
     this.changeModeCallback(mode);
-};
+    }
 
-Editor.prototype.removeBoard = function (boardName) {
+    removeBoard(boardName) {
 
     var index,
         found = -1;
@@ -716,9 +544,9 @@ Editor.prototype.removeBoard = function (boardName) {
         }
     }
 
-};
+    }
 
-Editor.prototype.createBoard = function (boardName, width, height) {
+    createBoard(boardName, width, height) {
 
     var template,
         row,
@@ -762,9 +590,9 @@ Editor.prototype.createBoard = function (boardName, width, height) {
 
     return template;
 
-};
+    }
 
-Editor.prototype.addBoard = function (boardName, width, height) {
+    addBoard(boardName, width, height) {
 
     var newBoard,
         template = this.createBoard(boardName, width, height);
@@ -781,9 +609,9 @@ Editor.prototype.addBoard = function (boardName, width, height) {
 
     this.switchBoard(newBoard.name);
 
-};
+    }
 
-Editor.prototype.getTemplateThing = function (template) {
+    getTemplateThing(template) {
 
     var thing;
 
@@ -801,9 +629,9 @@ Editor.prototype.getTemplateThing = function (template) {
 
     }
 
-};
+    }
 
-Editor.prototype.createField = function (fieldName, field, template) {
+    createField(fieldName, field, template) {
 
     var label,
         element,
@@ -1066,9 +894,9 @@ Editor.prototype.createField = function (fieldName, field, template) {
     return label;
 
 
-};
+    }
 
-Editor.prototype.setActiveTemplate = function (template) {
+    setActiveTemplate(template) {
 
     var thing,
         field;
@@ -1089,9 +917,9 @@ Editor.prototype.setActiveTemplate = function (template) {
 
 
     this.changeTemplateCallback(this.activeTemplate);
-};
+    }
 
-Editor.prototype.setTemplateForeground = function (foreground) {
+    setTemplateForeground(foreground) {
     var background;
     if (!this.activeTemplate) {
         return;
@@ -1103,9 +931,9 @@ Editor.prototype.setTemplateForeground = function (foreground) {
         this.activeTemplate.color = ColorUtilities.serialize(Colors.Black, foreground);
     }
     this.changeTemplateCallback(this.activeTemplate);
-};
+    }
 
-Editor.prototype.setTemplateBackground = function (background) {
+    setTemplateBackground(background) {
     var foreground;
     if (!this.activeTemplate) {
         return;
@@ -1117,18 +945,18 @@ Editor.prototype.setTemplateBackground = function (background) {
         this.activeTemplate.color = ColorUtilities.serialize(background, Colors.Yellow);
     }
     this.changeTemplateCallback(this.activeTemplate);
-};
+    }
 
-Editor.prototype.eventToBoardPoint = function (event) {
+    eventToBoardPoint(event) {
 
     var scaleX = this.canvasElement.width / this.canvasElement.offsetWidth,
         scaleY = this.canvasElement.height / this.canvasElement.offsetHeight,
         x = Math.floor((event.offsetX * scaleX) / this.game.resources.graphics.TILE_SIZE.x),
         y = Math.floor((event.offsetY * scaleY) / this.game.resources.graphics.TILE_SIZE.y);
     return new Point(x, y).add(this.currentBoard.windowOrigin);
-};
+    }
 
-Editor.prototype.onKeyDown = function (event) {
+    onKeyDown(event) {
 
     var oldMode,
         activeElement = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
@@ -1186,9 +1014,9 @@ Editor.prototype.onKeyDown = function (event) {
 
     }
 
-};
+    }
 
-Editor.prototype.invokeTool = function () {
+    invokeTool() {
 
     var thing;
 
@@ -1209,9 +1037,9 @@ Editor.prototype.invokeTool = function () {
 
     this.render(this.context);
 
-};
+    }
 
-Editor.prototype.onCanvasMouseDown = function (event) {
+    onCanvasMouseDown(event) {
 
     if (this.mode === Editor.Mode.DRAW) {
         this.drawing = true;
@@ -1220,25 +1048,25 @@ Editor.prototype.onCanvasMouseDown = function (event) {
 
     this.setCursorPosition(this.eventToBoardPoint(event));
 
-};
+    }
 
-Editor.prototype.onCanvasMouseMoved = function (event) {
+    onCanvasMouseMoved(event) {
 
     this.setCursorPosition(this.eventToBoardPoint(event));
     document.activeElement.blur();
 
-};
+    }
 
-Editor.prototype.onCanvasMouseUp = function (event) {
+    onCanvasMouseUp(event) {
 
     this.drawing = false;
 
     this.setCursorPosition(this.eventToBoardPoint(event));
     this.invokeTool();
 
-};
+    }
 
-Editor.prototype.onCanvasScroll = function (event) {
+    onCanvasScroll(event) {
 
     var xSize = this.graphics.TILE_SIZE.x,
         ySize = this.graphics.TILE_SIZE.y,
@@ -1296,9 +1124,9 @@ Editor.prototype.onCanvasScroll = function (event) {
     event.preventDefault();
     this.render(this.context);
 
-};
+    }
 
-Editor.prototype.fill = function (point) {
+    fill(point) {
 
     var thing,
         targetDetails,
@@ -1354,9 +1182,9 @@ Editor.prototype.fill = function (point) {
     fillNeighbour(point.add(Direction.South), targetDetails);
     fillNeighbour(point.add(Direction.West), targetDetails);
 
-};
+    }
 
-Editor.prototype.render = function (context) {
+    render(context) {
 
     // If we aren't fully loaded, don't render anything yet
     if (!this.currentBoard || !playerSprite) {
@@ -1368,9 +1196,9 @@ Editor.prototype.render = function (context) {
     playerSprite.draw(context, this.playerPosition.subtract(this.currentBoard.windowOrigin), Colors.BrightWhite, Colors.Blue);
     this.drawAdjacentMarkers(context);
     this.drawCursor(context);
-};
+    }
 
-Editor.prototype.drawCursor = function (context) {
+    drawCursor(context) {
 
     var xSize = this.graphics.TILE_SIZE.x,
         ySize = this.graphics.TILE_SIZE.y,
@@ -1401,9 +1229,9 @@ Editor.prototype.drawCursor = function (context) {
     context.fillStyle = 'white';
     context.fillText('(' + (this.cursor.x + 1) + ', ' + (this.cursor.y + 1) + ')', 4, 14);
 
-};
+    }
 
-Editor.prototype.drawAdjacentMarkers = function (context) {
+    drawAdjacentMarkers(context) {
 
     var xSize = this.graphics.TILE_SIZE.x,
         ySize = this.graphics.TILE_SIZE.y,
@@ -1543,9 +1371,9 @@ Editor.prototype.drawAdjacentMarkers = function (context) {
 
     }
 
-};
+    }
 
-Editor.prototype.renameBoard = function (oldName, newName) {
+    renameBoard(oldName, newName) {
 
     function renameProperty(obj, propertyName) {
         if (obj[propertyName] === oldName) {
@@ -1588,7 +1416,169 @@ Editor.prototype.renameBoard = function (oldName, newName) {
     this.removeBoardCallback(oldName);
     this.addBoardCallback(newName);
 
+    }
+
+}
+
+// Editor.Mode is an enumerated type representing a "mode" for drawing actions.
+Editor.Mode = {
+    DRAW: 0,
+    SELECT: 1,
+    FILL: 2
 };
 
-exports.Editor = Editor;
-exports.version = metadata.version;
+// The Editor knows about several Things used by JZT, and defines their configurable properties.
+Editor.Thing = {
+
+    Bear: {
+        sensitivity: {type: 'number', min: 1, max: 10, defaultValue: 1, label: 'Sensitivity'}
+    },
+
+    Blinker: {
+        direction: {type: 'direction', defaultValue: 'N', label: 'Direction'},
+        period: {type: 'number', min: 1, max: 50, defaultValue: 3, label: 'Period'},
+        delay: {type: 'number', min: 0, max: 50, defaultValue: 0, label: 'Delay'},
+        color: {type: 'color', defaultValue: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
+    },
+
+    Bomb: {
+        radius: {type: 'number', defaultValue: 4, min: 2, max: 20, label: 'Radius', advanced: true},
+        color: {type: 'color', defaultValue: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
+    },
+
+    Boulder: {
+        color: {type: 'color', defaultValue: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
+    },
+
+    BreakableWall: {
+        color: {type: 'color', defaultValue: '0B', options: allColorsNoBlack, foreground: true, label: 'Color'}
+    },
+
+    Centipede: {
+        head: {type: 'boolean', defaultValue: false, label: 'Head'},
+        deviance: {type: 'number', min: 0, max: 10, defaultValue: 0, label: 'Deviance'},
+        intelligence: {type: 'number', min: 0, max: 10, defaultValue: 0, label: 'Intelligence'},
+        color: {type: 'color', defaultValue: '*9', options: allColorsNoBlack, foreground: true, label: 'Color'}
+    },
+
+    Conveyor: {
+        color: {type: 'color', defaultValue: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'},
+        clockwise: {type: 'boolean', defaultValue: true, label: 'Clockwise'}
+    },
+
+    Door: {
+        color: {type: 'color', defaultValue: '1F', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: false, label: 'Color'}
+    },
+
+    Duplicator: {
+        copyDirection: {type: 'direction', defaultValue: 'E', label: 'Clone Direction'},
+        speed: {type: 'number', min: 1, max: 10, defaultValue: 5, label: 'Speed'}
+    },
+
+    FakeWall: {
+        color: {type: 'color', defaultValue: '0E', options: allColorsNoBlack, foreground: true, label: 'Color'}
+    },
+
+    Gem: {
+        color: {type: 'color', defaultValue: '0D', options: allColorsNoBlack, foreground: true, label: 'Color'}
+    },
+
+    GeoFence: {},
+
+    InvisibleWall: {
+        color: {type: 'color', defaultValue: '0A', options: allColorsNoBlack, foreground: true, label: 'Color'}
+    },
+
+    Key: {
+        color: {type: 'color', defaultValue: '*9', options: ['9', 'A', 'B', 'C', 'D', 'E', 'F'], foreground: true, label: 'Color'}
+    },
+
+    LineWall: {
+        color: {type: 'color', defaultValue: '09', options: allColorsNoBlack, foreground: true, label: 'Color'}
+    },
+
+    Lion: {
+        intelligence: {type: 'number', min: 1, max: 10, defaultValue: 3, label: 'Intelligence'}
+    },
+
+    Passage: {
+        color: {type: 'color', defaultValue: '1F', options: ['1', '2', '3', '4', '5', '6', '7'], foreground: false, label: 'Color'},
+        passageId: {type: 'text', defaultValue: 'Door 1', label: 'ID'},
+        targetBoard: {type: 'board', label: 'Target Board'}
+    },
+
+    Pusher: {
+        speed: {type: 'number', defaultValue: 3, min: '1', max: '10', label: 'Speed', advanced: true},
+        orientation: {type: 'direction', defaultValue: 'S', label: 'Direction'},
+        color: {type: 'color', defaultValue: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
+    },
+
+    River: {
+        direction: {type: 'direction', defaultValue: 'N', label: 'Direction'}
+    },
+
+    Ruffian: {
+        intelligence: {type: 'number', defaultValue: 5, min: '1', max: '10', label: 'Intelligence'},
+        restingTime: {type: 'number', defaultValue: 5, min: '1', max: '20', label: 'Resting time'}
+    },
+
+    Scriptable: {
+        spriteIndex: {type: 'sprite', defaultValue: 1, label: 'Character'},
+        color: {type: 'color', defaultValue: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'},
+        name: {type: 'text', defaultValue: 'Unknown', label: 'Name'},
+        script: {type: 'script', label: 'Script'},
+        speed: {type: 'number', min: 1, max: 10, defaultValue: 3, label: 'Speed'}
+    },
+
+    Signpost: {
+        text: {type: 'text', label: 'Signpost Text'}
+    },
+
+    SliderEw: {
+        color: {type: 'color', defaultValue: '*F', options: allColorsNoBlack, foreground: true, label: 'Color'}
+    },
+
+    SliderNs: {
+        color: {type: 'color', defaultValue: '*F', options: allColorsNoBlack, foreground: true, label: 'Color'}
+    },
+
+    Snake: {
+        speed: {type: 'number', defaultValue: 3, min: 1, max: 10, label: 'Speed'}
+    },
+
+    SolidWall: {
+        color: {type: 'color', defaultValue: '0E', options: allColorsNoBlack, foreground: true, label: 'Color'}
+    },
+
+    Spider: {
+        intelligence: {type: 'number', defaultValue: 5, min: 1, max: 5, label: 'Intelligence'},
+        color: {type: 'color', defaultValue: '*C', options: allColorsNoBlack, foreground: true, label: 'Color'}
+    },
+
+    SpinningGun: {
+        intelligence: {type: 'number', defaultValue: 5, min: 1, max: 5, label: 'Intelligence'},
+        firingRate: {type: 'number', defaultValue: 5, min: 1, max: 10, label: 'Firing rate'},
+        color: {type: 'color', defaultValue: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
+    },
+
+    Teleporter: {
+        orientation: {type: 'direction', defaultValue: 'E', label: 'Direction'},
+        color: {type: 'color', defaultValue: '*E', options: allColorsNoBlack, foreground: true, label: 'Color'}
+    },
+
+    Text: {
+        color: {type: 'color', defaultValue: '0F', options: darkColors, foreground: false, label: 'Color'},
+        text: {type: 'text', defaultValue: '', label: 'Text'}
+    },
+
+    Tiger: {
+        intelligence: {type: 'number', min: 1, max: 10, defaultValue: 3, label: 'Intelligence'},
+        firingRate: {type: 'number', min: 1, max: 20, defaultValue: 5, label: 'Firing rate'}
+    },
+
+    Wall: {
+        color: {type: 'color', defaultValue: '0E', options: allColorsNoBlack, foreground: true, label: 'Color'}
+    }
+};
+export { Editor };
+export const version = metadata.version;

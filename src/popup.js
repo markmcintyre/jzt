@@ -1,27 +1,11 @@
-/**
- * JZT Popup
- * Copyright © 2013 Mark McIntyre
- * @author Mark McIntyre
- */
+import { Point } from './basic.js';
+import { SpriteGrid, Colors } from './graphics.js';
+import meta from './metadata.json' with { type: 'json' };
 
-/*jslint node:true */
 
-'use strict';
 
-var Point = require('./basic').Point,
-    SpriteGrid = require('./graphics').SpriteGrid,
-    Colors = require('./graphics').Colors,
-    meta = require('./metadata');
-
-/**
- * Popup represents a pop-up box with a given position and size, capable of
- * holding sprite information.
- *
- * @param position a Point indicating an x, y coordinate for this popup
- * @param size a Point representing a width and height for this popup
- * @param game A Game instance to own this Popup
- */
-function Popup(position, size, game) {
+export class Popup {
+    constructor(position, size, game) {
 
     if (position) {
         this.position = position;
@@ -40,19 +24,10 @@ function Popup(position, size, game) {
     this.spriteGrid = new SpriteGrid(this.size.x, this.size.y, this.graphics);
     this.setColor(Colors.Blue, Colors.BrightWhite);
 
-}
 
-Popup.prototype.setTitle = function (title) {
-    this.title = title;
-    this.redraw();
-};
+    }
 
-/**
- * Renders this Popup to a specified context.
- *
- * @param c A 2D context onto which to render this Popup.
- */
-Popup.prototype.render = function (c) {
+    render(c) {
 
     var x = this.position.x,
         y = this.position.y,
@@ -64,22 +39,25 @@ Popup.prototype.render = function (c) {
 
     this.spriteGrid.draw(c, this.position);
 
-};
 
-Popup.prototype.redraw = function () {
+    }
+
+    redraw() {
     this.spriteGrid.clear();
     this.createBorder(this.spriteGrid);
-};
 
-Popup.prototype.setColor = function (background, foreground, scrollbarBackground, scrollbarForeground) {
+    }
+
+    setColor(background, foreground, scrollbarBackground, scrollbarForeground) {
     this.background = background;
     this.foreground = foreground;
     this.scrollbarBackground = scrollbarBackground || background;
     this.scrollbarForeground = scrollbarForeground || foreground;
     this.redraw();
-};
 
-Popup.prototype.setScrollBar = function (index, maximumIndex, visibleCount) {
+    }
+
+    setScrollBar(index, maximumIndex, visibleCount) {
 
     var barHeight = this.size.y - 4,
         point = new Point(this.size.x - 2, 1),
@@ -115,9 +93,10 @@ Popup.prototype.setScrollBar = function (index, maximumIndex, visibleCount) {
 
     }
 
-};
 
-Popup.prototype.createBorder = function (spriteGrid) {
+    }
+
+    createBorder(spriteGrid) {
 
     var point = new Point(0, 0),
         width = this.size.x,
@@ -160,24 +139,30 @@ Popup.prototype.createBorder = function (spriteGrid) {
         this.spriteGrid.addText(new Point(titlePosition, 0), fullTitle, this.foreground);
     }
 
-};
 
-function Animator() {
-    this.startTime = Date.now();
-    this.renderFunctions = [];
+    }
 }
 
-Animator.prototype.start = function (renderFunction) {
+export class Animator {
+    constructor() {
+    this.startTime = Date.now();
+    this.renderFunctions = [];
+
+    }
+
+    start(renderFunction) {
     renderFunction.frameTime = 0;
     this.renderFunctions.push(renderFunction);
     return this;
-};
 
-Animator.prototype.end = function (endTime) {
+    }
+
+    end(endTime) {
     this.then(endTime, function () { return undefined; });
-};
 
-Animator.prototype.update = function () {
+    }
+
+    update() {
 
     var time = Date.now() - this.startTime,
         renderFunction,
@@ -191,19 +176,24 @@ Animator.prototype.update = function () {
         }
     }
 
-};
 
-Animator.prototype.then = function (frameTime, renderFunction) {
+    }
+
+    then(frameTime, renderFunction) {
     renderFunction.frameTime = frameTime;
     this.renderFunctions.push(renderFunction);
     return this;
-};
 
-Animator.prototype.isDone = function () {
+    }
+
+    isDone() {
     return this.renderFunctions.length <= 0;
-};
 
-function Splash(game) {
+    }
+}
+
+export class Splash {
+    constructor(game) {
 
     var grid;
 
@@ -257,16 +247,17 @@ function Splash(game) {
         grid.addText(new Point(21, 18), '(c) ' + new Date(meta.date).getFullYear(), Colors.White);
     }).end(4000);
 
-}
 
-Splash.prototype.update = function () {
+    }
+
+    update() {
     this.animator.update();
     this.done = this.animator.isDone();
-};
 
-Splash.prototype.render = function (c) {
+    }
+
+    render(c) {
     this.popup.render(c);
-};
 
-exports.Popup = Popup;
-exports.Splash = Splash;
+    }
+}

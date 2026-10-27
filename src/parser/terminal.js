@@ -1,0 +1,3 @@
+import { Parser } from './parser.js';
+class Terminal extends Parser { constructor() { super(); this.assembler = undefined; this.discard = false; } qualifies() { return true; } match(assemblies) { var result = [], index, assembly, assemblyResult; for (index = 0; index < assemblies.length; index += 1) { assembly = assemblies[index]; assemblyResult = this.matchAssembly(assembly); if (assemblyResult !== undefined) result.push(assemblyResult); } return result; } matchAssembly(assembly) { var result, token; if (assembly.isDone()) return undefined; if (this.qualifies(assembly.current())) { result = assembly.clone(); token = result.next(); if (!this.discard) result.stack.push(token); return result; } return undefined; } }
+export { Terminal };

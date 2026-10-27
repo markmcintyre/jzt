@@ -1,7 +1,10 @@
-const path = require('node:path');
-const {execFileSync} = require('node:child_process');
-const {packageSite} = require('./package-itch');
+import path from 'node:path';
+import {execFileSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
+import {packageSite} from './package-itch.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const repositoryRoot = path.resolve(__dirname, '..');
 const defaultOutputDirectory = path.join(repositoryRoot, 'build');
 const channel = 'html5';
@@ -69,7 +72,7 @@ function main() {
   publishSite(worldPath, target, outputDirectory, version);
 }
 
-if (require.main === module) {
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
   try {
     main();
   } catch (error) {
@@ -78,4 +81,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = {channel, parseArguments, publishSite, requireButler};
+export {channel, parseArguments, publishSite, requireButler};

@@ -1,8 +1,11 @@
-const fs = require('node:fs/promises');
-const path = require('node:path');
-const {Liquid} = require('liquidjs');
-const LZString = require('lz-string');
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {Liquid} from 'liquidjs';
+import LZString from 'lz-string';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const repositoryRoot = path.resolve(__dirname, '..');
 const defaultOutputDirectory = path.resolve(__dirname, '..', 'build');
 const siteDir = path.resolve(__dirname, '..', 'src', 'site');
@@ -115,11 +118,11 @@ async function main() {
   console.log(`Generated player site in ${outputDirectory}.`);
 }
 
-if (require.main === module) {
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
   main().catch((error) => {
     console.error(error.message);
     process.exitCode = 1;
   });
 }
 
-module.exports = {generateSite, parseArguments, parseWorld};
+export {generateSite, parseArguments, parseWorld};

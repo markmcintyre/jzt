@@ -1,4 +1,4 @@
-const LZString = require('lz-string');
+import LZString from 'lz-string';
 
 document.addEventListener('readystatechange', (event) => {
 

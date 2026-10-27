@@ -1,24 +1,10 @@
-/**
- * JZTScript Context
- * Copyright © 2014 Mark McIntyre
- * @author Mark McIntyre
- */
+import { GameState } from './game-state.js';
+import * as commands from './jzt-script-commands.js';
 
-/*jslint node:true */
 
-'use strict';
 
-var GameState = require('./game-state').GameState,
-    commands = require('./jzt-script-commands');
-
-/**
- * A ScriptContext is a context in which a script can run, including an associated
- * Scriptable, a current execution index, labels, and more.
- *
- * @param script A script which this ScriptContext is set to execute.
- * @param owner A Scriptable to own this ScriptContext.
- */
-function JztScriptContext(script, owner) {
+export class JztScriptContext {
+    constructor(script, owner) {
     this.owner = owner;
     this.script = script;
     this.commandIndex = 0;
@@ -27,14 +13,10 @@ function JztScriptContext(script, owner) {
     this.initializeLabels(script);
     this.scrollContent = [];
     this.jumpCount = 0;
-}
 
-/**
- * Serializes this JztScriptContext to a data object.
- *
- * @return A data object representing this JztScriptContext.
- */
-JztScriptContext.prototype.serialize = function () {
+    }
+
+    serialize() {
 
     var result = {},
         label;
@@ -49,14 +31,10 @@ JztScriptContext.prototype.serialize = function () {
 
     return result;
 
-};
 
-/**
- * De-serializes a provided data object to initialize this JztScriptContext.
- *
- * @param data A serialized JztScriptContext.
- */
-JztScriptContext.prototype.deserialize = function (data) {
+    }
+
+    deserialize(data) {
 
     var label;
 
@@ -68,15 +46,10 @@ JztScriptContext.prototype.deserialize = function (data) {
         }
     }
 
-};
 
-/**
- * Determines whether or not we are in a default state for this JztScriptContext.
- * A script context that's in its default state has no need of being serialized.
- *
- * @return true if in a default state, false otherwise.
- */
-JztScriptContext.prototype.inDefaultState = function () {
+    }
+
+    inDefaultState() {
 
     var defaultState = true,
         labelIndex;
@@ -106,48 +79,40 @@ JztScriptContext.prototype.inDefaultState = function () {
 
     return defaultState;
 
-};
 
-/**
- * Initializes this JztScriptContext's labels to that of a provided Script instance.
- *
- * @param script A Script used to initialize this JztScriptContext's labels.
- */
-JztScriptContext.prototype.initializeLabels = function (script) {
+    }
+
+    initializeLabels(script) {
     var label;
     for (label in script.labelIndicies) {
         if (script.labelIndicies.hasOwnProperty(label)) {
             this.currentLabels[label] = 0;
         }
     }
-};
 
-/**
- * Retrieves whether or not this JztScriptContext is currently running.
- *
- * @return true if this JztScriptContext is running, false otherwise.
- */
-JztScriptContext.prototype.isRunning = function () {
+    }
+
+    isRunning() {
     return this.commandIndex >= 0 && this.commandIndex < this.script.commands.length;
-};
 
-/**
- * Stops running this JztScriptContext.
- */
-JztScriptContext.prototype.stop = function () {
+    }
+
+    stop() {
     this.commandIndex = -1;
-};
 
-JztScriptContext.prototype.addScrollContent = function (line, center, lineLabel) {
+    }
+
+    addScrollContent(line, center, lineLabel) {
     var newLine = {
         'text': line,
         'center': center,
         'label': lineLabel
     };
     this.scrollContent.push(newLine);
-};
 
-JztScriptContext.prototype.displayScroll = function () {
+    }
+
+    displayScroll() {
     var index,
         line;
 
@@ -163,13 +128,10 @@ JztScriptContext.prototype.displayScroll = function () {
     this.scrollContent = [];
     this.owner.board.game.setState(GameState.Reading);
 
-};
 
-/**
- * Executes a single tick of this JztScriptContext, taking a command from its associated
- * Script and executing it.
- */
-JztScriptContext.prototype.executeTick = function () {
+    }
+
+    executeTick() {
 
     var message,
         command,
@@ -255,23 +217,15 @@ JztScriptContext.prototype.executeTick = function () {
 
     }
 
-};
 
-/**
- * Indicates that this script is done executing for this tick.
- */
-JztScriptContext.prototype.doneTick = function () {
+    }
+
+    doneTick() {
     this.jumpCount = 0;
-};
 
-/**
- * Updates the active command of this JztScriptContext to that of a provided label
- * name.
- *
- * @param label A name of a label to which to jump.
- * @return {boolean} True if the jump was successful, false otherwise.
- */
-JztScriptContext.prototype.jumpToLabel = function (label) {
+    }
+
+    jumpToLabel(label) {
 
     if (this.currentLabels.hasOwnProperty(label)) {
 
@@ -298,25 +252,20 @@ JztScriptContext.prototype.jumpToLabel = function (label) {
 
     return false;
 
-};
 
-JztScriptContext.prototype.clearTemporaryHeapItems = function () {
+    }
+
+    clearTemporaryHeapItems() {
     var heapItem;
     for (heapItem in this.heap) {
         if (this.heap.hasOwnProperty(heapItem) && heapItem[0] === '<' && heapItem[heapItem.length - 1] === '>') {
             delete this.heap[heapItem];
         }
     }
-};
 
-/**
- * Zaps a provided label name, making it no longer jumpable. If more than one
- * label with the same name exists, only the first will be zapped. Subsequent
- * zaps will zap the next unzapped label.
- *
- * @param label A name of a label to zap.
- */
-JztScriptContext.prototype.zapLabel = function (label) {
+    }
+
+    zapLabel(label) {
 
     var labelIndex;
 
@@ -327,16 +276,10 @@ JztScriptContext.prototype.zapLabel = function (label) {
         }
     }
 
-};
 
-/**
- * Restores a previously zapped label, making it resumable for jupming. If more than
- * one label with the same name has been zapped, the most recently zapped label will
- * be unzapped.
- *
- * @param label A name of a label to restore.
- */
-JztScriptContext.prototype.restoreLabel = function (label) {
+    }
+
+    restoreLabel(label) {
 
     var labelIndex;
 
@@ -347,16 +290,13 @@ JztScriptContext.prototype.restoreLabel = function (label) {
         }
     }
 
-};
 
-/**
- * Advances this JztScriptContext by one line, preparing a new command to be executed
- * at the next tick event.
- */
-JztScriptContext.prototype.advanceLine = function () {
+    }
+
+    advanceLine() {
     if (this.isRunning()) {
         this.commandIndex += 1;
     }
-};
 
-exports.JztScriptContext = JztScriptContext;
+    }
+}

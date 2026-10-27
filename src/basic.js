@@ -7,9 +7,10 @@
 /*jslint node:true */
 
 'use strict';
+import { DelayedEventScheduler } from './basic/DelayedEventScheduler.js';
+import { NotificationListener } from './basic/NotificationListener.js';
 
-var ConstructorError = 'Constructor must be called with new.',
-    Direction;
+let Direction;
 
 /**
  * Point represents a point on a cartesian plane.
@@ -17,163 +18,90 @@ var ConstructorError = 'Constructor must be called with new.',
  * @param x An x coordinate.
  * @param y A y coordinate.
  */
-function Point(x, y) {
-
-    if (!(this instanceof Point)) {
-        throw ConstructorError;
+class Point {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
     }
 
-    this.x = x;
-    this.y = y;
-}
-
-/**
- * Creates a new Point with identical values to this one.
- *
- * @return A Point.
- */
-Point.prototype.clone = function () {
-    return new Point(this.x, this.y);
-};
-
-/**
- * Adds a provided point to this point, and returns the result.
- *
- * @param other Another point to add to this one.
- * @return A new point with the added value.
- */
-Point.prototype.add = function (other) {
-    return new Point(this.x + other.x, this.y + other.y);
-};
-
-/**
- * Subtracts a provided point from this point and returns the result.
- *
- * @param other Another point to subtract from this one.
- * @return A new point with the subtracted value.
- */
-Point.prototype.subtract = function (other) {
-    return new Point(this.x - other.x, this.y - other.y);
-};
-
-/**
- * Returns whether or not this point is directly adjacent to a provided point.
- *
- * @param other Another point to test for adjacency
- * @return true if a provided point is adjacent, false otherwise
- */
-Point.prototype.adjacent = function (other) {
-
-    var xDeviance = Math.abs(this.x - other.x),
-        yDeviance = Math.abs(this.y - other.y);
-
-    return !(xDeviance > 1 || yDeviance > 1);
-
-};
-
-/**
- * Retrieves whether or not a provided point is aligned with this one, within a given
- * spread threshold.
- *
- * @param other A point to test for alignment.
- * @param spread A spread threshold to allow for in the alignement calculation.
- * @return true if a provided point is aligned with this one, false otherwise.
- */
-Point.prototype.aligned = function (other, spread, direction) {
-    spread = spread === undefined ? 1 : spread;
-
-    if (!direction) {
-        return (Math.abs(this.x - other.x) < spread) || (Math.abs(this.y - other.y) < spread);
-    }
-    if (direction === Direction.North) {
-        return (other.y < this.y) && Math.abs((this.x - other.x)) < spread;
-    }
-    if (direction === Direction.South) {
-        return (other.y > this.y) && Math.abs((this.x - other.x)) < spread;
-    }
-    if (direction === Direction.East) {
-        return (other.x > this.x) && Math.abs((this.y - other.y)) < spread;
-    }
-    if (direction === Direction.West) {
-        return (other.x < this.x) && Math.abs((this.y - other.y)) < spread;
+    clone() {
+        return new Point(this.x, this.y);
     }
 
-    return undefined;
+    add(other) {
+        return new Point(this.x + other.x, this.y + other.y);
+    }
 
-};
+    subtract(other) {
+        return new Point(this.x - other.x, this.y - other.y);
+    }
 
-/**
- * Calculates a direction from this point to another point, along an optional axis. If
- * no axis is provided, then the closest of either the X or Y axis will be used. If
- * the distance on both axes are the same, then one will be picked at random.
- *
- * @param other Another point to calculate the direction toward.
- * @param axis 'x' or 'y' depending on the axis to be tested.
- * @return A Point representing a direction
- */
-Point.prototype.directionTo = function (other, axis) {
+    adjacent(other) {
+        var xDeviance = Math.abs(this.x - other.x),
+            yDeviance = Math.abs(this.y - other.y);
+        return !(xDeviance > 1 || yDeviance > 1);
+    }
 
-    var xDistance = this.x - other.x,
-        yDistance = this.y - other.y;
-
-    // There is no direction to the same point
-    if (xDistance === 0 && yDistance === 0) {
+    aligned(other, spread, direction) {
+        spread = spread === undefined ? 1 : spread;
+        if (!direction) {
+            return (Math.abs(this.x - other.x) < spread) || (Math.abs(this.y - other.y) < spread);
+        }
+        if (direction === Direction.North) {
+            return (other.y < this.y) && Math.abs((this.x - other.x)) < spread;
+        }
+        if (direction === Direction.South) {
+            return (other.y > this.y) && Math.abs((this.x - other.x)) < spread;
+        }
+        if (direction === Direction.East) {
+            return (other.x > this.x) && Math.abs((this.y - other.y)) < spread;
+        }
+        if (direction === Direction.West) {
+            return (other.x < this.x) && Math.abs((this.y - other.y)) < spread;
+        }
         return undefined;
     }
 
-    if (axis === undefined) {
-        if (xDistance === 0) {
-            axis = 'y';
-        } else if (yDistance === 0) {
-            axis = 'x';
-        } else {
-            axis = (Math.floor(Math.random() * 2)) ? 'x' : 'y';
-        }
-    }
-
-    if (axis === 'x') {
-        if (xDistance === 0) {
+    directionTo(other, axis) {
+        var xDistance = this.x - other.x,
+            yDistance = this.y - other.y;
+        if (xDistance === 0 && yDistance === 0) {
             return undefined;
         }
-        return xDistance < 0 ? Direction.East : Direction.West;
+        if (axis === undefined) {
+            if (xDistance === 0) {
+                axis = 'y';
+            } else if (yDistance === 0) {
+                axis = 'x';
+            } else {
+                axis = (Math.floor(Math.random() * 2)) ? 'x' : 'y';
+            }
+        }
+        if (axis === 'x') {
+            if (xDistance === 0) {
+                return undefined;
+            }
+            return xDistance < 0 ? Direction.East : Direction.West;
+        }
+        if (yDistance === 0) {
+            return undefined;
+        }
+        return yDistance < 0 ? Direction.South : Direction.North;
     }
 
-    if (yDistance === 0) {
-        return undefined;
+    compareTo(other) {
+        return this.x === other.x ? this.y - other.y : this.x - other.x;
     }
 
-    return yDistance < 0 ? Direction.South : Direction.North;
+    equals(other) {
+        return this.x === other.x && this.y === other.y;
+    }
 
-};
+    toString() {
+        return '(' + this.x + ', ' + this.y + ')';
+    }
+}
 
-/**
- * Compares a provided Point instance to this one.
- *
- * @return {number} - A negative value if the other instance is smaller, 0 if both are the same,
- *    and a positive value if other is greater.
- */
-Point.prototype.compareTo = function (other) {
-    return this.x === other.x ? this.y - other.y : this.x - other.x;
-};
-
-/**
- * Returns whether or not this Point is equal in value to another point.
- *
- * @param other A point to test for equality.
- * @return true if another point is equal in value to this point, false otherwise.
- */
-Point.prototype.equals = function (other) {
-    return this.x === other.x && this.y === other.y;
-};
-
-/**
- * Returns a string representation of this point.
- *
- * @return A string representation of this point.
- */
-Point.prototype.toString = function () {
-    return '(' + this.x + ', ' + this.y + ')';
-};
 
 /**
  * Direction is an enumerated type representing each of the four possible directions
@@ -409,90 +337,6 @@ Direction.opposite = function (direction) {
 
 };
 
-/**
- * DelayedEventScheduler is an event scheduler that includes an initial delay
- * before repeating events. This is used, for example, to "repeat" events as long as a key
- * is held down, but includes a slight delay before the repeating happens.
- *
- * @param {number} initialDelay - A number of milliseconds to use as an initial delay
- * @param {number} subsequentDelay - A number of milliseconds to repeat events after the initial delay
- */
-function DelayedEventScheduler(initialDelay, subsequentDelay) {
-
-    if (!(this instanceof DelayedEventScheduler)) {
-        throw ConstructorError;
-    }
-
-    this.initialDelay = initialDelay;
-    this.subsequentDelay = subsequentDelay;
-    this.event = undefined;
-    this.nextAllowableEvent = 0;
-
-}
-
-/**
- * Schedules an event, expected to have started at a provided event time.
- *
- * @param {number} eventTime - A timestamp indicating the event time
- * @param {object} event - An arbitrary object representing an event to retrieve
- *     later at scheduled intervals.
- */
-DelayedEventScheduler.prototype.scheduleEvent = function (eventTime, event) {
-
-    var now = Date.now();
-
-    if (now > this.nextAllowableEvent) {
-
-        if (eventTime + this.initialDelay < now) {
-            this.nextAllowableEvent = now + this.subsequentDelay;
-        } else {
-            this.nextAllowableEvent = now + this.initialDelay;
-        }
-
-        this.event = event;
-    }
-
-};
-
-/**
- * Cancels this event scheduler's scheduled event.
- */
-DelayedEventScheduler.prototype.cancelEvent = function () {
-    this.nextAllowableEvent = 0;
-};
-
-/**
- * Takes a scheduled event from this event scheduler.
- *
- * @return {object} - A scheduled event
- */
-DelayedEventScheduler.prototype.takeEvent = function () {
-    var result = this.event;
-    this.event = undefined;
-    return result;
-};
-
-/**
- * NotificationListener
- */
-function NotificationListener() {
-
-    if (!(this instanceof NotificationListener)) {
-        throw ConstructorError;
-    }
-
-    this.notifications = [];
-}
-
-/**
- * Adds a provided notification to this notification listner.
- *
- * @param {string} type - A notification type
- * @param {string} message - A notification message
- */
-NotificationListener.prototype.addNotification = function (type, message) {
-    this.notifications.push({type: type, message: message, timestamp: Date.now()});
-};
 
 /**
  * An object to store utility functions.
@@ -730,9 +574,4 @@ utilities.pointsInEllipse = function (point, rx, ry) {
 
 };
 
-exports.Point = Point;
-exports.Direction = Direction;
-exports.DelayedEventScheduler = DelayedEventScheduler;
-exports.NotificationListener = NotificationListener;
-exports.utilities = utilities;
-exports.ConstructorError = ConstructorError;
+export { Point, Direction, DelayedEventScheduler, NotificationListener, utilities };

@@ -12,7 +12,7 @@
  * GameState is an enumerated type representing a state in our game's finite state
  * machine.
  */
-var GameState = {
+const GameState = {
     Error: -2,
     Splash: -1,
     Loading: 0,
@@ -26,4 +26,4 @@ var GameState = {
     Transition: 8
 };
 
-exports.GameState = GameState;
+export { GameState };

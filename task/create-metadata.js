@@ -1,7 +1,20 @@
 /*jslint node: true */
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 
-var result = {};
-result.version = process.env.npm_package_version;
-result.date = Date.now();
+function createMetadata() {
+  return {
+    version: process.env.npm_package_version,
+    date: Date.now()
+  };
+}
 
-console.log(JSON.stringify(result));
+function main() {
+  console.log(JSON.stringify(createMetadata()));
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main();
+}
+
+export {createMetadata};

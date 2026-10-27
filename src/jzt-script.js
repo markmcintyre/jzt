@@ -1,3 +1,8 @@
+import * as commands from './jzt-script-commands.js';
+import { JztScriptParser } from './jzt-script-parser.js';
+import { GameState } from './game-state.js';
+const scriptParser = new JztScriptParser();
+
 /**
  * JZTScript
  * Copyright © 2014 Mark McIntyre
@@ -6,22 +11,12 @@
 
 /*jslint node:true */
 
-'use strict';
-
-var commands = require('./jzt-script-commands'),
-    JztScriptParser = require('./jzt-script-parser').JztScriptParser,
-    scriptParser = new JztScriptParser(),
-    ConstructorError = require('./basic').ConstructorError,
-    GameState = require('./game-state').GameState;
-
 /**
  * JztScript
  */
-function JztScript(name, rawScript, compileImmediately) {
 
-    if (!(this instanceof JztScript)) {
-        throw ConstructorError;
-    }
+export class JztScript {
+    constructor(name, rawScript, compileImmediately) {
 
     this.name = name;
     this.rawScript = rawScript;
@@ -32,9 +27,10 @@ function JztScript(name, rawScript, compileImmediately) {
         this.compile();
     }
 
-}
 
-JztScript.prototype.compile = function () {
+    }
+
+    compile() {
 
     var index,
         element,
@@ -92,17 +88,19 @@ JztScript.prototype.compile = function () {
 
     }
 
-};
 
-JztScript.prototype.getCommand = function (index) {
+    }
+
+    getCommand(index) {
     return this.commands[index];
-};
 
-JztScript.prototype.serialize = function () {
+    }
+
+    serialize() {
     return {
         name: this.name,
         rawScript: this.rawScript
     };
-};
 
-exports.JztScript = JztScript;
+    }
+}

@@ -1,8 +1,11 @@
-const fs = require('node:fs');
-const http = require('node:http');
-const path = require('node:path');
-const {packageSite} = require('./package-itch');
+import fs from 'node:fs';
+import http from 'node:http';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {packageSite} from './package-itch.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const repositoryRoot = path.resolve(__dirname, '..');
 const defaultOutputDirectory = path.join(repositoryRoot, 'build');
 const contentTypes = {
@@ -108,7 +111,7 @@ function main() {
   startServer(outputDirectory, port);
 }
 
-if (require.main === module) {
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
   try {
     main();
   } catch (error) {
@@ -117,4 +120,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = {parseArguments, startServer};
+export {parseArguments, startServer};
