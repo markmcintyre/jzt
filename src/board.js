@@ -9,12 +9,12 @@
 'use strict';
 
 import {Point, utilities, Direction} from './basic.js';
-import {Colors} from './graphics.js';
 import {JztScript} from './jzt-script.js';
 import {things, ThingFactory} from './things.js';
+import {LightingService} from './lighting-service.js';
+import {BoardRenderer} from './board-renderer.js';
+import {PathService} from './path-service.js';
 import * as i18n from './i18n.js';
-
-const SMART_PATH_MAX_DISTANCE = 50;
 
 
 /**
@@ -35,21 +35,10 @@ class Board {
     this.scripts = [];
     this.dark = boardData.dark;
     this.reenter = boardData.reenter;
-    this.smartPath = undefined;
-    this.smartPathDirty = true;
-    this.smartPathTargetX = undefined;
-    this.smartPathTargetY = undefined;
-    this.smartPathQueue = undefined;
     this.playerBulletThings = [];
     this.forwardUpdateSnapshot = [];
     this.reverseUpdateSnapshot = [];
     this.customRenderCount = 0;
-    this.lightSources = [];
-    this.lightGeometryCache = Object.create(null);
-    this.lightMask = undefined;
-    this.previousLightMask = undefined;
-    this.lightMaskDirty = true;
-    this.focusPoint = new Point(0, 0);
     this.maxPlayerBullets = boardData.maxPlayerBullets !== undefined ? boardData.maxPlayerBullets : Infinity;
     this.playerBullets = 0;
     this.i18n = undefined;
@@ -74,14 +63,14 @@ class Board {
     this.displayMessageTick = 0;
 
     this.DISPLAY_MESSAGE_TTL = game.FPS * 3; // 3 seconds
-    this.DARK_SPRITE = game.resources.graphics.getSprite(176);
-    this.DARK_SPRITE_COLOR = Colors.Grey;
 
-    this.height = boardData.height;
     this.width = boardData.width;
-    this.smartPath = new Float64Array(this.width * this.height);
-    this.smartPath.fill(Infinity);
-    this.smartPathQueue = new Int32Array(this.width * this.height);
+    this.height = boardData.height;
+    this.pathService = new PathService(this.width, this.height);
+    this.smartPath = this.pathService.values;
+    this.smartPathQueue = this.pathService.queue;
+    this.lightingService = new LightingService(this.width, this.height);
+    this.boardRenderer = new BoardRenderer(this, game);
 
     this.initializeI18n(boardData.i18n);
     this.initializeScripts(boardData.scripts);
@@ -89,6 +78,85 @@ class Board {
     this.initializeWindow();
 
 }
+    get lightSources() {
+        return this.lightingService.lightSources;
+    }
+
+    set lightSources(value) {
+        this.lightingService.lightSources = value;
+    }
+
+    get lightGeometryCache() {
+        return this.lightingService.lightGeometryCache;
+    }
+
+    set lightGeometryCache(value) {
+        this.lightingService.lightGeometryCache = value;
+    }
+
+    get lightMask() {
+        return this.lightingService.lightMask;
+    }
+
+    set lightMask(value) {
+        this.lightingService.lightMask = value;
+    }
+
+    get previousLightMask() {
+        return this.lightingService.previousLightMask;
+    }
+
+    set previousLightMask(value) {
+        this.lightingService.previousLightMask = value;
+    }
+
+    get lightMaskDirty() {
+        return this.lightingService.lightMaskDirty;
+    }
+
+    set lightMaskDirty(value) {
+        this.lightingService.lightMaskDirty = value;
+    }
+
+    get customRenderSet() {
+        return this.boardRenderer.customRenderSet;
+    }
+
+    set customRenderSet(value) {
+        this.boardRenderer.customRenderSet = value;
+    }
+
+    get focusPoint() {
+        return this.boardRenderer.focusPoint;
+    }
+
+    set focusPoint(value) {
+        this.boardRenderer.focusPoint = value;
+    }
+
+    get windowSize() {
+        return this.boardRenderer.windowSize;
+    }
+
+    set windowSize(value) {
+        this.boardRenderer.windowSize = value;
+    }
+
+    get windowOrigin() {
+        return this.boardRenderer.windowOrigin;
+    }
+
+    set windowOrigin(value) {
+        this.boardRenderer.windowOrigin = value;
+    }
+
+    get windowLimit() {
+        return this.boardRenderer.windowLimit;
+    }
+
+    set windowLimit(value) {
+        this.boardRenderer.windowLimit = value;
+    }
 
 /**
  * Validates provided board data to make sure it contains some expected
@@ -394,48 +462,11 @@ class Board {
  */
     updateLightSource(thing) {
 
-    var torch,
-        source,
-        radius;
-
     if (this.game.isEditor || !this.dark || typeof (thing.getTorch) !== 'function') {
         return;
     }
 
-    torch = thing.getTorch();
-    source = thing._lightSource;
-
-    if (!torch || torch.radius <= 0) {
-        if (source) {
-            source.active = false;
-            this.lightMaskDirty = true;
-        }
-        return;
-    }
-
-    radius = torch.radius;
-    if (!source) {
-        source = {
-            thing:thing,
-            x:thing.point.x,
-            y:thing.point.y,
-            radius:radius,
-            geometry:this.getLightGeometry(radius),
-            active:true
-        };
-        thing._lightSource = source;
-        this.lightSources.push(source);
-        this.lightMaskDirty = true;
-    } else {
-        if (source.x !== thing.point.x || source.y !== thing.point.y || source.radius !== radius) {
-            source.x = thing.point.x;
-            source.y = thing.point.y;
-            source.radius = radius;
-            source.geometry = this.getLightGeometry(radius);
-            this.lightMaskDirty = true;
-        }
-        source.active = true;
-    }
+    this.lightingService.updateLightSource(thing);
 
     }
 
@@ -446,9 +477,7 @@ class Board {
  */
     invalidateLightSource(thing) {
 
-    if (thing._lightSource) {
-        this.lightMaskDirty = true;
-    }
+    this.lightingService.invalidateLightSource(thing);
 
     }
 
@@ -460,11 +489,7 @@ class Board {
  */
     getLightGeometry(radius) {
 
-    if (!Object.prototype.hasOwnProperty.call(this.lightGeometryCache, radius)) {
-        this.lightGeometryCache[radius] = utilities.generateCircleData(new Point(0, 0), radius);
-    }
-
-    return this.lightGeometryCache[radius];
+    return this.lightingService.getLightGeometry(radius);
 
     }
 
@@ -473,17 +498,7 @@ class Board {
  */
     ensureLightMask() {
 
-    var size = this.width * this.height;
-
-    if (!this.lightMask || this.lightMask.length !== size) {
-        this.lightMask = new Uint8Array(size);
-        this.previousLightMask = new Uint8Array(size);
-        this.lightMaskDirty = true;
-    }
-
-    if (this.lightMaskDirty) {
-        this.rebuildLightMask();
-    }
+    this.lightingService.ensureLightMask();
 
     }
 
@@ -492,40 +507,7 @@ class Board {
  */
     rebuildLightMask() {
 
-    var sourceIndex,
-        row,
-        source,
-        y,
-        x,
-        startX,
-        endX,
-        span;
-
-    this.lightMask.fill(0);
-
-    for (sourceIndex = 0; sourceIndex < this.lightSources.length; sourceIndex += 1) {
-        source = this.lightSources[sourceIndex];
-        if (!source.active) {
-            continue;
-        }
-
-        for (row in source.geometry) {
-            if (source.geometry.hasOwnProperty(row)) {
-                y = source.y + Number(row);
-                if (y >= 0 && y < this.height) {
-                    span = source.geometry[row];
-                    startX = Math.max(0, Math.ceil(source.x + span[0]));
-                    endX = Math.min(this.width - 1, Math.floor(source.x + span[1]));
-                    for (x = startX; x <= endX; x += 1) {
-                        this.lightMask[x + y * this.width] = 1;
-                    }
-            }
-        }
-    }
-
-    }
-
-    this.lightMaskDirty = false;
+    this.lightingService.rebuildLightMask();
 
     }
 
@@ -534,11 +516,7 @@ class Board {
  */
     prepareLightSources() {
 
-    var index;
-
-    for (index = 0; index < this.lightSources.length; index += 1) {
-        this.lightSources[index].active = false;
-    }
+    this.lightingService.prepareLightSources();
 
     }
 
@@ -547,63 +525,20 @@ class Board {
  */
     pruneLightSources() {
 
-    var index,
-        source;
-
-    for (index = this.lightSources.length - 1; index >= 0; index -= 1) {
-        source = this.lightSources[index];
-        if (!source.active) {
-            if (source.thing._lightSource === source) {
-                source.thing._lightSource = undefined;
-            }
-            this.lightMaskDirty = true;
-            this.lightSources.splice(index, 1);
-        }
-    }
+    this.lightingService.pruneLightSources();
 
     }
 
     initializeWindow() {
 
-    var canvasWidth = this.game.context.canvas.width,
-        canvasHeight = this.game.context.canvas.height;
-
-    this.windowSize = new Point(0, 0);
-    this.windowOrigin = new Point(0, 0);
-
-    this.windowSize.x = Math.floor(canvasWidth / this.game.resources.graphics.TILE_SIZE.x);
-    this.windowSize.y = Math.floor(canvasHeight / this.game.resources.graphics.TILE_SIZE.y);
-
-    this.windowLimit = new Point(this.width - this.windowSize.x, this.height - this.windowSize.y);
-
-    this.updateWindowPosition();
-
-    if (this.windowSize.x > this.width) {
-        this.windowOrigin.x = -Math.round((this.windowSize.x - this.width) / 2);
-    }
-
-    if (this.windowSize.y > this.height) {
-        this.windowOrigin.y = -Math.round((this.windowSize.y - this.height) / 2);
-    }
+    this.boardRenderer.initializeWindow();
 
 
     }
 
     updateWindowPosition() {
 
-    if (this.focusPoint) {
-
-        if (this.width > this.windowSize.x) {
-            this.windowOrigin.x = this.focusPoint.x - Math.round(this.windowSize.x / 2);
-            this.windowOrigin.x = this.windowOrigin.x < 0 ? 0 : this.windowOrigin.x > this.windowLimit.x ? this.windowLimit.x : this.windowOrigin.x;
-        }
-
-        if (this.height > this.windowSize.y) {
-            this.windowOrigin.y = this.focusPoint.y - Math.round(this.windowSize.y / 2);
-            this.windowOrigin.y = this.windowOrigin.y < 0 ? 0 : this.windowOrigin.y > this.windowLimit.y ? this.windowLimit.y : this.windowOrigin.y;
-        }
-
-    }
+    this.boardRenderer.updateWindowPosition();
 
     }
 
@@ -822,22 +757,7 @@ class Board {
  */
     eachDisplayable(callback) {
 
-    var point = new Point(0, 0),
-        startY = this.windowOrigin.y,
-        endY = startY + this.windowSize.y,
-        startX = this.windowOrigin.x,
-        endX = startX + this.windowSize.x;
-
-    startX = startX < 0 ? 0 : startX;
-    startY = startY < 0 ? 0 : startY;
-    endX = endX > this.width ? this.width : endX;
-    endY = endY > this.height ? this.height : endY;
-
-    for (point.y = startY; point.y < endY; point.y += 1) {
-        for (point.x = startX; point.x < endX; point.x += 1) {
-            callback(this.tiles[point.x + point.y * this.width], point);
-        }
-    }
+    this.boardRenderer.eachDisplayable(callback);
 
     }
 
@@ -1066,7 +986,7 @@ class Board {
         this.tiles[index] = tile;
         this.updatePlayerBulletCollection(previousTile, tile);
         this.updateCustomRenderCount(previousTile, tile);
-        this.smartPathDirty = true;
+        this.pathService.markDirty();
 
     }
     }
@@ -1172,14 +1092,7 @@ class Board {
  * @return true if a provided Point is outside this Board's boundaries, false otherwise.
  */
     isOutsideWindow(point) {
-    if (point.x < this.windowOrigin.x || point.x >= (this.windowOrigin.x + this.windowSize.x)) {
-        return true;
-    }
-    if (point.y < this.windowOrigin.y || point.y >= (this.windowOrigin.y + this.windowSize.y)) {
-        return true;
-    }
-
-    return false;
+    return this.boardRenderer.isOutsideWindow(point);
     }
 
 /**
@@ -1276,29 +1189,15 @@ class Board {
  */
     isLit(point, thing, previousStep) {
 
-    var mask;
-
-    // If the board isn't dark, we're inherently lit
     if (!this.dark) {
         return true;
     }
 
-    // If the thing is glowing, it's considered lit
     if (thing && thing.glow) {
         return true;
     }
 
-    if (previousStep) {
-        if (!this.previousLightMask) {
-            this.ensureLightMask();
-        }
-        mask = this.previousLightMask;
-    } else {
-        this.ensureLightMask();
-        mask = this.lightMask;
-    }
-
-    return mask[point.x + point.y * this.width] === 1;
+    return this.lightingService.isLit(point, previousStep);
 
     }
 
@@ -1328,19 +1227,11 @@ class Board {
     var me = this;
 
     if (this.dark) {
-        if (!this.lightMask) {
-            this.ensureLightMask();
-        }
-        this.previousLightMask.set(this.lightMask);
-        this.prepareLightSources();
+        this.lightingService.beginUpdate();
     }
 
     // Update the smart path only when the target or path topology changed.
-    if (
-        this.smartPathDirty ||
-        this.smartPathTargetX !== this.player.point.x ||
-        this.smartPathTargetY !== this.player.point.y
-    ) {
+    if (this.pathService.needsUpdate(this.player.point)) {
         this.updateSmartPath(this.player.point);
     }
 
@@ -1365,6 +1256,7 @@ class Board {
             if (tile.under && tile.under.updateWhileUnder) {
                 tile.under.updateWhileUnder();
             }
+
 
 
             if (tile.type !== 'Player') {
@@ -1395,8 +1287,7 @@ class Board {
     }
 
     if (this.dark) {
-        this.pruneLightSources();
-        this.ensureLightMask();
+        this.lightingService.finishUpdate();
     }
 
     if (this.game.debugCollections) {
@@ -1446,113 +1337,7 @@ class Board {
  */
     render(c) {
 
-    var me = this,
-        canvasWidth = this.game.context.canvas.width,
-        canvasHeight = this.game.context.canvas.height,
-        startX,
-        startY,
-        endX,
-        endY;
-
-    // Update our window
-    this.updateWindowPosition();
-
-    // Draw our border, if applicable
-    if (this.windowOrigin.x < 0 || this.windowOrigin.y < 0) {
-        c.fillStyle = Colors.Grey.rgbValue;
-        c.fillRect(0, 0, canvasWidth, canvasHeight);
-    }
-
-    // Draw our board background
-    c.fillStyle = !me.game.isEditor && me.dark ? this.game.DARK_PATTERN : Colors.Black.rgbValue;
-    startX = Math.max(-this.windowOrigin.x * this.game.resources.graphics.TILE_SIZE.x, 0);
-    startY = Math.max(-this.windowOrigin.y * this.game.resources.graphics.TILE_SIZE.y, 0);
-    endX = Math.min(this.width * this.game.resources.graphics.TILE_SIZE.x, this.windowSize.x * this.game.resources.graphics.TILE_SIZE.x);
-    endY = Math.min(this.height * this.game.resources.graphics.TILE_SIZE.y, this.windowSize.y * this.game.resources.graphics.TILE_SIZE.y);
-    c.fillRect(startX, startY, endX, endY);
-
-    // For each displayable tile...
-    this.eachDisplayable(function (thing, point) {
-
-        var sprite,
-            background;
-
-        // If this board is dark, and we're not visible, skip this iteration
-        if (!me.game.isEditor && me.dark && !me.isLit(point, thing)) {
-            return;
-        }
-
-        // If there's a thing to render...
-        if (thing && !thing.hidden) {
-
-            // Grab our sprite
-            sprite = me.game.resources.graphics.getSprite(thing.getSpriteIndex());
-
-            // Our background colour may come from the 'under' tile if no background is defined
-            background = thing.background;
-
-            if (!background && thing.under && thing.under.background) {
-
-                background = thing.under.background.isLight() ? thing.under.background.darken() : thing.under.background;
-
-            } else if (!background && me.dark) {
-
-                // The room is dark, so our background should be
-                // black instead of transparent
-                background = Colors.Black;
-
-            }
-
-            // Draw our sprite
-            sprite.drawAt(
-                c,
-                point.x - me.windowOrigin.x,
-                point.y - me.windowOrigin.y,
-                thing.foreground,
-                background,
-            );
-
-        } else if (!thing && me.dark) {
-
-            // There's nothing to render, but we're within the torch
-            // radius, so draw an empty space over the 'darkness'
-            me.game.resources.graphics.fillTileAt(
-                c,
-                point.x - me.windowOrigin.x,
-                point.y - me.windowOrigin.y,
-                Colors.Black,
-            );
-
-        }
-
-
-        // Debug rendering...
-        //
-        /*
-        var p = me.getSmartValue(point);
-        if(p !== Infinity) {
-            c.fillStyle = 'gray';
-            var drawpoint = point.subtract(me.windowOrigin);
-            c.fillText(me.getSmartValue(point).toString(), drawpoint.x * 32 + 8, drawpoint.y * 64 + 32);
-        }
-        */
-
-
-    });
-
-    // Rare custom renderers are scanned only while rendering, not every update.
-    if (this.customRenderCount > 0) {
-        this.eachDirect(function (tile) {
-            if (tile && tile.render) {
-                tile.render(c);
-            }
-        });
-    }
-
-    // If there is a display message, render it
-    if (this.displayMessage !== undefined) {
-        this.renderMessage(c);
-    }
+    this.boardRenderer.render(c);
 
     }
 
@@ -1562,12 +1347,9 @@ class Board {
  */
     adjustSmartPathWeight(point, strengthDelta) {
 
-    var pathIndex = point.x + point.y * this.width;
-    if (!this.isOutside(point) && this.smartPath[pathIndex] !== Infinity) {
-        this.smartPath[pathIndex] += strengthDelta;
+    this.pathService.adjustWeight(point, strengthDelta);
     }
 
-    }
 
 /**
  * Precomputes a "smart path" toward a provided target point. This will add path-finding information
@@ -1577,84 +1359,7 @@ class Board {
  */
     updateSmartPath(targetPoint) {
 
-    var queue = this.smartPathQueue,
-        queueStart = 0,
-        queueEnd = 0,
-        currentIndex,
-        currentDistance,
-        currentX,
-        currentY,
-        nextIndex,
-        nextDistance,
-        tile;
-
-    this.smartPathTargetX = targetPoint.x;
-    this.smartPathTargetY = targetPoint.y;
-    this.smartPath.fill(Infinity);
-
-    if (!this.isOutside(targetPoint)) {
-        currentIndex = targetPoint.x + targetPoint.y * this.width;
-        this.smartPath[currentIndex] = 0;
-        queue[queueEnd] = currentIndex;
-        queueEnd += 1;
-
-        while (queueStart < queueEnd) {
-            currentIndex = queue[queueStart];
-            queueStart += 1;
-            currentDistance = this.smartPath[currentIndex];
-
-            if (currentDistance >= SMART_PATH_MAX_DISTANCE - 1) {
-                continue;
-            }
-
-            currentX = currentIndex % this.width;
-            currentY = Math.floor(currentIndex / this.width);
-            nextDistance = currentDistance + 1;
-
-            if (currentX + 1 < this.width) {
-                nextIndex = currentIndex + 1;
-                tile = this.tiles[nextIndex];
-                if ((tile === undefined || tile.type === 'Bullet') && this.smartPath[nextIndex] === Infinity) {
-                    this.smartPath[nextIndex] = nextDistance;
-                    queue[queueEnd] = nextIndex;
-                    queueEnd += 1;
-                }
-            }
-
-            if (currentX > 0) {
-                nextIndex = currentIndex - 1;
-                tile = this.tiles[nextIndex];
-                if ((tile === undefined || tile.type === 'Bullet') && this.smartPath[nextIndex] === Infinity) {
-                    this.smartPath[nextIndex] = nextDistance;
-                    queue[queueEnd] = nextIndex;
-                    queueEnd += 1;
-                }
-            }
-
-            if (currentY + 1 < this.height) {
-                nextIndex = currentIndex + this.width;
-                tile = this.tiles[nextIndex];
-                if ((tile === undefined || tile.type === 'Bullet') && this.smartPath[nextIndex] === Infinity) {
-                    this.smartPath[nextIndex] = nextDistance;
-                    queue[queueEnd] = nextIndex;
-                    queueEnd += 1;
-                }
-            }
-
-            if (currentY > 0) {
-                nextIndex = currentIndex - this.width;
-                tile = this.tiles[nextIndex];
-                if ((tile === undefined || tile.type === 'Bullet') && this.smartPath[nextIndex] === Infinity) {
-                    this.smartPath[nextIndex] = nextDistance;
-                    queue[queueEnd] = nextIndex;
-                    queueEnd += 1;
-                }
-            }
-        }
-    }
-
-    this.smartPathDirty = false;
-    this.updatePathWeights();
+    this.pathService.update(targetPoint, this.tiles, this.playerBulletThings);
 
     }
 
@@ -1681,14 +1386,7 @@ class Board {
  */
     getSmartValue(point) {
 
-    var result;
-
-    if (point.x >= this.width || point.x < 0 || point.y >= this.height || point.y < 0) {
-        return Infinity;
-    }
-
-    result = this.smartPath[point.x + point.y * this.width];
-    return result === Infinity ? Infinity : result;
+    return this.pathService.getValue(point);
 
     }
 
@@ -1701,45 +1399,7 @@ class Board {
  */
     getSmartDirection(point) {
 
-    var directions = [],
-        me = this,
-        currentMin = Infinity,
-        value;
-
-    // For each direction...
-    Direction.each(function (direction) {
-
-        // Get our smart path value
-        value = me.getSmartValue(point.add(direction));
-
-        // If it's the best one we've encountered...
-        if (value < currentMin) {
-            // Forget our previous directions
-            directions = [];
-
-            // Add this direction as our new favourite
-            directions.push(direction);
-
-            // Update our current minimum value
-            currentMin = value;
-
-        } else if (value === currentMin) {
-            directions.push(direction);
-        }
-    });
-
-    // If no good directions were found, return undefined
-    if (currentMin === Infinity) {
-        return undefined;
-    }
-
-    // If we only found one direction, return it immediately
-    if (directions.length <= 1) {
-        return directions[0];
-    }
-
-    // Otherwise pick one of our equal values randomly
-    return Direction.random(directions);
+    return this.pathService.getDirection(point);
 
     }
 
@@ -1789,18 +1449,7 @@ class Board {
  */
     renderMessage(c) {
 
-    var messagePoint = new Point();
-
-    messagePoint.x = Math.floor((this.windowSize.x - this.displayMessage.length) / 2);
-    messagePoint.y = this.windowSize.y - 1;
-
-    this.game.resources.graphics.drawString(c, messagePoint, this.displayMessage, Colors.Cycle, Colors.Black);
-
-    this.displayMessageTick -= 1;
-
-    if (this.displayMessageTick <= 0) {
-        this.displayMessage = undefined;
-    }
+    this.boardRenderer.renderMessage(c);
 
     }
 
