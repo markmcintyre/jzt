@@ -34,15 +34,66 @@ test('eachDisplayable visits only the clamped visible window', () => {
   assert.deepEqual(seen.map(value => value.slice(0, 2)), [[0, 8], [1, 8], [0, 9], [1, 9]]);
 });
 
-test('updatePathWeights visits tile influencers without changing traversal behavior', () => {
+test('updatePathWeights visits active player bullets without a board scan', () => {
   const board = new Board(data(), game);
   let calls = 0;
-  const influencer = {type:'Influencer', influenceSmartPath(){calls += 1;}};
+  const influencer = {
+    type:'Bullet',
+    fromPlayer:true,
+    influenceSmartPath(){calls += 1;}
+  };
 
   board.setTile(new Point(2, 3), influencer);
   board.updatePathWeights();
 
   assert.equal(calls, 1);
+});
+
+test('smart paths are reused until the target or topology changes', () => {
+  const board = new Board(data(), game);
+  board.player = {type:'Player', point:new Point(5, 5)};
+
+  board.updateSmartPath(board.player.point);
+  board.smartPath[0] = 1234;
+  board.update();
+  assert.equal(board.smartPath[0], 1234);
+
+  board.player.point = new Point(6, 5);
+  board.update();
+  assert.equal(board.getSmartValue(new Point(6, 5)), 0);
+});
+
+test('blocking tile mutations invalidate smart paths', () => {
+  const board = new Board(data(), game);
+  board.player = {type:'Player', point:new Point(5, 5)};
+
+  board.updateSmartPath(board.player.point);
+  assert.equal(board.getSmartValue(new Point(4, 5)), 1);
+
+  board.setTile(new Point(4, 5), {type:'Wall'});
+  board.update();
+
+  assert.equal(board.getSmartValue(new Point(4, 5)), Infinity);
+});
+
+test('player bullet path influence is reapplied and removed with the bullet', () => {
+  const board = new Board(data(), game);
+  board.player = {type:'Player', point:new Point(5, 5)};
+  const bullet = {
+    type:'Bullet',
+    fromPlayer:true,
+    influenceSmartPath(){
+      board.adjustSmartPathWeight(new Point(4, 5), 100);
+    }
+  };
+
+  board.setTile(new Point(3, 5), bullet);
+  board.updateSmartPath(board.player.point);
+  assert.equal(board.getSmartValue(new Point(4, 5)), 101);
+
+  board.deleteTile(new Point(3, 5));
+  board.update();
+  assert.equal(board.getSmartValue(new Point(4, 5)), 1);
 });
 
 test('Board updates east-moving convoys from the leading edge', () => {

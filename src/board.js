@@ -14,6 +14,8 @@ import { JztScript } from './jzt-script.js';
 import { things, ThingFactory } from './things.js';
 import * as i18n from './i18n.js';
 
+const SMART_PATH_MAX_DISTANCE = 50;
+
 /**
  * Board represents a single game board.
  *
@@ -32,7 +34,12 @@ class Board {
     this.scripts = [];
     this.dark = boardData.dark;
     this.reenter = boardData.reenter;
-    this.smartPath = [];
+    this.smartPath = undefined;
+    this.smartPathDirty = true;
+    this.smartPathTargetX = undefined;
+    this.smartPathTargetY = undefined;
+    this.smartPathQueue = undefined;
+    this.smartPathBullets = [];
     this.forwardUpdateSnapshot = [];
     this.reverseUpdateSnapshot = [];
     this.customRenderSet = [];
@@ -68,6 +75,9 @@ class Board {
 
     this.height = boardData.height;
     this.width = boardData.width;
+    this.smartPath = new Float64Array(this.width * this.height);
+    this.smartPath.fill(Infinity);
+    this.smartPathQueue = new Int32Array(this.width * this.height);
 
     this.initializeI18n(boardData.i18n);
     this.initializeScripts(boardData.scripts);
@@ -774,7 +784,13 @@ class Board {
  */
     setTile(point, tile) {
 
+    var index,
+        previousTile;
+
     if (!this.isOutside(point)) {
+
+        index = point.x + point.y * this.width;
+        previousTile = this.tiles[index];
 
         if (tile) {
 
@@ -795,9 +811,28 @@ class Board {
 
         }
 
-        this.tiles[point.x + point.y * this.width] = tile;
+        this.tiles[index] = tile;
+        this.updateSmartPathBulletList(previousTile, tile);
+        this.smartPathDirty = true;
 
     }
+    }
+
+    updateSmartPathBulletList(previousTile, tile) {
+
+    var index;
+
+    if (previousTile && previousTile.type === 'Bullet' && previousTile.fromPlayer) {
+        index = this.smartPathBullets.indexOf(previousTile);
+        if (index >= 0) {
+            this.smartPathBullets.splice(index, 1);
+        }
+    }
+
+    if (tile && tile.type === 'Bullet' && tile.fromPlayer && this.smartPathBullets.indexOf(tile) < 0) {
+        this.smartPathBullets.push(tile);
+    }
+
     }
 
 /**
@@ -1059,8 +1094,14 @@ class Board {
 
     var me = this;
 
-    // Update the smart path
-    this.updateSmartPath(this.player.point);
+    // Update the smart path only when the target or path topology changed.
+    if (
+        this.smartPathDirty ||
+        this.smartPathTargetX !== this.player.point.x ||
+        this.smartPathTargetY !== this.player.point.y
+    ) {
+        this.updateSmartPath(this.player.point);
+    }
 
     // Initialize our custom renderable list
     this.customRenderSet = [];
@@ -1291,7 +1332,7 @@ class Board {
     adjustSmartPathWeight(point, strengthDelta) {
 
     var pathIndex = point.x + point.y * this.width;
-    if (!this.isOutside(point) && this.smartPath[pathIndex] !== undefined) {
+    if (!this.isOutside(point) && this.smartPath[pathIndex] !== Infinity) {
         this.smartPath[pathIndex] += strengthDelta;
     }
 
@@ -1305,59 +1346,98 @@ class Board {
  */
     updateSmartPath(targetPoint) {
 
-    var me = this;
+    var queue = this.smartPathQueue,
+        queueStart = 0,
+        queueEnd = 0,
+        currentIndex,
+        currentDistance,
+        currentX,
+        currentY,
+        nextIndex,
+        nextDistance,
+        tile;
 
-    function updatePath(currentX, currentY, currentDistance) {
+    this.smartPathTargetX = targetPoint.x;
+    this.smartPathTargetY = targetPoint.y;
+    this.smartPath.fill(Infinity);
 
-        var index,
-            tile,
-            pathValue,
-            validTile;
+    if (!this.isOutside(targetPoint)) {
+        currentIndex = targetPoint.x + targetPoint.y * this.width;
+        this.smartPath[currentIndex] = 0;
+        queue[queueEnd] = currentIndex;
+        queueEnd += 1;
 
-        // If our values are within the grid range...
-        if (currentDistance < 50 && currentX >= 0 && currentX < me.width && currentY >= 0 && currentY < me.height) {
+        while (queueStart < queueEnd) {
+            currentIndex = queue[queueStart];
+            queueStart += 1;
+            currentDistance = this.smartPath[currentIndex];
 
-            // Calculate our index
-            index = currentX + currentY * me.width;
-
-            // Get our tile and existing path value
-            tile = me.tiles[index];
-            validTile = (tile === undefined || (tile && tile.type === 'Bullet'));
-            pathValue = me.smartPath[index];
-
-            // If there is neither a tile, nor an existing value then we're good to go
-            if (currentDistance <= 0 || (validTile && (pathValue === undefined || pathValue > currentDistance))) {
-
-                // Assign our path distance at this point
-                me.smartPath[currentX + currentY * me.width] = currentDistance;
-                currentDistance += 1;
-
-                // Do the same for each of the four surrounding directions
-                updatePath(currentX + 1, currentY, currentDistance);
-                updatePath(currentX - 1, currentY, currentDistance);
-                updatePath(currentX, currentY + 1, currentDistance);
-                updatePath(currentX, currentY - 1, currentDistance);
-
+            if (currentDistance >= SMART_PATH_MAX_DISTANCE - 1) {
+                continue;
             }
 
-        }
+            currentX = currentIndex % this.width;
+            currentY = Math.floor(currentIndex / this.width);
+            nextDistance = currentDistance + 1;
 
+            if (currentX + 1 < this.width) {
+                nextIndex = currentIndex + 1;
+                tile = this.tiles[nextIndex];
+                if ((tile === undefined || tile.type === 'Bullet') && this.smartPath[nextIndex] === Infinity) {
+                    this.smartPath[nextIndex] = nextDistance;
+                    queue[queueEnd] = nextIndex;
+                    queueEnd += 1;
+                }
+            }
+
+            if (currentX > 0) {
+                nextIndex = currentIndex - 1;
+                tile = this.tiles[nextIndex];
+                if ((tile === undefined || tile.type === 'Bullet') && this.smartPath[nextIndex] === Infinity) {
+                    this.smartPath[nextIndex] = nextDistance;
+                    queue[queueEnd] = nextIndex;
+                    queueEnd += 1;
+                }
+            }
+
+            if (currentY + 1 < this.height) {
+                nextIndex = currentIndex + this.width;
+                tile = this.tiles[nextIndex];
+                if ((tile === undefined || tile.type === 'Bullet') && this.smartPath[nextIndex] === Infinity) {
+                    this.smartPath[nextIndex] = nextDistance;
+                    queue[queueEnd] = nextIndex;
+                    queueEnd += 1;
+                }
+            }
+
+            if (currentY > 0) {
+                nextIndex = currentIndex - this.width;
+                tile = this.tiles[nextIndex];
+                if ((tile === undefined || tile.type === 'Bullet') && this.smartPath[nextIndex] === Infinity) {
+                    this.smartPath[nextIndex] = nextDistance;
+                    queue[queueEnd] = nextIndex;
+                    queueEnd += 1;
+                }
+            }
+        }
     }
 
-    // Clear the old path
-    this.smartPath = [];
-    updatePath(targetPoint.x, targetPoint.y, 0);
+    this.smartPathDirty = false;
     this.updatePathWeights();
 
     }
 
     updatePathWeights() {
 
-    this.eachDirect(function (tile) {
-        if (tile && tile.influenceSmartPath) {
-            tile.influenceSmartPath();
+    var index,
+        bullet;
+
+    for (index = 0; index < this.smartPathBullets.length; index += 1) {
+        bullet = this.smartPathBullets[index];
+        if (bullet && !bullet.removed) {
+            bullet.influenceSmartPath();
         }
-    });
+    }
 
     }
 
@@ -1377,7 +1457,7 @@ class Board {
     }
 
     result = this.smartPath[point.x + point.y * this.width];
-    return result === undefined ? Infinity : result;
+    return result === Infinity ? Infinity : result;
 
     }
 
