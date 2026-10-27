@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/jzt.js';
 import {GameState} from '../src/game-state.js';
+import {Point} from '../src/basic.js';
+import {Board} from '../src/board.js';
 
 function createPlayingGame() {
   const timings = [];
@@ -76,4 +78,45 @@ test('Game.loop performs one fixed update after a wall-clock stall', () => {
     ['counters', game.SIMULATION_STEP],
     ['<PLAYTIME>', game.SIMULATION_STEP]
   ]);
+});
+
+test('Game.update advances a real Board loaded from serialized world data', () => {
+  let playerUpdates = 0;
+  const boardGame = {
+    FPS:30,
+    isEditor:false,
+    context:{canvas:{width:800, height:640}},
+    resources:{graphics:{TILE_SIZE:{x:8, y:8}, getSprite(){return {};}}},
+    notifyListeners() {}
+  };
+  const board = new Board({
+    name:'Integration',
+    width:10,
+    height:10,
+    playerX:5,
+    playerY:5,
+    tiles:Array(100).fill(0),
+    scripts:[]
+  }, boardGame);
+  const player = {
+    point:new Point(5, 5),
+    update(){playerUpdates += 1;}
+  };
+  board.player = player;
+  const game = {
+    SIMULATION_STEP:1000 / 30,
+    state:GameState.Playing,
+    resources:{graphics:{update(){}}, audio:{play(){}}},
+    currentBoard:board,
+    player,
+    keyboard:{isPressed(){return false;}},
+    checkCounters(){},
+    adjustCounter(){}
+  };
+
+  Game.prototype.update.call(game);
+
+  assert.equal(playerUpdates, 1);
+  assert.equal(board.getSmartValue(player.point), 0);
+  assert.strictEqual(board.focusPoint, player.point);
 });

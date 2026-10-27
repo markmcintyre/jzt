@@ -24,7 +24,7 @@ function freezeThingRegistry() {
 
 const ThingFactory = {
   deserialize(data, board) {
-    if (data && data.type) {
+    if (data && typeof data.type === 'string') {
       const ThingClass = this.getThingMap()[data.type.toUpperCase()];
       if (ThingClass) {
         const result = new ThingClass(board);
@@ -35,7 +35,7 @@ const ThingFactory = {
   },
 
   isKnownThing(thingName) {
-    return this.getThingMap()[thingName.toUpperCase()] !== undefined;
+    return typeof thingName === 'string' && this.getThingMap()[thingName.toUpperCase()] !== undefined;
   },
 
   getThingMap() {

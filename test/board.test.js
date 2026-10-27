@@ -18,7 +18,7 @@ test('Board validates data, defaults dimensions and accesses boundaries', () => 
   assert.equal(board.width, 10); assert.equal(board.height, 10); assert.equal(board.maxPlayerBullets, Infinity);
   assert.equal(board.getTile(new Point(0, 0)), undefined); assert.equal(board.getTile(new Point(-1, 0)), undefined);
   assert.equal(board.isOutside(new Point(10, 0)), true); assert.equal(board.isFree(new Point(0, 0)), true);
-  assert.throws(() => new Board({...data(), width:9}, game), e => e === 'Invalid board data.');
+  assert.throws(() => new Board({...data(), width:9}, game), e => e instanceof Error && e.message === 'Invalid board data.');
 });
 
 test('eachDisplayable visits only the clamped visible window', () => {
