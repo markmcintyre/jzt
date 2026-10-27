@@ -146,12 +146,15 @@ class Scriptable extends UpdateableThing {
   }
 
   setTorchRadius(radius) {
+    if (this.torchRadius !== radius && this.board && typeof this.board.invalidateLightSource === 'function') {
+      this.board.invalidateLightSource(this);
+    }
     this.torchRadius = radius;
   }
 
   getTorch() {
     if (this.torchRadius > 0) {
-      return utilities.generateCircleData(this.point, this.torchRadius);
+      return {radius:this.torchRadius};
     }
   }
 }

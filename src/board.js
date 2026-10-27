@@ -43,8 +43,11 @@ class Board {
     this.forwardUpdateSnapshot = [];
     this.reverseUpdateSnapshot = [];
     this.customRenderSet = [];
-    this.torches = [];
-    this.previousTorches = [];
+    this.lightSources = [];
+    this.lightGeometryCache = Object.create(null);
+    this.lightMask = undefined;
+    this.previousLightMask = undefined;
+    this.lightMaskDirty = true;
     this.focusPoint = new Point(0, 0);
     this.maxPlayerBullets = boardData.maxPlayerBullets !== undefined ? boardData.maxPlayerBullets : Infinity;
     this.playerBullets = 0;
@@ -328,7 +331,7 @@ class Board {
     this.player = player;
     this.setTile(player.point, player);
     this.player.board = this;
-    this.initializeTorch(this.player);
+    this.updateLightSource(this.player);
     this.focusPoint = this.player.point;
 
     // If we don't have an entry point for this board, set it now
@@ -368,7 +371,7 @@ class Board {
 
             if (thing !== undefined) {
                 this.setTile(point, thing);
-                this.initializeTorch(thing);
+                this.updateLightSource(thing);
             }
 
             point.x += 1;
@@ -384,21 +387,179 @@ class Board {
     }
 
 /**
- * Initializes a Torch for a provided thing
+ * Updates the compact light source state for a provided thing.
  *
- * @param A thing for which to initialize a torch
+ * @param thing A thing that may provide a light source.
  */
-    initializeTorch(thing) {
+    updateLightSource(thing) {
 
-    var torch;
+    var torch,
+        source,
+        radius;
 
-    // If the board is dark and we've got a torch, add it to our collection
-    if (!(this.game.isEditor) && this.dark && typeof (thing.getTorch) === 'function') {
-        torch = thing.getTorch();
-        if (torch) {
-            this.torches.push(torch);
+    if (this.game.isEditor || !this.dark || typeof (thing.getTorch) !== 'function') {
+        return;
+    }
+
+    torch = thing.getTorch();
+    source = thing._lightSource;
+
+    if (!torch || torch.radius <= 0) {
+        if (source) {
+            source.active = false;
+            this.lightMaskDirty = true;
+        }
+        return;
+    }
+
+    radius = torch.radius;
+    if (!source) {
+        source = {
+            thing:thing,
+            x:thing.point.x,
+            y:thing.point.y,
+            radius:radius,
+            geometry:this.getLightGeometry(radius),
+            active:true
+        };
+        thing._lightSource = source;
+        this.lightSources.push(source);
+        this.lightMaskDirty = true;
+    } else {
+        if (source.x !== thing.point.x || source.y !== thing.point.y || source.radius !== radius) {
+            source.x = thing.point.x;
+            source.y = thing.point.y;
+            source.radius = radius;
+            source.geometry = this.getLightGeometry(radius);
+            this.lightMaskDirty = true;
+        }
+        source.active = true;
+    }
+
+    }
+
+/**
+ * Invalidates a thing's registered light source.
+ *
+ * @param thing A thing whose light source changed.
+ */
+    invalidateLightSource(thing) {
+
+    if (thing._lightSource) {
+        this.lightMaskDirty = true;
+    }
+
+    }
+
+/**
+ * Retrieves cached circle geometry for a light radius.
+ *
+ * @param radius A light radius.
+ * @return Cached row-span geometry centered at the origin.
+ */
+    getLightGeometry(radius) {
+
+    if (!Object.prototype.hasOwnProperty.call(this.lightGeometryCache, radius)) {
+        this.lightGeometryCache[radius] = utilities.generateCircleData(new Point(0, 0), radius);
+    }
+
+    return this.lightGeometryCache[radius];
+
+    }
+
+/**
+ * Ensures that the current light mask is available.
+ */
+    ensureLightMask() {
+
+    var size = this.width * this.height;
+
+    if (!this.lightMask || this.lightMask.length !== size) {
+        this.lightMask = new Uint8Array(size);
+        this.previousLightMask = new Uint8Array(size);
+        this.lightMaskDirty = true;
+    }
+
+    if (this.lightMaskDirty) {
+        this.rebuildLightMask();
+    }
+
+    }
+
+/**
+ * Rebuilds the current light mask from active light sources.
+ */
+    rebuildLightMask() {
+
+    var sourceIndex,
+        row,
+        source,
+        y,
+        x,
+        startX,
+        endX,
+        span;
+
+    this.lightMask.fill(0);
+
+    for (sourceIndex = 0; sourceIndex < this.lightSources.length; sourceIndex += 1) {
+        source = this.lightSources[sourceIndex];
+        if (!source.active) {
+            continue;
+        }
+
+        for (row in source.geometry) {
+            if (source.geometry.hasOwnProperty(row)) {
+                y = source.y + Number(row);
+                if (y >= 0 && y < this.height) {
+                    span = source.geometry[row];
+                    startX = Math.max(0, Math.ceil(source.x + span[0]));
+                    endX = Math.min(this.width - 1, Math.floor(source.x + span[1]));
+                    for (x = startX; x <= endX; x += 1) {
+                        this.lightMask[x + y * this.width] = 1;
+                    }
+            }
         }
     }
+
+    }
+
+    this.lightMaskDirty = false;
+
+    }
+
+/**
+ * Marks all registered light sources inactive before a board update.
+ */
+    prepareLightSources() {
+
+    var index;
+
+    for (index = 0; index < this.lightSources.length; index += 1) {
+        this.lightSources[index].active = false;
+    }
+
+    }
+
+/**
+ * Removes light sources that were not observed during the current update.
+ */
+    pruneLightSources() {
+
+    var index,
+        source;
+
+    for (index = this.lightSources.length - 1; index >= 0; index -= 1) {
+        source = this.lightSources[index];
+        if (!source.active) {
+            if (source.thing._lightSource === source) {
+                source.thing._lightSource = undefined;
+            }
+            this.lightMaskDirty = true;
+            this.lightSources.splice(index, 1);
+        }
+    }
+
     }
 
     initializeWindow() {
@@ -791,6 +952,9 @@ class Board {
 
         index = point.x + point.y * this.width;
         previousTile = this.tiles[index];
+        if (previousTile && previousTile._lightSource) {
+            this.invalidateLightSource(previousTile);
+        }
 
         if (tile) {
 
@@ -1029,23 +1193,17 @@ class Board {
 
 /**
  * Retrieves whether or not a provided point falls within any of this
- * Board's torches.
+ * Board's light sources.
  *
- * Note: Unlike the rendering routine, we use the torch values from the previous
- * update cycle here, since updates happening on this board may still be
- * changing the torch status.
- *
- * @param point A Point to test if it's inside a torch circle
+ * @param point A Point to test if it's inside a light source
  * @param thing A thing at the point to test if it's glowing (or lit by torches)
  * @param previousStep Whether to check if we were lit after the last cycle
  *           instead of the current cycle (which may or not be done updating).
- * @return true if a provided point is within any torch circle, false otherwise
+ * @return true if a provided point is lit, false otherwise
  */
     isLit(point, thing, previousStep) {
 
-    var index,
-        torches = previousStep ? this.previousTorches : this.torches,
-        torch;
+    var mask;
 
     // If the board isn't dark, we're inherently lit
     if (!this.dark) {
@@ -1057,15 +1215,17 @@ class Board {
         return true;
     }
 
-    // Loop through our torches and see if we're lit
-    for (index = 0; index < torches.length; index += 1) {
-        torch = torches[index];
-        if (torch.contains(point)) {
-            return true;
+    if (previousStep) {
+        if (!this.previousLightMask) {
+            this.ensureLightMask();
         }
+        mask = this.previousLightMask;
+    } else {
+        this.ensureLightMask();
+        mask = this.lightMask;
     }
 
-    return false;
+    return mask[point.x + point.y * this.width] === 1;
 
     }
 
@@ -1094,6 +1254,14 @@ class Board {
 
     var me = this;
 
+    if (this.dark) {
+        if (!this.lightMask) {
+            this.ensureLightMask();
+        }
+        this.previousLightMask.set(this.lightMask);
+        this.prepareLightSources();
+    }
+
     // Update the smart path only when the target or path topology changed.
     if (
         this.smartPathDirty ||
@@ -1109,11 +1277,8 @@ class Board {
     // Initialize our bullet count
     this.playerBullets = 0;
 
-    // If the board is dark, initialize our torches
-    if (this.dark) {
-        this.previousTorches = this.torches;
-        this.torches = [];
-    }
+    // Lighting state is updated after each tile has had its chance to move or
+    // change its radius.
 
     /*
      * This function works as follows: Each tile is looped through in sequential
@@ -1155,9 +1320,9 @@ class Board {
                 me.customRenderSet.push(tile);
             }
 
-            // Update our torch, if applicable
+            // Update the light source, if applicable
             if (tile.type !== 'Player') {
-                me.initializeTorch(tile);
+                me.updateLightSource(tile);
             }
 
         }
@@ -1174,6 +1339,15 @@ class Board {
         }
 
     }, this.reverseUpdateSnapshot, true);
+
+    if (this.player) {
+        this.updateLightSource(this.player);
+    }
+
+    if (this.dark) {
+        this.pruneLightSources();
+        this.ensureLightMask();
+    }
 
     }
 
