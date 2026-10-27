@@ -16,6 +16,7 @@ import * as i18n from './i18n.js';
 
 const SMART_PATH_MAX_DISTANCE = 50;
 
+
 /**
  * Board represents a single game board.
  *
@@ -39,10 +40,10 @@ class Board {
     this.smartPathTargetX = undefined;
     this.smartPathTargetY = undefined;
     this.smartPathQueue = undefined;
-    this.smartPathBullets = [];
+    this.playerBulletThings = [];
     this.forwardUpdateSnapshot = [];
     this.reverseUpdateSnapshot = [];
-    this.customRenderSet = [];
+    this.customRenderCount = 0;
     this.lightSources = [];
     this.lightGeometryCache = Object.create(null);
     this.lightMask = undefined;
@@ -652,10 +653,96 @@ class Board {
     }
 
 /**
+ * Updates the maintained player-bullet collection after a tile replacement.
+ *
+ * @param previousTile The tile previously at the location.
+ * @param tile The tile now at the location.
+ */
+    updatePlayerBulletCollection(previousTile, tile) {
+
+    var index;
+
+    if (previousTile && previousTile.type === 'Bullet' && previousTile.fromPlayer) {
+        index = this.playerBulletThings.indexOf(previousTile);
+        if (index >= 0) {
+            this.playerBulletThings.splice(index, 1);
+        }
+    }
+
+    if (tile && tile.type === 'Bullet' && tile.fromPlayer && this.playerBulletThings.indexOf(tile) < 0) {
+        this.playerBulletThings.push(tile);
+    }
+
+    }
+/**
+ * Updates the count of top-level tiles with custom renderers.
+ *
+ * @param previousTile The tile previously at the location.
+ * @param tile The tile now at the location.
+ */
+    updateCustomRenderCount(previousTile, tile) {
+
+    if (previousTile && previousTile.render) {
+        this.customRenderCount -= 1;
+    }
+
+    if (tile && tile.render) {
+        this.customRenderCount += 1;
+    }
+
+    }
+
+
+/**
+ * Verifies that the player-bullet collection matches the current board tiles.
+ *
+ * This intentionally performs a full board scan and is only enabled for
+ * development consistency checks.
+ *
+ * @return true when player-bullet membership is consistent.
+ */
+    assertCollectionConsistency() {
+
+    var expectedPlayerBullets = [];
+
+    this.eachDirect(function (tile) {
+        if (tile && tile.type === 'Bullet' && tile.fromPlayer) {
+            expectedPlayerBullets.push(tile);
+        }
+    });
+
+    this.assertCollectionMatches('playerBulletThings', this.playerBulletThings, expectedPlayerBullets);
+    return true;
+
+    }
+
+/**
+ * Compares collection membership without requiring traversal order.
+ *
+ * @param name A collection name for error reporting.
+ * @param actual The maintained collection.
+ * @param expected The collection rebuilt from board tiles.
+ */
+    assertCollectionMatches(name, actual, expected) {
+
+    var index;
+
+    if (actual.length !== expected.length) {
+        throw new Error(name + ' collection is stale.');
+    }
+
+    for (index = 0; index < expected.length; index += 1) {
+        if (actual.indexOf(expected[index]) < 0) {
+            throw new Error(name + ' collection is stale.');
+        }
+    }
+
+    }
+/**
  * Copies the current board tiles into reusable update storage.
  *
- * @param snapshot An array to reuse for the snapshot
- * @return The populated snapshot array
+ * @param snapshot An array to reuse for the snapshot.
+ * @return The populated snapshot array.
  */
     copyTileSnapshot(snapshot) {
 
@@ -674,9 +761,9 @@ class Board {
 /**
  * Executes a callback over a provided tile snapshot in either traversal order.
  *
- * @param callback A callback function to be executed for each tile
- * @param values A tile snapshot
- * @param reverse Whether to traverse from the final tile backwards
+ * @param callback A callback function to be executed for each tile.
+ * @param values A tile snapshot.
+ * @param reverse Whether to traverse from the final tile backwards.
  */
     eachSnapshot(callback, values, reverse) {
 
@@ -874,7 +961,7 @@ class Board {
             this.setTile(oldPoint, thing === undefined ? undefined : thing.under);
 
             if (thing !== undefined) {
-                thing.under = undefined;
+                this.updatePlayerBulletCollection(undefined, thing);
             }
         }
 
@@ -898,6 +985,7 @@ class Board {
 
             this.setTile(newPoint, thing);
             this.setTile(oldPoint, underOldThing);
+            this.updatePlayerBulletCollection(undefined, thing);
         }
 
         return true;
@@ -976,28 +1064,13 @@ class Board {
         }
 
         this.tiles[index] = tile;
-        this.updateSmartPathBulletList(previousTile, tile);
+        this.updatePlayerBulletCollection(previousTile, tile);
+        this.updateCustomRenderCount(previousTile, tile);
         this.smartPathDirty = true;
 
     }
     }
 
-    updateSmartPathBulletList(previousTile, tile) {
-
-    var index;
-
-    if (previousTile && previousTile.type === 'Bullet' && previousTile.fromPlayer) {
-        index = this.smartPathBullets.indexOf(previousTile);
-        if (index >= 0) {
-            this.smartPathBullets.splice(index, 1);
-        }
-    }
-
-    if (tile && tile.type === 'Bullet' && tile.fromPlayer && this.smartPathBullets.indexOf(tile) < 0) {
-        this.smartPathBullets.push(tile);
-    }
-
-    }
 
 /**
  * Adds a Thing to a specific Point on this Board. This function
@@ -1183,7 +1256,7 @@ class Board {
 
 /**
  * Adds a provided message to this Board's queue of messages to globally
- * send to all UpdateableThings tracked by this Board.
+ * send to all UpdateableThings on this Board.
  *
  * @param message A message to be delivered to all UpdateableThings.
  */
@@ -1248,7 +1321,7 @@ class Board {
 
 /**
  * Updates this Board instance by one tick in an execution cycle. This will also
- * update all UpdateableThings tracked by this Board.
+ * update all UpdateableThings on this Board.
  */
     update() {
 
@@ -1271,70 +1344,47 @@ class Board {
         this.updateSmartPath(this.player.point);
     }
 
-    // Initialize our custom renderable list
-    this.customRenderSet = [];
+    this.playerBullets = this.playerBulletThings.length;
 
-    // Initialize our bullet count
-    this.playerBullets = 0;
-
-    // Lighting state is updated after each tile has had its chance to move or
-    // change its radius.
-
-    /*
-     * This function works as follows: Each tile is looped through in sequential
-     * order, and once again in reverse order. A tile may opt to be sent its
-     * update message in either one loop or the other via its updateOnReverse
-     * function. Tiles may wish to update in reverse because they are about to
-     * move in the same direction as the updates (for example, a Bullet travelling
-     * South). This results in smoother motion for such movements.
-     */
-
-    // For each tile on our board...
+    // Snapshot the full board so movement during the forward pass cannot
+    // update a tile twice.
     this.forwardUpdateSnapshot = this.copyTileSnapshot(this.forwardUpdateSnapshot);
     this.eachSnapshot(function (tile) {
 
         if (tile) {
 
-            // If we got a player bullet, update our count
-            if (tile.type === 'Bullet' && tile.fromPlayer) {
-                me.playerBullets += 1;
+            if (
+                typeof tile.update === 'function' &&
+                typeof tile.updateOnReverse === 'function' &&
+                tile.type !== 'Player' &&
+                !tile.updateOnReverse()
+            ) {
+                tile.update();
             }
 
-            // If we got an updateable tile...
-            if ((typeof tile.update === 'function') && (typeof tile.updateOnReverse === 'function') && tile.type !== 'Player') {
-
-                // If we aren't updating backwards...
-                if (!tile.updateOnReverse()) {
-                    tile.update();
-                }
-
-            }
-
-            // If the tile the thing is on is updateable while under...
             if (tile.under && tile.under.updateWhileUnder) {
                 tile.under.updateWhileUnder();
             }
 
-            // If we've got a tile with a custom renderer...
-            if (tile.render) {
-                me.customRenderSet.push(tile);
-            }
 
-            // Update the light source, if applicable
             if (tile.type !== 'Player') {
                 me.updateLightSource(tile);
             }
-
         }
 
     }, this.forwardUpdateSnapshot, false);
 
-    // For each tile on our board in reverse...
+    // The reverse pass reflects mutations made during the forward pass.
     this.reverseUpdateSnapshot = this.copyTileSnapshot(this.reverseUpdateSnapshot);
     this.eachSnapshot(function (tile) {
 
-        // If a tile wants to be udpated backwards, do it now
-        if (tile && (typeof tile.update === 'function') && (typeof tile.updateOnReverse === 'function') && tile.updateOnReverse() && (tile.type !== 'Player')) {
+        if (
+            tile &&
+            typeof tile.update === 'function' &&
+            typeof tile.updateOnReverse === 'function' &&
+            tile.type !== 'Player' &&
+            tile.updateOnReverse()
+        ) {
             tile.update();
         }
 
@@ -1347,6 +1397,10 @@ class Board {
     if (this.dark) {
         this.pruneLightSources();
         this.ensureLightMask();
+    }
+
+    if (this.game.debugCollections) {
+        this.assertCollectionConsistency();
     }
 
     }
@@ -1395,7 +1449,6 @@ class Board {
     var me = this,
         canvasWidth = this.game.context.canvas.width,
         canvasHeight = this.game.context.canvas.height,
-        index,
         startX,
         startY,
         endX,
@@ -1487,9 +1540,13 @@ class Board {
 
     });
 
-    // For each item in our custom render set
-    for (index = 0; index < this.customRenderSet.length; index += 1) {
-        this.customRenderSet[index].render(c);
+    // Rare custom renderers are scanned only while rendering, not every update.
+    if (this.customRenderCount > 0) {
+        this.eachDirect(function (tile) {
+            if (tile && tile.render) {
+                tile.render(c);
+            }
+        });
     }
 
     // If there is a display message, render it
@@ -1606,8 +1663,8 @@ class Board {
     var index,
         bullet;
 
-    for (index = 0; index < this.smartPathBullets.length; index += 1) {
-        bullet = this.smartPathBullets[index];
+    for (index = 0; index < this.playerBulletThings.length; index += 1) {
+        bullet = this.playerBulletThings[index];
         if (bullet && !bullet.removed) {
             bullet.influenceSmartPath();
         }
