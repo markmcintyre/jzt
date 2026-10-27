@@ -166,19 +166,22 @@ class Board {
  */
     validateData(data) {
 
-    // Let's hope for the best...
-    var valid = true;
+    var valid = data && typeof data === 'object' && !Array.isArray(data);
 
-    if (!data.height || !data.width) { valid = false; }
-    if (typeof data.height !== 'number') { valid = false; }
-    if (typeof data.width !== 'number') { valid = false; }
-    if (data.height > 256 || data.height < 10) { valid = false; }
-    if (data.width > 256 || data.width < 10) { valid = false; }
-    if (!data.tiles || !(Array.isArray(data.tiles))) { valid = false; }
-    if (!data.scripts || !(Array.isArray(data.scripts))) { valid = false; }
+    if (valid) {
+        valid = Number.isInteger(data.height) &&
+            Number.isInteger(data.width) &&
+            data.height >= 10 &&
+            data.height <= 256 &&
+            data.width >= 10 &&
+            data.width <= 256 &&
+            Array.isArray(data.tiles) &&
+            data.tiles.length === data.width * data.height &&
+            Array.isArray(data.scripts);
+    }
 
     if (!valid) {
-        throw 'Invalid board data.';
+        throw new Error('Invalid board data.');
     }
 
     }
@@ -296,12 +299,20 @@ class Board {
 
     var index, script;
 
+    for (index = 0; index < scriptData.length; index += 1) {
+        if (!scriptData[index] ||
+                typeof scriptData[index] !== 'object' ||
+                typeof scriptData[index].name !== 'string' ||
+                typeof scriptData[index].rawScript !== 'string') {
+            throw new Error('Invalid script at index ' + index + '.');
+        }
+    }
+
     // If we're in editor mode, there's no need to compile
     if (this.game.isEditor) {
         this.scripts = scriptData;
         return;
     }
-
     for (index = 0; index < scriptData.length; index += 1) {
 
         try {
@@ -429,28 +440,52 @@ class Board {
     var point = new Point(0, 0),
         index,
         tile,
-        thing;
+        thing,
+        tileType,
+        exception;
 
-    for (index in tileDataCollection) {
+    for (index = 0; index < tileDataCollection.length; index += 1) {
+        tile = tileDataCollection[index];
+        thing = undefined;
 
-        if (tileDataCollection.hasOwnProperty(index)) {
-
-            tile = tileDataCollection[index];
-            thing = ThingFactory.deserialize(tile, this);
-
-            if (thing !== undefined) {
-                this.setTile(point, thing);
-                this.updateLightSource(thing);
+        if (tile !== 0) {
+            tileType = tile && typeof tile === 'object' ? tile.type : tile;
+            if (!tile || typeof tile !== 'object' || typeof tile.type !== 'string') {
+                throw new Error(
+                    'Invalid tile at index ' + index +
+                    ': expected a serialized tile with a string type; received "' + String(tileType) + '".'
+                );
             }
 
-            point.x += 1;
-            if (point.x >= this.width) {
-                point.x = 0;
-                point.y += 1;
+            if (!ThingFactory.isKnownThing(tile.type)) {
+                throw new Error('Invalid tile at index ' + index + ': unknown type "' + tile.type + '".');
             }
 
+            try {
+                thing = ThingFactory.deserialize(tile, this);
+            } catch (caughtException) {
+                exception = caughtException;
+                throw new Error(
+                    'Invalid tile at index ' + index + ' (type "' + tile.type + '"): ' +
+                    (exception && exception.message ? exception.message : String(exception))
+                );
+            }
+
+            if (thing === undefined) {
+                throw new Error('Invalid tile at index ' + index + ': could not deserialize type "' + tile.type + '".');
+            }
         }
 
+        if (thing !== undefined) {
+            this.setTile(point, thing);
+            this.updateLightSource(thing);
+        }
+
+        point.x += 1;
+        if (point.x >= this.width) {
+            point.x = 0;
+            point.y += 1;
+        }
     }
 
     }

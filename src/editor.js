@@ -463,8 +463,12 @@ class Editor {
         board,
         options = {};
 
-    if (!data.version || data.version !== this.formatVersion) {
-        throw 'Incompatible version';
+    if (!data || typeof data !== 'object' || data.version !== this.formatVersion) {
+        throw new Error('Incompatible version');
+    }
+
+    if (!Array.isArray(data.boards)) {
+        throw new Error('Invalid world data.');
     }
 
     for (index = 0; index < this.boards.length; index += 1) {
